@@ -1,0 +1,19 @@
+/* game chrome — kit hud.css owns menu-home / neon-btn */
+html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; touch-action: none; }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#fx-flash, #scanlines { pointer-events: none; }
+.hud-panel { position: absolute; top: calc(12px + env(safe-area-inset-top)); z-index: 5; }
+.hud-left { left: 12px; }
+.hud-right { right: 12px; text-align: right; }
+.stat .label { font-size: 11px; letter-spacing: 1px; color: #8a84ad; }
+.stat .value { font-size: 22px; color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; }
+.stat .value.big { font-size: 28px; }
+.scaffold-note {
+  position: absolute; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom));
+  transform: translateX(-50%); z-index: 6;
+  padding: 8px 14px; border: 1px solid #00e5ff55; border-radius: 999px;
+  background: #0a0520cc; color: #d9d4ff; font-size: 12px; letter-spacing: .5px;
+  white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+}
+.trial-note { margin-top: 8px; font-size: 12px; color: #ff7ae6; }
+\n.hud-buttons.top { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; display: flex; gap: 8px; z-index: 6; }\n
