@@ -3,12 +3,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 #fx-flash, #scanlines { pointer-events: none; }
 .hud-panel { position: absolute; top: calc(12px + env(safe-area-inset-top)); z-index: 5; }
 .hud-left { left: 12px; }
-.hud-right { right: 12px; text-align: right; }
+.hud-right { right: 64px; text-align: right; }
 .stat .label { font-size: 11px; letter-spacing: 1px; color: #8a84ad; }
 .stat .value { font-size: 20px; color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; }
-.stat .value.big { font-size: 26px; color: #ff2bd6; }
+.stat .value.big { font-size: 26px; color: #00e5ff; }
 .hud-buttons.top { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; display: flex; gap: 8px; z-index: 6; }
-.hud-right { right: 64px; }
 .xp-bar {
   position: absolute; left: 12%; right: 12%; bottom: calc(18px + env(safe-area-inset-bottom));
   height: 8px; border-radius: 99px; background: #1a104088; border: 1px solid #00e5ff44; z-index: 5; overflow: hidden;
@@ -19,29 +18,52 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 .stick {
   position: fixed; left: calc(20px + env(safe-area-inset-left)); bottom: calc(36px + env(safe-area-inset-bottom));
-  width: 120px; height: 120px; z-index: 8; touch-action: none;
+  width: 132px; height: 132px; z-index: 8; touch-action: none; opacity: 0.85;
 }
 .stick-base {
   width: 100%; height: 100%; border-radius: 50%;
-  border: 2px solid #00e5ff66; background: #0a052066;
-  display: grid; place-items: center;
+  border: 2px solid #00e5ff88; background: #0a052088;
+  display: grid; place-items: center; backdrop-filter: blur(4px);
 }
 .stick-knob {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #ff7ae6, #ff2bd6);
-  box-shadow: 0 0 16px #ff2bd6aa; transform: translate(0,0);
+  width: 52px; height: 52px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #7ad7ff, #00e5ff);
+  box-shadow: 0 0 16px #00e5ffaa; transform: translate(0,0);
 }
+.stick.ready { opacity: 0.85; }
+.stick.active { opacity: 1; }
+.stick.active .stick-base { border-color: #ff2bd6aa; box-shadow: 0 0 18px #ff2bd655; }
 
-.level-panel { max-width: 420px; width: 92vw; }
+.level-panel { max-width: 440px; width: 92vw; }
 .level-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .level-card {
   appearance: none; cursor: pointer; text-align: left;
+  display: flex; align-items: flex-start; gap: 12px;
   padding: 14px 16px; border-radius: 12px;
   border: 1px solid #00e5ff66; background: #0a0520ee; color: #e8e4ff;
   font: inherit; transition: border-color .15s, transform .1s, box-shadow .15s;
 }
-.level-card b { display: block; color: #00e5ff; letter-spacing: 1px; margin-bottom: 4px; }
-.level-card small { color: #a9a3cc; }
+.level-card .card-icon {
+  flex: 0 0 44px; width: 44px; height: 44px; border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 22px; line-height: 1;
+  background: #061428; border: 1px solid #00e5ff55;
+  box-shadow: inset 0 0 12px #00e5ff22;
+}
+.level-card .card-body { flex: 1; min-width: 0; }
+.level-card b { display: block; color: #00e5ff; letter-spacing: 1px; margin-bottom: 2px; }
+.level-card .card-kind {
+  display: inline-block; font-style: normal; font-size: 10px; letter-spacing: 1.5px;
+  color: #7ad7ff; opacity: 0.85; margin-bottom: 4px;
+}
+.level-card small { display: block; color: #a9a3cc; }
+.level-card.kind-weapon .card-icon { border-color: #00e5ff99; color: #00e5ff; }
+.level-card.kind-armor .card-icon { border-color: #ff2bd699; color: #ff7ae6; background: #1a0820; }
+.level-card.kind-armor b { color: #ff7ae6; }
+.level-card.kind-armor .card-kind { color: #ff7ae6; }
+.level-card.kind-util .card-icon { border-color: #ffe60088; color: #ffe600; }
+.level-card.kind-util b { color: #ffe600; }
+.level-card.kind-util .card-kind { color: #ffe600; }
 .level-card:active, .level-card:hover {
   border-color: #ff2bd6; transform: translateY(-1px);
   box-shadow: 0 0 18px #ff2bd655;
@@ -49,14 +71,5 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 #fx-flash.on {
   position: fixed; inset: 0; z-index: 20; pointer-events: none;
-  background: radial-gradient(circle, #ff2bd644, #ff2bd600 60%);
+  background: radial-gradient(circle, #ff224466, #ff224400 60%);
 }
-.stick.ready { opacity: 0.85; }
-.stick.active { opacity: 1; }
-.stick.active .stick-base { border-color: #ff2bd6aa; box-shadow: 0 0 18px #ff2bd655; }
-.stick-base { width: 100%; height: 100%; border-radius: 50%;
-  border: 2px solid #00e5ff88; background: #0a052088;
-  display: grid; place-items: center; backdrop-filter: blur(4px);
-}
-.stick { width: 132px; height: 132px; }
-.stick-knob { width: 52px; height: 52px; }

@@ -5,116 +5,245 @@ const mat = (c, e = 0.7) => new THREE.MeshStandardMaterial({
   color: c, emissive: c, emissiveIntensity: e, roughness: 0.35, metalness: 0.4,
 });
 
-/** Cyberpunk hover-mech / runner silhouette — readable from high iso / top-down. */
-function buildPlayerSilhouette() {
+/**
+ * Humanoid mech / robot silhouette — readable from high iso.
+ * Primary: cyan + cool magenta accents. Red reserved for damage flash only.
+ */
+function buildPlayerMech() {
   const root = new THREE.Group();
-  const hull = mat(0xff2bd6, 0.85);
-  const armor = new THREE.MeshStandardMaterial({
-    color: 0x1a0a2e, emissive: 0x3a1050, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.65,
+  // Cool neon palette (no red primary)
+  const neon = mat(0x00e5ff, 0.95);       // cyan primary
+  const accent = mat(0xff2bd6, 0.85);     // magenta accent
+  const plate = new THREE.MeshStandardMaterial({
+    color: 0x0c1a2e, emissive: 0x123048, emissiveIntensity: 0.5, roughness: 0.4, metalness: 0.7,
   });
-  const glass = mat(0x00e5ff, 1.15);
-  const accent = mat(0x7ad7ff, 1.0);
-  const thruster = mat(0xffe600, 1.35);
-  const edge = mat(0xff2bd6, 1.05);
+  const visor = mat(0x7ad7ff, 1.25);
+  const joint = mat(0x5a7dff, 0.7);
 
-  // Elongated chassis (forward = -Z so nose points toward default fire dir)
-  const chassis = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.22, 0.78), armor);
-  chassis.position.set(0, 0.28, 0);
-  root.add(chassis);
+  // ---- Legs
+  const thighGeo = new THREE.BoxGeometry(0.16, 0.28, 0.18);
+  const shinGeo = new THREE.BoxGeometry(0.14, 0.26, 0.16);
+  const footGeo = new THREE.BoxGeometry(0.18, 0.08, 0.28);
+  for (const side of [-1, 1]) {
+    const thigh = new THREE.Mesh(thighGeo, plate);
+    thigh.position.set(side * 0.16, 0.34, 0.02);
+    const shin = new THREE.Mesh(shinGeo, plate);
+    shin.position.set(side * 0.16, 0.12, 0.04);
+    const foot = new THREE.Mesh(footGeo, neon);
+    foot.position.set(side * 0.16, 0.04, -0.02);
+    const knee = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.14), accent);
+    knee.position.set(side * 0.16, 0.22, 0.06);
+    root.add(thigh, shin, foot, knee);
+  }
 
-  // Magenta neon under-rail
-  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.06, 0.72), hull);
-  rail.position.set(0, 0.16, 0.02);
-  root.add(rail);
+  // ---- Hip / pelvis
+  const hip = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, 0.28), plate);
+  hip.position.set(0, 0.5, 0);
+  root.add(hip);
+  const hipNeon = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.1), neon);
+  hipNeon.position.set(0, 0.5, 0.12);
+  root.add(hipNeon);
 
-  // Pointy nose / plow
-  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.42, 4), hull);
-  nose.rotation.x = -Math.PI / 2;
-  nose.position.set(0, 0.3, -0.55);
-  root.add(nose);
+  // ---- Torso
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.42, 0.32), plate);
+  torso.position.set(0, 0.78, 0);
+  root.add(torso);
+  // Chest core (cyan)
+  const core = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.08), neon);
+  core.position.set(0, 0.8, 0.18);
+  root.add(core);
+  // Magenta chest stripe
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.06), accent);
+  stripe.position.set(0, 0.78, 0.2);
+  root.add(stripe);
 
-  // Cockpit canopy (cyan glass dome)
-  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), glass);
-  canopy.position.set(0, 0.46, -0.08);
-  canopy.scale.set(1.15, 0.85, 1.35);
-  root.add(canopy);
+  // ---- Shoulders / pauldrons
+  const padGeo = new THREE.BoxGeometry(0.22, 0.14, 0.28);
+  for (const side of [-1, 1]) {
+    const pad = new THREE.Mesh(padGeo, neon);
+    pad.position.set(side * 0.34, 0.98, 0);
+    pad.rotation.z = side * -0.2;
+    root.add(pad);
+  }
 
-  // Pilot head hint (small sphere — anime-ish from iso)
-  const pilot = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), accent);
-  pilot.position.set(0, 0.52, -0.06);
-  root.add(pilot);
+  // ---- Arms
+  const upperGeo = new THREE.BoxGeometry(0.12, 0.28, 0.14);
+  const lowerGeo = new THREE.BoxGeometry(0.11, 0.26, 0.12);
+  const fistGeo = new THREE.BoxGeometry(0.14, 0.12, 0.14);
+  for (const side of [-1, 1]) {
+    const upper = new THREE.Mesh(upperGeo, plate);
+    upper.position.set(side * 0.42, 0.78, 0);
+    const lower = new THREE.Mesh(lowerGeo, plate);
+    lower.position.set(side * 0.46, 0.52, 0.04);
+    const fist = new THREE.Mesh(fistGeo, accent);
+    fist.position.set(side * 0.46, 0.36, 0.06);
+    const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), joint);
+    elbow.position.set(side * 0.44, 0.64, 0.02);
+    root.add(upper, lower, fist, elbow);
+  }
 
-  // Shoulder pauldrons
-  const pauldronGeo = new THREE.BoxGeometry(0.16, 0.14, 0.28);
-  const pL = new THREE.Mesh(pauldronGeo, hull);
-  pL.position.set(-0.34, 0.38, 0.02);
-  pL.rotation.z = 0.25;
-  const pR = new THREE.Mesh(pauldronGeo, hull);
-  pR.position.set(0.34, 0.38, 0.02);
-  pR.rotation.z = -0.25;
-  root.add(pL, pR);
+  // ---- Head + visor (readable silhouette)
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.24, 0.26), plate);
+  head.position.set(0, 1.12, 0);
+  root.add(head);
+  const helm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.3), neon);
+  helm.position.set(0, 1.24, 0);
+  root.add(helm);
+  const vis = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.06), visor);
+  vis.position.set(0, 1.14, 0.14);
+  root.add(vis);
+  // Antenna
+  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.28, 6), accent);
+  ant.position.set(0.08, 1.38, 0);
+  root.add(ant);
+  const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), neon);
+  antTip.position.set(0.08, 1.52, 0);
+  root.add(antTip);
 
-  // Side wing fins (sweep back) — silhouette width for top-down
-  const finGeo = new THREE.BoxGeometry(0.55, 0.04, 0.22);
-  const finL = new THREE.Mesh(finGeo, edge);
-  finL.position.set(-0.38, 0.24, 0.12);
-  finL.rotation.set(0.1, 0.35, -0.35);
-  const finR = new THREE.Mesh(finGeo, edge);
-  finR.position.set(0.38, 0.24, 0.12);
-  finR.rotation.set(0.1, -0.35, 0.35);
-  root.add(finL, finR);
+  // Back pack / thruster pack (cool yellow only as thruster glow tip — not red)
+  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 0.16), plate);
+  pack.position.set(0, 0.82, -0.22);
+  root.add(pack);
+  const thruster = mat(0x7ad7ff, 1.2);
+  for (const side of [-1, 1]) {
+    const thr = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.14, 8), plate);
+    thr.rotation.x = Math.PI / 2;
+    thr.position.set(side * 0.1, 0.78, -0.32);
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), thruster);
+    glow.position.set(side * 0.1, 0.78, -0.4);
+    root.add(thr, glow);
+    if (side < 0) root.userData.glowL = glow; else root.userData.glowR = glow;
+  }
 
-  // Outer fin neon tips
-  const tipGeo = new THREE.BoxGeometry(0.08, 0.05, 0.28);
-  const tipL = new THREE.Mesh(tipGeo, glass);
-  tipL.position.set(-0.58, 0.26, 0.22);
-  tipL.rotation.y = 0.4;
-  const tipR = new THREE.Mesh(tipGeo, glass);
-  tipR.position.set(0.58, 0.26, 0.22);
-  tipR.rotation.y = -0.4;
-  root.add(tipL, tipR);
-
-  // Spine antenna / sensor mast
-  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.38, 6), accent);
-  mast.position.set(0, 0.62, 0.12);
-  root.add(mast);
-  const mastTip = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), thruster);
-  mastTip.position.set(0, 0.82, 0.12);
-  root.add(mastTip);
-
-  // Rear thruster pods
-  const thrGeo = new THREE.CylinderGeometry(0.08, 0.11, 0.22, 8);
-  const thrL = new THREE.Mesh(thrGeo, armor);
-  thrL.rotation.x = Math.PI / 2;
-  thrL.position.set(-0.16, 0.26, 0.48);
-  const thrR = new THREE.Mesh(thrGeo, armor);
-  thrR.rotation.x = Math.PI / 2;
-  thrR.position.set(0.16, 0.26, 0.48);
-  root.add(thrL, thrR);
-
-  const glowGeo = new THREE.SphereGeometry(0.09, 8, 8);
-  const glowL = new THREE.Mesh(glowGeo, thruster);
-  glowL.position.set(-0.16, 0.26, 0.6);
-  const glowR = new THREE.Mesh(glowGeo, thruster);
-  glowR.position.set(0.16, 0.26, 0.6);
-  root.add(glowL, glowR);
-
-  // Soft ground halo (subtle — not the main body)
+  // Soft ground halo (cyan)
   const halo = new THREE.Mesh(
-    new THREE.RingGeometry(0.22, 0.48, 24),
-    new THREE.MeshBasicMaterial({ color: 0xff2bd6, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+    new THREE.RingGeometry(0.28, 0.55, 28),
+    new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.32, side: THREE.DoubleSide })
   );
   halo.rotation.x = -Math.PI / 2;
-  halo.position.y = 0.04;
+  halo.position.y = 0.03;
   root.add(halo);
 
-  root.userData.hullMats = [hull, edge];
-  root.userData.coreMats = [glass, accent];
+  root.userData.hullMats = [neon, accent];
+  root.userData.coreMats = [visor, thruster];
   root.userData.thrusterMats = [thruster];
-  root.userData.glowL = glowL;
-  root.userData.glowR = glowR;
   root.userData.halo = halo;
+  root.userData.plate = plate;
+  root.scale.setScalar(1.15);
   return root;
+}
+
+function enemyMeshFor(type, color) {
+  const g = new THREE.Group();
+  let mesh;
+  if (type === 'tank') {
+    // Heavy cube slab — readable tank
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.55, 0.7), mat(color, 0.75));
+    const rim = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.1, 0.78), mat(color, 1.1));
+    rim.position.y = 0.28;
+    g.add(mesh, rim);
+  } else if (type === 'splitter') {
+    // Dual-cone hourglass
+    const c1 = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.45, 5), mat(color, 0.85));
+    c1.position.y = 0.22;
+    const c2 = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.45, 5), mat(color, 0.85));
+    c2.rotation.x = Math.PI;
+    c2.position.y = -0.22;
+    g.add(c1, c2);
+    mesh = c1;
+  } else if (type === 'swarmling') {
+    // Small tetrahedron spike
+    mesh = new THREE.Mesh(new THREE.TetrahedronGeometry(0.28), mat(color, 0.9));
+    g.add(mesh);
+  } else {
+    // runner — octahedron diamond
+    mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.34, 0), mat(color, 0.8));
+    g.add(mesh);
+  }
+  g.userData.mesh = mesh;
+  g.userData.type = type;
+  return g;
+}
+
+function gemMesh() {
+  // Crystal XP gem — distinct green octahedron
+  const g = new THREE.Group();
+  const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), mat(0x3bff8a, 1.2));
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(0.2, 0.03, 6, 16),
+    mat(0x7affc0, 1.0)
+  );
+  ring.rotation.x = Math.PI / 2;
+  g.add(core, ring);
+  g.userData.mesh = core;
+  return g;
+}
+
+function buildObstacles(parent) {
+  const group = new THREE.Group();
+  parent.add(group);
+  const crateMat = new THREE.MeshStandardMaterial({
+    color: 0x141a2c, emissive: 0x182038, emissiveIntensity: 0.28, roughness: 0.6, metalness: 0.3,
+  });
+  const edgeMat = mat(0x3a6a9a, 0.35);
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: 0x101624, emissive: 0x141e32, emissiveIntensity: 0.25, roughness: 0.65, metalness: 0.25,
+  });
+  const debrisMat = new THREE.MeshStandardMaterial({
+    color: 0x1a2240, emissive: 0x243058, emissiveIntensity: 0.3, roughness: 0.55, metalness: 0.35,
+  });
+
+  // Deterministic-ish scatter of low props (no tall buildings)
+  const spots = [
+    [6, 4], [-8, 3], [4, -9], [-5, -7], [12, -2], [-14, 6], [9, 11], [-10, -12],
+    [18, 5], [-16, -4], [2, 16], [-3, -18], [22, -10], [-20, 14], [7, -20], [-12, 20],
+    [15, 18], [-18, -16], [25, 2], [-24, -8], [11, -15], [-7, 22], [20, -22], [-22, 8],
+    [0, 10], [10, 0], [-10, 0], [0, -12], [14, 8], [-14, -10],
+  ];
+  let i = 0;
+  for (const [x, z] of spots) {
+    const kind = i % 5;
+    if (kind === 0) {
+      // Crate stack (low)
+      const c = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.9), crateMat);
+      c.position.set(x, 0.35, z);
+      const edge = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.06, 0.95), edgeMat);
+      edge.position.set(x, 0.72, z);
+      group.add(c, edge);
+    } else if (kind === 1) {
+      // Low wall segment
+      const w = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.55, 0.35), wallMat);
+      w.position.set(x, 0.28, z);
+      w.rotation.y = (i * 0.7) % Math.PI;
+      const top = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.05, 0.4), edgeMat);
+      top.position.copy(w.position); top.position.y = 0.58; top.rotation.y = w.rotation.y;
+      group.add(w, top);
+    } else if (kind === 2) {
+      // Debris cluster
+      for (let k = 0; k < 3; k++) {
+        const d = new THREE.Mesh(new THREE.BoxGeometry(0.35 + (k % 2) * 0.2, 0.2, 0.3), debrisMat);
+        d.position.set(x + (k - 1) * 0.4, 0.12, z + (k % 2) * 0.25);
+        d.rotation.y = k * 0.8;
+        group.add(d);
+      }
+    } else if (kind === 3) {
+      // Barrel / drum (short)
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.3, 0.65, 10), crateMat);
+      b.position.set(x, 0.33, z);
+      const band = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.03, 6, 14), edgeMat);
+      band.rotation.x = Math.PI / 2;
+      band.position.set(x, 0.45, z);
+      group.add(b, band);
+    } else {
+      // Low ramp / wedge debris
+      const r = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.25, 0.8), wallMat);
+      r.position.set(x, 0.14, z);
+      r.rotation.z = 0.15;
+      group.add(r);
+    }
+    i++;
+  }
+  return group;
 }
 
 export class View {
@@ -123,33 +252,51 @@ export class View {
     this.group = new THREE.Group();
     stage.scene.add(this.group);
 
+    // Large open floor (square wilderness pad — not a tiny circle)
+    const floorSize = ARENA.half * 2 + 4;
     const floor = new THREE.Mesh(
-      new THREE.CircleGeometry(ARENA.half + 0.4, 48),
-      new THREE.MeshStandardMaterial({ color: 0x0a0520, emissive: 0x12083a, emissiveIntensity: 0.35, roughness: 0.8, metalness: 0.2 })
+      new THREE.PlaneGeometry(floorSize, floorSize),
+      new THREE.MeshStandardMaterial({
+        color: 0x0a1020, emissive: 0x0e1834, emissiveIntensity: 0.55, roughness: 0.85, metalness: 0.12,
+      })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
 
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(ARENA.half - 0.05, ARENA.half + 0.12, 64),
-      mat(0x00e5ff, 0.9)
+    // Soft edge markers (faint rings) — not a tight cage
+    const softRing = new THREE.Mesh(
+      new THREE.RingGeometry(ARENA.soft - 0.15, ARENA.soft + 0.08, 96),
+      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.18, side: THREE.DoubleSide })
     );
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.02;
-    this.group.add(ring);
+    softRing.rotation.x = -Math.PI / 2;
+    softRing.position.y = 0.04;
+    this.group.add(softRing);
 
-    const grid = new THREE.GridHelper(ARENA.half * 2, 16, 0xff2bd6, 0x1a1040);
-    grid.position.y = 0.03;
-    grid.material.opacity = 0.35;
-    grid.material.transparent = true;
+    const hardRing = new THREE.Mesh(
+      new THREE.RingGeometry(ARENA.half - 0.1, ARENA.half + 0.06, 96),
+      new THREE.MeshBasicMaterial({ color: 0xff2bd6, transparent: true, opacity: 0.22, side: THREE.DoubleSide })
+    );
+    hardRing.rotation.x = -Math.PI / 2;
+    hardRing.position.y = 0.05;
+    this.group.add(hardRing);
+
+    const grid = new THREE.GridHelper(floorSize, Math.floor(floorSize / 2.5), 0x00e5ff, 0x1a2850);
+    grid.position.y = 0.025;
+    if (Array.isArray(grid.material)) {
+      for (const m of grid.material) { m.opacity = 0.35; m.transparent = true; }
+    } else {
+      grid.material.opacity = 0.35;
+      grid.material.transparent = true;
+    }
     this.group.add(grid);
 
-    this.player = buildPlayerSilhouette();
-    // Compat aliases for hit-flash (legacy body/core names)
+    buildObstacles(this.group);
+
+    this.player = buildPlayerMech();
     this.playerBody = { material: this.player.userData.hullMats[0] };
     this.playerCore = { material: this.player.userData.coreMats[0] };
-    this._facing = Math.PI; // nose toward -Z initially
+    this._facing = Math.PI;
     this.group.add(this.player);
 
     this.novaRing = new THREE.Mesh(
@@ -171,19 +318,24 @@ export class View {
     this._bPool = [];
     this._gPool = [];
     this._oPool = [];
+    this._zoom = 1;
   }
 
   setVisible(on) { this.group.visible = !!on; }
 
+  setZoom(z) { this._zoom = z; }
+
   _take(pool, parent, make) {
     let m = pool.pop();
-    if (!m) { m = make(); parent.add(m); }
+    if (!m) m = make();
+    if (m.parent !== parent) parent.add(m);
     m.visible = true;
     return m;
   }
   _recycle(pool, parent) {
     while (parent.children.length) {
-      const c = parent.children.pop();
+      const c = parent.children[parent.children.length - 1];
+      parent.remove(c);
       c.visible = false;
       pool.push(c);
     }
@@ -197,14 +349,13 @@ export class View {
     this._novaR = r;
   }
 
-  _setEmissive(mats, base, flash) {
+  _setEmissive(mats, flash) {
     for (const m of mats) m.emissiveIntensity = flash;
   }
 
   sync(game) {
     this.player.position.set(game.px, 0, game.pz);
 
-    // Face move dir, else nearest foe, else keep last facing
     let tx = game.vx, tz = game.vz;
     if (Math.hypot(tx, tz) < 0.08 && game.enemies.length) {
       const e = game.enemies.reduce((best, cur) => {
@@ -214,7 +365,6 @@ export class View {
       if (e) { tx = e.e.x - game.px; tz = e.e.z - game.pz; }
     }
     if (Math.hypot(tx, tz) > 0.08) {
-      // Nose is local -Z; rotY(atan2(tx,tz)+π) aims that axis at (tx,tz).
       const want = Math.atan2(tx, tz) + Math.PI;
       let d = want - this._facing;
       while (d > Math.PI) d -= Math.PI * 2;
@@ -222,26 +372,32 @@ export class View {
       this._facing += d * 0.22;
     }
     this.player.rotation.y = this._facing;
-    // Slight bank into turn / move
-    const bank = THREE.MathUtils.clamp(-game.vx * 0.35, -0.28, 0.28);
+    const bank = THREE.MathUtils.clamp(-game.vx * 0.25, -0.2, 0.2);
     this.player.rotation.z += (bank - this.player.rotation.z) * 0.15;
-    this.player.rotation.x = Math.hypot(game.vx, game.vz) > 0.1 ? -0.08 : 0;
+    this.player.rotation.x = Math.hypot(game.vx, game.vz) > 0.1 ? -0.05 : 0;
 
     const blink = game.invuln > 0 && (game.invuln * 20) % 2 < 1;
     const hit = game.hitFlash > 0;
-    const hullE = blink ? 0.12 : (hit ? 1.7 : 0.85);
-    const coreE = blink ? 0.2 : (hit ? 2.1 : 1.15);
-    const thrE = blink ? 0.2 : (hit ? 2 : (1.1 + Math.hypot(game.vx, game.vz) * 0.45));
-    this._setEmissive(this.player.userData.hullMats, 0.85, hullE);
-    this._setEmissive(this.player.userData.coreMats, 1.15, coreE);
-    this._setEmissive(this.player.userData.thrusterMats, 1.35, thrE);
-    // Keep aliases in sync for any external reads
+    // Hit flash goes hotter cyan/white — never depends on red body color
+    const hullE = blink ? 0.12 : (hit ? 1.8 : 0.95);
+    const coreE = blink ? 0.2 : (hit ? 2.2 : 1.25);
+    const thrE = blink ? 0.2 : (hit ? 2 : (1.1 + Math.hypot(game.vx, game.vz) * 0.4));
+    this._setEmissive(this.player.userData.hullMats, hullE);
+    this._setEmissive(this.player.userData.coreMats, coreE);
+    this._setEmissive(this.player.userData.thrusterMats, thrE);
     this.playerBody.material.emissiveIntensity = hullE;
     this.playerCore.material.emissiveIntensity = coreE;
 
+    // Damage accent: briefly tint plate emissive toward danger red ONLY on hit
+    if (this.player.userData.plate) {
+      if (hit) this.player.userData.plate.emissive.setHex(0xff2244);
+      else this.player.userData.plate.emissive.setHex(0x123048);
+      this.player.userData.plate.emissiveIntensity = hit ? 0.9 : 0.5;
+    }
+
     const move = Math.hypot(game.vx, game.vz);
     const halo = this.player.userData.halo;
-    if (halo) halo.material.opacity = 0.28 + move * 0.12;
+    if (halo) halo.material.opacity = 0.26 + move * 0.12;
 
     if (this.novaAge >= 0) {
       this.novaAge += 0.05;
@@ -254,59 +410,64 @@ export class View {
 
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
-      const m = this._take(this._ePool, this.enemyG, () => {
-        const g = new THREE.Group();
-        const mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.35, 0), mat(0x00e5ff, 0.8));
-        g.add(mesh);
-        g.userData.mesh = mesh;
-        return g;
+      const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor('runner', 0x00e5ff));
+      // Rebuild if pooled mesh type mismatches
+      if (m.userData.type !== e.type) {
+        while (m.children.length) m.remove(m.children[0]);
+        const fresh = enemyMeshFor(e.type, e.color);
+        while (fresh.children.length) m.add(fresh.children[0]);
+        m.userData.mesh = fresh.userData.mesh;
+        m.userData.type = e.type;
+      }
+      m.position.set(e.x, e.r * 0.9, e.z);
+      const glow = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.75);
+      m.traverse((ch) => {
+        if (ch.isMesh && ch.material && ch.material.emissive) {
+          ch.material.color.setHex(e.color);
+          ch.material.emissive.setHex(e.color);
+          ch.material.emissiveIntensity = glow;
+        }
       });
-      m.position.set(e.x, e.r, e.z);
-      const mesh = m.userData.mesh;
-      mesh.material.color.setHex(e.color);
-      mesh.material.emissive.setHex(e.color);
-      mesh.material.emissiveIntensity = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.75);
-      const s = e.type === 'tank' ? 1.35 : e.type === 'splitter' ? 1.1 : e.type === 'swarmling' ? 0.55 : 0.85;
-      mesh.scale.setScalar(s);
-      mesh.rotation.y += 0.03;
+      m.rotation.y += e.type === 'swarmling' ? 0.08 : 0.03;
     }
 
     this._recycle(this._bPool, this.bulletG);
     for (const b of game.bullets) {
       const m = this._take(this._bPool, this.bulletG, () => new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), mat(0x00e5ff, 1.4)));
-      m.position.set(b.x, 0.45, b.z);
+      m.position.set(b.x, 0.55, b.z);
       m.material.color.setHex(b.frost ? 0x7ad7ff : 0x00e5ff);
       m.material.emissive.setHex(b.frost ? 0x7ad7ff : 0x00e5ff);
     }
 
     this._recycle(this._gPool, this.gemG);
     for (const g of game.gems) {
-      const m = this._take(this._gPool, this.gemG, () => new THREE.Mesh(new THREE.TetrahedronGeometry(0.16), mat(0x3bff8a, 1.1)));
+      const m = this._take(this._gPool, this.gemG, () => gemMesh());
       const pop = g.pop > 0 ? 1 + g.pop * 1.5 : 1;
-      m.position.set(g.x, 0.25, g.z);
+      m.position.set(g.x, 0.3, g.z);
       m.scale.setScalar(pop);
-      m.rotation.y += 0.08;
+      m.rotation.y += 0.1;
     }
 
     this._recycle(this._oPool, this.orbitG);
     if (game.orbits > 0) {
-      const R = 1.35;
+      const R = 1.4;
       for (let o = 0; o < game.orbits; o++) {
         const ang = game.t * 3.2 + (o / game.orbits) * Math.PI * 2;
         const m = this._take(this._oPool, this.orbitG, () => new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.45), mat(0xffe600, 1.2)));
-        m.position.set(game.px + Math.cos(ang) * R, 0.5, game.pz + Math.sin(ang) * R);
+        m.position.set(game.px + Math.cos(ang) * R, 0.7, game.pz + Math.sin(ang) * R);
         m.rotation.y = -ang;
       }
     }
   }
 
   frameCamera(cam, game, dt) {
-    const tx = game.px * 0.35;
-    const tz = game.pz * 0.35 + 11;
-    const ty = 13.5;
+    const z = this._zoom || 1;
+    const tx = game.px * 0.25;
+    const tz = game.pz * 0.25 + 12 * z;
+    const ty = 14 * z;
     cam.position.x += (tx - cam.position.x) * Math.min(1, dt * 4);
     cam.position.y += (ty - cam.position.y) * Math.min(1, dt * 4);
     cam.position.z += (tz - cam.position.z) * Math.min(1, dt * 4);
-    cam.lookAt(game.px * 0.2, 0.5, game.pz * 0.2);
+    cam.lookAt(game.px * 0.15, 0.6, game.pz * 0.15);
   }
 }

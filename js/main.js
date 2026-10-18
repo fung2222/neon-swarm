@@ -1,10 +1,11 @@
-// NEON SWARM — v0.2 bullet heaven
+// NEON SWARM — v0.3 open wilderness redesign
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
+  ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
@@ -12,7 +13,6 @@ import { SwarmAudio } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
-// normalize ads for createAds / interstitial gate (kit readHub.ads is boolean)
 const ADS_ON = HUB.ads === true || HUB.ads === '1' || (!HUB.fromHub && (flags.adsim || Platform.isNative));
 const AD_FLAGS = { adsim: flags.adsim || HUB.ads === true || HUB.ads === '1', debug: flags.debug };
 
@@ -20,26 +20,18 @@ const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level'] });
 const stage = createStage({
-  canvas: $('scene'), bloom: 0.85, bloomRadius: 0.42, bloomThreshold: 0.8, fov: 40, exposure: 1.05,
+  canvas: $('scene'), bloom: 0.85, bloomRadius: 0.42, bloomThreshold: 0.8, fov: 42, exposure: 1.05,
   onFatal: (m) => ui.fatal(m),
 });
 ui.glowToggle(stage);
 const theme = new ThemeController(); theme.set(1, true);
+
+// Wilderness-style open map: NO tall buildings in play space
 const city = new NeonCity(stage, {
-  floor: 'plain', floorY: -0.8, innerRadius: 12, buildings: 220,
-  billboard: { zh: '霓虹洪流', en: 'N E O N   S W A R M', pos: [0, 14, -22], width: 20 },
-  dustArea: 14, dustHeight: 6,
+  floor: 'plain', floorY: -0.9, innerRadius: 90, buildings: 0,
+  billboard: null, signs: false, rain: false, traffic: false,
+  dustArea: 48, dustHeight: 8,
 });
-// clear sightline over arena
-(function clearSight() {
-  const m = city.city, m4 = new THREE.Matrix4(), p = new THREE.Vector3(), q = new THREE.Quaternion(), sc = new THREE.Vector3();
-  if (!m) return;
-  for (let i = 0; i < m.count; i++) {
-    m.getMatrixAt(i, m4); m4.decompose(p, q, sc);
-    if (Math.hypot(p.x, p.z) < 11 && sc.y > 2.5) { sc.y = 1.2 + Math.random() * 1.5; m4.compose(p, q, sc); m.setMatrixAt(i, m4); }
-  }
-  m.instanceMatrix.needsUpdate = true;
-})();
 
 const view = new View(stage);
 view.setVisible(false);
@@ -56,7 +48,27 @@ const S = {
   hub: HUB, keys: Object.create(null), stick: { active: false, dx: 0, dy: 0 },
   demoT: 0, newRecord: false,
 };
+
+// Mild camera zoom (pinch / wheel) — one-finger left for move stick
+const ZOOM_LIM = { zoomMin: 0.72, zoomMax: 1.28, azMax: 0.01, pitchMin: 0.5, pitchMax: 1.5 };
+const pView = defaultView();
+const pViewC = defaultView();
+const viewPitch = 1.05;
+const viewExt = [ARENA.half * 0.15, ARENA.half * 0.15];
+new ViewInput($('scene'), {
+  enabled: () => S.state === 'play' || S.state === 'pause',
+  zoom: (f) => {
+    pView.zoom *= f;
+    clampView(pView, viewPitch, viewExt, ZOOM_LIM);
+  },
+  twist: () => {},
+  pan: () => {},
+  orbit: () => {},
+  down: () => { audio.init(); },
+}, { oneFingerOrbit: false });
+
 window.__swarm = S;
+S.view = view;
 
 function fmtTime(sec) {
   const s = Math.max(0, Math.floor(sec));
@@ -76,10 +88,7 @@ function updateHUD() {
   $('xp-fill').style.width = (pct * 100) + '%';
   if (HUB.trial) {
     const left = TRIAL.surviveSec - g.t;
-    if (left <= 0 && g.alive) {
-      // trial stop
-      endRun(true);
-    }
+    if (left <= 0 && g.alive) endRun(true);
   }
 }
 
@@ -89,6 +98,8 @@ function showMenu() {
   view.setVisible(false);
   $('hud').classList.add('hidden');
   $('stick').classList.add('hidden');
+  Object.assign(pView, defaultView());
+  Object.assign(pViewC, defaultView());
   ui.show('start');
   refreshMenu();
   if (HUB.trial) {
@@ -100,15 +111,31 @@ function showMenu() {
   }
 }
 
+function cardKindClass(c) {
+  if (c.kind === 'armor') return 'kind-armor';
+  if (c.kind === 'weapon') return 'kind-weapon';
+  return 'kind-util';
+}
+
 function showLevelCards(cards) {
   S.state = 'level';
   const box = $('level-cards');
   box.innerHTML = '';
   cards.forEach((c) => {
     const b = document.createElement('button');
-    b.className = 'level-card';
+    b.className = 'level-card ' + cardKindClass(c);
     b.type = 'button';
-    b.innerHTML = `<b>${i18n.isZh() ? c.zh : c.en}</b><small>${i18n.isZh() ? c.descZh : c.descEn}</small>`;
+    const icon = c.icon || '◆';
+    const kind = c.kind === 'armor'
+      ? (i18n.isZh() ? '裝甲' : 'ARMOR')
+      : c.kind === 'weapon'
+        ? (i18n.isZh() ? '武器' : 'WEAPON')
+        : (i18n.isZh() ? '輔助' : 'UTIL');
+    b.innerHTML =
+      `<span class="card-icon" aria-hidden="true">${icon}</span>` +
+      `<span class="card-body"><b>${i18n.isZh() ? c.zh : c.en}</b>` +
+      `<em class="card-kind">${kind}</em>` +
+      `<small>${i18n.isZh() ? c.descZh : c.descEn}</small></span>`;
     b.addEventListener('click', () => {
       audio.pick();
       S.game.applyCard(c);
@@ -128,6 +155,8 @@ function startRun() {
   S.state = 'play';
   S.demoT = 0;
   S.newRecord = false;
+  Object.assign(pView, defaultView());
+  Object.assign(pViewC, defaultView());
   document.body.classList.remove('in-menu');
   view.setVisible(true);
   ui.show(null);
@@ -175,7 +204,6 @@ function applyMoveFromInput() {
   if (S.stick.active) { dx += S.stick.dx; dz += S.stick.dy; }
   if (S.demo) {
     S.demoT += 0.016;
-    // limp circle + noise
     dx = Math.cos(S.demoT * 0.7) + Math.sin(S.demoT * 1.3) * 0.3;
     dz = Math.sin(S.demoT * 0.7) * 0.8;
   }
@@ -194,15 +222,14 @@ function applyMoveFromInput() {
   const onDown = (e) => {
     if (S.state !== 'play') return;
     if (e.target.closest && e.target.closest('button,.level-card,#hud')) return;
-    const t = e.changedTouches ? e.changedTouches[0] : e;
-    pid = t.pointerId ?? t.identifier ?? 'mouse';
-    // if pressing the stick widget, center on stick; else dynamic origin at finger
+    const tch = e.changedTouches ? e.changedTouches[0] : e;
+    pid = tch.pointerId ?? tch.identifier ?? 'mouse';
     if (e.target.closest && e.target.closest('#stick')) {
       const rect = root.getBoundingClientRect();
       cx = rect.left + rect.width / 2;
       cy = rect.top + rect.height / 2;
     } else {
-      cx = t.clientX; cy = t.clientY;
+      cx = tch.clientX; cy = tch.clientY;
     }
     S.stick.active = true;
     root.classList.add('active');
@@ -212,9 +239,9 @@ function applyMoveFromInput() {
   const onMove = (e) => {
     if (!S.stick.active) return;
     const pts = e.changedTouches ? [...e.changedTouches] : [e];
-    const t = pts.find((x) => (x.pointerId ?? x.identifier ?? 'mouse') === pid) || pts[0];
-    if (!t) return;
-    let dx = t.clientX - cx, dy = t.clientY - cy;
+    const tch = pts.find((x) => (x.pointerId ?? x.identifier ?? 'mouse') === pid) || pts[0];
+    if (!tch) return;
+    let dx = tch.clientX - cx, dy = tch.clientY - cy;
     const len = Math.hypot(dx, dy) || 1;
     const cl = Math.min(len, R);
     const kx = (dx / len) * cl, ky = (dy / len) * cl;
@@ -235,14 +262,13 @@ function applyMoveFromInput() {
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
-  // also allow drag anywhere on canvas (one-thumb)
+  // Drag-anywhere for move (one-finger). Pinch zoom is handled by ViewInput.
   $('scene').addEventListener('pointerdown', (e) => {
     if (S.state !== 'play') return;
     if (e.target.closest && e.target.closest('button,.level-card,#stick')) return;
-    // treat as world drag stick centered on press
-    const t = e;
-    pid = t.pointerId;
-    cx = t.clientX; cy = t.clientY;
+    if (e.pointerType === 'touch' && e.isPrimary === false) return;
+    pid = e.pointerId;
+    cx = e.clientX; cy = e.clientY;
     S.stick.active = true;
     setKnob(0, 0);
     audio.init();
@@ -257,6 +283,13 @@ window.addEventListener('keydown', (e) => {
     else if (S.state === 'pause') { S.state = 'play'; ui.show(null); }
   }
   if (e.code === 'KeyM') { audio.toggleMute(); ui.setMuted(audio.muted); }
+  // Mild zoom shortcuts
+  if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+    pView.zoom *= 0.94; clampView(pView, viewPitch, viewExt, ZOOM_LIM);
+  }
+  if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+    pView.zoom *= 1.06; clampView(pView, viewPitch, viewExt, ZOOM_LIM);
+  }
 });
 window.addEventListener('keyup', (e) => { S.keys[e.code] = false; });
 
@@ -297,7 +330,7 @@ ui.mountSettings({
 
 i18n.onChange(() => refreshMenu());
 Platform.onBack(() => {
-  if (S.state === 'level') return true; // must pick
+  if (S.state === 'level') return true;
   if (S.state === 'pause') { S.state = 'play'; ui.show(null); return true; }
   if (S.state === 'over') { showMenu(); return true; }
   if (S.state === 'play') { S.state = 'pause'; ui.show('pause'); return true; }
@@ -305,7 +338,6 @@ Platform.onBack(() => {
 });
 
 function tick(dt) {
-  // demo level pick
   if (S.demo && S.state === 'level' && S.game?.pendingCards?.length) {
     S.demoT = (S.demoT || 0) + dt;
     if (S.demoT > 1.2) {
@@ -319,9 +351,9 @@ function tick(dt) {
   }
   if (S.state === 'menu') {
     const cam = stage.camera;
-    const t = performance.now() * 0.00012;
-    cam.position.set(Math.sin(t) * 3, 14, 18);
-    cam.lookAt(0, 2, 0);
+    const tm = performance.now() * 0.0001;
+    cam.position.set(Math.sin(tm) * 6, 18, 22);
+    cam.lookAt(0, 1.5, 0);
     return;
   }
   if (!S.game) return;
@@ -367,6 +399,8 @@ function tick(dt) {
   }
   if (S.state === 'play' || S.state === 'level' || S.state === 'pause') {
     if (S.state === 'play') {
+      dampView(pViewC, pView, dt);
+      view.setZoom(pViewC.zoom);
       particles.update(dt);
       waves.update(dt);
       fx.update(dt);

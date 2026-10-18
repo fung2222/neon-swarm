@@ -4,8 +4,8 @@ i18n.add({
   'doc.title': ['霓虹洪流', 'NEON SWARM'],
   title: ['霓虹洪流', 'NEON SWARM'],
   titleEn: ['NEON SWARM', 'NEON SWARM'],
-  kicker: ['NEON KOWLOON · BULLET HEAVEN', 'NEON KOWLOON · BULLET HEAVEN'],
-  tagline: ['自動開火 · 武器進化 · 無盡蟲潮', 'Auto-fire · evolve weapons · endless swarm'],
+  kicker: ['NEON WILDERNESS · BULLET HEAVEN', 'NEON WILDERNESS · BULLET HEAVEN'],
+  tagline: ['開闊荒野 · 自動開火 · 武器／裝甲升級', 'Open wilderness · auto-fire · weapon & armor upgrades'],
   play: ['開始倖存', 'SURVIVE'],
   playS: ['ENDLESS RUN', 'ENDLESS RUN'],
   endless: ['無盡洪流', 'ENDLESS SWARM'],
@@ -38,11 +38,11 @@ i18n.add({
   newRecord: ['新紀錄！', 'NEW RECORD!'],
   kills: ['擊殺', 'KILLS'],
   'help.rules': [
-    '你會自動向最近嘅敵人開火。拖動／虛擬搖桿／WASD 移動閃避。擊殺掉落綠色經驗球，升級時揀一張強化卡（傷害、射速、散射、穿透、軌道刃、新星等）。無盡模式蟲潮同波次會持續加強但有上限。',
-    'You auto-fire at the nearest foes. Drag, use the virtual stick, or WASD to dodge. Collect green XP orbs; on level-up pick one card (damage, rate, spread, pierce, orbit blades, nova…). Endless pressure and wave bursts rise with a soft cap.'
+    '你喺開闊霓虹荒野巡邏，自動向附近敵人開火。拖動／虛擬搖桿／WASD 移動。擊殺掉落綠色經驗結晶，升級時揀武器或裝甲卡（傷害、射速、散射、穿透、軌道刃、新星、裝甲板、偏折力場等）。敵人外形唔同：菱形追擊、方塊坦克、沙漏分裂、尖刺蟲群。無盡模式蟲潮會持續加強但有上限。',
+    'Roam a wide neon wilderness and auto-fire at nearby foes. Drag, stick, or WASD to move. Collect green XP crystals; on level-up pick a weapon or armor card (damage, rate, spread, pierce, orbit, nova, armor plate, deflector…). Enemy shapes differ: diamond runners, cube tanks, hourglass splitters, spike swarmlings. Endless pressure rises with a soft cap.'
   ],
   'help.controls': [
-    '手機：左下虛擬搖桿，或喺畫面任意位置拖動。鍵盤：WASD／方向鍵移動。P／Esc 暫停 · M 靜音。完局後撳「再玩一局」即刻重開。',
-    'Mobile: virtual stick (bottom-left) or drag anywhere. Keyboard: WASD / arrows. P / Esc pause · M mute. After death, tap Retry for a fresh run.'
+    '手機：左下虛擬搖桿，或喺畫面拖動移動；雙指捏合／滾輪輕微縮放鏡頭。鍵盤：WASD／方向鍵移動 · +/- 縮放 · P／Esc 暫停 · M 靜音。完局後撳「再玩一局」即刻重開。',
+    'Mobile: virtual stick or drag to move; pinch / mouse wheel for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. After death, tap Retry for a fresh run.'
   ],
 });

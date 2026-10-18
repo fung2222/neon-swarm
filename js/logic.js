@@ -32,7 +32,10 @@ export class Game {
     this.fireT = 0;
     this.bulletDmg = PLAYER.bulletDmg;
     this.bulletSpeed = PLAYER.bulletSpeed;
+    this.bulletLife = PLAYER.bulletLife;
     this.magnet = PLAYER.magnet;
+    this.armor = PLAYER.armor || 0;
+    this.deflect = 0;
     this.orbits = 0;
     this.spread = 0;
     this.pierce = 0;
@@ -49,7 +52,7 @@ export class Game {
     this.spawnAcc = 0;
     this.hitFlash = 0;
     this.waveT = 12;
-    for (let i = 0; i < 4; i++) this._spawn();
+    for (let i = 0; i < 5; i++) this._spawn();
   }
 
   moveDir(dx, dz) {
@@ -92,15 +95,36 @@ export class Game {
     return 'splitter';
   }
 
+  /** Soft radial clamp — gentle push near soft rim, hard stop at half. */
+  _softClamp(x, z, radius = 0) {
+    const lim = ARENA.half - radius;
+    const soft = ARENA.soft - radius;
+    let r = Math.hypot(x, z);
+    if (r <= soft || r < 1e-6) return { x, z };
+    if (r > lim) {
+      const s = lim / r;
+      return { x: x * s, z: z * s };
+    }
+    // Soft band: pull slightly inward (proportion of overflow)
+    const t = (r - soft) / Math.max(0.001, lim - soft);
+    const pull = t * t * 0.35;
+    const s = 1 - pull * ((r - soft) / r);
+    return { x: x * s, z: z * s };
+  }
+
   _spawn(type) {
     type = type || this._pickType();
     const def = ENEMIES[type];
     if (!def) return;
     const ang = this.rng() * Math.PI * 2;
-    const dist = ARENA.half * 0.92 + this.rng() * 1.2;
+    const dist = ARENA.spawnNear + this.rng() * (ARENA.spawnFar - ARENA.spawnNear);
+    let x = this.px + Math.cos(ang) * dist;
+    let z = this.pz + Math.sin(ang) * dist;
+    const c = this._softClamp(x, z, def.radius);
+    x = c.x; z = c.z;
     const { hpMul, speedMul } = swarmPressure(this.t);
     this.enemies.push({
-      type, x: Math.cos(ang) * dist, z: Math.sin(ang) * dist,
+      type, x, z,
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
@@ -109,7 +133,7 @@ export class Game {
   }
 
   _waveBurst() {
-    const n = 4 + Math.min(8, Math.floor(this.t / 25));
+    const n = 5 + Math.min(10, Math.floor(this.t / 22));
     for (let i = 0; i < n; i++) this._spawn(this.rng() < 0.6 ? 'swarmling' : 'runner');
   }
 
@@ -126,7 +150,7 @@ export class Game {
     this.bullets.push({
       x: this.px, z: this.pz,
       vx: dx * this.bulletSpeed, vz: dz * this.bulletSpeed,
-      life: PLAYER.bulletLife, dmg: this.bulletDmg,
+      life: this.bulletLife || PLAYER.bulletLife, dmg: this.bulletDmg,
       r: 0.14, pierce: this.pierce, hitIds: new Set(),
       frost: this.frost, ...opts,
     });
@@ -165,7 +189,8 @@ export class Game {
   }
 
   _dropGem(e) {
-    this.gems.push({ x: e.x, z: e.z, xp: e.xp, r: 0.18, life: 14, pop: 0.25 });
+    // XP gems carry a shape tag so the view can show readable silhouettes
+    this.gems.push({ x: e.x, z: e.z, xp: e.xp, r: 0.18, life: 16, pop: 0.25, shape: 'xp' });
   }
 
   _kill(e, i) {
@@ -198,9 +223,8 @@ export class Game {
     const sp = this.speed;
     this.px += this.vx * sp * dt;
     this.pz += this.vz * sp * dt;
-    const lim = ARENA.half - PLAYER.radius;
-    this.px = Math.max(-lim, Math.min(lim, this.px));
-    this.pz = Math.max(-lim, Math.min(lim, this.pz));
+    const clamped = this._softClamp(this.px, this.pz, PLAYER.radius);
+    this.px = clamped.x; this.pz = clamped.z;
 
     this.fireT -= dt;
     if (this.fireT <= 0 && this.enemies.length) {
@@ -220,7 +244,8 @@ export class Game {
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const b = this.bullets[i];
       b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
-      if (b.life <= 0 || Math.hypot(b.x, b.z) > ARENA.half + 2) { this.bullets.splice(i, 1); continue; }
+      const br = Math.hypot(b.x - this.px, b.z - this.pz);
+      if (b.life <= 0 || br > ARENA.spawnFar + 8) { this.bullets.splice(i, 1); continue; }
       let consumed = false;
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const e = this.enemies[j];
@@ -264,9 +289,13 @@ export class Game {
       const len = Math.hypot(dx, dz) || 1;
       e.x += (dx / len) * e.speed * e.chase * slowMul * dt;
       e.z += (dz / len) * e.speed * e.chase * slowMul * dt;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-        this.hp -= 1;
-        this.invuln = 0.85;
+        const raw = 2;
+        const taken = Math.max(1, raw - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
         events.push({ type: 'hurt' });
         e.x -= (dx / len) * 0.9;
@@ -303,7 +332,7 @@ export class Game {
 
     const { density } = swarmPressure(this.t);
     this.spawnAcc += dt * density;
-    const cap = 28 + Math.min(40, Math.floor(this.t / 8));
+    const cap = 32 + Math.min(48, Math.floor(this.t / 8));
     while (this.spawnAcc >= 1 && this.enemies.length < cap) {
       this.spawnAcc -= 1;
       this._spawn();
