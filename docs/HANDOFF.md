@@ -10,6 +10,7 @@ Live: https://fung2222.github.io/neon-swarm/ · `?demo=1`
 - Virtual stick: deadzone, larger pad, drag-anywhere, active glow.
 - Death → retry/menu with score / best / time / kills; howto covers move + auto-fire + level-up.
 - `stage.render` every frame (required for visible canvas).
+- Player art: cyberpunk hover-mech silhouette (nose, canopy, fins, thrusters) — not a glowing circle; faces move/aim.
 
 ## Ad breaks
 `naturalBreak` on game-over when `ads=1`. Never mid-swarm or on level-up cards.

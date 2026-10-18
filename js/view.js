@@ -1,9 +1,121 @@
 import * as THREE from 'three';
-import { ARENA, PLAYER } from './config.js';
+import { ARENA } from './config.js';
 
 const mat = (c, e = 0.7) => new THREE.MeshStandardMaterial({
   color: c, emissive: c, emissiveIntensity: e, roughness: 0.35, metalness: 0.4,
 });
+
+/** Cyberpunk hover-mech / runner silhouette — readable from high iso / top-down. */
+function buildPlayerSilhouette() {
+  const root = new THREE.Group();
+  const hull = mat(0xff2bd6, 0.85);
+  const armor = new THREE.MeshStandardMaterial({
+    color: 0x1a0a2e, emissive: 0x3a1050, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.65,
+  });
+  const glass = mat(0x00e5ff, 1.15);
+  const accent = mat(0x7ad7ff, 1.0);
+  const thruster = mat(0xffe600, 1.35);
+  const edge = mat(0xff2bd6, 1.05);
+
+  // Elongated chassis (forward = -Z so nose points toward default fire dir)
+  const chassis = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.22, 0.78), armor);
+  chassis.position.set(0, 0.28, 0);
+  root.add(chassis);
+
+  // Magenta neon under-rail
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.06, 0.72), hull);
+  rail.position.set(0, 0.16, 0.02);
+  root.add(rail);
+
+  // Pointy nose / plow
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.42, 4), hull);
+  nose.rotation.x = -Math.PI / 2;
+  nose.position.set(0, 0.3, -0.55);
+  root.add(nose);
+
+  // Cockpit canopy (cyan glass dome)
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), glass);
+  canopy.position.set(0, 0.46, -0.08);
+  canopy.scale.set(1.15, 0.85, 1.35);
+  root.add(canopy);
+
+  // Pilot head hint (small sphere — anime-ish from iso)
+  const pilot = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), accent);
+  pilot.position.set(0, 0.52, -0.06);
+  root.add(pilot);
+
+  // Shoulder pauldrons
+  const pauldronGeo = new THREE.BoxGeometry(0.16, 0.14, 0.28);
+  const pL = new THREE.Mesh(pauldronGeo, hull);
+  pL.position.set(-0.34, 0.38, 0.02);
+  pL.rotation.z = 0.25;
+  const pR = new THREE.Mesh(pauldronGeo, hull);
+  pR.position.set(0.34, 0.38, 0.02);
+  pR.rotation.z = -0.25;
+  root.add(pL, pR);
+
+  // Side wing fins (sweep back) — silhouette width for top-down
+  const finGeo = new THREE.BoxGeometry(0.55, 0.04, 0.22);
+  const finL = new THREE.Mesh(finGeo, edge);
+  finL.position.set(-0.38, 0.24, 0.12);
+  finL.rotation.set(0.1, 0.35, -0.35);
+  const finR = new THREE.Mesh(finGeo, edge);
+  finR.position.set(0.38, 0.24, 0.12);
+  finR.rotation.set(0.1, -0.35, 0.35);
+  root.add(finL, finR);
+
+  // Outer fin neon tips
+  const tipGeo = new THREE.BoxGeometry(0.08, 0.05, 0.28);
+  const tipL = new THREE.Mesh(tipGeo, glass);
+  tipL.position.set(-0.58, 0.26, 0.22);
+  tipL.rotation.y = 0.4;
+  const tipR = new THREE.Mesh(tipGeo, glass);
+  tipR.position.set(0.58, 0.26, 0.22);
+  tipR.rotation.y = -0.4;
+  root.add(tipL, tipR);
+
+  // Spine antenna / sensor mast
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.38, 6), accent);
+  mast.position.set(0, 0.62, 0.12);
+  root.add(mast);
+  const mastTip = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), thruster);
+  mastTip.position.set(0, 0.82, 0.12);
+  root.add(mastTip);
+
+  // Rear thruster pods
+  const thrGeo = new THREE.CylinderGeometry(0.08, 0.11, 0.22, 8);
+  const thrL = new THREE.Mesh(thrGeo, armor);
+  thrL.rotation.x = Math.PI / 2;
+  thrL.position.set(-0.16, 0.26, 0.48);
+  const thrR = new THREE.Mesh(thrGeo, armor);
+  thrR.rotation.x = Math.PI / 2;
+  thrR.position.set(0.16, 0.26, 0.48);
+  root.add(thrL, thrR);
+
+  const glowGeo = new THREE.SphereGeometry(0.09, 8, 8);
+  const glowL = new THREE.Mesh(glowGeo, thruster);
+  glowL.position.set(-0.16, 0.26, 0.6);
+  const glowR = new THREE.Mesh(glowGeo, thruster);
+  glowR.position.set(0.16, 0.26, 0.6);
+  root.add(glowL, glowR);
+
+  // Soft ground halo (subtle — not the main body)
+  const halo = new THREE.Mesh(
+    new THREE.RingGeometry(0.22, 0.48, 24),
+    new THREE.MeshBasicMaterial({ color: 0xff2bd6, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+  );
+  halo.rotation.x = -Math.PI / 2;
+  halo.position.y = 0.04;
+  root.add(halo);
+
+  root.userData.hullMats = [hull, edge];
+  root.userData.coreMats = [glass, accent];
+  root.userData.thrusterMats = [thruster];
+  root.userData.glowL = glowL;
+  root.userData.glowR = glowR;
+  root.userData.halo = halo;
+  return root;
+}
 
 export class View {
   constructor(stage) {
@@ -33,14 +145,11 @@ export class View {
     grid.material.transparent = true;
     this.group.add(grid);
 
-    this.player = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 0.35, 4, 8), mat(0xff2bd6, 0.85));
-    body.position.y = 0.45;
-    const core = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), mat(0x00e5ff, 1.2));
-    core.position.y = 0.55;
-    this.player.add(body, core);
-    this.playerBody = body;
-    this.playerCore = core;
+    this.player = buildPlayerSilhouette();
+    // Compat aliases for hit-flash (legacy body/core names)
+    this.playerBody = { material: this.player.userData.hullMats[0] };
+    this.playerCore = { material: this.player.userData.coreMats[0] };
+    this._facing = Math.PI; // nose toward -Z initially
     this.group.add(this.player);
 
     this.novaRing = new THREE.Mesh(
@@ -88,11 +197,51 @@ export class View {
     this._novaR = r;
   }
 
+  _setEmissive(mats, base, flash) {
+    for (const m of mats) m.emissiveIntensity = flash;
+  }
+
   sync(game) {
     this.player.position.set(game.px, 0, game.pz);
+
+    // Face move dir, else nearest foe, else keep last facing
+    let tx = game.vx, tz = game.vz;
+    if (Math.hypot(tx, tz) < 0.08 && game.enemies.length) {
+      const e = game.enemies.reduce((best, cur) => {
+        const d = Math.hypot(cur.x - game.px, cur.z - game.pz);
+        return !best || d < best.d ? { d, e: cur } : best;
+      }, null);
+      if (e) { tx = e.e.x - game.px; tz = e.e.z - game.pz; }
+    }
+    if (Math.hypot(tx, tz) > 0.08) {
+      // Nose is local -Z; rotY(atan2(tx,tz)+π) aims that axis at (tx,tz).
+      const want = Math.atan2(tx, tz) + Math.PI;
+      let d = want - this._facing;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      this._facing += d * 0.22;
+    }
+    this.player.rotation.y = this._facing;
+    // Slight bank into turn / move
+    const bank = THREE.MathUtils.clamp(-game.vx * 0.35, -0.28, 0.28);
+    this.player.rotation.z += (bank - this.player.rotation.z) * 0.15;
+    this.player.rotation.x = Math.hypot(game.vx, game.vz) > 0.1 ? -0.08 : 0;
+
     const blink = game.invuln > 0 && (game.invuln * 20) % 2 < 1;
-    this.playerBody.material.emissiveIntensity = blink ? 0.15 : (game.hitFlash > 0 ? 1.6 : 0.85);
-    this.playerCore.material.emissiveIntensity = game.hitFlash > 0 ? 2 : 1.2;
+    const hit = game.hitFlash > 0;
+    const hullE = blink ? 0.12 : (hit ? 1.7 : 0.85);
+    const coreE = blink ? 0.2 : (hit ? 2.1 : 1.15);
+    const thrE = blink ? 0.2 : (hit ? 2 : (1.1 + Math.hypot(game.vx, game.vz) * 0.45));
+    this._setEmissive(this.player.userData.hullMats, 0.85, hullE);
+    this._setEmissive(this.player.userData.coreMats, 1.15, coreE);
+    this._setEmissive(this.player.userData.thrusterMats, 1.35, thrE);
+    // Keep aliases in sync for any external reads
+    this.playerBody.material.emissiveIntensity = hullE;
+    this.playerCore.material.emissiveIntensity = coreE;
+
+    const move = Math.hypot(game.vx, game.vz);
+    const halo = this.player.userData.halo;
+    if (halo) halo.material.opacity = 0.28 + move * 0.12;
 
     if (this.novaAge >= 0) {
       this.novaAge += 0.05;
