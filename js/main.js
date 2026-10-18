@@ -1,4 +1,4 @@
-// NEON SWARM — v0.3 open wilderness redesign
+// NEON SWARM — v0.3.1 camera-follow + juice pass
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -35,9 +35,9 @@ const city = new NeonCity(stage, {
 
 const view = new View(stage);
 view.setVisible(false);
-const particles = new Particles(stage.scene, 2200, { floorY: 0.02 });
+const particles = new Particles(stage.scene, 5200, { floorY: 0.02 });
 stage.onResize((w, h, pr) => particles.resize(h, pr));
-const waves = new Shockwaves(stage.scene, 12);
+const waves = new Shockwaves(stage.scene, 24);
 const fx = new FxState();
 const audio = new SwarmAudio(store);
 ui.setMuted(audio.muted);
@@ -361,29 +361,40 @@ function tick(dt) {
   if (S.state === 'play') applyMoveFromInput();
   const { events } = S.state === 'play' ? S.game.step(dt) : { events: [] };
   for (const ev of events) {
-    if (ev.type === 'fire') audio.fire();
+    if (ev.type === 'fire') {
+      audio.fire();
+      const g = S.game;
+      const muzzle = new THREE.Vector3(g.px, 0.7, g.pz);
+      particles.burst(muzzle, new THREE.Color(0x00e5ff), 10, { speed: 4, up: 0.6, size: 0.55, size: 0.65 });
+      particles.burst(muzzle, new THREE.Color(0x7ad7ff), 6, { speed: 2.2, up: 1.4, life: 0.4, size: 0.5 });
+    }
     else if (ev.type === 'hit') {
       audio.hit();
       if (ev.x != null) {
         const c = new THREE.Color(ev.color || 0x00e5ff);
-        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, 6, { speed: 3, up: 1.2, size: 0.7 });
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, 16, { speed: 4, up: 1.6, size: 0.85 });
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), new THREE.Color(0xffffff), 4, { speed: 2, up: 2, size: 0.35, size: 0.55 });
       }
     }
     else if (ev.type === 'kill') {
       audio.kill();
       const c = new THREE.Color(ev.enemy.color);
       const pos = new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z);
-      particles.burst(pos, c, 18, { speed: 5, up: 2.5 });
-      waves.spawn(pos, c, { r0: 0.3, r1: 1.8, dur: 0.45, a: 2.2 });
-      fx.kick({ trauma: 0.12 });
+      particles.burst(pos, c, 36, { speed: 6.5, up: 3.2, size: 1.05 });
+      particles.burst(pos, new THREE.Color(0xffffff), 10, { speed: 3, up: 4, life: 0.5, size: 0.7 });
+      particles.ring(pos, c, 28, 9, 0.35);
+      waves.spawn(pos, c, { r0: 0.3, r1: 2.4, dur: 0.5, a: 2.6 });
+      fx.kick({ trauma: 0.14 });
     }
     else if (ev.type === 'xp') {
       audio.xp();
-      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), 8, { speed: 2.5, up: 2, size: 0.8 });
+      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), 18, { speed: 3.2, up: 2.6, size: 0.95 });
+      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), 8, { speed: 1.8, up: 3.5, life: 0.7, size: 0.6 });
     }
     else if (ev.type === 'hurt') {
       audio.hurt();
       fx.kick({ trauma: 0.35, aberr: 0.4 });
+      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), 22, { speed: 5, up: 2.2, size: 0.9 });
       const flash = $('fx-flash');
       if (flash) { flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 120); }
     }
@@ -392,10 +403,29 @@ function tick(dt) {
     else if (ev.type === 'nova') {
       audio.nova();
       view.pulseNova(ev.r);
-      waves.spawn(new THREE.Vector3(S.game.px, 0.05, S.game.pz), new THREE.Color(0xffe600), { r0: 0.4, r1: ev.r * 1.2, dur: 0.5, a: 2.4 });
-      fx.kick({ trauma: 0.2 });
+      const npos = new THREE.Vector3(S.game.px, 0.05, S.game.pz);
+      particles.burst(npos.clone().setY(0.4), new THREE.Color(0xffe600), 48, { speed: 8, up: 2, size: 0.7, size: 1.1 });
+      particles.ring(npos, new THREE.Color(0xffe600), 48, 12, 0.25);
+      waves.spawn(npos, new THREE.Color(0xffe600), { r0: 0.4, r1: ev.r * 1.35, dur: 0.55, a: 2.8 });
+      fx.kick({ trauma: 0.22 });
     }
-    else if (ev.type === 'wave') audio.wave();
+    else if (ev.type === 'wave') {
+      audio.wave();
+      particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0xff2bd6), 40, 10, 0.2);
+    }
+  }
+
+  // Foot thruster / dust trail while moving
+  if (S.state === 'play' && S.game) {
+    const g = S.game;
+    const spd = Math.hypot(g.vx, g.vz);
+    if (spd > 0.15) {
+      const trail = new THREE.Vector3(g.px - g.vx * 0.3, 0.12, g.pz - g.vz * 0.3);
+      particles.burst(trail, new THREE.Color(0x00e5ff), 3, { speed: 1.2, up: 0.8, life: 0.35, size: 0.45, grav: -2 });
+      if (Math.random() < 0.35) {
+        particles.burst(trail, new THREE.Color(0x7ad7ff), 2, { speed: 0.8, up: 1.6, life: 0.45, size: 0.4 });
+      }
+    }
   }
   if (S.state === 'play' || S.state === 'level' || S.state === 'pause') {
     if (S.state === 'play') {

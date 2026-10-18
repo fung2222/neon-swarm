@@ -51,8 +51,9 @@ export class Game {
     this.gems = [];
     this.spawnAcc = 0;
     this.hitFlash = 0;
-    this.waveT = 12;
-    for (let i = 0; i < 5; i++) this._spawn();
+    this.muzzle = 0;
+    this.waveT = 7;
+    for (let i = 0; i < 12; i++) this._spawn();
   }
 
   moveDir(dx, dz) {
@@ -133,7 +134,7 @@ export class Game {
   }
 
   _waveBurst() {
-    const n = 5 + Math.min(10, Math.floor(this.t / 22));
+    const n = 10 + Math.min(22, Math.floor(this.t / 14));
     for (let i = 0; i < n; i++) this._spawn(this.rng() < 0.6 ? 'swarmling' : 'runner');
   }
 
@@ -219,6 +220,7 @@ export class Game {
     this.t += dt;
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
+    if (this.muzzle > 0) this.muzzle -= dt;
 
     const sp = this.speed;
     this.px += this.vx * sp * dt;
@@ -230,6 +232,7 @@ export class Game {
     if (this.fireT <= 0 && this.enemies.length) {
       this._fire();
       this.fireT = this.fireCd;
+      this.muzzle = 0.14;
       events.push({ type: 'fire' });
     }
 
@@ -332,7 +335,7 @@ export class Game {
 
     const { density } = swarmPressure(this.t);
     this.spawnAcc += dt * density;
-    const cap = 32 + Math.min(48, Math.floor(this.t / 8));
+    const cap = 55 + Math.min(90, Math.floor(this.t / 5));
     while (this.spawnAcc >= 1 && this.enemies.length < cap) {
       this.spawnAcc -= 1;
       this._spawn();
@@ -340,7 +343,7 @@ export class Game {
     this.waveT -= dt;
     if (this.waveT <= 0) {
       this._waveBurst();
-      this.waveT = 14 + this.rng() * 6;
+      this.waveT = 9 + this.rng() * 4;
       events.push({ type: 'wave' });
     }
 

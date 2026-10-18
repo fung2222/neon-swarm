@@ -20,90 +20,114 @@ function buildPlayerMech() {
   const visor = mat(0x7ad7ff, 1.25);
   const joint = mat(0x5a7dff, 0.7);
 
-  // ---- Legs
+  const body = new THREE.Group();
+  body.name = 'body';
+  root.add(body);
+
+  // ---- Legs (grouped for walk cycle)
+  const thighs = [];
+  const shins = [];
+  const foots = [];
   const thighGeo = new THREE.BoxGeometry(0.16, 0.28, 0.18);
   const shinGeo = new THREE.BoxGeometry(0.14, 0.26, 0.16);
   const footGeo = new THREE.BoxGeometry(0.18, 0.08, 0.28);
   for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.16, 0.48, 0);
     const thigh = new THREE.Mesh(thighGeo, plate);
-    thigh.position.set(side * 0.16, 0.34, 0.02);
+    thigh.position.set(0, -0.14, 0.02);
     const shin = new THREE.Mesh(shinGeo, plate);
-    shin.position.set(side * 0.16, 0.12, 0.04);
+    shin.position.set(0, -0.36, 0.04);
     const foot = new THREE.Mesh(footGeo, neon);
-    foot.position.set(side * 0.16, 0.04, -0.02);
+    foot.position.set(0, -0.44, -0.02);
     const knee = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.14), accent);
-    knee.position.set(side * 0.16, 0.22, 0.06);
-    root.add(thigh, shin, foot, knee);
+    knee.position.set(0, -0.26, 0.06);
+    leg.add(thigh, shin, foot, knee);
+    body.add(leg);
+    thighs.push(leg);
+    shins.push(shin);
+    foots.push(foot);
   }
 
   // ---- Hip / pelvis
   const hip = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, 0.28), plate);
   hip.position.set(0, 0.5, 0);
-  root.add(hip);
+  body.add(hip);
   const hipNeon = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.1), neon);
   hipNeon.position.set(0, 0.5, 0.12);
-  root.add(hipNeon);
+  body.add(hipNeon);
 
   // ---- Torso
   const torso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.42, 0.32), plate);
   torso.position.set(0, 0.78, 0);
-  root.add(torso);
+  body.add(torso);
   // Chest core (cyan)
   const core = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.08), neon);
   core.position.set(0, 0.8, 0.18);
-  root.add(core);
+  body.add(core);
   // Magenta chest stripe
   const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.06), accent);
   stripe.position.set(0, 0.78, 0.2);
-  root.add(stripe);
+  body.add(stripe);
 
   // ---- Shoulders / pauldrons
+  const pads = [];
   const padGeo = new THREE.BoxGeometry(0.22, 0.14, 0.28);
   for (const side of [-1, 1]) {
     const pad = new THREE.Mesh(padGeo, neon);
     pad.position.set(side * 0.34, 0.98, 0);
     pad.rotation.z = side * -0.2;
-    root.add(pad);
+    body.add(pad);
+    pads.push(pad);
   }
 
-  // ---- Arms
+  // ---- Arms (grouped for swing / fire kick)
+  const arms = [];
+  const fists = [];
   const upperGeo = new THREE.BoxGeometry(0.12, 0.28, 0.14);
   const lowerGeo = new THREE.BoxGeometry(0.11, 0.26, 0.12);
   const fistGeo = new THREE.BoxGeometry(0.14, 0.12, 0.14);
   for (const side of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(side * 0.42, 0.92, 0);
     const upper = new THREE.Mesh(upperGeo, plate);
-    upper.position.set(side * 0.42, 0.78, 0);
+    upper.position.set(0, -0.14, 0);
     const lower = new THREE.Mesh(lowerGeo, plate);
-    lower.position.set(side * 0.46, 0.52, 0.04);
+    lower.position.set(side * 0.04, -0.4, 0.04);
     const fist = new THREE.Mesh(fistGeo, accent);
-    fist.position.set(side * 0.46, 0.36, 0.06);
+    fist.position.set(side * 0.04, -0.56, 0.06);
     const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), joint);
-    elbow.position.set(side * 0.44, 0.64, 0.02);
-    root.add(upper, lower, fist, elbow);
+    elbow.position.set(side * 0.02, -0.28, 0.02);
+    arm.add(upper, lower, fist, elbow);
+    body.add(arm);
+    arms.push(arm);
+    fists.push(fist);
   }
 
   // ---- Head + visor (readable silhouette)
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.24, 0.26), plate);
+  const head = new THREE.Group();
   head.position.set(0, 1.12, 0);
-  root.add(head);
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.24, 0.26), plate);
+  head.add(headMesh);
   const helm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.3), neon);
-  helm.position.set(0, 1.24, 0);
-  root.add(helm);
+  helm.position.set(0, 0.12, 0);
+  head.add(helm);
   const vis = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.06), visor);
-  vis.position.set(0, 1.14, 0.14);
-  root.add(vis);
+  vis.position.set(0, 0.02, 0.14);
+  head.add(vis);
   // Antenna
   const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.28, 6), accent);
-  ant.position.set(0.08, 1.38, 0);
-  root.add(ant);
+  ant.position.set(0.08, 0.26, 0);
+  head.add(ant);
   const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), neon);
-  antTip.position.set(0.08, 1.52, 0);
-  root.add(antTip);
+  antTip.position.set(0.08, 0.4, 0);
+  head.add(antTip);
+  body.add(head);
 
-  // Back pack / thruster pack (cool yellow only as thruster glow tip — not red)
+  // Back pack / thruster pack
   const pack = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 0.16), plate);
   pack.position.set(0, 0.82, -0.22);
-  root.add(pack);
+  body.add(pack);
   const thruster = mat(0x7ad7ff, 1.2);
   for (const side of [-1, 1]) {
     const thr = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.14, 8), plate);
@@ -111,7 +135,7 @@ function buildPlayerMech() {
     thr.position.set(side * 0.1, 0.78, -0.32);
     const glow = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), thruster);
     glow.position.set(side * 0.1, 0.78, -0.4);
-    root.add(thr, glow);
+    body.add(thr, glow);
     if (side < 0) root.userData.glowL = glow; else root.userData.glowR = glow;
   }
 
@@ -129,6 +153,16 @@ function buildPlayerMech() {
   root.userData.thrusterMats = [thruster];
   root.userData.halo = halo;
   root.userData.plate = plate;
+  root.userData.body = body;
+  root.userData.legs = thighs;
+  root.userData.shins = shins;
+  root.userData.foots = foots;
+  root.userData.arms = arms;
+  root.userData.fists = fists;
+  root.userData.head = head;
+  root.userData.pads = pads;
+  root.userData.animPhase = 0;
+  root.userData.idlePhase = 0;
   root.scale.setScalar(1.15);
   return root;
 }
@@ -399,6 +433,62 @@ export class View {
     const halo = this.player.userData.halo;
     if (halo) halo.material.opacity = 0.26 + move * 0.12;
 
+    // ---- Mech animations: walk cycle, idle hover, fire kick, hurt flinch ----
+    const ud = this.player.userData;
+    const dtAnim = 0.016; // sync is per-frame; phase advances with game.t
+    ud.idlePhase = (game.t || 0) * 2.4;
+    if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+    else ud.animPhase = (ud.animPhase || 0) * 0.92;
+    const walk = ud.animPhase || 0;
+    const swing = Math.sin(walk) * Math.min(1, move * 1.4);
+    const swingOpp = Math.sin(walk + Math.PI) * Math.min(1, move * 1.4);
+    if (ud.legs && ud.legs.length === 2) {
+      ud.legs[0].rotation.x = swing * 0.55;
+      ud.legs[1].rotation.x = swingOpp * 0.55;
+    }
+    if (ud.shins && ud.shins.length === 2) {
+      ud.shins[0].rotation.x = Math.max(0, -swing) * 0.35;
+      ud.shins[1].rotation.x = Math.max(0, -swingOpp) * 0.35;
+    }
+    if (ud.foots && ud.foots.length === 2) {
+      ud.foots[0].rotation.x = swing * 0.25;
+      ud.foots[1].rotation.x = swingOpp * 0.25;
+    }
+    const fireKick = Math.max(0, game.muzzle || 0);
+    const hurtKick = Math.max(0, game.hitFlash || 0);
+    if (ud.arms && ud.arms.length === 2) {
+      // Walk arm counter-swing + fire punch forward + hurt flinch
+      ud.arms[0].rotation.x = swingOpp * 0.4 - fireKick * 1.1 - hurtKick * 0.5;
+      ud.arms[1].rotation.x = swing * 0.4 - fireKick * 0.85 - hurtKick * 0.35;
+      ud.arms[0].rotation.z = -0.08 + fireKick * 0.15;
+      ud.arms[1].rotation.z = 0.08 - fireKick * 0.12;
+    }
+    if (ud.fists) {
+      for (const f of ud.fists) f.scale.setScalar(1 + fireKick * 0.35);
+    }
+    if (ud.head) {
+      ud.head.rotation.x = -fireKick * 0.12 + Math.sin(ud.idlePhase) * 0.03;
+      ud.head.position.y = 1.12 + Math.sin(ud.idlePhase * 0.5) * 0.015;
+    }
+    if (ud.body) {
+      const bob = move > 0.08
+        ? Math.abs(Math.sin(walk)) * 0.06
+        : Math.sin(ud.idlePhase) * 0.025;
+      ud.body.position.y = bob;
+      ud.body.rotation.x = move > 0.08 ? -0.04 : Math.sin(ud.idlePhase * 0.7) * 0.02;
+    }
+    if (ud.pads && ud.pads.length === 2) {
+      ud.pads[0].rotation.z = -0.2 + Math.sin(ud.idlePhase) * 0.04;
+      ud.pads[1].rotation.z = 0.2 - Math.sin(ud.idlePhase) * 0.04;
+    }
+    // Thruster sphere pulse when boosting / firing
+    if (ud.glowL && ud.glowR) {
+      const pulse = 1 + move * 0.35 + fireKick * 1.2 + Math.sin(ud.idlePhase * 2) * 0.08;
+      ud.glowL.scale.setScalar(pulse);
+      ud.glowR.scale.setScalar(pulse);
+    }
+    void dtAnim;
+
     if (this.novaAge >= 0) {
       this.novaAge += 0.05;
       const k = Math.min(1, this.novaAge);
@@ -461,13 +551,15 @@ export class View {
   }
 
   frameCamera(cam, game, dt) {
+    // Camera tracks the player fully (iso offset) — not a weak 25% lerp to origin.
     const z = this._zoom || 1;
-    const tx = game.px * 0.25;
-    const tz = game.pz * 0.25 + 12 * z;
+    const tx = game.px;
+    const tz = game.pz + 12 * z;
     const ty = 14 * z;
-    cam.position.x += (tx - cam.position.x) * Math.min(1, dt * 4);
-    cam.position.y += (ty - cam.position.y) * Math.min(1, dt * 4);
-    cam.position.z += (tz - cam.position.z) * Math.min(1, dt * 4);
-    cam.lookAt(game.px * 0.15, 0.6, game.pz * 0.15);
+    const k = Math.min(1, dt * 7);
+    cam.position.x += (tx - cam.position.x) * k;
+    cam.position.y += (ty - cam.position.y) * k;
+    cam.position.z += (tz - cam.position.z) * k;
+    cam.lookAt(game.px, 0.85, game.pz);
   }
 }

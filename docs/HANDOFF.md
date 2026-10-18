@@ -1,7 +1,14 @@
 # NEON SWARM 霓虹洪流 — Handoff
 
-Status: **v0.3 open wilderness redesign** (2026-10-18) · kit **v0.3.16** · CYBER ARCADE tier **Gold**.
+Status: **v0.3.1 camera-follow + juice** (2026-10-18) · kit **v0.3.16** · CYBER ARCADE tier **Gold**.
 Live: https://fung2222.github.io/neon-swarm/ · `?demo=1`
+
+## v0.3.1 feedback pass
+- **Camera:** Full player follow (iso offset) — no more weak 25% drift toward origin.
+- **Mech anim:** Walk cycle (legs/arms), idle hover bob, fire punch kick, hurt flinch, thruster pulse.
+- **Particles:** Larger pool (5200), denser hit/kill/xp/nova/fire bursts, kill rings, move thruster trail.
+- **Swarm:** Higher density/cap (55→145), bigger/faster waves, 12 initial spawns.
+- Keeps: open wilderness, cyan mech, auto-fire, `stage.render` every frame.
 
 ## v0.3 redesign
 - **Player color:** cyan primary + magenta accents (cool neon). Red only for damage flash / hurt overlay — not body primary.

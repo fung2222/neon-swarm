@@ -94,11 +94,11 @@ export function xpToLevel(lv) {
 }
 
 export function swarmPressure(t) {
-  const k = Math.min(1, t / 120);
-  const early = t < 20 ? 0.55 + t * 0.04 : 1.35;
-  const density = early + k * 1.2 + Math.min(0.9, Math.max(0, t - 20) / 280);
-  const hpMul = 1 + Math.min(2.0, Math.max(0, t - 15) / 100);
-  const speedMul = 1 + Math.min(0.4, Math.max(0, t - 20) / 220);
+  const k = Math.min(1, t / 100);
+  const early = t < 20 ? 0.95 + t * 0.06 : 2.15;
+  const density = early + k * 2.0 + Math.min(1.6, Math.max(0, t - 15) / 180);
+  const hpMul = 1 + Math.min(2.2, Math.max(0, t - 12) / 90);
+  const speedMul = 1 + Math.min(0.45, Math.max(0, t - 18) / 200);
   return { density, hpMul, speedMul };
 }
 
