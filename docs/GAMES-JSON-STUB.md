@@ -20,8 +20,8 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 scaffolding · v0.1 切片未開工 · 未包裝 Android",
-    "en": "web scaffolding · v0.1 slice not started · not packaged for Android"
+    "zh": "網頁版 v0.1 playable slice · 未包裝 Android",
+    "en": "web v0.1 playable slice · not packaged for Android"
   },
   "kit": "v0.3.16",
   "play": "not-submitted",

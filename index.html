@@ -29,11 +29,14 @@
 
 <div id="hud" class="hidden">
   <div class="hud-panel hud-left">
-    <div class="stat"><div class="label" data-i18n="hud.score"></div><div class="value big" id="hud-score">0</div></div>
+    <div class="stat"><div class="label" data-i18n="hud.hp"></div><div class="value big" id="hud-hp">5</div></div>
+    <div class="stat"><div class="label" data-i18n="hud.lv"></div><div class="value" id="hud-lv">1</div></div>
   </div>
   <div class="hud-panel hud-right">
     <div class="stat"><div class="label" data-i18n="hud.time"></div><div class="value" id="hud-time">0:00</div></div>
+    <div class="stat"><div class="label" data-i18n="hud.score"></div><div class="value" id="hud-score">0</div></div>
   </div>
+  <div class="xp-bar"><i id="xp-fill"></i></div>
   <div class="hud-buttons top">
     <button id="btn-mute" class="icon-btn" data-i18n-attr="title:muteTip,aria-label:muteTip">
       <svg class="ico-on" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke-width="2"/></svg>
@@ -41,9 +44,12 @@
     </button>
     <button id="btn-pause" class="icon-btn" data-i18n-attr="title:pauseTip,aria-label:pauseTip"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
   </div>
-  <div class="scaffold-note" data-i18n="scaffoldNote"></div>
   <div id="demo-tag" class="demo-tag hidden" data-i18n="kit.demo"></div>
   <div id="fps" class="fps hidden">-- FPS</div>
+</div>
+
+<div id="stick" class="stick hidden" data-no-input>
+  <div class="stick-base"><div id="stick-knob" class="stick-knob"></div></div>
 </div>
 
 <div id="screen-start" class="screen hero menu-home">
@@ -68,8 +74,15 @@
       </div>
     </div>
     <div class="menu-meta">
-      <div class="hi-line"><span data-i18n="best"></span> <b id="start-best">0</b></div>
+      <div class="hi-line"><span data-i18n="best"></span> <b id="start-best">0</b>　<span data-i18n="bestTime"></span> <b id="start-time">0:00</b></div>
     </div>
+  </div>
+</div>
+
+<div id="screen-level" class="screen hidden">
+  <div class="panel level-panel">
+    <h2 class="title2 glitch" data-i18n="levelUp">升級</h2>
+    <div id="level-cards" class="level-cards"></div>
   </div>
 </div>
 
@@ -87,8 +100,10 @@
   <div class="panel">
     <h2 class="title2 glitch" data-i18n="over">完局</h2>
     <div class="title-en" data-i18n="overS"></div>
+    <div id="over-record" class="record hidden" data-i18n="newRecord"></div>
     <div class="hi-line"><span data-i18n="score"></span> <b id="over-score">0</b>　<span data-i18n="best"></span> <b id="over-best">0</b></div>
-    <p class="tagline" data-i18n="overNote"></p>
+    <div class="hi-line"><span data-i18n="hud.time"></span> <b id="over-time">0:00</b>　KILLS <b id="over-kills">0</b></div>
+    <p class="tagline" id="over-note" data-i18n="overNote"></p>
     <button class="neon-btn" id="btn-retry"><span data-i18n="retry"></span><small data-i18n="retryS"></small></button>
     <button class="neon-btn ghost" id="btn-menu"><span data-i18n="menu"></span><small data-i18n="menuS"></small></button>
   </div>
