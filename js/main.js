@@ -348,7 +348,11 @@ async function boot() {
   showMenu();
   ui.loaded();
   if (S.demo || flags.autostart) startRun();
-  stage.loop((dt) => tick(Math.min(0.05, dt)), { isActive: () => true, fpsEl: $('fps') });
+  stage.loop((dt, time, rawDt) => {
+    tick(Math.min(0.05, dt));
+    city.update(time, dt, stage.camera);
+    stage.render(rawDt);
+  }, { isActive: () => true, fpsEl: $('fps') });
   if (flags.fps) $('fps').classList.remove('hidden');
   ads.init().catch(() => {});
 }
