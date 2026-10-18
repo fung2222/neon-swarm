@@ -1,4 +1,4 @@
-// NEON SWARM — v0.3.2 EVA-mech palette · follow-stick · mech foes · big emblems
+// NEON SWARM — v0.3.3 playfield stick (HUD overlay dead-zone fix) · EVA-mech · mech foes
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -313,21 +313,19 @@ function applyMoveFromInput() {
     S.stick.active = false; S.stick.dx = 0; S.stick.dy = 0; setKnob(0, 0); pid = null;
     resetHome();
   };
-  // Capture press on scene (primary finger / mouse). ViewInput handles pinch zoom.
-  const onSceneDown = (e) => {
+  // Any playfield press (except real UI controls) starts the stick. ViewInput keeps pinch zoom.
+  // Listen on window so transparent HUD chrome / safe-area overlays cannot swallow the down.
+  const UI_BLOCK = 'button, a, input, textarea, select, .level-card, .icon-btn, .neon-btn';
+  const onPlayfieldDown = (e) => {
     if (S.state !== 'play') return;
-    if (e.target.closest && e.target.closest('button,.level-card,#hud,.icon-btn')) return;
+    if (e.target.closest && e.target.closest(UI_BLOCK)) return;
+    if (e.target.closest && e.target.closest('.screen:not(.hidden)')) return;
     if (e.pointerType === 'touch' && e.isPrimary === false) return;
     if (pid != null) return;
     begin(e.clientX, e.clientY, e.pointerId ?? 'mouse');
     if (e.cancelable) e.preventDefault();
   };
-  $('scene').addEventListener('pointerdown', onSceneDown);
-  root.addEventListener('pointerdown', (e) => {
-    if (S.state !== 'play') return;
-    if (pid != null) return;
-    begin(e.clientX, e.clientY, e.pointerId ?? 'mouse');
-  });
+  window.addEventListener('pointerdown', onPlayfieldDown, { passive: false });
   window.addEventListener('pointermove', onMove, { passive: false });
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);

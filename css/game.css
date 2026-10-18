@@ -7,7 +7,14 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .stat .label { font-size: 11px; letter-spacing: 1px; color: #8a84ad; }
 .stat .value { font-size: 20px; color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; }
 .stat .value.big { font-size: 26px; color: #00e5ff; }
-.hud-buttons.top { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; display: flex; gap: 8px; z-index: 6; }
+.hud-buttons.top {
+  position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px;
+  bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear or strip stretches full height */
+  display: flex; gap: 8px; z-index: 6; align-items: flex-start;
+  pointer-events: auto;
+}
+/* Decorative HUD chrome never steals playfield presses; only real controls do. */
+#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
 .xp-bar {
   position: absolute; left: 12%; right: 12%; bottom: calc(18px + env(safe-area-inset-bottom));
   height: 8px; border-radius: 99px; background: #1a104088; border: 1px solid #00e5ff44; z-index: 5; overflow: hidden;

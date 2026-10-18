@@ -1,7 +1,11 @@
 # NEON SWARM 霓虹洪流 — Handoff
 
-Status: **v0.3.2 EVA-mech / follow-stick / mech foes / big emblems** (2026-10-18) · kit **v0.3.16** · CYBER ARCADE tier **Gold**.
+Status: **v0.3.3 playfield-stick HUD dead-zone fix** (2026-10-18) · kit **v0.3.16** · CYBER ARCADE tier **Gold**.
 Live: https://fung2222.github.io/neon-swarm/ · `?demo=1`
+
+## v0.3.3 playfield stick
+- **Root cause:** kit `.hud-buttons { bottom: … }` + game `.hud-buttons.top { top: … }` left both `top` and `bottom` set → mute/pause strip stretched ~full height with `pointer-events: auto`, eating the right playfield (and bottom-right). Stick listener also wrongly ignored `#hud` (full-screen overlay).
+- **Fix:** `bottom: auto; height: auto` on `.hud-buttons.top`; decorative HUD `pointer-events: none`; drag-anywhere on `window`, excluding only real UI (`button` / `.icon-btn` / cards).
 
 ## v0.3.2 feedback pass
 - **Player mech:** Violet + acid-green cyber silhouette with horn helm (fan homage to classic purple EVA aesthetics — no logos / names / trademarks). Cyan accents kept on visor & thrusters.
