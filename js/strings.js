@@ -5,7 +5,7 @@ i18n.add({
   title: ['霓虹洪流', 'NEON SWARM'],
   titleEn: ['NEON SWARM', 'NEON SWARM'],
   kicker: ['NEON WILDERNESS · BULLET HEAVEN', 'NEON WILDERNESS · BULLET HEAVEN'],
-  tagline: ['開闊荒野 · 自動開火 · 武器／裝甲升級', 'Open wilderness · auto-fire · weapon & armor upgrades'],
+  tagline: ['紫綠機甲 · 開闊荒野 · 武器／裝甲升級', 'Violet mech · open wilderness · weapon & armor upgrades'],
   play: ['開始倖存', 'SURVIVE'],
   playS: ['ENDLESS RUN', 'ENDLESS RUN'],
   endless: ['無盡洪流', 'ENDLESS SWARM'],
@@ -38,11 +38,11 @@ i18n.add({
   newRecord: ['新紀錄！', 'NEW RECORD!'],
   kills: ['擊殺', 'KILLS'],
   'help.rules': [
-    '你喺開闊霓虹荒野巡邏，自動向附近敵人開火。拖動／虛擬搖桿／WASD 移動。擊殺掉落綠色經驗結晶，升級時揀武器或裝甲卡（傷害、射速、散射、穿透、軌道刃、新星、裝甲板、偏折力場等）。敵人外形唔同：菱形追擊、方塊坦克、沙漏分裂、尖刺蟲群。無盡模式蟲潮會持續加強但有上限。',
-    'Roam a wide neon wilderness and auto-fire at nearby foes. Drag, stick, or WASD to move. Collect green XP crystals; on level-up pick a weapon or armor card (damage, rate, spread, pierce, orbit, nova, armor plate, deflector…). Enemy shapes differ: diamond runners, cube tanks, hourglass splitters, spike swarmlings. Endless pressure rises with a soft cap.'
+    '你駕駛紫綠角盔機甲喺開闊霓虹荒野巡邏，自動向附近敵人開火。撳住畫面任意位置拖動移動（搖桿光暈跟住手指），或用 WASD。擊殺掉落綠色經驗結晶；升級時揀大型徽記武器／裝甲卡。敵人係唔同機甲剪影：追擊機兵、重裝坦克機、雙頭分裂機、偵察蟲機。無盡模式蟲潮會持續加強但有上限。',
+    'Pilot a violet/green horned mech across an open neon wilderness and auto-fire at foes. Press-and-drag anywhere to move (stick glow follows your finger), or use WASD. Collect green XP crystals; on level-up pick a large-emblem weapon or armor card. Enemies are mech silhouettes: chase runners, heavy tanks, twin splitters, scout swarmlings. Endless pressure rises with a soft cap.'
   ],
   'help.controls': [
-    '手機：左下虛擬搖桿，或喺畫面拖動移動；雙指捏合／滾輪輕微縮放鏡頭。鍵盤：WASD／方向鍵移動 · +/- 縮放 · P／Esc 暫停 · M 靜音。完局後撳「再玩一局」即刻重開。',
-    'Mobile: virtual stick or drag to move; pinch / mouse wheel for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. After death, tap Retry for a fresh run.'
+    '手機：畫面任意位置拖動移動（搖桿跟住手指，唔會用大塊按壓遮畫面）；雙指捏合／滾輪輕微縮放。鍵盤：WASD／方向鍵 · +/- 縮放 · P／Esc 暫停 · M 靜音。完局後撳「再玩一局」即刻重開。',
+    'Mobile: drag anywhere to move (stick follows your finger; no blocking finger-press overlay); pinch / wheel for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. After death, tap Retry for a fresh run.'
   ],
 });

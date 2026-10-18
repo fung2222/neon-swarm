@@ -16,23 +16,33 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .trial-note { margin-top: 8px; font-size: 12px; color: #ff7ae6; }
 .record { color: #ffe600; text-shadow: 0 0 10px #ffe60088; margin: 8px 0; letter-spacing: 2px; }
 
+/* Drag-anywhere stick: idle is a faint corner hint; on press it relocates under the finger.
+   No opaque finger-press disc that blocks the playfield. */
 .stick {
   position: fixed; left: calc(20px + env(safe-area-inset-left)); bottom: calc(36px + env(safe-area-inset-bottom));
-  width: 132px; height: 132px; z-index: 8; touch-action: none; opacity: 0.85;
+  width: 132px; height: 132px; z-index: 8; touch-action: none;
+  opacity: 0.28; pointer-events: none; transition: opacity .12s ease;
+}
+.stick.ready { opacity: 0.28; }
+.stick.following, .stick.active {
+  opacity: 1; pointer-events: none; /* input is on scene; stick is visual only */
 }
 .stick-base {
   width: 100%; height: 100%; border-radius: 50%;
-  border: 2px solid #00e5ff88; background: #0a052088;
-  display: grid; place-items: center; backdrop-filter: blur(4px);
+  border: 2px solid #8b3dff99; background: #12061a44;
+  display: grid; place-items: center;
+  box-shadow: 0 0 22px #8b3dff55, inset 0 0 18px #7cff3a22;
+  /* no heavy backdrop-filter blur — keeps the arena readable under the pad */
 }
 .stick-knob {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #7ad7ff, #00e5ff);
-  box-shadow: 0 0 16px #00e5ffaa; transform: translate(0,0);
+  width: 48px; height: 48px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #b8ff4a, #7cff3a 55%, #8b3dff);
+  box-shadow: 0 0 18px #7cff3aaa, 0 0 28px #8b3dff66; transform: translate(0,0);
 }
-.stick.ready { opacity: 0.85; }
-.stick.active { opacity: 1; }
-.stick.active .stick-base { border-color: #ff2bd6aa; box-shadow: 0 0 18px #ff2bd655; }
+.stick.active .stick-base {
+  border-color: #7cff3acc;
+  box-shadow: 0 0 26px #7cff3a66, 0 0 40px #8b3dff44, inset 0 0 20px #00e5ff22;
+}
 
 .level-panel { max-width: 440px; width: 92vw; }
 .level-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
@@ -40,27 +50,33 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   appearance: none; cursor: pointer; text-align: left;
   display: flex; align-items: flex-start; gap: 12px;
   padding: 14px 16px; border-radius: 12px;
-  border: 1px solid #00e5ff66; background: #0a0520ee; color: #e8e4ff;
+  border: 1px solid #8b3dff88; background: #0a0520ee; color: #e8e4ff;
   font: inherit; transition: border-color .15s, transform .1s, box-shadow .15s;
 }
 .level-card .card-icon {
-  flex: 0 0 44px; width: 44px; height: 44px; border-radius: 10px;
+  flex: 0 0 72px; width: 72px; height: 72px; border-radius: 14px;
   display: grid; place-items: center;
-  font-size: 22px; line-height: 1;
-  background: #061428; border: 1px solid #00e5ff55;
-  box-shadow: inset 0 0 12px #00e5ff22;
+  font-size: 34px; line-height: 1;
+  background: #0c0820; border: 2px solid #8b3dff88;
+  box-shadow: inset 0 0 18px #8b3dff33, 0 0 12px #7cff3a22;
+}
+.level-card .card-icon .emblem {
+  width: 52px; height: 52px; display: block;
+}
+.level-card .card-icon .emblem-glyph {
+  font-size: 36px; line-height: 1;
 }
 .level-card .card-body { flex: 1; min-width: 0; }
-.level-card b { display: block; color: #00e5ff; letter-spacing: 1px; margin-bottom: 2px; }
+.level-card b { display: block; color: #b8ff4a; letter-spacing: 1px; margin-bottom: 2px; }
 .level-card .card-kind {
   display: inline-block; font-style: normal; font-size: 10px; letter-spacing: 1.5px;
   color: #7ad7ff; opacity: 0.85; margin-bottom: 4px;
 }
 .level-card small { display: block; color: #a9a3cc; }
-.level-card.kind-weapon .card-icon { border-color: #00e5ff99; color: #00e5ff; }
-.level-card.kind-armor .card-icon { border-color: #ff2bd699; color: #ff7ae6; background: #1a0820; }
-.level-card.kind-armor b { color: #ff7ae6; }
-.level-card.kind-armor .card-kind { color: #ff7ae6; }
+.level-card.kind-weapon .card-icon { border-color: #00e5ff99; color: #00e5ff; background: #061428; }
+.level-card.kind-armor .card-icon { border-color: #8b3dffcc; color: #c084fc; background: #16082a; }
+.level-card.kind-armor b { color: #c084fc; }
+.level-card.kind-armor .card-kind { color: #c084fc; }
 .level-card.kind-util .card-icon { border-color: #ffe60088; color: #ffe600; }
 .level-card.kind-util b { color: #ffe600; }
 .level-card.kind-util .card-kind { color: #ffe600; }

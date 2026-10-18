@@ -1,4 +1,4 @@
-// NEON SWARM — v0.3.1 camera-follow + juice pass
+// NEON SWARM — v0.3.2 EVA-mech palette · follow-stick · mech foes · big emblems
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -117,6 +117,46 @@ function cardKindClass(c) {
   return 'kind-util';
 }
 
+/** Large readable SVG emblems per upgrade shape (fallback: emoji glyph). */
+function cardEmblem(c) {
+  const stroke = 'currentColor';
+  const sv = (inner) =>
+    `<svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false">${inner}</svg>`;
+  const shapes = {
+    bolt: sv(`<path d="M30 6 L18 34 H30 L26 58 L48 26 H34 L38 6 Z" fill="${stroke}" opacity=".95"/>`),
+    clock: sv(`<circle cx="32" cy="32" r="22" fill="none" stroke="${stroke}" stroke-width="4"/>
+      <path d="M32 16 V34 L44 40" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round"/>`),
+    orbit: sv(`<circle cx="32" cy="32" r="8" fill="${stroke}"/>
+      <ellipse cx="32" cy="32" rx="26" ry="12" fill="none" stroke="${stroke}" stroke-width="3" transform="rotate(-25 32 32)"/>
+      <circle cx="54" cy="24" r="4" fill="${stroke}"/>`),
+    spread: sv(`<path d="M32 50 L32 14 M32 32 L14 12 M32 32 L50 12 M32 32 L18 28 M32 32 L46 28"
+      fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round"/>`),
+    pierce: sv(`<path d="M10 40 L42 18 L54 14 L48 26 L26 48 Z" fill="${stroke}"/>
+      <path d="M42 18 L54 14" stroke="#0a0520" stroke-width="2"/>`),
+    lock: sv(`<circle cx="24" cy="32" r="10" fill="none" stroke="${stroke}" stroke-width="3"/>
+      <circle cx="40" cy="32" r="10" fill="none" stroke="${stroke}" stroke-width="3"/>
+      <circle cx="32" cy="32" r="4" fill="${stroke}"/>`),
+    nova: sv(`<path d="M32 6 L36 26 L56 32 L36 38 L32 58 L28 38 L8 32 L28 26 Z" fill="${stroke}"/>`),
+    frost: sv(`<path d="M32 8 V56 M12 20 L52 44 M52 20 L12 44" fill="none" stroke="${stroke}" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="32" cy="32" r="5" fill="${stroke}"/>`),
+    rail: sv(`<rect x="8" y="28" width="48" height="8" rx="2" fill="${stroke}"/>
+      <path d="M50 20 L60 32 L50 44" fill="none" stroke="${stroke}" stroke-width="4" stroke-linejoin="round"/>`),
+    shield: sv(`<path d="M32 8 L52 16 V34 C52 46 40 54 32 58 C24 54 12 46 12 34 V16 Z"
+      fill="none" stroke="${stroke}" stroke-width="4"/><path d="M32 18 V46" stroke="${stroke}" stroke-width="3"/>`),
+    plate: sv(`<rect x="14" y="14" width="36" height="36" rx="4" fill="none" stroke="${stroke}" stroke-width="4"/>
+      <rect x="22" y="22" width="20" height="20" rx="2" fill="${stroke}" opacity=".85"/>`),
+    deflect: sv(`<path d="M12 40 Q32 8 52 40" fill="none" stroke="${stroke}" stroke-width="4"/>
+      <path d="M20 28 L32 18 L44 28" fill="none" stroke="${stroke}" stroke-width="3.5"/>`),
+    swift: sv(`<path d="M10 40 H34 L28 52 M10 32 H42 L36 44 M10 24 H50 L44 36"
+      fill="none" stroke="${stroke}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`),
+    magnet: sv(`<path d="M18 18 V34 A14 14 0 0 0 46 34 V18" fill="none" stroke="${stroke}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="14" y="14" width="10" height="10" rx="2" fill="${stroke}"/><rect x="40" y="14" width="10" height="10" rx="2" fill="${stroke}"/>`),
+    heart: sv(`<path d="M32 50 C18 40 10 30 10 22 A10 10 0 0 1 32 18 A10 10 0 0 1 54 22 C54 30 46 40 32 50 Z" fill="${stroke}"/>`),
+  };
+  if (c.shape && shapes[c.shape]) return shapes[c.shape];
+  return `<span class="emblem-glyph">${c.icon || '◆'}</span>`;
+}
+
 function showLevelCards(cards) {
   S.state = 'level';
   const box = $('level-cards');
@@ -125,14 +165,13 @@ function showLevelCards(cards) {
     const b = document.createElement('button');
     b.className = 'level-card ' + cardKindClass(c);
     b.type = 'button';
-    const icon = c.icon || '◆';
     const kind = c.kind === 'armor'
       ? (i18n.isZh() ? '裝甲' : 'ARMOR')
       : c.kind === 'weapon'
         ? (i18n.isZh() ? '武器' : 'WEAPON')
         : (i18n.isZh() ? '輔助' : 'UTIL');
     b.innerHTML =
-      `<span class="card-icon" aria-hidden="true">${icon}</span>` +
+      `<span class="card-icon" aria-hidden="true">${cardEmblem(c)}</span>` +
       `<span class="card-body"><b>${i18n.isZh() ? c.zh : c.en}</b>` +
       `<em class="card-kind">${kind}</em>` +
       `<small>${i18n.isZh() ? c.descZh : c.descEn}</small></span>`;
@@ -141,7 +180,10 @@ function showLevelCards(cards) {
       S.game.applyCard(c);
       ui.show(null);
       S.state = 'play';
-      $('stick').classList.toggle('hidden', !('ontouchstart' in window) && !flags.get('stick'));
+      // Stick stays hidden until press — drag-anywhere reveals it under the finger.
+      const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
+      $('stick').classList.toggle('hidden', !touch);
+      $('stick').classList.remove('active', 'following');
     });
     box.appendChild(b);
   });
@@ -165,6 +207,7 @@ function startRun() {
   const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
   $('stick').classList.toggle('hidden', !touch);
   $('stick').classList.add('ready');
+  $('stick').classList.remove('active', 'following');
   updateHUD();
   audio.click();
 }
@@ -211,33 +254,43 @@ function applyMoveFromInput() {
   else g.stopMove();
 }
 
-// ---- virtual stick
+// ---- virtual stick: drag-anywhere; widget/glow follows press (no blocking finger overlay)
 (function bindStick() {
   const root = $('stick');
   const knob = $('stick-knob');
   let pid = null, cx = 0, cy = 0;
   const R = 56;
   const DEAD = 8;
+  const HALF = 66; // stick widget half-size (css 132px)
   const setKnob = (x, y) => { knob.style.transform = `translate(${x}px,${y}px)`; };
-  const onDown = (e) => {
-    if (S.state !== 'play') return;
-    if (e.target.closest && e.target.closest('button,.level-card,#hud')) return;
-    const tch = e.changedTouches ? e.changedTouches[0] : e;
-    pid = tch.pointerId ?? tch.identifier ?? 'mouse';
-    if (e.target.closest && e.target.closest('#stick')) {
-      const rect = root.getBoundingClientRect();
-      cx = rect.left + rect.width / 2;
-      cy = rect.top + rect.height / 2;
-    } else {
-      cx = tch.clientX; cy = tch.clientY;
-    }
+  const placeAt = (x, y) => {
+    // Center the translucent stick on the press point so glow follows the finger.
+    root.style.left = Math.round(x - HALF) + 'px';
+    root.style.top = Math.round(y - HALF) + 'px';
+    root.style.right = 'auto';
+    root.style.bottom = 'auto';
+  };
+  const resetHome = () => {
+    // Park off-corner when idle — never leave a big opaque pad under the playfield.
+    root.style.left = '';
+    root.style.top = '';
+    root.style.right = '';
+    root.style.bottom = '';
+    root.classList.remove('active', 'following');
+  };
+  const begin = (clientX, clientY, pointerId) => {
+    pid = pointerId;
+    cx = clientX; cy = clientY;
+    placeAt(cx, cy);
+    setKnob(0, 0);
     S.stick.active = true;
-    root.classList.add('active');
-    onMove(e);
+    S.stick.dx = 0; S.stick.dy = 0;
+    root.classList.add('active', 'following');
+    root.classList.remove('hidden');
     audio.init();
   };
   const onMove = (e) => {
-    if (!S.stick.active) return;
+    if (!S.stick.active || pid == null) return;
     const pts = e.changedTouches ? [...e.changedTouches] : [e];
     const tch = pts.find((x) => (x.pointerId ?? x.identifier ?? 'mouse') === pid) || pts[0];
     if (!tch) return;
@@ -254,25 +307,30 @@ function applyMoveFromInput() {
     }
     if (e.cancelable) e.preventDefault();
   };
-  const onUp = () => {
+  const onUp = (e) => {
+    if (pid == null) return;
+    if (e && e.pointerId != null && e.pointerId !== pid) return;
     S.stick.active = false; S.stick.dx = 0; S.stick.dy = 0; setKnob(0, 0); pid = null;
-    root.classList.remove('active');
+    resetHome();
   };
-  root.addEventListener('pointerdown', onDown);
-  window.addEventListener('pointermove', onMove);
+  // Capture press on scene (primary finger / mouse). ViewInput handles pinch zoom.
+  const onSceneDown = (e) => {
+    if (S.state !== 'play') return;
+    if (e.target.closest && e.target.closest('button,.level-card,#hud,.icon-btn')) return;
+    if (e.pointerType === 'touch' && e.isPrimary === false) return;
+    if (pid != null) return;
+    begin(e.clientX, e.clientY, e.pointerId ?? 'mouse');
+    if (e.cancelable) e.preventDefault();
+  };
+  $('scene').addEventListener('pointerdown', onSceneDown);
+  root.addEventListener('pointerdown', (e) => {
+    if (S.state !== 'play') return;
+    if (pid != null) return;
+    begin(e.clientX, e.clientY, e.pointerId ?? 'mouse');
+  });
+  window.addEventListener('pointermove', onMove, { passive: false });
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
-  // Drag-anywhere for move (one-finger). Pinch zoom is handled by ViewInput.
-  $('scene').addEventListener('pointerdown', (e) => {
-    if (S.state !== 'play') return;
-    if (e.target.closest && e.target.closest('button,.level-card,#stick')) return;
-    if (e.pointerType === 'touch' && e.isPrimary === false) return;
-    pid = e.pointerId;
-    cx = e.clientX; cy = e.clientY;
-    S.stick.active = true;
-    setKnob(0, 0);
-    audio.init();
-  });
 })();
 
 window.addEventListener('keydown', (e) => {

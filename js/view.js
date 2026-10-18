@@ -6,19 +6,23 @@ const mat = (c, e = 0.7) => new THREE.MeshStandardMaterial({
 });
 
 /**
- * Humanoid mech / robot silhouette — readable from high iso.
- * Primary: cyan + cool magenta accents. Red reserved for damage flash only.
+ * Fan-homage bipedal mech — purple/green cyber silhouette with horn helm.
+ * Inspired by classic purple EVA aesthetics; no logos, names, or trademarks.
+ * Cyan accents kept for thrusters / visor glow.
  */
 function buildPlayerMech() {
   const root = new THREE.Group();
-  // Cool neon palette (no red primary)
-  const neon = mat(0x00e5ff, 0.95);       // cyan primary
-  const accent = mat(0xff2bd6, 0.85);     // magenta accent
-  const plate = new THREE.MeshStandardMaterial({
-    color: 0x0c1a2e, emissive: 0x123048, emissiveIntensity: 0.5, roughness: 0.4, metalness: 0.7,
+  // EVA-inspired palette: violet armor + acid green trim + cyan glow
+  const violet = mat(0x8b3dff, 0.9);
+  const violetDeep = new THREE.MeshStandardMaterial({
+    color: 0x2a1048, emissive: 0x4a1a78, emissiveIntensity: 0.55, roughness: 0.38, metalness: 0.72,
   });
-  const visor = mat(0x7ad7ff, 1.25);
-  const joint = mat(0x5a7dff, 0.7);
+  const acid = mat(0x7cff3a, 0.95);
+  const acidHot = mat(0xb8ff4a, 1.15);
+  const cyan = mat(0x00e5ff, 1.05);
+  const plate = violetDeep;
+  const visor = mat(0x7ad7ff, 1.3);
+  const joint = mat(0x5cff8a, 0.75);
 
   const body = new THREE.Group();
   body.name = 'body';
@@ -28,128 +32,162 @@ function buildPlayerMech() {
   const thighs = [];
   const shins = [];
   const foots = [];
-  const thighGeo = new THREE.BoxGeometry(0.16, 0.28, 0.18);
-  const shinGeo = new THREE.BoxGeometry(0.14, 0.26, 0.16);
-  const footGeo = new THREE.BoxGeometry(0.18, 0.08, 0.28);
+  const thighGeo = new THREE.BoxGeometry(0.18, 0.3, 0.2);
+  const shinGeo = new THREE.BoxGeometry(0.15, 0.28, 0.17);
+  const footGeo = new THREE.BoxGeometry(0.2, 0.09, 0.32);
   for (const side of [-1, 1]) {
     const leg = new THREE.Group();
-    leg.position.set(side * 0.16, 0.48, 0);
+    leg.position.set(side * 0.17, 0.5, 0);
     const thigh = new THREE.Mesh(thighGeo, plate);
-    thigh.position.set(0, -0.14, 0.02);
+    thigh.position.set(0, -0.15, 0.02);
     const shin = new THREE.Mesh(shinGeo, plate);
-    shin.position.set(0, -0.36, 0.04);
-    const foot = new THREE.Mesh(footGeo, neon);
-    foot.position.set(0, -0.44, -0.02);
-    const knee = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.14), accent);
-    knee.position.set(0, -0.26, 0.06);
-    leg.add(thigh, shin, foot, knee);
+    shin.position.set(0, -0.38, 0.04);
+    // Green shin stripe
+    const shinStripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.22, 0.04), acid);
+    shinStripe.position.set(side * 0.08, -0.38, 0.12);
+    const foot = new THREE.Mesh(footGeo, violet);
+    foot.position.set(0, -0.48, -0.02);
+    const knee = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.09, 0.15), acid);
+    knee.position.set(0, -0.28, 0.07);
+    leg.add(thigh, shin, shinStripe, foot, knee);
     body.add(leg);
     thighs.push(leg);
     shins.push(shin);
     foots.push(foot);
   }
 
-  // ---- Hip / pelvis
-  const hip = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, 0.28), plate);
-  hip.position.set(0, 0.5, 0);
+  // ---- Hip / pelvis with green belt
+  const hip = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.18, 0.3), plate);
+  hip.position.set(0, 0.52, 0);
   body.add(hip);
-  const hipNeon = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.1), neon);
-  hipNeon.position.set(0, 0.5, 0.12);
+  const hipNeon = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.12), acid);
+  hipNeon.position.set(0, 0.52, 0.14);
   body.add(hipNeon);
 
-  // ---- Torso
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.42, 0.32), plate);
-  torso.position.set(0, 0.78, 0);
+  // ---- Torso — broad purple chest
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.46, 0.34), plate);
+  torso.position.set(0, 0.82, 0);
   body.add(torso);
-  // Chest core (cyan)
-  const core = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.08), neon);
-  core.position.set(0, 0.8, 0.18);
+  // Chest core (acid green "entry" glow)
+  const core = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.09), acidHot);
+  core.position.set(0, 0.84, 0.2);
   body.add(core);
-  // Magenta chest stripe
-  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.06), accent);
-  stripe.position.set(0, 0.78, 0.2);
-  body.add(stripe);
+  // Vertical violet + green chest lines
+  const stripeV = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.4, 0.06), violet);
+  stripeV.position.set(0, 0.82, 0.22);
+  body.add(stripeV);
+  const stripeG = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.36, 0.05), acid);
+  stripeG.position.set(0.12, 0.82, 0.21);
+  body.add(stripeG);
 
-  // ---- Shoulders / pauldrons
+  // ---- Shoulders / pauldrons (chunky purple)
   const pads = [];
-  const padGeo = new THREE.BoxGeometry(0.22, 0.14, 0.28);
+  const padGeo = new THREE.BoxGeometry(0.26, 0.16, 0.32);
   for (const side of [-1, 1]) {
-    const pad = new THREE.Mesh(padGeo, neon);
-    pad.position.set(side * 0.34, 0.98, 0);
-    pad.rotation.z = side * -0.2;
-    body.add(pad);
+    const pad = new THREE.Mesh(padGeo, violet);
+    pad.position.set(side * 0.38, 1.02, 0);
+    pad.rotation.z = side * -0.22;
+    const padTrim = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.05, 0.1), acid);
+    padTrim.position.set(side * 0.38, 1.08, 0.12);
+    padTrim.rotation.z = side * -0.22;
+    body.add(pad, padTrim);
     pads.push(pad);
   }
 
-  // ---- Arms (grouped for swing / fire kick)
+  // ---- Arms
   const arms = [];
   const fists = [];
-  const upperGeo = new THREE.BoxGeometry(0.12, 0.28, 0.14);
-  const lowerGeo = new THREE.BoxGeometry(0.11, 0.26, 0.12);
-  const fistGeo = new THREE.BoxGeometry(0.14, 0.12, 0.14);
+  const upperGeo = new THREE.BoxGeometry(0.13, 0.3, 0.15);
+  const lowerGeo = new THREE.BoxGeometry(0.12, 0.28, 0.13);
+  const fistGeo = new THREE.BoxGeometry(0.15, 0.13, 0.15);
   for (const side of [-1, 1]) {
     const arm = new THREE.Group();
-    arm.position.set(side * 0.42, 0.92, 0);
+    arm.position.set(side * 0.46, 0.96, 0);
     const upper = new THREE.Mesh(upperGeo, plate);
-    upper.position.set(0, -0.14, 0);
+    upper.position.set(0, -0.15, 0);
     const lower = new THREE.Mesh(lowerGeo, plate);
-    lower.position.set(side * 0.04, -0.4, 0.04);
-    const fist = new THREE.Mesh(fistGeo, accent);
-    fist.position.set(side * 0.04, -0.56, 0.06);
-    const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), joint);
-    elbow.position.set(side * 0.02, -0.28, 0.02);
+    lower.position.set(side * 0.04, -0.42, 0.04);
+    const fist = new THREE.Mesh(fistGeo, acid);
+    fist.position.set(side * 0.04, -0.58, 0.06);
+    const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.065, 6, 6), joint);
+    elbow.position.set(side * 0.02, -0.3, 0.02);
     arm.add(upper, lower, fist, elbow);
     body.add(arm);
     arms.push(arm);
     fists.push(fist);
   }
 
-  // ---- Head + visor (readable silhouette)
+  // ---- Head + horn helm (Unit-01–style silhouette: tall horn + jaw)
   const head = new THREE.Group();
-  head.position.set(0, 1.12, 0);
-  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.24, 0.26), plate);
+  head.position.set(0, 1.18, 0);
+  const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.26, 0.28), plate);
   head.add(headMesh);
-  const helm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.3), neon);
-  helm.position.set(0, 0.12, 0);
+  // Jaw / chin plate
+  const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.22), violet);
+  jaw.position.set(0, -0.14, 0.04);
+  head.add(jaw);
+  // Helm cap
+  const helm = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 0.32), violet);
+  helm.position.set(0, 0.14, 0);
   head.add(helm);
-  const vis = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.06), visor);
-  vis.position.set(0, 0.02, 0.14);
+  // Visor slit (cyan)
+  const vis = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 0.06), visor);
+  vis.position.set(0, 0.02, 0.15);
   head.add(vis);
-  // Antenna
-  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.28, 6), accent);
-  ant.position.set(0.08, 0.26, 0);
-  head.add(ant);
-  const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), neon);
-  antTip.position.set(0.08, 0.4, 0);
-  head.add(antTip);
+  // Green cheek marks
+  for (const side of [-1, 1]) {
+    const cheek = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 0.04), acid);
+    cheek.position.set(side * 0.14, -0.02, 0.12);
+    head.add(cheek);
+  }
+  // Primary horn (tall forward-leaning spike — signature silhouette)
+  const horn = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.55, 6), violet);
+  horn.position.set(0, 0.42, -0.02);
+  horn.rotation.x = -0.35;
+  head.add(horn);
+  const hornTip = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.12, 5), acidHot);
+  hornTip.position.set(0, 0.68, -0.12);
+  hornTip.rotation.x = -0.35;
+  head.add(hornTip);
+  // Side finlets (small horns)
+  for (const side of [-1, 1]) {
+    const fin = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.22, 5), violet);
+    fin.position.set(side * 0.14, 0.28, -0.02);
+    fin.rotation.z = side * 0.55;
+    fin.rotation.x = -0.2;
+    head.add(fin);
+  }
   body.add(head);
 
   // Back pack / thruster pack
-  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 0.16), plate);
-  pack.position.set(0, 0.82, -0.22);
+  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.34, 0.18), plate);
+  pack.position.set(0, 0.86, -0.24);
   body.add(pack);
-  const thruster = mat(0x7ad7ff, 1.2);
+  const packStripe = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.04), acid);
+  packStripe.position.set(0, 0.86, -0.34);
+  body.add(packStripe);
+  const thruster = cyan;
   for (const side of [-1, 1]) {
-    const thr = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.14, 8), plate);
+    const thr = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.085, 0.15, 8), plate);
     thr.rotation.x = Math.PI / 2;
-    thr.position.set(side * 0.1, 0.78, -0.32);
-    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), thruster);
-    glow.position.set(side * 0.1, 0.78, -0.4);
+    thr.position.set(side * 0.11, 0.8, -0.34);
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 8), thruster);
+    glow.position.set(side * 0.11, 0.8, -0.42);
     body.add(thr, glow);
     if (side < 0) root.userData.glowL = glow; else root.userData.glowR = glow;
   }
 
-  // Soft ground halo (cyan)
+  // Soft ground halo (violet + cyan mix feel via violet)
   const halo = new THREE.Mesh(
-    new THREE.RingGeometry(0.28, 0.55, 28),
-    new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.32, side: THREE.DoubleSide })
+    new THREE.RingGeometry(0.28, 0.58, 28),
+    new THREE.MeshBasicMaterial({ color: 0x8b3dff, transparent: true, opacity: 0.34, side: THREE.DoubleSide })
   );
   halo.rotation.x = -Math.PI / 2;
   halo.position.y = 0.03;
   root.add(halo);
 
-  root.userData.hullMats = [neon, accent];
-  root.userData.coreMats = [visor, thruster];
+  root.userData.hullMats = [violet, acid, acidHot];
+  root.userData.coreMats = [visor, thruster, acidHot];
   root.userData.thrusterMats = [thruster];
   root.userData.halo = halo;
   root.userData.plate = plate;
@@ -163,37 +201,104 @@ function buildPlayerMech() {
   root.userData.pads = pads;
   root.userData.animPhase = 0;
   root.userData.idlePhase = 0;
-  root.scale.setScalar(1.15);
+  root.scale.setScalar(1.18);
   return root;
 }
 
+/** Enemy robot / mech silhouettes — not pure primitives. */
 function enemyMeshFor(type, color) {
   const g = new THREE.Group();
+  const hull = mat(color, 0.8);
+  const trim = mat(color, 1.05);
+  const dark = new THREE.MeshStandardMaterial({
+    color: 0x0c0818, emissive: color, emissiveIntensity: 0.25, roughness: 0.5, metalness: 0.55,
+  });
   let mesh;
+
   if (type === 'tank') {
-    // Heavy cube slab — readable tank
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.55, 0.7), mat(color, 0.75));
-    const rim = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.1, 0.78), mat(color, 1.1));
-    rim.position.y = 0.28;
-    g.add(mesh, rim);
+    // Heavy biped: wide torso, stubby legs, shoulder cannons
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.5, 0.5), hull);
+    torso.position.y = 0.15;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.22, 0.28), dark);
+    head.position.set(0, 0.48, 0.05);
+    const vis = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.06, 0.05), trim);
+    vis.position.set(0, 0.5, 0.2);
+    for (const side of [-1, 1]) {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.35, 0.24), dark);
+      leg.position.set(side * 0.22, -0.25, 0);
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.18, 0.32), hull);
+      pad.position.set(side * 0.42, 0.28, 0);
+      const gun = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.4, 6), trim);
+      gun.rotation.z = Math.PI / 2;
+      gun.position.set(side * 0.55, 0.28, 0.1);
+      g.add(leg, pad, gun);
+    }
+    g.add(torso, head, vis);
+    mesh = torso;
   } else if (type === 'splitter') {
-    // Dual-cone hourglass
-    const c1 = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.45, 5), mat(color, 0.85));
-    c1.position.y = 0.22;
-    const c2 = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.45, 5), mat(color, 0.85));
-    c2.rotation.x = Math.PI;
-    c2.position.y = -0.22;
-    g.add(c1, c2);
-    mesh = c1;
+    // Twin-head / dual-torso mech that reads as "about to split"
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.28, 0.3), dark);
+    base.position.y = -0.05;
+    for (const side of [-1, 1]) {
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.4, 0.28), hull);
+      torso.position.set(side * 0.22, 0.25, 0);
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), trim);
+      head.position.set(side * 0.22, 0.52, 0.04);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.32, 0.1), dark);
+      arm.position.set(side * 0.42, 0.2, 0);
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.18, 5), trim);
+      horn.position.set(side * 0.22, 0.66, 0);
+      g.add(torso, head, arm, horn);
+    }
+    const link = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.12), trim);
+    link.position.set(0, 0.3, 0);
+    g.add(base, link);
+    mesh = base;
   } else if (type === 'swarmling') {
-    // Small tetrahedron spike
-    mesh = new THREE.Mesh(new THREE.TetrahedronGeometry(0.28), mat(color, 0.9));
-    g.add(mesh);
+    // Tiny scout drone-mech: compact body + thruster + antenna
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.32), hull);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, 0.16), dark);
+    head.position.set(0, 0.14, 0.1);
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.05, 0.04), trim);
+    eye.position.set(0, 0.16, 0.18);
+    const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.22, 5), trim);
+    ant.position.set(0.05, 0.28, 0.08);
+    const thr = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), trim);
+    thr.position.set(0, 0, -0.2);
+    for (const side of [-1, 1]) {
+      const wing = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.04, 0.12), dark);
+      wing.position.set(side * 0.22, 0.02, -0.02);
+      wing.rotation.z = side * 0.3;
+      g.add(wing);
+    }
+    g.add(body, head, eye, ant, thr);
+    mesh = body;
   } else {
-    // runner — octahedron diamond
-    mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.34, 0), mat(color, 0.8));
-    g.add(mesh);
+    // runner — lean chase biped with blade arms
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.42, 0.26), hull);
+    torso.position.y = 0.08;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.2), dark);
+    head.position.set(0, 0.4, 0.02);
+    const vis = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.05, 0.04), trim);
+    vis.position.set(0, 0.42, 0.12);
+    const crest = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.2, 5), trim);
+    crest.position.set(0, 0.55, -0.02);
+    crest.rotation.x = -0.25;
+    for (const side of [-1, 1]) {
+      const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.28, 0.12), dark);
+      thigh.position.set(side * 0.12, -0.22, 0);
+      const shin = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.22, 0.1), dark);
+      shin.position.set(side * 0.12, -0.42, 0.02);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.08), hull);
+      arm.position.set(side * 0.24, 0.1, 0);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.28), trim);
+      blade.position.set(side * 0.28, -0.05, 0.12);
+      g.add(thigh, shin, arm, blade);
+    }
+    g.add(torso, head, vis, crest);
+    mesh = torso;
   }
+
   g.userData.mesh = mesh;
   g.userData.type = type;
   return g;
@@ -425,7 +530,7 @@ export class View {
     // Damage accent: briefly tint plate emissive toward danger red ONLY on hit
     if (this.player.userData.plate) {
       if (hit) this.player.userData.plate.emissive.setHex(0xff2244);
-      else this.player.userData.plate.emissive.setHex(0x123048);
+      else this.player.userData.plate.emissive.setHex(0x4a1a78);
       this.player.userData.plate.emissiveIntensity = hit ? 0.9 : 0.5;
     }
 
@@ -468,7 +573,7 @@ export class View {
     }
     if (ud.head) {
       ud.head.rotation.x = -fireKick * 0.12 + Math.sin(ud.idlePhase) * 0.03;
-      ud.head.position.y = 1.12 + Math.sin(ud.idlePhase * 0.5) * 0.015;
+      ud.head.position.y = 1.18 + Math.sin(ud.idlePhase * 0.5) * 0.015;
     }
     if (ud.body) {
       const bob = move > 0.08

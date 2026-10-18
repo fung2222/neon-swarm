@@ -15,13 +15,13 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   "demo": "https://fung2222.github.io/neon-swarm/?demo=1",
   "thumb": "assets/thumbs/neon-swarm.webp",
   "thumbAlt": {
-    "zh": "霓虹洪流遊戲畫面：玩家喺霓虹廣場自動開火對抗數據蟲潮",
-    "en": "NEON SWARM gameplay: auto-firing on a neon plaza against a data swarm"
+    "zh": "霓虹洪流遊戲畫面：紫綠角盔機甲喺開闊荒野對抗敵機潮",
+    "en": "NEON SWARM gameplay: violet horned mech in open wilderness vs hostile mechs"
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 v0.1 playable slice · 未包裝 Android",
-    "en": "web v0.1 playable slice · not packaged for Android"
+    "zh": "網頁版 v0.3.2 EVA-mech / follow-stick · 未包裝 Android",
+    "en": "web v0.3.2 EVA-mech / follow-stick · not packaged for Android"
   },
   "kit": "v0.3.16",
   "play": "not-submitted",

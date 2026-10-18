@@ -2,10 +2,10 @@
 
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Vampire Survivors–style · Three.js · 手機優先
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.3.1 camera-follow + juice（cyber-kit menu-home）
+**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.3.2 EVA-mech · follow-stick · mech foes（cyber-kit menu-home）
 
 ## 一句 pitch
-喺開闊霓虹荒野自動開火，駕駛人形機甲進化武器同裝甲，撐過不斷湧嚟嘅數據蟲潮。Pilot a humanoid mech across an open neon wilderness while your arsenal evolves against endless data-swarm tides.
+喺開闊霓虹荒野自動開火，駕駛紫綠角盔機甲進化武器同裝甲，撐過不斷湧嚟嘅敵機潮。Pilot a violet/green horned mech across an open neon wilderness while your arsenal evolves against endless hostile-mech tides.
 
 ## 語言 Language
 繁體中文（香港）+ English · `localStorage cyber.lang` · `?lang=en|zh`

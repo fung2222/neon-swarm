@@ -37,8 +37,8 @@ export const ENEMIES = {
 };
 
 /**
- * Level-up cards — weapons + armor. `icon` is a short glyph for the pick UI;
- * `shape` hints the in-world gem / card silhouette.
+ * Level-up cards — weapons + armor.
+ * `shape` drives the large SVG emblem in the pick UI; `icon` is a glyph fallback.
  * kind: weapon | armor | util
  */
 export const CARDS = [
