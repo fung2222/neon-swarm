@@ -34,15 +34,21 @@ export class Game {
     this.bulletSpeed = PLAYER.bulletSpeed;
     this.magnet = PLAYER.magnet;
     this.orbits = 0;
-    this.invuln = 1.5; // spawn protection
+    this.spread = 0;
+    this.pierce = 0;
+    this.multi = 1;
+    this.nova = 0;
+    this.novaCd = 0;
+    this.novaT = 0;
+    this.frost = 0;
+    this.invuln = 1.5;
 
     this.enemies = [];
     this.bullets = [];
     this.gems = [];
-    this.orbitHits = []; // cooldown per orbit index
     this.spawnAcc = 0;
     this.hitFlash = 0;
-    // warmup spawn so the first seconds feel alive
+    this.waveT = 12;
     for (let i = 0; i < 4; i++) this._spawn();
   }
 
@@ -66,19 +72,30 @@ export class Game {
     this.xpNeed = xpToLevel(this.level);
     this.pendingCards = pickCards(this.rng, 3);
     this.pausedForLevel = true;
-    while (this.xp >= this.xpNeed && this.level < 99) {
-      // only one pick UI at a time; bank extra for next
-      break;
-    }
   }
 
-  _spawn() {
-    const types = ['runner', 'runner', 'runner', 'tank', 'splitter'];
-    // unlock cadence
-    if (this.t < 25) types.length = 3; // runners only early
-    else if (this.t < 55) { /* runners + tank via weights */ }
-    const type = types[Math.floor(this.rng() * (this.t < 25 ? 3 : this.t < 55 ? 4 : 5))];
+  _pickType() {
+    const t = this.t;
+    if (t < 18) return 'runner';
+    if (t < 35) return this.rng() < 0.75 ? 'runner' : 'swarmling';
+    if (t < 55) {
+      const r = this.rng();
+      if (r < 0.45) return 'runner';
+      if (r < 0.7) return 'swarmling';
+      if (r < 0.9) return 'tank';
+      return 'splitter';
+    }
+    const r = this.rng();
+    if (r < 0.35) return 'runner';
+    if (r < 0.55) return 'swarmling';
+    if (r < 0.78) return 'tank';
+    return 'splitter';
+  }
+
+  _spawn(type) {
+    type = type || this._pickType();
     const def = ENEMIES[type];
+    if (!def) return;
     const ang = this.rng() * Math.PI * 2;
     const dist = ARENA.half * 0.92 + this.rng() * 1.2;
     const { hpMul, speedMul } = swarmPressure(this.t);
@@ -87,29 +104,68 @@ export class Game {
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
-      split: def.split || 0, hit: 0,
+      split: def.split || 0, hit: 0, slow: 0,
+    });
+  }
+
+  _waveBurst() {
+    const n = 4 + Math.min(8, Math.floor(this.t / 25));
+    for (let i = 0; i < n; i++) this._spawn(this.rng() < 0.6 ? 'swarmling' : 'runner');
+  }
+
+  _nearest(n = 1) {
+    const ranked = this.enemies
+      .map((e) => ({ e, d: Math.hypot(e.x - this.px, e.z - this.pz) }))
+      .sort((a, b) => a.d - b.d);
+    return ranked.slice(0, n).map((x) => x.e);
+  }
+
+  _emitBullet(dx, dz, opts = {}) {
+    const len = Math.hypot(dx, dz) || 1;
+    dx /= len; dz /= len;
+    this.bullets.push({
+      x: this.px, z: this.pz,
+      vx: dx * this.bulletSpeed, vz: dz * this.bulletSpeed,
+      life: PLAYER.bulletLife, dmg: this.bulletDmg,
+      r: 0.14, pierce: this.pierce, hitIds: new Set(),
+      frost: this.frost, ...opts,
     });
   }
 
   _fire() {
-    // nearest enemy
-    let best = null, bestD = 1e9;
-    for (const e of this.enemies) {
-      const d = Math.hypot(e.x - this.px, e.z - this.pz);
-      if (d < bestD) { bestD = d; best = e; }
+    const targets = this._nearest(this.multi || 1);
+    if (!targets.length) {
+      this._emitBullet(0, -1);
+      return;
     }
-    let dx = 0, dz = -1;
-    if (best) { dx = best.x - this.px; dz = best.z - this.pz; }
-    const len = Math.hypot(dx, dz) || 1;
-    dx /= len; dz /= len;
-    this.bullets.push({
-      x: this.px, z: this.pz, vx: dx * this.bulletSpeed, vz: dz * this.bulletSpeed,
-      life: PLAYER.bulletLife, dmg: this.bulletDmg, r: 0.14,
-    });
+    for (const best of targets) {
+      let dx = best.x - this.px, dz = best.z - this.pz;
+      const base = Math.atan2(dz, dx);
+      this._emitBullet(Math.cos(base), Math.sin(base));
+      for (let s = 1; s <= this.spread; s++) {
+        const a1 = base + s * 0.32;
+        const a2 = base - s * 0.32;
+        this._emitBullet(Math.cos(a1), Math.sin(a1));
+        this._emitBullet(Math.cos(a2), Math.sin(a2));
+      }
+    }
+  }
+
+  _novaBlast(events) {
+    const R = 2.1 + this.nova * 0.35;
+    const dmg = 2 + this.nova * 1.5;
+    for (let j = this.enemies.length - 1; j >= 0; j--) {
+      const e = this.enemies[j];
+      if (Math.hypot(e.x - this.px, e.z - this.pz) > R) continue;
+      e.hp -= dmg; e.hit = 0.15;
+      if (this.frost) e.slow = Math.max(e.slow, 0.6);
+      if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
+    }
+    events.push({ type: 'nova', r: R });
   }
 
   _dropGem(e) {
-    this.gems.push({ x: e.x, z: e.z, xp: e.xp, r: 0.18, life: 12 });
+    this.gems.push({ x: e.x, z: e.z, xp: e.xp, r: 0.18, life: 14, pop: 0.25 });
   }
 
   _kill(e, i) {
@@ -126,7 +182,7 @@ export class Game {
           type: 'runner', x: e.x + Math.cos(a) * 0.4, z: e.z + Math.sin(a) * 0.4,
           hp: def.hp * hpMul * 0.6, maxHp: def.hp * hpMul * 0.6,
           speed: def.speed * speedMul * 1.15, r: def.radius * 0.85,
-          xp: 1, score: 8, color: def.color, chase: 1, split: 0, hit: 0,
+          xp: 1, score: 8, color: def.color, chase: 1, split: 0, hit: 0, slow: 0,
         });
       }
     }
@@ -139,7 +195,6 @@ export class Game {
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
 
-    // move player
     const sp = this.speed;
     this.px += this.vx * sp * dt;
     this.pz += this.vz * sp * dt;
@@ -147,7 +202,6 @@ export class Game {
     this.px = Math.max(-lim, Math.min(lim, this.px));
     this.pz = Math.max(-lim, Math.min(lim, this.pz));
 
-    // fire
     this.fireT -= dt;
     if (this.fireT <= 0 && this.enemies.length) {
       this._fire();
@@ -155,24 +209,35 @@ export class Game {
       events.push({ type: 'fire' });
     }
 
-    // bullets
+    if (this.nova > 0) {
+      this.novaT -= dt;
+      if (this.novaT <= 0) {
+        this._novaBlast(events);
+        this.novaT = this.novaCd || 3.5;
+      }
+    }
+
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const b = this.bullets[i];
       b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
       if (b.life <= 0 || Math.hypot(b.x, b.z) > ARENA.half + 2) { this.bullets.splice(i, 1); continue; }
+      let consumed = false;
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const e = this.enemies[j];
+        if (b.hitIds.has(e)) continue;
         if (Math.hypot(b.x - e.x, b.z - e.z) < b.r + e.r) {
           e.hp -= b.dmg; e.hit = 0.12;
-          this.bullets.splice(i, 1);
+          if (b.frost) e.slow = Math.max(e.slow, 0.5 + b.frost);
+          b.hitIds.add(e);
+          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color });
           if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
-          else events.push({ type: 'hit' });
-          break;
+          if (b.pierce > 0) { b.pierce -= 1; }
+          else { this.bullets.splice(i, 1); consumed = true; break; }
         }
       }
+      if (consumed) continue;
     }
 
-    // orbit blades
     if (this.orbits > 0) {
       const R = 1.35;
       for (let o = 0; o < this.orbits; o++) {
@@ -184,27 +249,28 @@ export class Game {
           if (Math.hypot(ox - e.x, oz - e.z) < 0.35 + e.r) {
             e.hp -= 0.55 * this.bulletDmg * dt * 8;
             e.hit = 0.08;
+            if (this.frost) e.slow = Math.max(e.slow, 0.35);
             if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
           }
         }
       }
     }
 
-    // enemies chase
     for (const e of this.enemies) {
       if (e.hit > 0) e.hit -= dt;
+      if (e.slow > 0) e.slow -= dt;
+      const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, this.frost || 0.35)) : 1;
       const dx = this.px - e.x, dz = this.pz - e.z;
       const len = Math.hypot(dx, dz) || 1;
-      e.x += (dx / len) * e.speed * e.chase * dt;
-      e.z += (dz / len) * e.speed * e.chase * dt;
+      e.x += (dx / len) * e.speed * e.chase * slowMul * dt;
+      e.z += (dz / len) * e.speed * e.chase * slowMul * dt;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
         this.hp -= 1;
         this.invuln = 0.85;
-        this.hitFlash = 0.25;
+        this.hitFlash = 0.28;
         events.push({ type: 'hurt' });
-        // knockback
-        e.x -= (dx / len) * 0.8;
-        e.z -= (dz / len) * 0.8;
+        e.x -= (dx / len) * 0.9;
+        e.z -= (dz / len) * 0.9;
         if (this.hp <= 0) {
           this.alive = false;
           this.hp = 0;
@@ -213,10 +279,10 @@ export class Game {
       }
     }
 
-    // gems
     for (let i = this.gems.length - 1; i >= 0; i--) {
       const g = this.gems[i];
       g.life -= dt;
+      if (g.pop > 0) g.pop -= dt;
       const d = Math.hypot(g.x - this.px, g.z - this.pz);
       if (d < this.magnet * 1.4) {
         const pull = Math.min(14, 6 + (this.magnet - d));
@@ -227,7 +293,7 @@ export class Game {
         this.xp += g.xp;
         this.score += 2;
         this.gems.splice(i, 1);
-        events.push({ type: 'xp' });
+        events.push({ type: 'xp', x: this.px, z: this.pz });
         if (this.xp >= this.xpNeed) {
           this._levelUp();
           events.push({ type: 'levelup', cards: this.pendingCards });
@@ -235,13 +301,18 @@ export class Game {
       } else if (g.life <= 0) this.gems.splice(i, 1);
     }
 
-    // spawn
     const { density } = swarmPressure(this.t);
     this.spawnAcc += dt * density;
     const cap = 28 + Math.min(40, Math.floor(this.t / 8));
     while (this.spawnAcc >= 1 && this.enemies.length < cap) {
       this.spawnAcc -= 1;
       this._spawn();
+    }
+    this.waveT -= dt;
+    if (this.waveT <= 0) {
+      this._waveBurst();
+      this.waveT = 14 + this.rng() * 6;
+      events.push({ type: 'wave' });
     }
 
     return { events };

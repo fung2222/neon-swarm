@@ -29,19 +29,20 @@ i18n.add({
   over: ['完局', 'RUN OVER'],
   overS: ['SWARMED', 'SWARMED'],
   overNote: ['蟲潮淹沒咗你 · 再嚟過？', 'The swarm got you — try again?'],
-  retry: ['再玩', 'RETRY'],
-  retryS: ['AGAIN', 'AGAIN'],
+  retry: ['再玩一局', 'RETRY'],
+  retryS: ['SAME ARENA', 'SAME ARENA'],
   menu: ['主畫面', 'MENU'],
   menuS: ['HOME', 'HOME'],
   muteTip: ['靜音', 'Mute'],
   pauseTip: ['暫停', 'Pause'],
   newRecord: ['新紀錄！', 'NEW RECORD!'],
+  kills: ['擊殺', 'KILLS'],
   'help.rules': [
-    '單手拖動或虛擬搖桿移動；角色會自動向最近敵人開火。擊殺掉落經驗球，升級時揀一張強化卡。無盡模式蟲潮會持續加強但有上限。',
-    'Drag or use the virtual stick to move; you auto-fire at the nearest foe. Collect XP orbs and pick one upgrade card on level-up. Endless pressure rises with a soft cap.'
+    '你會自動向最近嘅敵人開火。拖動／虛擬搖桿／WASD 移動閃避。擊殺掉落綠色經驗球，升級時揀一張強化卡（傷害、射速、散射、穿透、軌道刃、新星等）。無盡模式蟲潮同波次會持續加強但有上限。',
+    'You auto-fire at the nearest foes. Drag, use the virtual stick, or WASD to dodge. Collect green XP orbs; on level-up pick one card (damage, rate, spread, pierce, orbit blades, nova…). Endless pressure and wave bursts rise with a soft cap.'
   ],
   'help.controls': [
-    '手機：虛擬搖桿／拖動移動。鍵盤：WASD／方向鍵。P 暫停 · M 靜音。',
-    'Mobile: virtual stick / drag. Keyboard: WASD / arrows. P pause · M mute.'
+    '手機：左下虛擬搖桿，或喺畫面任意位置拖動。鍵盤：WASD／方向鍵移動。P／Esc 暫停 · M 靜音。完局後撳「再玩一局」即刻重開。',
+    'Mobile: virtual stick (bottom-left) or drag anywhere. Keyboard: WASD / arrows. P / Esc pause · M mute. After death, tap Retry for a fresh run.'
   ],
 });

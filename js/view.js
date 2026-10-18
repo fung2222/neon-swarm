@@ -11,7 +11,6 @@ export class View {
     this.group = new THREE.Group();
     stage.scene.add(this.group);
 
-    // arena floor
     const floor = new THREE.Mesh(
       new THREE.CircleGeometry(ARENA.half + 0.4, 48),
       new THREE.MeshStandardMaterial({ color: 0x0a0520, emissive: 0x12083a, emissiveIntensity: 0.35, roughness: 0.8, metalness: 0.2 })
@@ -28,7 +27,6 @@ export class View {
     ring.position.y = 0.02;
     this.group.add(ring);
 
-    // grid lines
     const grid = new THREE.GridHelper(ARENA.half * 2, 16, 0xff2bd6, 0x1a1040);
     grid.position.y = 0.03;
     grid.material.opacity = 0.35;
@@ -42,7 +40,17 @@ export class View {
     core.position.y = 0.55;
     this.player.add(body, core);
     this.playerBody = body;
+    this.playerCore = core;
     this.group.add(this.player);
+
+    this.novaRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.2, 0.35, 32),
+      new THREE.MeshBasicMaterial({ color: 0xffe600, transparent: true, opacity: 0, side: THREE.DoubleSide })
+    );
+    this.novaRing.rotation.x = -Math.PI / 2;
+    this.novaRing.visible = false;
+    this.group.add(this.novaRing);
+    this.novaAge = -1;
 
     this.enemyG = new THREE.Group();
     this.bulletG = new THREE.Group();
@@ -72,11 +80,29 @@ export class View {
     }
   }
 
+  pulseNova(r) {
+    this.novaRing.scale.setScalar(1);
+    this.novaRing.material.opacity = 0.85;
+    this.novaRing.visible = true;
+    this.novaAge = 0;
+    this._novaR = r;
+  }
+
   sync(game) {
     this.player.position.set(game.px, 0, game.pz);
-    this.playerBody.material.emissiveIntensity = game.invuln > 0 && (game.invuln * 20) % 2 < 1 ? 0.2 : 0.85;
+    const blink = game.invuln > 0 && (game.invuln * 20) % 2 < 1;
+    this.playerBody.material.emissiveIntensity = blink ? 0.15 : (game.hitFlash > 0 ? 1.6 : 0.85);
+    this.playerCore.material.emissiveIntensity = game.hitFlash > 0 ? 2 : 1.2;
 
-    // enemies
+    if (this.novaAge >= 0) {
+      this.novaAge += 0.05;
+      const k = Math.min(1, this.novaAge);
+      this.novaRing.position.set(game.px, 0.08, game.pz);
+      this.novaRing.scale.setScalar(1 + k * (this._novaR || 2) * 4);
+      this.novaRing.material.opacity = 0.85 * (1 - k);
+      if (k >= 1) { this.novaAge = -1; this.novaRing.visible = false; }
+    }
+
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => {
@@ -90,23 +116,27 @@ export class View {
       const mesh = m.userData.mesh;
       mesh.material.color.setHex(e.color);
       mesh.material.emissive.setHex(e.color);
-      mesh.material.emissiveIntensity = e.hit > 0 ? 1.4 : 0.75;
-      const s = e.type === 'tank' ? 1.35 : e.type === 'splitter' ? 1.1 : 0.85;
+      mesh.material.emissiveIntensity = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.75);
+      const s = e.type === 'tank' ? 1.35 : e.type === 'splitter' ? 1.1 : e.type === 'swarmling' ? 0.55 : 0.85;
       mesh.scale.setScalar(s);
-      mesh.rotation.y += 0.02;
+      mesh.rotation.y += 0.03;
     }
 
     this._recycle(this._bPool, this.bulletG);
     for (const b of game.bullets) {
       const m = this._take(this._bPool, this.bulletG, () => new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), mat(0x00e5ff, 1.4)));
       m.position.set(b.x, 0.45, b.z);
+      m.material.color.setHex(b.frost ? 0x7ad7ff : 0x00e5ff);
+      m.material.emissive.setHex(b.frost ? 0x7ad7ff : 0x00e5ff);
     }
 
     this._recycle(this._gPool, this.gemG);
     for (const g of game.gems) {
       const m = this._take(this._gPool, this.gemG, () => new THREE.Mesh(new THREE.TetrahedronGeometry(0.16), mat(0x3bff8a, 1.1)));
+      const pop = g.pop > 0 ? 1 + g.pop * 1.5 : 1;
       m.position.set(g.x, 0.25, g.z);
-      m.rotation.y += 0.05;
+      m.scale.setScalar(pop);
+      m.rotation.y += 0.08;
     }
 
     this._recycle(this._oPool, this.orbitG);

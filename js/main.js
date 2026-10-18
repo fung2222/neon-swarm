@@ -1,8 +1,8 @@
-// NEON SWARM — v0.1 bullet heaven slice
+// NEON SWARM — v0.2 bullet heaven
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
-  createAds, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles,
+  createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
 } from 'cyber-kit';
 import { GAME_ID, ADS, TRIAL } from './config.js';
 import './strings.js';
@@ -11,19 +11,10 @@ import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
-const Q = new URLSearchParams(location.search);
-const ENT = (() => { try { return JSON.parse(localStorage.getItem('cyber.entitlement') || 'null'); } catch { return null; } })();
-const HUB = {
-  on: Q.get('hub') === '1',
-  tier: Q.get('tier') || ENT?.tier || 'free',
-  ads: Q.get('ads'),
-  trial: Q.get('trial') === '1',
-  trialLeft: Q.get('trialLeft'),
-  ret: Q.get('ret'),
-};
-if (HUB.on && HUB.ads == null && ENT?.tier) HUB.ads = ENT.tier === 'free' ? '1' : '0';
-const ADS_ON = HUB.ads === '1' || (!HUB.on && (flags.adsim || Platform.isNative));
-const AD_FLAGS = { adsim: flags.adsim || HUB.ads === '1', debug: flags.debug };
+const HUB = readHub(location.search);
+// normalize ads for createAds / interstitial gate (kit readHub.ads is boolean)
+const ADS_ON = HUB.ads === true || HUB.ads === '1' || (!HUB.fromHub && (flags.adsim || Platform.isNative));
+const AD_FLAGS = { adsim: flags.adsim || HUB.ads === true || HUB.ads === '1', debug: flags.debug };
 
 const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
@@ -52,8 +43,10 @@ const city = new NeonCity(stage, {
 
 const view = new View(stage);
 view.setVisible(false);
-const particles = new Particles(stage.scene, 1800, { floorY: 0.02 });
+const particles = new Particles(stage.scene, 2200, { floorY: 0.02 });
 stage.onResize((w, h, pr) => particles.resize(h, pr));
+const waves = new Shockwaves(stage.scene, 12);
+const fx = new FxState();
 const audio = new SwarmAudio(store);
 ui.setMuted(audio.muted);
 const ads = createAds({ gameId: GAME_ID, ...ADS, flags: AD_FLAGS, onAdOpen: (on) => audio.duckAll(on) });
@@ -140,8 +133,9 @@ function startRun() {
   ui.show(null);
   $('hud').classList.remove('hidden');
   $('demo-tag').classList.toggle('hidden', !S.demo);
-  const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || flags.get('stick') === '1';
-  $('stick').classList.toggle('hidden', !touch && !S.demo);
+  const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
+  $('stick').classList.toggle('hidden', !touch);
+  $('stick').classList.add('ready');
   updateHUD();
   audio.click();
 }
@@ -194,35 +188,48 @@ function applyMoveFromInput() {
   const root = $('stick');
   const knob = $('stick-knob');
   let pid = null, cx = 0, cy = 0;
-  const R = 48;
+  const R = 56;
+  const DEAD = 8;
   const setKnob = (x, y) => { knob.style.transform = `translate(${x}px,${y}px)`; };
   const onDown = (e) => {
     if (S.state !== 'play') return;
-    if (e.target.closest && e.target.closest('[data-no-input]') && !e.target.closest('#stick')) return;
+    if (e.target.closest && e.target.closest('button,.level-card,#hud')) return;
     const t = e.changedTouches ? e.changedTouches[0] : e;
-    pid = t.identifier ?? 'mouse';
-    const rect = root.getBoundingClientRect();
-    cx = rect.left + rect.width / 2;
-    cy = rect.top + rect.height / 2;
+    pid = t.pointerId ?? t.identifier ?? 'mouse';
+    // if pressing the stick widget, center on stick; else dynamic origin at finger
+    if (e.target.closest && e.target.closest('#stick')) {
+      const rect = root.getBoundingClientRect();
+      cx = rect.left + rect.width / 2;
+      cy = rect.top + rect.height / 2;
+    } else {
+      cx = t.clientX; cy = t.clientY;
+    }
     S.stick.active = true;
+    root.classList.add('active');
     onMove(e);
     audio.init();
   };
   const onMove = (e) => {
     if (!S.stick.active) return;
-    const t = e.changedTouches ? [...e.changedTouches].find((x) => (x.identifier ?? 'mouse') === pid) || e.changedTouches[0] : e;
+    const pts = e.changedTouches ? [...e.changedTouches] : [e];
+    const t = pts.find((x) => (x.pointerId ?? x.identifier ?? 'mouse') === pid) || pts[0];
     if (!t) return;
     let dx = t.clientX - cx, dy = t.clientY - cy;
     const len = Math.hypot(dx, dy) || 1;
     const cl = Math.min(len, R);
-    dx = (dx / len) * cl; dy = (dy / len) * cl;
-    setKnob(dx, dy);
-    S.stick.dx = dx / R;
-    S.stick.dy = dy / R;
+    const kx = (dx / len) * cl, ky = (dy / len) * cl;
+    setKnob(kx, ky);
+    if (len < DEAD) { S.stick.dx = 0; S.stick.dy = 0; }
+    else {
+      const mag = Math.min(1, (len - DEAD) / (R - DEAD));
+      S.stick.dx = (dx / len) * mag;
+      S.stick.dy = (dy / len) * mag;
+    }
     if (e.cancelable) e.preventDefault();
   };
   const onUp = () => {
     S.stick.active = false; S.stick.dx = 0; S.stick.dy = 0; setKnob(0, 0); pid = null;
+    root.classList.remove('active');
   };
   root.addEventListener('pointerdown', onDown);
   window.addEventListener('pointermove', onMove);
@@ -317,28 +324,62 @@ function tick(dt) {
     cam.lookAt(0, 2, 0);
     return;
   }
-  if (S.state !== 'play' || !S.game) return;
-  applyMoveFromInput();
-  const { events } = S.game.step(dt);
+  if (!S.game) return;
+  if (S.state === 'over') return;
+  if (S.state === 'play') applyMoveFromInput();
+  const { events } = S.state === 'play' ? S.game.step(dt) : { events: [] };
   for (const ev of events) {
     if (ev.type === 'fire') audio.fire();
-    else if (ev.type === 'hit') audio.hit();
+    else if (ev.type === 'hit') {
+      audio.hit();
+      if (ev.x != null) {
+        const c = new THREE.Color(ev.color || 0x00e5ff);
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, 6, { speed: 3, up: 1.2, size: 0.7 });
+      }
+    }
     else if (ev.type === 'kill') {
       audio.kill();
       const c = new THREE.Color(ev.enemy.color);
-      particles.burst(new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z), c, 14, { speed: 4, up: 2 });
+      const pos = new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z);
+      particles.burst(pos, c, 18, { speed: 5, up: 2.5 });
+      waves.spawn(pos, c, { r0: 0.3, r1: 1.8, dur: 0.45, a: 2.2 });
+      fx.kick({ trauma: 0.12 });
     }
-    else if (ev.type === 'xp') audio.xp();
-    else if (ev.type === 'hurt') audio.hurt();
+    else if (ev.type === 'xp') {
+      audio.xp();
+      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), 8, { speed: 2.5, up: 2, size: 0.8 });
+    }
+    else if (ev.type === 'hurt') {
+      audio.hurt();
+      fx.kick({ trauma: 0.35, aberr: 0.4 });
+      const flash = $('fx-flash');
+      if (flash) { flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 120); }
+    }
     else if (ev.type === 'dead') endRun(false);
     else if (ev.type === 'levelup') showLevelCards(ev.cards);
+    else if (ev.type === 'nova') {
+      audio.nova();
+      view.pulseNova(ev.r);
+      waves.spawn(new THREE.Vector3(S.game.px, 0.05, S.game.pz), new THREE.Color(0xffe600), { r0: 0.4, r1: ev.r * 1.2, dur: 0.5, a: 2.4 });
+      fx.kick({ trauma: 0.2 });
+    }
+    else if (ev.type === 'wave') audio.wave();
   }
-  if (S.state === 'play') {
-    particles.update(dt);
-    view.sync(S.game);
-    view.frameCamera(stage.camera, S.game, dt);
-    updateHUD();
-    if (S.demo && S.game.t > 45) endRun(false);
+  if (S.state === 'play' || S.state === 'level' || S.state === 'pause') {
+    if (S.state === 'play') {
+      particles.update(dt);
+      waves.update(dt);
+      fx.update(dt);
+      view.sync(S.game);
+      view.frameCamera(stage.camera, S.game, dt);
+      fx.shake(stage.camera, performance.now() * 0.001);
+      fx.applyPost(stage, performance.now() * 0.001);
+      updateHUD();
+      if (S.demo && S.game.t > 50) endRun(false);
+    } else if (S.game) {
+      view.sync(S.game);
+      particles.update(dt);
+    }
   }
 }
 

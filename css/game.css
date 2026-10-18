@@ -46,3 +46,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   border-color: #ff2bd6; transform: translateY(-1px);
   box-shadow: 0 0 18px #ff2bd655;
 }
+
+#fx-flash.on {
+  position: fixed; inset: 0; z-index: 20; pointer-events: none;
+  background: radial-gradient(circle, #ff2bd644, #ff2bd600 60%);
+}
+.stick.ready { opacity: 0.85; }
+.stick.active { opacity: 1; }
+.stick.active .stick-base { border-color: #ff2bd6aa; box-shadow: 0 0 18px #ff2bd655; }
+.stick-base { width: 100%; height: 100%; border-radius: 50%;
+  border: 2px solid #00e5ff88; background: #0a052088;
+  display: grid; place-items: center; backdrop-filter: blur(4px);
+}
+.stick { width: 132px; height: 132px; }
+.stick-knob { width: 52px; height: 52px; }
