@@ -3,7 +3,7 @@ import { i18n } from 'cyber-kit';
 i18n.add({
   'doc.title': ['暴走機甲', 'RAMPAGE MECH'],
   title: ['暴走機甲', 'RAMPAGE MECH'],
-  titleEn: ['RAMPAGE MECH', 'RAMPAGE MECH'],
+  titleEn: ['RAMPAGE MECH', 'THE RUNAWAY UNIT'],
   kicker: ['LAB LOCKDOWN · MANHUNT', 'LAB LOCKDOWN · MANHUNT'],
   tagline: ['失控機甲 · 反抗科學家同軍隊 · 生存到底', 'A runaway mech · the lab wants it back · survive the hunt'],
   play: ['啟動暴走', 'BREAK OUT'],

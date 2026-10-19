@@ -132,3 +132,20 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 380px) {
   .mech-card small { display: none; }
 }
+/* Home layout: text column on the left, 3D turntable on the right (wide screens only).
+   The showcase mech is drawn at world origin, so the copy must never sit on top of it.
+   .menu-mid is position:absolute inside .menu-body, so everything is pinned from the left. */
+@media (min-width: 761px) {
+  #screen-start .menu-body {
+    background: linear-gradient(90deg, rgba(5,1,15,.95) 0%, rgba(5,1,15,.9) 34%, rgba(5,1,15,.35) 52%, rgba(5,1,15,0) 64%);
+  }
+  #screen-start .menu-mid {
+    left: max(88px, 9vw); right: auto; width: min(46vw, 560px);
+    align-items: flex-start; text-align: left;
+  }
+  #screen-start .menu-brand, #screen-start .menu-cta { width: 100%; max-width: 100%; }
+  #screen-start .tagline { margin-left: 0; margin-right: 0; }
+  #screen-start .neon-btn { margin-left: 0; margin-right: 0; }
+  #screen-start .mech-head { text-align: left; }
+  #screen-start .menu-meta { left: max(88px, 9vw); right: auto; transform: none; text-align: left; }
+}
