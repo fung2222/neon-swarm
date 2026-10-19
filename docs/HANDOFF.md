@@ -1,11 +1,11 @@
-# NEON SWARM 霓虹洪流 — Handoff
+# 暴走機甲 RAMPAGE MECH — Handoff
 
 > For the next AI / human continuing this game.  
 > **Contact style (Roy):** 解釋用繁體中文（廣東話都睇得明）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 喺下面。  
 > Timezone: **Asia/Hong_Kong (UTC+8)**. Owner: **fung2222 (Roy Chan / 嘉豐)**.
 
-**Status:** **v0.3.4** level-up fix (chime + card caps) · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
-**HEAD:** v0.3.4 commit on `main` after `71513d3` · 2026-10-19 HKT  
+**Status:** **v0.5.0** rebrand 暴走機甲 / RAMPAGE MECH · 3 selectable frames · human-led manhunt · readable drops · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
+**HEAD:** v0.5.0 commit on `main` after `66273e8` · 2026-10-19 HKT  
 **Live:** https://fung2222.github.io/neon-swarm/ · demo `?demo=1` · trial probe `?hub=1&trial=1`  
 **Repo:** https://github.com/fung2222/neon-swarm
 
@@ -28,7 +28,8 @@
 | `5397507` | 2026-10-18 | v0.3.2 EVA-mech palette, follow-stick, mech foes, big emblems |
 | `4fef9ba` | 2026-10-18 | **v0.3.3** playfield stick — HUD overlay dead-zone |
 | `71513d3` | 2026-10-19 | tests only — `tests/health.test.mjs` + `tests/balance.test.mjs` (no game code) |
-| v0.3.4 | 2026-10-19 | **level-up fix** — silent chime + cards ran dry after level 6 (**current**) |
+| `66273e8` | 2026-10-19 | **v0.3.4** level-up fix — silent chime + cards ran dry after level 6 |
+| v0.5.0 | 2026-10-19 | **rebrand + frames + human manhunt + readable drops** (**current**) |
 
 Hub card: `fung2222/cyber-arcade@501e4e6` (WIP thumbs; stage line may still say v0.2 until hub sync — prefer this HANDOFF).
 
@@ -59,6 +60,13 @@ Key files: `js/{main,view,logic,config,audio,strings}.js` · `css/game.css` · `
    - Card UI shows a `n/max` stack badge; the pick handler uses a snapshot of `taken` (incrementing during the panel build hid the badge).
    - Regression coverage: `tests/levelup.test.mjs` (200+ level-ups, no empty pick, no over-cap offer).
 
+## 4c. v0.5.0 rebrand — gotchas that cost time (do not regress)
+
+1. **Drop rendering pool.** `View.sync` rebuilds `gemG` every frame. A mesh must never be both in the scene and in the pool: the old `_take()` helper re-parented without popping, which rendered a trail of duplicate letter cubes for one drop. The current code pops the slot, tags `userData.poolKey`, and sweeps `_dropLive` (last frame's slots) *after* placing this frame's drops. Letter/icon textures are cached once per glyph (`LETTER_TEX` / `WEAPON_TEX`).
+2. **Menu showcase vs in-run mech.** `showMenu()` calls `view.setMenuMech(id)` + `view.setPlayerVisible(false)`; `startRun()` calls `hideMenuMech()` + `setPlayerVisible(true)`. Without this, two mechs render on top of each other on the home screen. `disposeTree()` must dispose **materials too**, or every frame switch leaks GPU memory.
+3. **Human scale.** Humans are scaled 1.24–1.5 in `humanMesh()`; at 1.0 they vanish next to a 3 m mech on a 412 px phone.
+4. **Balance is data.** `swarmPressure()` (density / hp / speed) and `waveMix()` (who spawns when) in `js/config.js`, plus the enemy cap and wave burst size in `js/logic.js`, are the knobs. Re-run `tests/balance.test.mjs` after touching any of them — the first tuning pass dropped the median to 52 s, which is why the cap went 55 → 24.
+
 ## 5. Testing a browser build (important)
 - **Use GPU.** Launch headless Chromium with **no GL flags** — on Roy's machine that picks the NVIDIA D3D11 path (60 FPS). Adding `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader` drops to **~3 FPS**, the game looks frozen, and every recorded timestamp is wrong. Only use SwiftShader to *reproduce* a slow device.
 - `?fps=1` shows the FPS/rate chip in-game; `?lang=en|zh`, `?demo=1`, `?autostart=1` are the other useful flags.
@@ -66,17 +74,17 @@ Key files: `js/{main,view,logic,config,audio,strings}.js` · `css/game.css` · `
 
 ## 6. Known issues / gaps
 1. **Trial unlock UX incomplete** — survive-sec gate exists; elite-milestone + “unlock Gold → return to hub store” path still TODO (see stub trial.rule).
-2. **Hub `games.json` stage/thumbAlt may lag** — older text mentioned circular arena / v0.2 polish; wilderness + EVA-mech is current. Sync hub when touching cyber-arcade.
+2. **Hub `games.json` name/thumb may lag** — v0.5.0 renamed the game to 暴走機甲 / RAMPAGE MECH; the hub entry (name + thumbAlt) must match. Sync hub when touching cyber-arcade.
 3. **No Android / Capacitor** packaging yet (`play: not-submitted`).
-4. **Balance / content** — no named elite/boss beats yet. Baseline from `tests/balance.test.mjs` (v0.3.4, seeded, auto-pick first card): a circling player dies at **~110–130 s**; standing still ≈ 9 s; fleeing straight ≈ 16 s. Long-run pacing still untested by Roy.
+4. **Balance / content** — no named elite/boss beats yet (see `docs/BEATS-PLAN.md`). Baseline from `tests/balance.test.mjs` (v0.5.0, seeded, auto-pick first card): circling median **~212 s** (spread 103–299 s); idle ≈ 13 s; fleeing ≈ 31 s. Frames: heavy tanks longest, proto shortest in sim. Long-run pacing still untested by Roy on a phone.
 5. **Smoke** — `tests/{logic,levelup,health,balance}` + `tests/smoke_files.py` run headless; a Playwright pass (412×915 + 1280×800, zh + en, zero console errors) passes as of v0.3.4 but is **not committed to the repo** — re-run it before calling “done”.
-6. **Trademark hygiene** — keep EVA as palette/silhouette homage only; never ship names, logos, or exact reproductions.
+6. **Trademark hygiene** — the horn and heavy frames are palette/silhouette homages only. Never ship names, logos, or exact reproductions; keep the neutral frame names.
 
 ## 7. Next steps (suggested order)
-1. Roy playtest on phone + desktop (`?demo=1`, real stick, level-up cards, 3+ min run) — v0.3.4 fixed the chime and the level-6 card wall, so this is the first run that goes past level 6 with upgrades.
-2. One elite/boss beat + readable telegraph; then balance pass on HP / spawn density (run `tests/balance.test.mjs` before/after).
+1. Roy playtest on phone + desktop (`?demo=1`, real stick, frame picker, level-up cards, 3+ min run) — v0.5.0 is the first build with the new name, frames and human enemies.
+2. One elite/boss beat + readable telegraph (`docs/BEATS-PLAN.md` has the design); then another balance pass (run `tests/balance.test.mjs` before/after).
 3. Finish trial → `returnToHub({ openStore: true })` when cap hits; align `games.json` trial.rule.
-4. Refresh hub thumb from live wilderness + EVA-mech frame; update `thumbAlt` zh/en.
+4. Refresh hub thumb from a live frame-picker shot; update `name` / `thumbAlt` zh+en.
 5. Only after Roy says go: Capacitor 8 + AdMob stubs.
 
 ## 7. Roy preferences (binding for this series)

@@ -1,4 +1,6 @@
-import { ARENA, PLAYER, ENEMIES, xpToLevel, swarmPressure, pickCards } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS } from './config.js';
+
+const WEAPON_IDS = Object.keys(WEAPON_ICONS);
 
 function mulberry32(a) {
   return function () {
@@ -9,10 +11,21 @@ function mulberry32(a) {
   };
 }
 
+/** Split a kill worth `xp` into readable X crates. */
+function cratesFor(xp) {
+  if (xp <= 3) return [{ letter: 'X', xp }];
+  const n = Math.min(3, Math.ceil(xp / 4));
+  const base = Math.floor(xp / n);
+  const out = [];
+  for (let i = 0; i < n; i++) out.push({ letter: 'X', xp: i === n - 1 ? xp - base * (n - 1) : base });
+  return out;
+}
+
 export class Game {
-  constructor({ seed = 1, endless = true } = {}) {
+  constructor({ seed = 1, endless = true, mech = 'horn' } = {}) {
     this.rng = mulberry32(seed >>> 0);
     this.endless = endless;
+    this.mech = MECH_BY_ID[mech] || MECH_BY_ID.horn;
     this.t = 0;
     this.score = 0;
     this.kills = 0;
@@ -26,16 +39,17 @@ export class Game {
 
     this.px = 0; this.pz = 0;
     this.vx = 0; this.vz = 0;
-    this.maxHp = PLAYER.hp;
-    this.hp = PLAYER.hp;
-    this.speed = PLAYER.speed;
+    const bonus = this.mech.bonus || {};
+    this.maxHp = PLAYER.hp + (bonus.maxHp || 0);
+    this.hp = this.maxHp;
+    this.speed = PLAYER.speed * (bonus.speedMul || 1);
     this.fireCd = PLAYER.fireCd;
     this.fireT = 0;
     this.bulletDmg = PLAYER.bulletDmg;
     this.bulletSpeed = PLAYER.bulletSpeed;
     this.bulletLife = PLAYER.bulletLife;
-    this.magnet = PLAYER.magnet;
-    this.armor = PLAYER.armor || 0;
+    this.magnet = PLAYER.magnet * (bonus.magnetMul || 1);
+    this.armor = PLAYER.armor + (bonus.armor || 0);
     this.deflect = 0;
     this.orbits = 0;
     this.spread = 0;
@@ -53,8 +67,9 @@ export class Game {
     this.spawnAcc = 0;
     this.hitFlash = 0;
     this.muzzle = 0;
-    this.waveT = 7;
-    for (let i = 0; i < 12; i++) this._spawn();
+    this.waveT = 8;
+    this.killer = null;
+    for (let i = 0; i < 10; i++) this._spawn();
   }
 
   moveDir(dx, dz) {
@@ -83,34 +98,19 @@ export class Game {
   }
 
   _pickType() {
-    const t = this.t;
-    if (t < 18) return 'runner';
-    if (t < 35) return this.rng() < 0.75 ? 'runner' : 'swarmling';
-    if (t < 55) {
-      const r = this.rng();
-      if (r < 0.45) return 'runner';
-      if (r < 0.7) return 'swarmling';
-      if (r < 0.9) return 'tank';
-      return 'splitter';
-    }
-    const r = this.rng();
-    if (r < 0.35) return 'runner';
-    if (r < 0.55) return 'swarmling';
-    if (r < 0.78) return 'tank';
-    return 'splitter';
+    return pickEnemyType(this.rng, this.t);
   }
 
   /** Soft radial clamp — gentle push near soft rim, hard stop at half. */
   _softClamp(x, z, radius = 0) {
     const lim = ARENA.half - radius;
     const soft = ARENA.soft - radius;
-    let r = Math.hypot(x, z);
+    const r = Math.hypot(x, z);
     if (r <= soft || r < 1e-6) return { x, z };
     if (r > lim) {
       const s = lim / r;
       return { x: x * s, z: z * s };
     }
-    // Soft band: pull slightly inward (proportion of overflow)
     const t = (r - soft) / Math.max(0.001, lim - soft);
     const pull = t * t * 0.35;
     const s = 1 - pull * ((r - soft) / r);
@@ -123,30 +123,37 @@ export class Game {
     if (!def) return;
     const ang = this.rng() * Math.PI * 2;
     const dist = ARENA.spawnNear + this.rng() * (ARENA.spawnFar - ARENA.spawnNear);
-    let x = this.px + Math.cos(ang) * dist;
-    let z = this.pz + Math.sin(ang) * dist;
-    const c = this._softClamp(x, z, def.radius);
-    x = c.x; z = c.z;
+    const c = this._softClamp(this.px + Math.cos(ang) * dist, this.pz + Math.sin(ang) * dist, def.radius);
     const { hpMul, speedMul } = swarmPressure(this.t);
     this.enemies.push({
-      type, x, z,
+      type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
+      x: c.x, z: c.z,
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
-      split: def.split || 0, hit: 0, slow: 0,
+      damage: def.damage || 1, shield: def.shield || 0,
+      hit: 0, slow: 0, wob: this.rng() * Math.PI * 2,
     });
   }
 
+  /** A squad: soldiers first, a couple of support frames walking behind them. */
   _waveBurst() {
-    const n = 10 + Math.min(22, Math.floor(this.t / 14));
-    for (let i = 0; i < n; i++) this._spawn(this.rng() < 0.6 ? 'swarmling' : 'runner');
+    const n = 4 + Math.min(10, Math.floor(this.t / 20));
+    for (let i = 0; i < n; i++) {
+      const r = this.rng();
+      const type = this.t < 30
+        ? (r < 0.5 ? 'soldier' : r < 0.8 ? 'drone' : 'staffer')
+        : (r < 0.55 ? 'soldier' : r < 0.8 ? 'drone' : 'walker');
+      this._spawn(type);
+    }
   }
 
   _nearest(n = 1) {
-    const ranked = this.enemies
+    return this.enemies
       .map((e) => ({ e, d: Math.hypot(e.x - this.px, e.z - this.pz) }))
-      .sort((a, b) => a.d - b.d);
-    return ranked.slice(0, n).map((x) => x.e);
+      .sort((a, b) => a.d - b.d)
+      .slice(0, n)
+      .map((x) => x.e);
   }
 
   _emitBullet(dx, dz, opts = {}) {
@@ -168,14 +175,11 @@ export class Game {
       return;
     }
     for (const best of targets) {
-      let dx = best.x - this.px, dz = best.z - this.pz;
-      const base = Math.atan2(dz, dx);
+      const base = Math.atan2(best.z - this.pz, best.x - this.px);
       this._emitBullet(Math.cos(base), Math.sin(base));
       for (let s = 1; s <= this.spread; s++) {
-        const a1 = base + s * 0.32;
-        const a2 = base - s * 0.32;
-        this._emitBullet(Math.cos(a1), Math.sin(a1));
-        this._emitBullet(Math.cos(a2), Math.sin(a2));
+        this._emitBullet(Math.cos(base + s * 0.32), Math.sin(base + s * 0.32));
+        this._emitBullet(Math.cos(base - s * 0.32), Math.sin(base - s * 0.32));
       }
     }
   }
@@ -193,9 +197,23 @@ export class Game {
     events.push({ type: 'nova', r: R });
   }
 
+  /** XP crates (+ a repair or shield cube now and then — readable drops, no mystery sprites). */
   _dropGem(e) {
-    // XP gems carry a shape tag so the view can show readable silhouettes
-    this.gems.push({ x: e.x, z: e.z, xp: e.xp, r: 0.18, life: 16, pop: 0.25, shape: 'xp' });
+    const healChance = e.family === 'human' ? 0.1 : 0.06;
+    if (this.rng() < healChance) {
+      this.gems.push({ x: e.x + 0.25, z: e.z + 0.25, xp: 0, r: 0.2, life: 18, pop: 0.25, letter: 'H', kind: 'heal' });
+      return;
+    }
+    for (const c of cratesFor(e.xp)) {
+      this.gems.push({ x: e.x, z: e.z, xp: c.xp, r: 0.18, life: 18, pop: 0.25, letter: c.letter, kind: 'xp' });
+    }
+  }
+
+  /** The weapon icon a kill drops every so often (big English letter "W" + gun emblem on the view). */
+  weaponIcon() {
+    const owned = Object.keys(this.taken || {}).filter((id) => WEAPON_IDS.includes(id));
+    if (!owned.length) return 'dmg';
+    return owned[Math.floor(this.rng() * owned.length)];
   }
 
   _kill(e, i) {
@@ -203,18 +221,8 @@ export class Game {
     this.kills++;
     this.score += e.score + Math.floor(this.t);
     this._dropGem(e);
-    if (e.split) {
-      for (let k = 0; k < e.split; k++) {
-        const a = this.rng() * Math.PI * 2;
-        const def = ENEMIES.runner;
-        const { hpMul, speedMul } = swarmPressure(this.t);
-        this.enemies.push({
-          type: 'runner', x: e.x + Math.cos(a) * 0.4, z: e.z + Math.sin(a) * 0.4,
-          hp: def.hp * hpMul * 0.6, maxHp: def.hp * hpMul * 0.6,
-          speed: def.speed * speedMul * 1.15, r: def.radius * 0.85,
-          xp: 1, score: 8, color: def.color, chase: 1, split: 0, hit: 0, slow: 0,
-        });
-      }
+    if ((e.kind === 'chief' || e.kind === 'mech') && this.rng() < 0.35) {
+      this.gems.push({ x: e.x, z: e.z, xp: 0, r: 0.22, life: 22, pop: 0.3, letter: 'W', kind: 'weapon', weapon: this.weaponIcon(), weaponIcon: WEAPON_ICONS[this.weaponIcon()] || '⚡' });
     }
   }
 
@@ -226,9 +234,8 @@ export class Game {
     if (this.hitFlash > 0) this.hitFlash -= dt;
     if (this.muzzle > 0) this.muzzle -= dt;
 
-    const sp = this.speed;
-    this.px += this.vx * sp * dt;
-    this.pz += this.vz * sp * dt;
+    this.px += this.vx * this.speed * dt;
+    this.pz += this.vz * this.speed * dt;
     const clamped = this._softClamp(this.px, this.pz, PLAYER.radius);
     this.px = clamped.x; this.pz = clamped.z;
 
@@ -252,19 +259,18 @@ export class Game {
       const b = this.bullets[i];
       b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
       const br = Math.hypot(b.x - this.px, b.z - this.pz);
-      if (b.life <= 0 || br > ARENA.spawnFar + 8) { this.bullets.splice(i, 1); continue; }
+      if (b.life <= 0 || br > ARENA.spawnFar + 10) { this.bullets.splice(i, 1); continue; }
       let consumed = false;
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const e = this.enemies[j];
         if (b.hitIds.has(e)) continue;
         if (Math.hypot(b.x - e.x, b.z - e.z) < b.r + e.r) {
-          e.hp -= b.dmg; e.hit = 0.12;
+          e.hp -= b.dmg * (1 - (e.shield || 0)); e.hit = 0.12;
           if (b.frost) e.slow = Math.max(e.slow, 0.5 + b.frost);
           b.hitIds.add(e);
-          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color });
+          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind });
           if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
-          if (b.pierce > 0) { b.pierce -= 1; }
-          else { this.bullets.splice(i, 1); consumed = true; break; }
+          if (b.pierce > 0) { b.pierce -= 1; } else { this.bullets.splice(i, 1); consumed = true; break; }
         }
       }
       if (consumed) continue;
@@ -299,17 +305,17 @@ export class Game {
       const ec = this._softClamp(e.x, e.z, e.r);
       e.x = ec.x; e.z = ec.z;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-        const raw = 2;
-        const taken = Math.max(1, raw - (this.armor || 0));
+        const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
-        events.push({ type: 'hurt' });
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
         e.x -= (dx / len) * 0.9;
         e.z -= (dz / len) * 0.9;
         if (this.hp <= 0) {
           this.alive = false;
           this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
           events.push({ type: 'dead' });
         }
       }
@@ -325,11 +331,18 @@ export class Game {
         g.x += ((this.px - g.x) / (d || 1)) * pull * dt;
         g.z += ((this.pz - g.z) / (d || 1)) * pull * dt;
       }
-      if (d < PLAYER.radius + g.r + 0.35 || Math.hypot(g.x - this.px, g.z - this.pz) < 0.7) {
-        this.xp += g.xp;
+      if (d < PLAYER.radius + g.r + 0.35) {
+        if (g.kind === 'heal') {
+          this.hp = Math.min(this.maxHp, this.hp + 2);
+          events.push({ type: 'heal', amount: 2 });
+        } else if (g.kind === 'weapon') {
+          events.push({ type: 'weapon', id: g.weapon });
+        } else {
+          this.xp += g.xp;
+        }
         this.score += 2;
         this.gems.splice(i, 1);
-        events.push({ type: 'xp', x: this.px, z: this.pz });
+        if (g.kind === 'xp') events.push({ type: 'xp', x: this.px, z: this.pz });
         if (this.xp >= this.xpNeed) {
           this._levelUp();
           events.push({ type: 'levelup', cards: this.pendingCards });
@@ -339,7 +352,7 @@ export class Game {
 
     const { density } = swarmPressure(this.t);
     this.spawnAcc += dt * density;
-    const cap = 55 + Math.min(90, Math.floor(this.t / 5));
+    const cap = 24 + Math.min(36, Math.floor(this.t / 8));
     while (this.spawnAcc >= 1 && this.enemies.length < cap) {
       this.spawnAcc -= 1;
       this._spawn();
@@ -347,10 +360,12 @@ export class Game {
     this.waveT -= dt;
     if (this.waveT <= 0) {
       this._waveBurst();
-      this.waveT = 9 + this.rng() * 4;
+      this.waveT = 11 + this.rng() * 5;
       events.push({ type: 'wave' });
     }
 
     return { events };
   }
 }
+
+export { DROP, cratesFor, WEAPON_IDS };

@@ -102,3 +102,33 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   position: fixed; inset: 0; z-index: 20; pointer-events: none;
   background: radial-gradient(circle, #ff224466, #ff224400 60%);
 }
+
+/* ---- frame picker (three selectable mechs on the home screen) ---- */
+.mech-pick { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; width: 100%; }
+.mech-head {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: #7ad7ff; opacity: .85; text-align: center;
+}
+.mech-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mech-card {
+  appearance: none; cursor: pointer; text-align: left; font: inherit;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 10px 10px 9px; border-radius: 10px;
+  border: 1px solid #2a3560; background: #08051acc; color: #e8e4ff;
+  transition: border-color .15s, box-shadow .15s, transform .1s;
+}
+.mech-card .mech-swatch {
+  width: 100%; height: 6px; border-radius: 99px; margin-bottom: 6px;
+  background: linear-gradient(90deg, var(--a), var(--t));
+  box-shadow: 0 0 10px var(--a);
+}
+.mech-card b { font-size: 13px; letter-spacing: .5px; }
+.mech-card small { font-size: 10px; line-height: 1.3; color: #9c96c4; }
+.mech-card.on {
+  border-color: var(--t, #7cff3a);
+  box-shadow: 0 0 0 1px var(--t, #7cff3a) inset, 0 0 16px #7cff3a33;
+}
+.mech-card:active { transform: translateY(1px); }
+@media (max-width: 380px) {
+  .mech-card small { display: none; }
+}

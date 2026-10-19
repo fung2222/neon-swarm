@@ -1,11 +1,11 @@
-// NEON SWARM — v0.3.3 playfield stick (HUD overlay dead-zone fix) · EVA-mech · mech foes
+// RAMPAGE MECH 暴走機甲 — v0.5.0 three frames · human-led manhunt · readable drops
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
   ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL, ARENA } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
@@ -47,7 +47,45 @@ const S = {
   state: 'menu', demo: !!flags.demo, game: null, mode: 'endless',
   hub: HUB, keys: Object.create(null), stick: { active: false, dx: 0, dy: 0 },
   demoT: 0, newRecord: false,
+  mechId: MECH_BY_ID[store.get('mech', 'horn')] ? store.get('mech', 'horn') : 'horn',
 };
+S.mech = MECH_BY_ID[S.mechId];
+
+/** Three frames on the home screen; the pick previews live on the menu mech model. */
+function buildMechPicker() {
+  const box = $('mech-pick');
+  if (!box) return;
+  box.innerHTML = '';
+  const head = document.createElement('div');
+  head.className = 'mech-head';
+  head.textContent = t('mech.pick');
+  box.appendChild(head);
+  const row = document.createElement('div');
+  row.className = 'mech-row';
+  MECHS.forEach((m) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'mech-card' + (m.id === S.mechId ? ' on' : '') + ' mech-' + m.id;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', m.id === S.mechId ? 'true' : 'false');
+    b.dataset.id = m.id;
+    b.innerHTML =
+      `<span class="mech-swatch" style="--a:#${m.accent.toString(16).padStart(6, '0')};--t:#${m.trim.toString(16).padStart(6, '0')}"></span>` +
+      `<b>${i18n.isZh() ? m.zh : m.en}</b><small>${i18n.isZh() ? m.descZh : m.descEn}</small>`;
+    b.addEventListener('click', () => {
+      S.mechId = m.id;
+      S.mech = m;
+      store.set('mech', m.id);
+      try { audio.click(); } catch (_) {}
+      buildMechPicker();
+      if (S.menuMech) {
+        view.setMenuMech(m.id);
+      }
+    });
+    row.appendChild(b);
+  });
+  box.appendChild(row);
+}
 
 // Mild camera zoom (pinch / wheel) — one-finger left for move stick
 const ZOOM_LIM = { zoomMin: 0.72, zoomMax: 1.28, azMax: 0.01, pitchMin: 0.5, pitchMax: 1.5 };
@@ -77,6 +115,7 @@ function fmtTime(sec) {
 function refreshMenu() {
   $('start-best').textContent = String(store.getNum('best', 0));
   if ($('start-time')) $('start-time').textContent = fmtTime(store.getNum('bestTime', 0));
+  buildMechPicker();
 }
 function updateHUD() {
   const g = S.game; if (!g) return;
@@ -95,7 +134,10 @@ function updateHUD() {
 function showMenu() {
   S.state = 'menu';
   document.body.classList.add('in-menu');
-  view.setVisible(false);
+  view.hideMenuMech();
+  view.setMenuMech(S.mechId);
+  view.setPlayerVisible(false);
+  S.menuMech = true;
   $('hud').classList.add('hidden');
   $('stick').classList.add('hidden');
   Object.assign(pView, defaultView());
@@ -199,7 +241,15 @@ function showLevelCards(cards) {
 
 function startRun() {
   audio.init();
-  S.game = new Game({ seed: (Date.now() & 0xffff) ^ ((Math.random() * 1e6) | 0), endless: true });
+  view.hideMenuMech();
+  S.menuMech = false;
+  view.setPlayerVisible(true);
+  S.game = new Game({
+    seed: (Date.now() & 0xffff) ^ ((Math.random() * 1e6) | 0),
+    endless: true,
+    mech: S.mechId,
+  });
+  view.setMech(S.mechId);
   S.state = 'play';
   S.demoT = 0;
   S.newRecord = false;
@@ -235,9 +285,10 @@ function endRun(trial = false) {
   $('over-time').textContent = fmtTime(g.t);
   $('over-kills').textContent = String(g.kills);
   $('over-record').classList.toggle('hidden', !S.newRecord);
+  const who = g.killer ? (i18n.isZh() ? g.killer.zh : g.killer.en) : null;
   $('over-note').textContent = trial
-    ? (i18n.isZh() ? '試玩時間到 · 解鎖金級繼續洪流' : 'Trial time up — unlock Gold to keep going')
-    : t('overNote');
+    ? (i18n.isZh() ? '試玩時間到 · 解鎖金級繼續暴走' : 'Trial time up — unlock Gold to keep rampaging')
+    : (who ? t('killedBy', { who }) : t('overNote'));
   ui.show('over');
   audio.dead();
   if (ADS_ON) ads.naturalBreak('over').catch(() => {});
@@ -413,9 +464,11 @@ function tick(dt) {
   }
   if (S.state === 'menu') {
     const cam = stage.camera;
-    const tm = performance.now() * 0.0001;
-    cam.position.set(Math.sin(tm) * 6, 18, 22);
-    cam.lookAt(0, 1.5, 0);
+    const tm = performance.now() * 0.001;
+    // showcase orbit around the picked frame (turntable + slow dolly)
+    cam.position.set(Math.sin(tm * 0.18) * 4.2, 3.4, 5.6);
+    cam.lookAt(0, 1.05, 0);
+    if (S.menuMech) view.updateMenu(tm);
     return;
   }
   if (!S.game) return;
@@ -441,8 +494,9 @@ function tick(dt) {
     else if (ev.type === 'kill') {
       audio.kill();
       const c = new THREE.Color(ev.enemy.color);
+      const human = ev.enemy.family === 'human';
       const pos = new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z);
-      particles.burst(pos, c, 36, { speed: 6.5, up: 3.2, size: 1.05 });
+      particles.burst(pos, c, human ? 26 : 36, { speed: 6.5, up: 3.2, size: 1.05 });
       particles.burst(pos, new THREE.Color(0xffffff), 10, { speed: 3, up: 4, life: 0.5, size: 0.7 });
       particles.ring(pos, c, 28, 9, 0.35);
       waves.spawn(pos, c, { r0: 0.3, r1: 2.4, dur: 0.5, a: 2.6 });
@@ -452,6 +506,15 @@ function tick(dt) {
       audio.xp();
       particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), 18, { speed: 3.2, up: 2.6, size: 0.95 });
       particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), 8, { speed: 1.8, up: 3.5, life: 0.7, size: 0.6 });
+    }
+    else if (ev.type === 'heal') {
+      audio.xp();
+      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0x00e5ff), 26, { speed: 3.5, up: 3, size: 0.9 });
+      particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0x00e5ff), 30, 8, 0.24);
+    }
+    else if (ev.type === 'weapon') {
+      audio.nova();
+      particles.burst(new THREE.Vector3(S.game.px, 0.8, S.game.pz), new THREE.Color(0xffe600), 30, { speed: 4, up: 3.4, size: 0.9 });
     }
     else if (ev.type === 'hurt') {
       audio.hurt();
