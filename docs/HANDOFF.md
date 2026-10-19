@@ -4,8 +4,8 @@
 > **Contact style (Roy):** 解釋用繁體中文（廣東話都睇得明）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 喺下面。  
 > Timezone: **Asia/Hong_Kong (UTC+8)**. Owner: **fung2222 (Roy Chan / 嘉豐)**.
 
-**Status:** **v0.3.3** playfield-stick HUD dead-zone fix · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
-**HEAD:** `4fef9ba` (`4fef9ba2ebb2f3eaf568d46de54a5048d0ef63f7`) · 2026-10-18 12:15 HKT  
+**Status:** **v0.3.4** level-up fix (chime + card caps) · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
+**HEAD:** v0.3.4 commit on `main` after `71513d3` · 2026-10-19 HKT  
 **Live:** https://fung2222.github.io/neon-swarm/ · demo `?demo=1` · trial probe `?hub=1&trial=1`  
 **Repo:** https://github.com/fung2222/neon-swarm
 
@@ -26,7 +26,9 @@
 | `7442fe9` | 2026-10-18 | **v0.3** open wilderness redesign |
 | `a7785d9` | 2026-10-18 | v0.3.1 camera follow, mech anim, denser particles & swarm |
 | `5397507` | 2026-10-18 | v0.3.2 EVA-mech palette, follow-stick, mech foes, big emblems |
-| **`4fef9ba`** | 2026-10-18 | **v0.3.3** playfield stick — HUD overlay dead-zone (**current HEAD**) |
+| `4fef9ba` | 2026-10-18 | **v0.3.3** playfield stick — HUD overlay dead-zone |
+| `71513d3` | 2026-10-19 | tests only — `tests/health.test.mjs` + `tests/balance.test.mjs` (no game code) |
+| v0.3.4 | 2026-10-19 | **level-up fix** — silent chime + cards ran dry after level 6 (**current**) |
 
 Hub card: `fung2222/cyber-arcade@501e4e6` (WIP thumbs; stage line may still say v0.2 until hub sync — prefer this HANDOFF).
 
@@ -41,27 +43,41 @@ Hub card: `fung2222/cyber-arcade@501e4e6` (WIP thumbs; stage line may still say 
 - **i18n:** zh-HK / en via kit `i18n` + `js/strings.js`; `localStorage cyber.lang`.
 - **Layout:** `#screen-start.menu-home` (kit home zones). House / book / gear only on home (`kit ≥ 0.3.15`).
 
-Key files: `js/{main,view,logic,config,audio,strings}.js` · `css/game.css` · `index.html` · `tests/logic.test.mjs` · `tests/smoke_files.py`.
+Key files: `js/{main,view,logic,config,audio,strings}.js` · `css/game.css` · `index.html` · `tests/{logic,levelup,health,balance}.test.mjs` · `tests/smoke_files.py`.
 
 ## 4. v0.3.3 stick fix (do not regress)
 - **Root cause:** kit `.hud-buttons { bottom: … }` + game `.hud-buttons.top { top: … }` left **both** `top` and `bottom` set → mute/pause strip stretched ~full height with `pointer-events: auto`, eating the right (and bottom-right) playfield. Stick listener also wrongly ignored `#hud` (full-screen overlay).
 - **Fix:** `bottom: auto; height: auto` on `.hud-buttons.top`; decorative HUD `pointer-events: none`; drag-anywhere on `window`, excluding only real UI (`button` / `.icon-btn` / cards).
 
-## 5. Known issues / gaps
+## 4b. v0.3.4 level-up fixes (do not regress)
+
+1. **Silent level-up chime.** `SwarmAudio` had an instance method `level()`, but `SynthAudio` already owns `this.level` (a **number** — the music level), so the method was shadowed and every level-up threw `audio.level is not a function`. Renamed to **`levelChime()`**.
+   - Rule: never name a `SwarmAudio` method the same as a `this.*` property in `vendor/cyber-kit/audio/synth.js`. `tests/health.test.mjs` now fails on any such collision.
+2. **Cards ran dry after level 6.** All 15 cards could be taken repeatedly, so they were all "taken" and the pool emptied: `pickCards` returned `[]`, `showLevelCards` opened an empty panel (or nothing), and the run continued with **no more upgrades**. Now:
+   - Cards carry an optional `max` (rate 6, orbit 4, spread 3, pierce 4, multi 3, nova 6, frost 3, rail 4, armor 3, deflect 3, speed 5, magnet 4; `dmg` / `plating` / `hp` uncapped). `spread` is now capped at 3 to match its own text.
+   - `Game.taken` counts picks; `pickCards(rng, n, taken)` filters exhausted cards; if the capped pool is empty the draw falls back to the uncapped cards, so **a level-up always yields a choice**.
+   - Card UI shows a `n/max` stack badge; the pick handler uses a snapshot of `taken` (incrementing during the panel build hid the badge).
+   - Regression coverage: `tests/levelup.test.mjs` (200+ level-ups, no empty pick, no over-cap offer).
+
+## 5. Testing a browser build (important)
+- **Use GPU.** Launch headless Chromium with **no GL flags** — on Roy's machine that picks the NVIDIA D3D11 path (60 FPS). Adding `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader` drops to **~3 FPS**, the game looks frozen, and every recorded timestamp is wrong. Only use SwiftShader to *reproduce* a slow device.
+- `?fps=1` shows the FPS/rate chip in-game; `?lang=en|zh`, `?demo=1`, `?autostart=1` are the other useful flags.
+- A drag-stick run needs a real `Input.dispatchTouchEvent` drag; keyboard `WASD` only works on non-touch contexts (mobile emulation ignores it).
+
+## 6. Known issues / gaps
 1. **Trial unlock UX incomplete** — survive-sec gate exists; elite-milestone + “unlock Gold → return to hub store” path still TODO (see stub trial.rule).
 2. **Hub `games.json` stage/thumbAlt may lag** — older text mentioned circular arena / v0.2 polish; wilderness + EVA-mech is current. Sync hub when touching cyber-arcade.
 3. **No Android / Capacitor** packaging yet (`play: not-submitted`).
-4. **Balance / content** — no named elite/boss beats yet; long-run pacing untested by Roy.
-5. **Smoke** — `tests/smoke_files.py` + logic unit; full Playwright headless smoke like older games may still be thin — verify before calling “done”.
+4. **Balance / content** — no named elite/boss beats yet. Baseline from `tests/balance.test.mjs` (v0.3.4, seeded, auto-pick first card): a circling player dies at **~110–130 s**; standing still ≈ 9 s; fleeing straight ≈ 16 s. Long-run pacing still untested by Roy.
+5. **Smoke** — `tests/{logic,levelup,health,balance}` + `tests/smoke_files.py` run headless; a Playwright pass (412×915 + 1280×800, zh + en, zero console errors) passes as of v0.3.4 but is **not committed to the repo** — re-run it before calling “done”.
 6. **Trademark hygiene** — keep EVA as palette/silhouette homage only; never ship names, logos, or exact reproductions.
 
-## 6. Next steps (suggested order)
-1. Roy playtest on phone + desktop (`?demo=1`, real stick, level-up cards, 3+ min run).
-2. Finish trial → `returnToHub({ openStore: true })` when cap hits; align `games.json` trial.rule.
-3. One elite/boss beat + readable telegraph; then balance pass on HP / spawn density.
+## 7. Next steps (suggested order)
+1. Roy playtest on phone + desktop (`?demo=1`, real stick, level-up cards, 3+ min run) — v0.3.4 fixed the chime and the level-6 card wall, so this is the first run that goes past level 6 with upgrades.
+2. One elite/boss beat + readable telegraph; then balance pass on HP / spawn density (run `tests/balance.test.mjs` before/after).
+3. Finish trial → `returnToHub({ openStore: true })` when cap hits; align `games.json` trial.rule.
 4. Refresh hub thumb from live wilderness + EVA-mech frame; update `thumbAlt` zh/en.
-5. Harden smoke (412×915 + 1280×800, zh+en, zero console errors) → mark closer to `done`.
-6. Only after Roy says go: Capacitor 8 + AdMob stubs.
+5. Only after Roy says go: Capacitor 8 + AdMob stubs.
 
 ## 7. Roy preferences (binding for this series)
 - **Language / contact:** 對 Roy 同 handoff 解釋用 **zh-HK（廣東話都睇得明）**；code / paths / shell / commits 用 English.
@@ -106,9 +122,17 @@ Trial default: 3 runs/day + per-game caps. Stub for this repo: `docs/GAMES-JSON-
 - Run / tower / board polished (board i18n + volume; tower close radial after place; camera zoom/rotate on games **2,3,5,8,9** via kit ViewInput 0.3.16 → data-fuse, neon-recall, cyber-mini-pack, cyber-board, cyber-tower).
 - New games: **neon-swarm (Gold)** + **neon-sort (Silver)**; hub WIP cards + thumbs.
 - Swarm iteration focus ended at **`4fef9ba`**.
+- **2026-10-19 (this session):** audited swarm against the HANDOFF, added the test suite (`71513d3`), shipped **v0.3.4** level-up fixes. Roy chose direction **A: keep polishing the swarm** over neon-sort for now.
 
 ## 11. Dev
 ```bash
 cd /workspace && python3 -m http.server 18940
 # http://127.0.0.1:18940/neon-swarm/
+```
+
+Run the headless suite before pushing:
+```bash
+node tests/logic.test.mjs && node tests/levelup.test.mjs && node tests/health.test.mjs
+node tests/balance.test.mjs   # long-run pacing numbers (prints 30/60/…s marks)
+python tests/smoke_files.py
 ```

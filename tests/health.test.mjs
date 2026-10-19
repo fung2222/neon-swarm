@@ -19,15 +19,28 @@ for (const m of html.matchAll(/(?:src|href)="\.\/([^"?]+)/g)) {
   if (!exists(m[1])) fail('index.html references missing file: ' + m[1]);
 }
 
-// 2. Every audio.* call must exist on SwarmAudio or its kit base class.
+// 2. Every audio.* call must exist on SwarmAudio or its kit base class — and must NOT be
+//    shadowed by a kit instance property (this.level is a number: `audio.level()` threw in v0.3.3).
 const kitAudio = read('vendor/cyber-kit/audio/synth.js');
-const gameAudio = new Set([...audioSrc.matchAll(/^\s{2}(\w+)\s*\(/gm)].map((m) => m[1]));
-const kitMethods = new Set([...kitAudio.matchAll(/^\s{2}(\w+)\s*\(/gm)].map((m) => m[1]));
+const methodNames = (src) => new Set([...src.matchAll(/^\s{2}(\w+)\s*\(/gm)].map((m) => m[1]));
+const gameAudio = methodNames(audioSrc);
+const kitMethods = methodNames(kitAudio);
+const kitProps = new Set([...kitAudio.matchAll(/this\.(\w+)\s*=/g)].map((m) => m[1]));
+for (const name of gameAudio) {
+  if (kitProps.has(name)) fail(`SwarmAudio.${name}() is shadowed by SynthAudio property this.${name}`);
+}
+let audioCalls = 0;
 for (const f of ['js/main.js', 'js/logic.js', 'js/view.js']) {
   for (const m of read(f).matchAll(/\baudio\.(\w+)\(/g)) {
+    audioCalls++;
     if (!gameAudio.has(m[1]) && !kitMethods.has(m[1])) fail(`${f} calls audio.${m[1]}() which does not exist`);
   }
 }
+if (audioCalls < 5) fail('audio call scan found almost nothing — check the pattern');
+
+// 2b. A level-up must always hand back at least one card.
+if (!/pendingCards = pickCards\(/.test(logic)) fail('logic.js does not call pickCards for level-ups');
+if (!/cardExhausted/.test(read('js/config.js'))) fail('config.js lost the card cap bookkeeping');
 
 // 3. The render loop must call stage.render (black-canvas regression).
 if (!/stage\.render\(/.test(main)) fail('main.js never calls stage.render()');

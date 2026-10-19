@@ -1,0 +1,62 @@
+import { Game } from '../js/logic.js';
+import { CARDS, cardExhausted, pickCards, xpToLevel } from '../js/config.js';
+import assert from 'assert';
+
+const zero = () => 0; // deterministic rng: always grabs the first card of the pool
+
+// 1. A level-up must ALWAYS offer pickable cards, even after every capped card is maxed out.
+{
+  const g = new Game({ seed: 3 });
+  const taken = {};
+  for (const c of CARDS) if (c.max != null) taken[c.id] = c.max;
+  for (const c of CARDS) for (let i = 0; i < (c.max ?? 2); i++) g.applyCard(c);
+  for (let lv = 0; lv < 40; lv++) {
+    g._levelUp();
+    assert.ok(g.pendingCards && g.pendingCards.length > 0, `level ${g.level} offered no cards`);
+    const ids = g.pendingCards.map((c) => c.id);
+    for (const c of g.pendingCards) {
+      assert.ok(!cardExhausted(c, g.taken), `exhausted card ${c.id} offered at level ${g.level}`);
+    }
+    assert.equal(new Set(ids).size, ids.length, 'a pick list must not repeat a card');
+    g.applyCard(g.pendingCards[0]);
+  }
+}
+
+// 2. Exhausted cards leave the draw pool; the safety net draws only uncapped cards.
+{
+  const taken = {};
+  for (const c of CARDS) if (c.max != null) taken[c.id] = c.max;
+  const pool = pickCards(zero, 3, taken);
+  assert.equal(pool.length, 3);
+  for (const c of pool) assert.equal(c.max, null, `fallback drew capped card ${c.id}`);
+  // partially spent pool still respects remaining stacks
+  const t2 = { orbit: 4, spread: 3 };
+  const p2 = pickCards(() => 0.5, 3, t2);
+  assert.ok(p2.every((c) => c.id !== 'orbit' && c.id !== 'spread'), 'exhausted cards leaked into the draw');
+}
+
+// 3. Taking the same card repeatedly is counted (drives the n/max badge and the caps).
+{
+  const g = new Game({ seed: 5 });
+  const dmg = CARDS.find((c) => c.id === 'dmg');
+  const before = g.bulletDmg;
+  g.applyCard(dmg);
+  g.applyCard(dmg);
+  assert.equal(g.taken.dmg, 2);
+  assert.equal(g.bulletDmg, before + 2);
+}
+
+// 4. Two hundred level-ups through the real loop still keep a healthy pick rate.
+{
+  const g = new Game({ seed: 11 });
+  let offers = 0;
+  for (let i = 0; i < 200; i++) {
+    g._levelUp();
+    if (g.pendingCards.length) offers++;
+    g.applyCard(g.pendingCards[0]);
+  }
+  assert.equal(offers, 200, 'every level-up must offer a card');
+  assert.ok(g.bulletDmg >= 20 && g.maxHp > 7, 'build should keep growing (' + g.bulletDmg + ' dmg, ' + g.maxHp + ' hp)');
+}
+
+console.log('levelup OK', { cards: CARDS.length, capped: CARDS.filter((c) => c.max != null).length, xpToLevel10: xpToLevel(10) });

@@ -42,52 +42,60 @@ export const ENEMIES = {
  * kind: weapon | armor | util
  */
 export const CARDS = [
+  // `max` caps how many times a card may be taken; cards without it are uncapped.
   { id: 'dmg', kind: 'weapon', icon: '⚡', shape: 'bolt',
     zh: '脈衝強化', en: 'PULSE+', descZh: '傷害 +1', descEn: 'Damage +1',
     apply: (s) => { s.bulletDmg += 1; } },
-  { id: 'rate', kind: 'weapon', icon: '⏱', shape: 'clock',
-    zh: '射速超頻', en: 'FIRE RATE', descZh: '射速 +18%', descEn: 'Fire rate +18%',
+  { id: 'rate', kind: 'weapon', icon: '⏱', shape: 'clock', max: 6,
+    zh: '射速超頻', en: 'FIRE RATE', descZh: '射速 +18%（最多 6 次）', descEn: 'Fire rate +18% (max 6)',
     apply: (s) => { s.fireCd = Math.max(0.11, s.fireCd * 0.82); } },
-  { id: 'orbit', kind: 'weapon', icon: '⟳', shape: 'orbit',
+  { id: 'orbit', kind: 'weapon', icon: '⟳', shape: 'orbit', max: 4,
     zh: '軌道刃', en: 'ORBIT BLADES', descZh: '環繞刃 +1（最多 4）', descEn: '+1 orbit blade (max 4)',
     apply: (s) => { s.orbits = Math.min(4, (s.orbits || 0) + 1); } },
-  { id: 'spread', kind: 'weapon', icon: '✴', shape: 'spread',
-    zh: '散射脈衝', en: 'SPREAD', descZh: '額外 ±18° 子彈', descEn: 'Extra ±18° shots',
-    apply: (s) => { s.spread = Math.min(4, (s.spread || 0) + 1); } },
-  { id: 'pierce', kind: 'weapon', icon: '↗', shape: 'pierce',
-    zh: '穿透芯', en: 'PIERCE', descZh: '子彈穿透 +1', descEn: 'Bullet pierce +1',
-    apply: (s) => { s.pierce = (s.pierce || 0) + 1; } },
-  { id: 'multi', kind: 'weapon', icon: '◎', shape: 'lock',
-    zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '同時鎖定 +1 敵人', descEn: 'Lock +1 extra foe',
+  { id: 'spread', kind: 'weapon', icon: '✴', shape: 'spread', max: 3,
+    zh: '散射脈衝', en: 'SPREAD', descZh: '額外 ±18° 子彈（最多 3）', descEn: 'Extra ±18° shots (max 3)',
+    apply: (s) => { s.spread = Math.min(3, (s.spread || 0) + 1); } },
+  { id: 'pierce', kind: 'weapon', icon: '↗', shape: 'pierce', max: 4,
+    zh: '穿透芯', en: 'PIERCE', descZh: '子彈穿透 +1（最多 4）', descEn: 'Bullet pierce +1 (max 4)',
+    apply: (s) => { s.pierce = Math.min(4, (s.pierce || 0) + 1); } },
+  { id: 'multi', kind: 'weapon', icon: '◎', shape: 'lock', max: 3,
+    zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '同時鎖定 +1 敵人（最多 4）', descEn: 'Lock +1 extra foe (max 4)',
     apply: (s) => { s.multi = Math.min(4, (s.multi || 1) + 1); } },
-  { id: 'nova', kind: 'weapon', icon: '✸', shape: 'nova',
-    zh: '新星脈衝', en: 'NOVA PULSE', descZh: '週期範圍傷害', descEn: 'Periodic AoE blast',
+  { id: 'nova', kind: 'weapon', icon: '✸', shape: 'nova', max: 6,
+    zh: '新星脈衝', en: 'NOVA PULSE', descZh: '週期範圍傷害（最多 6）', descEn: 'Periodic AoE blast (max 6)',
     apply: (s) => { s.nova = (s.nova || 0) + 1; s.novaCd = Math.max(2.2, 4.5 - s.nova * 0.4); } },
-  { id: 'frost', kind: 'weapon', icon: '❄', shape: 'frost',
-    zh: '冷凍協議', en: 'FROST', descZh: '命中減速敵人', descEn: 'Hits slow enemies',
-    apply: (s) => { s.frost = Math.min(0.55, (s.frost || 0) + 0.18); } },
-  { id: 'rail', kind: 'weapon', icon: '═', shape: 'rail',
-    zh: '軌道炮', en: 'RAIL SHOT', descZh: '子彈速度 +25%、壽命↑', descEn: 'Bullet speed +25%, life↑',
+  { id: 'frost', kind: 'weapon', icon: '❄', shape: 'frost', max: 3,
+    zh: '冷凍協議', en: 'FROST', descZh: '命中減速敵人（最多 3）', descEn: 'Hits slow enemies (max 3)',
+    apply: (s) => { s.frost = Math.min(0.54, (s.frost || 0) + 0.18); } },
+  { id: 'rail', kind: 'weapon', icon: '═', shape: 'rail', max: 4,
+    zh: '軌道炮', en: 'RAIL SHOT', descZh: '子彈速度 +25%、壽命↑（最多 4）', descEn: 'Bullet speed +25%, life↑ (max 4)',
     apply: (s) => { s.bulletSpeed *= 1.25; s.bulletLife = Math.min(2.2, (s.bulletLife || 1.15) * 1.2); } },
-  { id: 'armor', kind: 'armor', icon: '🛡', shape: 'shield',
+  { id: 'armor', kind: 'armor', icon: '🛡', shape: 'shield', max: 3,
     zh: '裝甲板', en: 'ARMOR PLATE', descZh: '接觸傷害 −1（最少 1）· 裝甲層 +1', descEn: 'Contact dmg −1 (min 1) · armor +1',
     apply: (s) => { s.armor = Math.min(3, (s.armor || 0) + 1); } },
   { id: 'plating', kind: 'armor', icon: '▣', shape: 'plate',
     zh: '強化護盾', en: 'SHIELD PLATING', descZh: '最大 HP +2 並回滿', descEn: 'Max HP +2 & heal full',
     apply: (s) => { s.maxHp += 2; s.hp = s.maxHp; } },
-  { id: 'deflect', kind: 'armor', icon: '◈', shape: 'deflect',
-    zh: '偏折力場', en: 'DEFLECTOR', descZh: '受傷後無敵時間更長', descEn: 'Longer i-frames after hit',
-    apply: (s) => { s.deflect = Math.min(0.9, (s.deflect || 0) + 0.25); } },
-  { id: 'speed', kind: 'util', icon: '≫', shape: 'swift',
-    zh: '疾行', en: 'SWIFT', descZh: '移動 +12%', descEn: 'Move +12%',
+  { id: 'deflect', kind: 'armor', icon: '◈', shape: 'deflect', max: 3,
+    zh: '偏折力場', en: 'DEFLECTOR', descZh: '受傷後無敵時間更長（最多 3）', descEn: 'Longer i-frames after hit (max 3)',
+    apply: (s) => { s.deflect = Math.min(0.75, (s.deflect || 0) + 0.25); } },
+  { id: 'speed', kind: 'util', icon: '≫', shape: 'swift', max: 5,
+    zh: '疾行', en: 'SWIFT', descZh: '移動 +12%（最多 5）', descEn: 'Move +12% (max 5)',
     apply: (s) => { s.speed *= 1.12; } },
-  { id: 'magnet', kind: 'util', icon: '⊕', shape: 'magnet',
-    zh: '磁吸', en: 'MAGNET', descZh: '經驗吸取範圍↑', descEn: 'XP magnet↑',
+  { id: 'magnet', kind: 'util', icon: '⊕', shape: 'magnet', max: 4,
+    zh: '磁吸', en: 'MAGNET', descZh: '經驗吸取範圍↑（最多 4）', descEn: 'XP magnet↑ (max 4)',
     apply: (s) => { s.magnet *= 1.35; } },
   { id: 'hp', kind: 'armor', icon: '♥', shape: 'heart',
     zh: '護盾芯', en: 'SHIELD CORE', descZh: '最大 HP +1 並回滿', descEn: 'Max HP +1 & heal',
     apply: (s) => { s.maxHp += 1; s.hp = s.maxHp; } },
 ];
+
+const CARDS_BY_ID = Object.fromEntries(CARDS.map((c) => [c.id, c]));
+
+/** True once a card has hit its `max` stacks (uncapped cards are never exhausted). */
+export function cardExhausted(card, taken) {
+  return !!card && card.max != null && (taken[card.id] || 0) >= card.max;
+}
 
 export function xpToLevel(lv) {
   return Math.floor(3 + lv * 1.8 + lv * lv * 0.25);
@@ -102,8 +110,16 @@ export function swarmPressure(t) {
   return { density, hpMul, speedMul };
 }
 
-export function pickCards(rng, n = 3) {
-  const pool = CARDS.slice();
+/**
+ * Draw n distinct level-up cards that are still available.
+ * Fully exhausted cards drop out; when the pool runs dry the safety net is drawn from the
+ * uncapped cards (dmg / plating / hp), so a level-up ALWAYS yields a pickable choice.
+ */
+export function pickCards(rng, n = 3, taken = null) {
+  const exhausted = (c) => cardExhausted(c, taken || {});
+  let pool = CARDS.filter((c) => !exhausted(c));
+  if (!pool.length) pool = CARDS.filter((c) => c.max == null);
+  if (!pool.length) pool = CARDS.slice();
   const out = [];
   for (let i = 0; i < n && pool.length; i++) {
     const j = Math.floor(rng() * pool.length);
@@ -111,3 +127,5 @@ export function pickCards(rng, n = 3) {
   }
   return out;
 }
+
+export { CARDS_BY_ID };

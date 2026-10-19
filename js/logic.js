@@ -22,6 +22,7 @@ export class Game {
     this.xpNeed = xpToLevel(1);
     this.pendingCards = null;
     this.pausedForLevel = false;
+    this.taken = {};
 
     this.px = 0; this.pz = 0;
     this.vx = 0; this.vz = 0;
@@ -65,6 +66,8 @@ export class Game {
 
   applyCard(card) {
     card.apply(this);
+    if (!this.taken) this.taken = {};
+    this.taken[card.id] = (this.taken[card.id] || 0) + 1;
     this.pendingCards = null;
     this.pausedForLevel = false;
   }
@@ -74,7 +77,8 @@ export class Game {
     this.xp -= this.xpNeed;
     if (this.xp < 0) this.xp = 0;
     this.xpNeed = xpToLevel(this.level);
-    this.pendingCards = pickCards(this.rng, 3);
+    if (!this.taken) this.taken = {};
+    this.pendingCards = pickCards(this.rng, 3, this.taken);
     this.pausedForLevel = true;
   }
 

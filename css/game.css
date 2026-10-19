@@ -80,6 +80,12 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   color: #7ad7ff; opacity: 0.85; margin-bottom: 4px;
 }
 .level-card small { display: block; color: #a9a3cc; }
+/* stack counter "2/3" next to the kind tag — shows how far a capped card is */
+.level-card .card-count {
+  display: inline-block; font-style: normal; font-size: 10px; letter-spacing: 1px;
+  margin-left: 6px; padding: 0 6px; border-radius: 99px;
+  color: #05010f; background: #7cff3a; opacity: 0.92; font-weight: 700;
+}
 .level-card.kind-weapon .card-icon { border-color: #00e5ff99; color: #00e5ff; background: #061428; }
 .level-card.kind-armor .card-icon { border-color: #8b3dffcc; color: #c084fc; background: #16082a; }
 .level-card.kind-armor b { color: #c084fc; }

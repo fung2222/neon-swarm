@@ -11,7 +11,9 @@ export class SwarmAudio extends SynthAudio {
     this.noiseHit({ dur: 0.08, vol: 0.045, type: 'bandpass', f: 1800 });
   }
   xp() { this.osc({ type: 'sine', f: mtof(84), dur: 0.05, vol: 0.035, send: 0.25 }); }
-  level() {
+  // NOTE: do not name this `level()` — SynthAudio keeps `this.level` as the music level *number*,
+  // and an instance method of the same name is shadowed by it (v0.3.4: level-up chime was silent).
+  levelChime() {
     [0, 4, 7, 12].forEach((x, i) => this.osc({ type: 'square', f: mtof(72 + x), t: i * 0.05, dur: 0.14, vol: 0.045, lp: 4000, send: 0.35 }));
   }
   hurt() { this.osc({ type: 'sawtooth', f: 200, f2: 60, dur: 0.22, vol: 0.07, lp: 1200 }); }

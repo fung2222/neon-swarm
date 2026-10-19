@@ -158,9 +158,14 @@ function cardEmblem(c) {
 }
 
 function showLevelCards(cards) {
+  if (!cards || !cards.length) {
+    // Safety net: a level-up must never silently swallow the pick (v0.3.3 left the run running with no card).
+    return;
+  }
   S.state = 'level';
   const box = $('level-cards');
   box.innerHTML = '';
+  let prevTaken = S.game.taken || {};
   cards.forEach((c) => {
     const b = document.createElement('button');
     b.className = 'level-card ' + cardKindClass(c);
@@ -170,10 +175,11 @@ function showLevelCards(cards) {
       : c.kind === 'weapon'
         ? (i18n.isZh() ? '武器' : 'WEAPON')
         : (i18n.isZh() ? '輔助' : 'UTIL');
+    const times = c.max != null ? `<em class="card-count">${prevTaken[c.id] || 0}/${c.max}</em>` : '';
     b.innerHTML =
       `<span class="card-icon" aria-hidden="true">${cardEmblem(c)}</span>` +
       `<span class="card-body"><b>${i18n.isZh() ? c.zh : c.en}</b>` +
-      `<em class="card-kind">${kind}</em>` +
+      `<em class="card-kind">${kind}</em>${times}` +
       `<small>${i18n.isZh() ? c.descZh : c.descEn}</small></span>`;
     b.addEventListener('click', () => {
       audio.pick();
@@ -188,7 +194,7 @@ function showLevelCards(cards) {
     box.appendChild(b);
   });
   ui.show('level');
-  audio.level();
+  audio.levelChime();
 }
 
 function startRun() {
