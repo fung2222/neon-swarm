@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier } from './config.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
 
@@ -69,6 +69,9 @@ export class Game {
     this.muzzle = 0;
     this.waveT = 8;
     this.killer = null;
+    // contract goal: the kill target shown on the HUD; each clear raises it
+    this.goalKills = 40;
+    this.goalsCleared = 0;
     for (let i = 0; i < 10; i++) this._spawn();
   }
 
@@ -156,10 +159,23 @@ export class Game {
       .map((x) => x.e);
   }
 
+  /** The weapon whose look the muzzle / default shots borrow (highest stack owned). */
+  primaryWeapon() {
+    let best = 'dmg';
+    let n = -1;
+    for (const id of WEAPON_IDS) {
+      const c = this.taken ? (this.taken[id] || 0) : 0;
+      if (c > n) { n = c; best = id; }
+    }
+    return best;
+  }
+
   _emitBullet(dx, dz, opts = {}) {
     const len = Math.hypot(dx, dz) || 1;
     dx /= len; dz /= len;
+    const weapon = opts.weapon || this.primaryWeapon();
     this.bullets.push({
+      weapon, tier: shotTier((this.taken && this.taken[weapon]) || 0),
       x: this.px, z: this.pz,
       vx: dx * this.bulletSpeed, vz: dz * this.bulletSpeed,
       life: this.bulletLife || PLAYER.bulletLife, dmg: this.bulletDmg,
@@ -176,10 +192,11 @@ export class Game {
     }
     for (const best of targets) {
       const base = Math.atan2(best.z - this.pz, best.x - this.px);
-      this._emitBullet(Math.cos(base), Math.sin(base));
+      const wide = this.spread > 0;
+      this._emitBullet(Math.cos(base), Math.sin(base), { weapon: wide ? 'spread' : 'dmg' });
       for (let s = 1; s <= this.spread; s++) {
-        this._emitBullet(Math.cos(base + s * 0.32), Math.sin(base + s * 0.32));
-        this._emitBullet(Math.cos(base - s * 0.32), Math.sin(base - s * 0.32));
+        this._emitBullet(Math.cos(base + s * 0.32), Math.sin(base + s * 0.32), { weapon: 'spread' });
+        this._emitBullet(Math.cos(base - s * 0.32), Math.sin(base - s * 0.32), { weapon: 'spread' });
       }
     }
   }
@@ -219,6 +236,11 @@ export class Game {
   _kill(e, i) {
     this.enemies.splice(i, 1);
     this.kills++;
+    if (this.kills >= this.goalKills) {
+      this.goalsCleared++;
+      this.score += 250 * this.goalsCleared;
+      this.goalKills += 40 + this.goalsCleared * 10;
+    }
     this.score += e.score + Math.floor(this.t);
     this._dropGem(e);
     if ((e.kind === 'chief' || e.kind === 'mech') && this.rng() < 0.35) {

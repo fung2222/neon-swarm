@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.5.1">
+<link rel="stylesheet" href="./css/game.css?v=0.6.0">
 <script type="importmap">
 {
   "imports": {
@@ -33,9 +33,10 @@
     <div class="stat"><div class="label" data-i18n="hud.lv"></div><div class="value" id="hud-lv">1</div></div>
   </div>
   <div class="hud-panel hud-right">
-    <div class="stat"><div class="label" data-i18n="hud.time"></div><div class="value" id="hud-time">0:00</div></div>
+    <div class="stat"><div class="label" data-i18n="hud.time"></div><div class="value big" id="hud-time">0:00</div></div>
     <div class="stat"><div class="label" data-i18n="hud.score"></div><div class="value" id="hud-score">0</div></div>
   </div>
+  <div id="hud-goal" class="hud-goal"><span data-i18n="goal.kills"></span> <b id="goal-left">0</b></div>
   <div class="xp-bar"><i id="xp-fill"></i></div>
   <div class="hud-buttons top">
     <button id="btn-mute" class="icon-btn" data-i18n-attr="title:muteTip,aria-label:muteTip">
@@ -102,14 +103,17 @@
     <h2 class="title2 glitch" data-i18n="over">完局</h2>
     <div class="title-en" data-i18n="overS"></div>
     <div id="over-record" class="record hidden" data-i18n="newRecord"></div>
-    <div class="hi-line"><span data-i18n="score"></span> <b id="over-score">0</b>　<span data-i18n="best"></span> <b id="over-best">0</b></div>
-    <div class="hi-line"><span data-i18n="hud.time"></span> <b id="over-time">0:00</b>　KILLS <b id="over-kills">0</b></div>
+    <div class="result-grid">
+      <div class="result Big"><span data-i18n="score"></span><b id="over-score">0</b><em data-i18n="best"></em><i id="over-best">0</i></div>
+      <div class="result Big"><span data-i18n="hud.time"></span><b id="over-time">0:00</b><em data-i18n="bestTime"></em><i id="over-best-time">0:00</i></div>
+    </div>
+    <div class="hi-line"><span data-i18n="kills"></span> <b id="over-kills">0</b>　<span data-i18n="goal.cleared"></span> <b id="over-goals">0</b></div>
     <p class="tagline" id="over-note" data-i18n="overNote"></p>
     <button class="neon-btn" id="btn-retry"><span data-i18n="retry"></span><small data-i18n="retryS"></small></button>
     <button class="neon-btn ghost" id="btn-menu"><span data-i18n="menu"></span><small data-i18n="menuS"></small></button>
   </div>
 </div>
 
-<script type="module" src="./js/main.js?v=0.5.1"></script>
+<script type="module" src="./js/main.js?v=0.6.0"></script>
 </body>
 </html>

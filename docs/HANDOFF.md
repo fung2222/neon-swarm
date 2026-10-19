@@ -4,8 +4,8 @@
 > **Contact style (Roy):** 解釋用繁體中文（廣東話都睇得明）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 喺下面。  
 > Timezone: **Asia/Hong_Kong (UTC+8)**. Owner: **fung2222 (Roy Chan / 嘉豐)**.
 
-**Status:** **v0.5.0** rebrand 暴走機甲 / RAMPAGE MECH · 3 selectable frames · human-led manhunt · readable drops · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
-**HEAD:** v0.5.0 commit on `main` after `66273e8` · 2026-10-19 HKT  
+**Status:** **v0.6.0** art pass — anime mecha frames, readable human manhunt, per-weapon projectiles, cube drops, score+time results · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
+**HEAD:** v0.6.0 commit on `main` after `7776e74` · 2026-10-19 HKT  
 **Live:** https://fung2222.github.io/neon-swarm/ · demo `?demo=1` · trial probe `?hub=1&trial=1`  
 **Repo:** https://github.com/fung2222/neon-swarm
 
@@ -29,7 +29,9 @@
 | `4fef9ba` | 2026-10-18 | **v0.3.3** playfield stick — HUD overlay dead-zone |
 | `71513d3` | 2026-10-19 | tests only — `tests/health.test.mjs` + `tests/balance.test.mjs` (no game code) |
 | `66273e8` | 2026-10-19 | **v0.3.4** level-up fix — silent chime + cards ran dry after level 6 |
-| v0.5.0 | 2026-10-19 | **rebrand + frames + human manhunt + readable drops** (**current**) |
+| `832096d` | 2026-10-19 | v0.5.0 rebrand 暴走機甲 / RAMPAGE MECH · three frames · human manhunt |
+| `7776e74` | 2026-10-19 | v0.5.1 home layout — desktop copy left, showcase right |
+| v0.6.0 | 2026-10-19 | **art pass** — anime mecha + hostiles, per-weapon shots, cube drops, staged kills goal, score+time results (**current**) |
 
 Hub card: `fung2222/cyber-arcade@501e4e6` (WIP thumbs; stage line may still say v0.2 until hub sync — prefer this HANDOFF).
 
@@ -66,6 +68,42 @@ Key files: `js/{main,view,logic,config,audio,strings}.js` · `css/game.css` · `
 2. **Menu showcase vs in-run mech.** `showMenu()` calls `view.setMenuMech(id)` + `view.setPlayerVisible(false)`; `startRun()` calls `hideMenuMech()` + `setPlayerVisible(true)`. Without this, two mechs render on top of each other on the home screen. `disposeTree()` must dispose **materials too**, or every frame switch leaks GPU memory.
 3. **Human scale.** Humans are scaled 1.24–1.5 in `humanMesh()`; at 1.0 they vanish next to a 3 m mech on a 412 px phone.
 4. **Balance is data.** `swarmPressure()` (density / hp / speed) and `waveMix()` (who spawns when) in `js/config.js`, plus the enemy cap and wave burst size in `js/logic.js`, are the knobs. Re-run `tests/balance.test.mjs` after touching any of them — the first tuning pass dropped the median to 52 s, which is why the cap went 55 → 24.
+
+## 4d. v0.6.0 art pass (what changed, and the rules behind it)
+
+**Player frames.** `buildPlayerMech(cfg)` uses a stylised Japanese-anime mecha language: beveled
+armour (`beveledGeo`), trapezoid slabs (`slab`) for pauldrons / skirt / shins, a separate helmet with
+visor and brow V-fin, backpack thruster cones, skirt armour and elbow joints. Fan-style silhouette
+language only — no specific design, name or logo.
+
+**Hostiles.** Humans first, and they must read against a dark blue floor:
+- `humanMesh()` — coat/vest torso, helmet or hair, glowing eyewear, weapon arm, boots.
+- Each type owns an accent colour used for the **visor, chest stripe and unit ring**:
+  staffer coral `#ff3b6e`, guard amber `#ffb020`, soldier cyan `#35d6ff`, officer pink `#ff7ae6`,
+  chief gold `#ffe600`, walker gold `#c9a227`, escort mech magenta `#ff2bd6`, drone cyan.
+- `unitRing()` is deliberately **small and thin** (0.34–0.52 radius, 0.3–0.34 opacity). An earlier
+  pass used 0.5–0.8 at 0.5–0.75 and the rings swallowed the units.
+- Rule: never use plain green for a ground unit (it merges with the floor glow) and never rely on
+  size alone to separate tiers — colour + silhouette + ring together.
+
+**Projectiles.** `WEAPON_SHOT` in `js/config.js` maps every weapon to `{ shot, tiers[3], size }`.
+`shotTier(stacks)` picks the colour band (0–1 / 2–3 / 4+ stacks). `view.js` builds one geometry per
+shot kind — `bolt`, `spike`, `blade` (crescent), `star`, `lance`, `wave`, `orb` — pools meshes per
+`weapon:tier`, and adds a **thin torus ring** (two at tier 2) rather than a glow sphere. The first
+attempt used a translucent sphere and it hid the silhouette completely.
+
+**Drops.** One solid cube per pickup with an icon face that billboards to the camera
+(`DROP_TEX` cache): `X` XP (green), `H` repair (cyan), weapon (gold, emblem drawn per weapon
+family: gun / blade / orb / lance / star). The cube only sways ±0.25 rad — a full spin turned the
+icon away from the camera.
+
+**Contract goal + results.** `Game.goalKills` starts at 40; each clear adds +40/+10 and scores
+`250 × goalsCleared`. The HUD shows kills still needed; the results screen puts **score** and
+**time** in two big cards, with kills and contracts cleared underneath.
+
+**HUD layout.** Desktop: `[HP|LV] … [GOAL] … [TIME|SCORE] [mute][pause]`, right panel offset
+112 px so the 44 px icon buttons never overlap it. Phone (≤560 px): same row, smaller type, goal
+chip drops to its own line under the left panel. `verify/hud.mjs` asserts zero overlap rectangles.
 
 ## 5. Testing a browser build (important)
 - **Use GPU.** Launch headless Chromium with **no GL flags** — on Roy's machine that picks the NVIDIA D3D11 path (60 FPS). Adding `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader` drops to **~3 FPS**, the game looks frozen, and every recorded timestamp is wrong. Only use SwiftShader to *reproduce* a slow device.

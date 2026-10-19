@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.5.0 改名 + 三款機體 + 人類追捕（cyber-kit menu-home）
+**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.6.0 日系機甲美術 + 逐武器彈體 + 方塊掉落 + 計分／時間結算
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  
@@ -21,6 +21,12 @@ You are the mech the lab built — and it is not going back in the cage. Scienti
 ## 敵人 Enemies
 人類主導、機甲支援：研究員 → 保安 → 士兵 → 隊長 → **首席科學家**；支援單位：偵察機甲、重裝機甲、護衛機甲。掉落：**X**（經驗方塊）、**H**（修復）、**W**（武器圖示、方塊）。
 
+
+## 玩法重點 Gameplay
+- **每種武器射出唔同樣**：閃電菱形、尖刺、新月刃、四角星、長槍、衝擊波、光球；等級越高顏色越猛（細光環 = 已升級）。
+- **掉落一律係立體方塊**：`X` 經驗（綠）、`H` 修復（青）、武器圖示（金）。
+- **合約目標**：HUD 顯示仲差幾多擊殺，達標即加分並提升下一目標。
+- **結算睇分數同時間**：兩張大卡顯示本局分數／存活時間，下面再列擊殺同完成合約數。
 ## 語言 Language
 繁體中文（香港）+ English · `localStorage cyber.lang` · `?lang=en|zh`
 

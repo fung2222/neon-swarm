@@ -125,6 +125,15 @@ function updateHUD() {
   $('hud-hp').textContent = String(Math.max(0, g.hp));
   const pct = Math.min(1, g.xp / g.xpNeed);
   $('xp-fill').style.width = (pct * 100) + '%';
+  // contract goal: kills still needed (score + time are the two headline numbers)
+  const goalEl = $('hud-goal');
+  if (goalEl) {
+    const left = Math.max(0, (g.goalKills || 0) - g.kills);
+    $('goal-left').textContent = String(left);
+    goalEl.classList.toggle('done', left === 0);
+    const lab = goalEl.querySelector('span');
+    if (lab) lab.textContent = left === 0 ? t('goal.ready') : t('goal.kills');
+  }
   if (HUB.trial) {
     const left = TRIAL.surviveSec - g.t;
     if (left <= 0 && g.alive) endRun(true);
@@ -283,7 +292,9 @@ function endRun(trial = false) {
   $('over-score').textContent = String(score);
   $('over-best').textContent = String(store.getNum('best', 0));
   $('over-time').textContent = fmtTime(g.t);
+  if ($('over-best-time')) $('over-best-time').textContent = fmtTime(store.getNum('bestTime', 0));
   $('over-kills').textContent = String(g.kills);
+  if ($('over-goals')) $('over-goals').textContent = String(g.goalsCleared || 0);
   $('over-record').classList.toggle('hidden', !S.newRecord);
   const who = g.killer ? (i18n.isZh() ? g.killer.zh : g.killer.en) : null;
   $('over-note').textContent = trial

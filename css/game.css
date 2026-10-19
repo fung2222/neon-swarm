@@ -1,20 +1,57 @@
 html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; touch-action: none; }
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #fx-flash, #scanlines { pointer-events: none; }
-.hud-panel { position: absolute; top: calc(12px + env(safe-area-inset-top)); z-index: 5; }
-.hud-left { left: 12px; }
-.hud-right { right: 64px; text-align: right; }
-.stat .label { font-size: 11px; letter-spacing: 1px; color: #8a84ad; }
-.stat .value { font-size: 20px; color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; }
-.stat .value.big { font-size: 26px; color: #00e5ff; }
+/* ---- v0.6.0 HUD: one row of numbers, controls pinned to a reserved corner ----
+   Layout: [HP | LV] ............ [GOAL] ............ [TIME | SCORE] [mute][pause]
+   The right panel stops 112px short of the edge so the 2x44px buttons never sit on top of it. */
+.hud-panel { position: absolute; top: calc(10px + env(safe-area-inset-top)); z-index: 5; padding: 6px 12px; }
+.hud-left { left: 10px; }
+.hud-right { right: calc(108px + env(safe-area-inset-right)); text-align: right; }
+.stat .label { font-size: 10px; letter-spacing: 1.5px; color: #9a93bf; }
+.stat .value { font-size: clamp(16px, 4.6vw, 22px); color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
+.stat .value.big { font-size: clamp(20px, 5.6vw, 28px); color: #7ef9ff; }
 .hud-buttons.top {
-  position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px;
+  position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px;
   bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear or strip stretches full height */
-  display: flex; gap: 8px; z-index: 6; align-items: flex-start;
+  display: flex; gap: 6px; z-index: 6; align-items: flex-start;
   pointer-events: auto;
 }
+.hud-buttons.top .icon-btn { width: 44px; height: 44px; }
+/* goal line: the kills still needed for the next contract level */
+.hud-goal {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  top: calc(10px + env(safe-area-inset-top));
+  z-index: 5; pointer-events: none;
+  padding: 5px 12px; border-radius: 99px;
+  font-size: 11px; letter-spacing: 1px; color: #cfe6ff;
+  background: #0a0520cc; border: 1px solid #2f9bff66;
+  box-shadow: 0 0 12px #2f9bff33;
+}
+.hud-goal b { color: #ffe600; font-size: 13px; }
+.hud-goal.done { border-color: #7cff3a; color: #bfffb0; }
 /* Decorative HUD chrome never steals playfield presses; only real controls do. */
-#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
+#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps, #hud .hud-goal { pointer-events: none; }
+/* ---- phone HUD: two rows that never fight for the same pixels ----
+   row 1: [HP | LV] ..... [TIME | SCORE] [mute][pause]
+   row 2: goal chip under the left panel (centred between the panels) */
+@media (max-width: 560px) {
+  .hud-panel { padding: 3px 8px; top: calc(8px + env(safe-area-inset-top)); }
+  .hud-left { left: 8px; }
+  .hud-right { right: calc(112px + env(safe-area-inset-right)); }
+  .hud-panel .stat { min-width: 0; }
+  .hud-panel .stat + .stat { margin-left: 10px; }
+  .stat .label { font-size: 9px; letter-spacing: 1px; }
+  .stat .value { font-size: 15px; letter-spacing: 0; }
+  .stat .value.big { font-size: 19px; }
+  .hud-right .value.big { font-size: 17px; }
+  .hud-buttons.top { top: calc(8px + env(safe-area-inset-top)); right: 8px; }
+  .hud-goal {
+    top: auto; bottom: auto; margin-top: 0;
+    top: calc(58px + env(safe-area-inset-top));
+    left: 8px; transform: none;
+    font-size: 10px; padding: 3px 10px;
+  }
+}#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
 .xp-bar {
   position: absolute; left: 12%; right: 12%; bottom: calc(18px + env(safe-area-inset-bottom));
   height: 8px; border-radius: 99px; background: #1a104088; border: 1px solid #00e5ff44; z-index: 5; overflow: hidden;
@@ -149,3 +186,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   #screen-start .mech-head { text-align: left; }
   #screen-start .menu-meta { left: max(88px, 9vw); right: auto; transform: none; text-align: left; }
 }
+
+/* ---- results: score + time are the two headline numbers ---- */
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 10px; }
+.result {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 8px; border-radius: 12px;
+  background: linear-gradient(180deg, #0d0726f2, #08041ae6);
+  border: 1px solid #2f9bff66;
+  box-shadow: inset 0 0 18px #2f9bff1f;
+}
+.result span { font-size: 10px; letter-spacing: 2px; color: #9a93bf; }
+.result b { font-size: clamp(26px, 8vw, 34px); line-height: 1.05; color: #7ef9ff; font-variant-numeric: tabular-nums; text-shadow: 0 0 14px #00e5ff88; }
+.result em { font-style: normal; font-size: 9px; letter-spacing: 1px; color: #6f6a92; margin-top: 2px; }
+.result i { font-style: normal; font-size: 12px; color: #ffe600; font-variant-numeric: tabular-nums; }

@@ -71,7 +71,7 @@ export const ENEMIES = {
   staffer: {
     zh: '研究員', en: 'Lab Staff', family: 'human', kind: 'human', tier: 1,
     hp: 2, speed: 2.15, radius: 0.30, xp: 1, score: 10, chase: 1, damage: 1,
-    color: 0xff2bd6, coat: 0xf6f2ff, panic: true,
+    color: 0xff3b6e, coat: 0xeef2fb, panic: true,
   },
   guard: {
     zh: '保安人員', en: 'Security', family: 'human', kind: 'human', tier: 1,
@@ -82,7 +82,7 @@ export const ENEMIES = {
   soldier: {
     zh: '士兵', en: 'Soldier', family: 'human', kind: 'soldier', tier: 2,
     hp: 5, speed: 2.3, radius: 0.34, xp: 2, score: 22, chase: 1, damage: 1,
-    color: 0x3bff8a, vest: 0x1d3b2c, gun: true,
+    color: 0x35d6ff, vest: 0x2a4a58, gun: true,
   },
   drone: {
     zh: '偵察機甲', en: 'Scout Drone', family: 'support', kind: 'drone', tier: 2,
@@ -98,7 +98,7 @@ export const ENEMIES = {
   walker: {
     zh: '重裝機甲', en: 'Heavy Walker', family: 'support', kind: 'walker', tier: 3,
     hp: 16, speed: 1.2, radius: 0.52, xp: 5, score: 55, chase: 0.85, damage: 2,
-    color: 0xb44dff,
+    color: 0xc9a227,
   },
   // ---- tier 4: elite scientists with escort mechs ----
   chief: {
@@ -124,6 +124,7 @@ export const DROP = {
   xp: { letter: 'X', color: 0x3bff8a, zh: '經驗', en: 'XP' },
   heal: { letter: 'H', color: 0x00e5ff, zh: '修復', en: 'REPAIR' },
   shield: { letter: 'S', color: 0xb44dff, zh: '護盾', en: 'SHIELD' },
+  weapon: { letter: 'W', color: 0xffc21a, zh: '武器', en: 'WEAPON' },
 };
 
 /** Level-up cards — weapons + armour. `shape` drives the big emblem in the pick UI. */
@@ -242,3 +243,25 @@ export function pickCards(rng, n = 3, taken = null) {
 }
 
 export { CARDS_BY_ID };
+
+/**
+ * Weapon identity for projectile art: every weapon owns a shot shape, a base colour that shifts
+ * with its stack level, and how big the shot reads. view.js turns `shot` into geometry.
+ *   shot : bolt | spike | blade | star | lance | wave | orb
+ */
+export const WEAPON_SHOT = {
+  dmg:    { shot: 'bolt',  tiers: ['#4dff9a', '#8dff3a', '#ffe600'], size: 0.9 },
+  rate:   { shot: 'spike', tiers: ['#7ad7ff', '#00e5ff', '#b060ff'], size: 0.78 },
+  orbit:  { shot: 'blade', tiers: ['#ffe600', '#ff9a1f', '#ff2bd6'], size: 1.0 },
+  spread: { shot: 'star',  tiers: ['#ff6bd6', '#ff2bd6', '#ff2b6e'], size: 0.95 },
+  pierce: { shot: 'lance', tiers: ['#9ef2ff', '#4fb8ff', '#2b4dff'], size: 1.1 },
+  multi:  { shot: 'orb',   tiers: ['#b8ff4a', '#35d6ff', '#ffffff'], size: 0.85 },
+  nova:   { shot: 'wave',  tiers: ['#ffe600', '#ffb020', '#ff6b1f'], size: 1.2 },
+  frost:  { shot: 'orb',   tiers: ['#d8f6ff', '#7ad7ff', '#3b8bff'], size: 0.9 },
+  rail:   { shot: 'lance', tiers: ['#ffffff', '#c9b6ff', '#8b3dff'], size: 1.25 },
+};
+
+/** stack count -> colour tier index (0 = fresh, 1 = upgraded, 2 = maxed). */
+export function shotTier(stacks) {
+  return stacks >= 4 ? 2 : stacks >= 2 ? 1 : 0;
+}
