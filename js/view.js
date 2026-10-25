@@ -1117,11 +1117,18 @@ export class View {
       else if (move > 0.12) state = 'move';
       else if (aiming) state = 'attack';
       if (ud.playerMaps) {
-        const map = ud.playerMaps[state] || ud.playerMaps.idle;
-        if (map && (ud.playerState !== state || ud.spriteMat.map !== map)) {
+        let map = ud.playerMaps[state] || ud.playerMaps.idle;
+        // 2-frame walk cycle synced to bob phase (~2 steps per 2π of animPhase).
+        if (state === 'move' && ud.walkFrames && ud.walkFrames.length >= 2) {
+          const fi = (Math.floor((ud.animPhase || 0) / Math.PI) & 1);
+          map = ud.walkFrames[fi];
+          ud.walkFrame = fi;
+        }
+        if (map && (ud.playerState !== state || ud.walkFrame !== (ud._lastWalkFrame) || ud.spriteMat.map !== map)) {
           ud.spriteMat.map = map;
           ud.spriteMat.needsUpdate = true;
           ud.playerState = state;
+          ud._lastWalkFrame = ud.walkFrame;
         }
       }
       // Keep torso/facing locked toward nearest foe while holding fire.

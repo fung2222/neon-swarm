@@ -7,12 +7,14 @@ import * as THREE from 'three';
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
-  mech_idle: './assets/sprites/mech_idle.png?v=0.8.1',
-  mech_move: './assets/sprites/mech_move.png?v=0.8.1',
-  mech_attack: './assets/sprites/mech_attack.png?v=0.8.1',
-  mech_defend: './assets/sprites/mech_defend.png?v=0.8.1',
-  mech_hit: './assets/sprites/mech_hit.png?v=0.8.1',
-  mech_victory: './assets/sprites/mech_victory.png?v=0.8.1',
+  mech_idle: './assets/sprites/mech_idle.png?v=0.8.2',
+  mech_move: './assets/sprites/mech_move.png?v=0.8.2',
+  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.2',
+  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.2',
+  mech_attack: './assets/sprites/mech_attack.png?v=0.8.2',
+  mech_defend: './assets/sprites/mech_defend.png?v=0.8.2',
+  mech_hit: './assets/sprites/mech_hit.png?v=0.8.2',
+  mech_victory: './assets/sprites/mech_victory.png?v=0.8.2',
   enemy_magenta: './assets/sprites/enemy_magenta.png',
   enemy_lime: './assets/sprites/enemy_lime.png',
   enemy_orange: './assets/sprites/enemy_orange.png',
@@ -148,6 +150,8 @@ export function makeBillboard(key, w, h, opts = {}) {
 export function buildPlayerSprite(cfg) {
   const idle = loadSpriteTex('mech_idle');
   const move = loadSpriteTex('mech_move');
+  const move1 = loadSpriteTex('mech_move_1');
+  const move2 = loadSpriteTex('mech_move_2');
   const attack = loadSpriteTex('mech_attack');
   const defend = loadSpriteTex('mech_defend');
   const hit = loadSpriteTex('mech_hit');
@@ -162,14 +166,18 @@ export function buildPlayerSprite(cfg) {
   // Keys match View.sync states; fire aliases attack for older call sites.
   root.userData.playerMaps = {
     idle,
-    move,
+    move,       // fallback single frame
+    move1,
+    move2,
     attack,
     fire: attack,
     defend,
     hit,
     victory,
   };
+  root.userData.walkFrames = [move1, move2];
   root.userData.playerState = 'idle';
+  root.userData.walkFrame = 0;
   root.userData.mechId = cfg && cfg.id;
   const id = cfg && cfg.id;
   root.scale.setScalar(id === 'heavy' ? 1.12 : id === 'prototype' ? 0.96 : 1);
