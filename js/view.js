@@ -1078,7 +1078,7 @@ export class View {
 
   _setEmissive(mats, flash) { for (const m of mats) m.emissiveIntensity = flash; }
 
-  sync(game) {
+  sync(game, dt = 0.016) {
     this.setMech(game.mech || 'horn');
     this.player.position.set(game.px, 0, game.pz);
 
@@ -1146,23 +1146,22 @@ export class View {
           this._facing += dd * 0.28;
         }
       }
-      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
-      else if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.04;
+      // v0.8.4: phase advances in rad/sec (was per-frame → ~19 Hz shake + unreadably fast walk).
+      // ~5.5 rad/s at full speed → frame flip every ~0.57s, full cycle ~1.14s.
+      const dtp = Math.max(0.001, Math.min(0.05, dt));
+      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + Math.max(0.35, move) * 5.5 * dtp;
+      else if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.6 * dtp;
       else ud.animPhase = (ud.animPhase || 0) * 0.9 + (game.t || 0) * 0.02;
       applySpriteMotion(this.player, {
-        // Keep bob/flip while moving even if aimHold is active (pose may still pulse attack on muzzle).
         moving: move > 0.08,
         velX: game.vx,
         phase: ud.animPhase || 0,
         phaseOffset: 0,
-        strength: (aiming && move <= 0.08) ? 0.55 : 1.15,
+        strength: (aiming && move <= 0.08) ? 0.4 : 0.55,
         camera: this.stage.camera,
         facingYaw: this._facing,
         style: move > 0.08 ? 'ground' : 'idle',
       });
-      if (ud.plane && move > 0.08) {
-        ud.plane.rotation.z += THREE.MathUtils.clamp(-game.vx * 0.12, -0.14, 0.14);
-      }
       applySpriteFlash(this.player, { blink, hit, move });
     } else {
       this.player.rotation.y = this._facing;
@@ -1180,7 +1179,7 @@ export class View {
       const halo = ud.halo;
       if (halo) halo.material.opacity = 0.24 + move * 0.1;
       ud.idlePhase = (game.t || 0) * 2.4;
-      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + Math.max(0.35, move) * 5.5 * Math.max(0.001, Math.min(0.05, dt));
       else ud.animPhase = (ud.animPhase || 0) * 0.92;
       const walk = ud.animPhase || 0;
       const swing = Math.sin(walk) * Math.min(1, move * 1.4);
@@ -1246,7 +1245,7 @@ export class View {
           velX: e.vx || 0,
           phase: e.animPhase || 0,
           phaseOffset: e.wob || 0,
-          strength: isFlyer ? 0.85 : 1.55,
+          strength: isFlyer ? 0.55 : 0.7,
           camera: this.stage.camera,
           facingYaw: faceYaw,
           style: isFlyer ? 'fly' : (moving ? 'ground' : 'idle'),
@@ -1276,7 +1275,7 @@ export class View {
         velX: 0,
         phase: d.userData.idlePhase,
         phaseOffset: 0.35,
-        strength: 1.55,
+        strength: 0.7,
         camera: this.stage.camera,
         facingYaw: Math.atan2(game.px - d.position.x, game.pz - d.position.z),
         style: 'idle',
@@ -1406,9 +1405,12 @@ export class View {
       } else e._jetT -= 0.016;
     } else if (m.userData.footPlant && !e._planted) {
       e._planted = true;
-      this._fxDust.push({
-        x: e.x, z: e.z, y: 0.04, life: 0.22, max: 0.22, r: 0.28, kind: 'dust', color: 0x8a9aaa,
-      });
+      // v0.8.4: subtler foot dust (was large every plant → read as sparks)
+      if (Math.random() < 0.35) {
+        this._fxDust.push({
+          x: e.x, z: e.z, y: 0.04, life: 0.14, max: 0.14, r: 0.14, kind: 'dust', color: 0x6a7a88,
+        });
+      }
     } else if (!m.userData.footPlant) {
       e._planted = false;
     }
@@ -1451,11 +1453,18 @@ export class View {
 
   frameCamera(cam, game, dt) {
     const z = this._zoom || 1;
-    const k = Math.min(1, dt * 7);
-    cam.position.x += (game.px - cam.position.x) * k;
-    cam.position.y += (14 * z - cam.position.y) * k;
-    cam.position.z += (game.pz + 12 * z - cam.position.z) * k;
-    cam.lookAt(game.px, 0.85, game.pz);
+    const k = Math.min(1, Math.max(0, dt) * 7);
+    let px = game.px, pz = game.pz;
+    if (!Number.isFinite(px) || !Number.isFinite(pz)) { px = 0; pz = 0; }
+    let cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
+    if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(cz)) {
+      cx = px; cy = 14 * z; cz = pz + 12 * z;
+    }
+    cam.position.x = cx + (px - cx) * k;
+    cam.position.y = cy + (14 * z - cy) * k;
+    cam.position.z = cz + (pz + 12 * z - cz) * k;
+    cam.rotation.z = 0; // clear residual trauma roll from fx.shake
+    cam.lookAt(px, 0.85, pz);
   }
 }
 

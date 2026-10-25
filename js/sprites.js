@@ -7,14 +7,14 @@ import * as THREE from 'three';
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
-  mech_idle: './assets/sprites/mech_idle.png?v=0.8.3',
-  mech_move: './assets/sprites/mech_move.png?v=0.8.3',
-  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.3',
-  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.3',
-  mech_attack: './assets/sprites/mech_attack.png?v=0.8.3',
-  mech_defend: './assets/sprites/mech_defend.png?v=0.8.3',
-  mech_hit: './assets/sprites/mech_hit.png?v=0.8.3',
-  mech_victory: './assets/sprites/mech_victory.png?v=0.8.3',
+  mech_idle: './assets/sprites/mech_idle.png?v=0.8.4',
+  mech_move: './assets/sprites/mech_move.png?v=0.8.4',
+  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.4',
+  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.4',
+  mech_attack: './assets/sprites/mech_attack.png?v=0.8.4',
+  mech_defend: './assets/sprites/mech_defend.png?v=0.8.4',
+  mech_hit: './assets/sprites/mech_hit.png?v=0.8.4',
+  mech_victory: './assets/sprites/mech_victory.png?v=0.8.4',
   enemy_magenta: './assets/sprites/enemy_magenta.png',
   enemy_lime: './assets/sprites/enemy_lime.png',
   enemy_orange: './assets/sprites/enemy_orange.png',
@@ -305,20 +305,18 @@ export function applySpriteMotion(root, {
     plane.rotation.z = Math.sin(p * 2.0) * 0.05 * strength * (velX >= 0 ? 1 : -1);
     root.userData.footPlant = false;
   } else if (moving && style !== 'idle') {
-    // Ground RUN: hard bob, forward lean, squash on foot-plant (impact, not float).
-    const cycle = Math.sin(p * 3.6);
-    const plant = Math.max(0, -cycle); // 0..1 on the down beat
-    const bob = Math.abs(cycle) * 0.13 * strength;
-    const squashY = 1 + plant * 0.14 * strength;       // compress into the floor
-    const stretchX = 1 - plant * 0.08 * strength + Math.max(0, cycle) * 0.05 * strength;
+    // Ground RUN: gentle bob synced 1:1 with walk phase (v0.8.4 — was *3.6 → violent jitter).
+    const cycle = Math.sin(p);
+    const plant = Math.max(0, -cycle);
+    const bob = Math.abs(cycle) * 0.035 * strength;
+    const squashY = 1 + plant * 0.03 * strength;
+    const stretchX = 1 - plant * 0.02 * strength;
     plane.position.y = h * 0.5 + bob;
     plane.scale.y = squashY;
     plane.scale.x = flipSign() * Math.abs(stretchX);
-    // Forward lean into the charge + slight bank
-    plane.rotation.z = (velX >= 0 ? 1 : -1) * (0.06 + Math.abs(cycle) * 0.1) * strength
-      + Math.sin(p * 3.6) * 0.04 * strength;
+    plane.rotation.z = (velX >= 0 ? 1 : -1) * 0.03 * strength;
     root.userData.footPlant = plant > 0.85;
-    root.userData.runLean = 0.1 * strength;
+    root.userData.runLean = 0.04 * strength;
   } else {
     // Idle sway / breathe — doctor & standing foes
     const sway = Math.sin(p * 1.8) * 0.045 * strength;

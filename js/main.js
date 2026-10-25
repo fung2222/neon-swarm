@@ -20,10 +20,22 @@ const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level'] });
 const stage = createStage({
-  canvas: $('scene'), bloom: 0.85, bloomRadius: 0.42, bloomThreshold: 0.8, fov: 42, exposure: 1.05,
+  canvas: $('scene'), bloom: 0.62, bloomRadius: 0.38, bloomThreshold: 0.86, fov: 42, exposure: 1.0,
   onFatal: (m) => ui.fatal(m),
 });
 ui.glowToggle(stage);
+// v0.8.4: recover from WebGL context loss (white viewport while HUD still works)
+{
+  const canvas = $('scene');
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    console.warn('[neon-swarm] WebGL context lost');
+  }, false);
+  canvas.addEventListener('webglcontextrestored', () => {
+    console.warn('[neon-swarm] WebGL context restored');
+    try { stage.resize(); } catch (err) { console.error(err); }
+  }, false);
+}
 const theme = new ThemeController(); theme.set(1, true);
 
 // Wilderness-style open map: NO tall buildings in play space
@@ -504,8 +516,8 @@ function tick(dt) {
       audio.fire();
       const g = S.game;
       const muzzle = new THREE.Vector3(g.px, 0.7, g.pz);
-      particles.burst(muzzle, new THREE.Color(0x00e5ff), 14, { speed: 4, up: 0.6, size: 0.55, size: 0.65 });
-      particles.burst(muzzle, new THREE.Color(0x7ad7ff), 8, { speed: 2.2, up: 1.4, life: 0.4, size: 0.5 });
+      particles.burst(muzzle, new THREE.Color(0x00e5ff), 5, { speed: 3, up: 0.4, life: 0.28, size: 0.4, bright: 1.6 });
+      particles.burst(muzzle, new THREE.Color(0x7ad7ff), 3, { speed: 1.6, up: 0.8, life: 0.22, size: 0.32, bright: 1.4 });
     }
         else if (ev.type === 'hit') {
       audio.hit();
@@ -513,7 +525,7 @@ function tick(dt) {
         const c = new THREE.Color(ev.color || 0x00e5ff);
         const n = ev.heavy ? 22 : 12;
         particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, n, { speed: ev.heavy ? 5.5 : 4, up: 1.6, life: 0.85 });
-        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), new THREE.Color(0xffffff), ev.heavy ? 10 : 4, { speed: 2.5, up: 2, life: 0.35, size: 0.55, bright: 4 });
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), new THREE.Color(0xffffff), ev.heavy ? 4 : 2, { speed: 2.0, up: 1.4, life: 0.22, size: 0.4, bright: 1.8 });
         if (ev.heavy) fx.kick({ trauma: 0.1, slowmo: 0.05 });
       }
     }
@@ -523,13 +535,13 @@ function tick(dt) {
       const human = ev.enemy.family === 'human';
       const pos = new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z);
       // 粉身碎骨: white flash → particles → fragments + hit-stop
-      particles.burst(pos, new THREE.Color(0xffffff), human ? 18 : 28, { speed: 7, up: 3.5, life: 0.45, size: 0.9, bright: 5 });
-      particles.burst(pos, c, human ? 22 : 34, { speed: 6.5, up: 3.2, life: 1.05 });
+      particles.burst(pos, new THREE.Color(0xffffff), human ? 8 : 12, { speed: 5, up: 2.2, life: 0.28, size: 0.55, bright: 2.2 });
+      particles.burst(pos, c, human ? 12 : 18, { speed: 5, up: 2.4, life: 0.7 });
       particles.burst(pos, new THREE.Color(0x00e5ff), 8, { speed: 3, up: 4, life: 0.5, size: 0.7 });
       particles.ring(pos, c, 28, 9, 0.35);
       waves.spawn(pos, c, { r0: 0.3, r1: 2.4, dur: 0.5, a: 2.6 });
       if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8);
-      fx.kick({ trauma: ev.gore ? 0.32 : 0.14, slowmo: ev.gore ? 0.14 : 0.06, fovKick: 0.08 });
+      fx.kick({ trauma: ev.gore ? 0.18 : 0.08, slowmo: ev.gore ? 0.1 : 0.04, fovKick: 0.04 });
       const flash = $('fx-flash');
       if (flash && ev.gore) { flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 70); }
     }
@@ -537,12 +549,12 @@ function tick(dt) {
       audio.nova();
       const pos = new THREE.Vector3(ev.x, 0.2, ev.z);
       const col = new THREE.Color(ev.tag === 'plasma' ? 0xb8ff3a : 0x00e5ff);
-      particles.burst(pos, new THREE.Color(0xffffff), 22, { speed: 8, up: 2.5, life: 0.4, size: 1.0, bright: 5 });
+      particles.burst(pos, new THREE.Color(0xffffff), 10, { speed: 5.5, up: 1.8, life: 0.28, size: 0.6, bright: 2.2 });
       particles.burst(pos, col, 36, { speed: 7, up: 3, life: 0.85, size: 1.05 });
       particles.ring(pos, col, 32, 11, 0.3);
       waves.spawn(pos, col, { r0: 0.35, r1: (ev.r || 1.6) * 1.4, dur: 0.45, a: 2.7 });
       if (view.burstGore) view.burstGore(ev.x, ev.z, 0x8a93a8);
-      fx.kick({ trauma: 0.26, slowmo: 0.1, fovKick: 0.1 });
+      fx.kick({ trauma: 0.14, slowmo: 0.06, fovKick: 0.05 });
     }
     else if (ev.type === 'puddle') {
       particles.ring(new THREE.Vector3(ev.x, 0.08, ev.z), new THREE.Color(0xb8ff3a), 18, 5, 0.2);
@@ -563,7 +575,7 @@ else if (ev.type === 'xp') {
     }
     else if (ev.type === 'hurt') {
       audio.hurt();
-      fx.kick({ trauma: 0.35, aberr: 0.4 });
+      fx.kick({ trauma: 0.22, aberr: 0.25 });
       particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), 22, { speed: 5, up: 2.2, size: 0.9 });
       const flash = $('fx-flash');
       if (flash) { flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 120); }
@@ -585,18 +597,7 @@ else if (ev.type === 'xp') {
     }
   }
 
-  // Foot thruster / dust trail while moving
-  if (S.state === 'play' && S.game) {
-    const g = S.game;
-    const spd = Math.hypot(g.vx, g.vz);
-    if (spd > 0.15) {
-      const trail = new THREE.Vector3(g.px - g.vx * 0.3, 0.12, g.pz - g.vz * 0.3);
-      particles.burst(trail, new THREE.Color(0x00e5ff), 3, { speed: 1.2, up: 0.8, life: 0.35, size: 0.45, grav: -2 });
-      if (Math.random() < 0.35) {
-        particles.burst(trail, new THREE.Color(0x7ad7ff), 2, { speed: 0.8, up: 1.6, life: 0.45, size: 0.4 });
-      }
-    }
-  }
+  // v0.8.4: removed per-frame foot thruster particles (move sparks + bloom white-out)
   if (S.state === 'play' || S.state === 'level' || S.state === 'pause') {
     if (S.state === 'play') {
       dampView(pViewC, pView, dt);
@@ -604,14 +605,14 @@ else if (ev.type === 'xp') {
       particles.update(dt);
       waves.update(dt);
       fx.update(dt);
-      view.sync(S.game);
+      view.sync(S.game, dt);
       view.frameCamera(stage.camera, S.game, dt);
-      fx.shake(stage.camera, performance.now() * 0.001);
+      fx.shake(stage.camera, performance.now() * 0.001, 0.45);
       fx.applyPost(stage, performance.now() * 0.001);
       updateHUD();
       if (S.demo && S.game.t > 50) endRun(false);
     } else if (S.game) {
-      view.sync(S.game);
+      view.sync(S.game, dt);
       particles.update(dt);
     }
   }
