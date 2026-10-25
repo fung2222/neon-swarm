@@ -1108,15 +1108,17 @@ export class View {
       this.player.rotation.set(0, 0, 0);
       // Sustained aim/fire pose while auto-firing — no per-shot arm spasm.
       const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
-      // Pose priority: hit > attack(fire) > move > idle. defend/victory reserved when those states exist.
+      // Pose priority: hit > muzzle attack pulse > move > standing aim > idle.
+      // Do NOT lock on sustained aimHold — that froze the sprite on attack during combat (v0.8.0 bug).
       let state = 'idle';
       if (hit) state = 'hit';
       else if (!game.alive) state = 'hit';
-      else if (aiming) state = 'attack';
+      else if (fireKick > 0.02) state = 'attack';
       else if (move > 0.12) state = 'move';
-      if (ud.playerState !== state && ud.playerMaps) {
+      else if (aiming) state = 'attack';
+      if (ud.playerMaps) {
         const map = ud.playerMaps[state] || ud.playerMaps.idle;
-        if (map) {
+        if (map && (ud.playerState !== state || ud.spriteMat.map !== map)) {
           ud.spriteMat.map = map;
           ud.spriteMat.needsUpdate = true;
           ud.playerState = state;
@@ -1137,22 +1139,21 @@ export class View {
           this._facing += dd * 0.28;
         }
       }
-      if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.04;
-      else if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+      else if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.04;
       else ud.animPhase = (ud.animPhase || 0) * 0.9 + (game.t || 0) * 0.02;
       applySpriteMotion(this.player, {
-        // While auto-firing hold ready pose — no run bob / arm spasm.
-        moving: (!aiming) && move > 0.08,
-        velX: aiming ? 0 : game.vx,
+        // Keep bob/flip while moving even if aimHold is active (pose may still pulse attack on muzzle).
+        moving: move > 0.08,
+        velX: game.vx,
         phase: ud.animPhase || 0,
         phaseOffset: 0,
-        strength: aiming ? 0.55 : 1.15,
+        strength: (aiming && move <= 0.08) ? 0.55 : 1.15,
         camera: this.stage.camera,
         facingYaw: this._facing,
-        style: aiming ? 'idle' : (move > 0.08 ? 'ground' : 'idle'),
+        style: move > 0.08 ? 'ground' : 'idle',
       });
-      // Extra lean into move direction only when not locked in fire pose
-      if (ud.plane && move > 0.08 && !aiming) {
+      if (ud.plane && move > 0.08) {
         ud.plane.rotation.z += THREE.MathUtils.clamp(-game.vx * 0.12, -0.14, 0.14);
       }
       applySpriteFlash(this.player, { blink, hit, move });

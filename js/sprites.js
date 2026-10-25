@@ -7,12 +7,12 @@ import * as THREE from 'three';
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
-  mech_idle: './assets/sprites/mech_idle.png',
-  mech_move: './assets/sprites/mech_move.png',
-  mech_attack: './assets/sprites/mech_attack.png',
-  mech_defend: './assets/sprites/mech_defend.png',
-  mech_hit: './assets/sprites/mech_hit.png',
-  mech_victory: './assets/sprites/mech_victory.png',
+  mech_idle: './assets/sprites/mech_idle.png?v=0.8.1',
+  mech_move: './assets/sprites/mech_move.png?v=0.8.1',
+  mech_attack: './assets/sprites/mech_attack.png?v=0.8.1',
+  mech_defend: './assets/sprites/mech_defend.png?v=0.8.1',
+  mech_hit: './assets/sprites/mech_hit.png?v=0.8.1',
+  mech_victory: './assets/sprites/mech_victory.png?v=0.8.1',
   enemy_magenta: './assets/sprites/enemy_magenta.png',
   enemy_lime: './assets/sprites/enemy_lime.png',
   enemy_orange: './assets/sprites/enemy_orange.png',
