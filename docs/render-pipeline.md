@@ -1,0 +1,90 @@
+# Render pipeline — single 3D source of truth (v0.9.0 Phase 1)
+
+> Select shows **live 3D**. In-game uses **pre-rendered multi-dir sprites from that same model**.  
+> Extends [milestone-b-asset-contract.md](./milestone-b-asset-contract.md). Naming: [asset-naming.md](./asset-naming.md).
+
+## 1. Forbidden
+
+- Separate text-to-image frames for menu vs gameplay
+- Menu hero PNGs that do not match in-game armor / weapon / proportions
+- Opaque-cropping current whole-body sheets to fake split-body
+
+## 2. Phase 1 source of truth
+
+| Layer | Implementation |
+|---|---|
+| Model | Procedural Three.js **`buildPlayerMech(cfg)`** in `js/view.js` |
+| Select | `View.setMenuMech(id)` builds that mesh, pedestal + shadow, yaw drag |
+| In-game | Still `buildPlayerSprite` + `assets/sprites/mech_*.png` (**interim placeholders**) |
+
+Future: drop a GLB at `assets/mechs/{id}/source.glb` and load it inside the same `setMenuMech` / bake path **without changing the select API** (`setMenuMech(id)`, card → `store.mech`).
+
+```
+        ┌─────────────────────────────┐
+        │  buildPlayerMech / GLB      │  ← single visual identity
+        └─────────────┬───────────────┘
+              ┌───────┴────────┐
+              ▼                ▼
+     Select: live 3D     Bake tool → sprite sheets
+     (yaw / auto-spin)   → in-game billboards (Phase 3)
+```
+
+## 3. Select showcase contract
+
+- Dark background; **pedestal** + soft **contact shadow**
+- Restrained bloom so plate / cyan core / violet trim still read
+- Horizontal yaw only (mouse drag + one-finger touch on stage hit area)
+- Idle slow auto-spin; user drag pauses auto-spin; resume after **~2.5 s** idle
+- Pitch clamped / camera **stable framing** — rotate the **mech**, do not free-orbit the camera into chaos
+- Card click → immediate `setMenuMech(id)` + persist `store.mech`
+
+## 4. Bake contract (4-dir first, then 8-dir)
+
+Even before full automation, bakers must honor:
+
+### Camera
+- Orthographic or long-FOV perspective with negligible foreshortening
+- Elevation ≈ play feel: **~55–65°** down from horizontal for 2/3 top-down read  
+  (match in-game billboard “standing” proportions, not pure top-down flat)
+- Distance fixed so character height ≈ **70–80%** of cell
+
+### Cell
+- Uniform canvas per set (recommend square, e.g. 256² or 512²)
+- Transparent background; prefer hard alpha (`alphaTest` ~0.45 friendly)
+- Shared **foot baseline** Y across all dirs/actions
+- Document **pivot** (waist/chest) and **muzzle** per facing
+
+### Directions
+1. Ship **4-dir**: N E S W  
+2. Playtest move + aim  
+3. Only then expand to **8-dir**
+
+### Actions (minimum for protagonist acceptance)
+`idle` · `run` (prefer 4 frames) · `runfire` or gun-layer fire · `hurt` · `death`
+
+Upper aim independent of legs when assets allow (Milestone B). Until then, whole-body cells are acceptable **if baked from the same 3D rig**.
+
+### Stub tool
+
+```
+node tools/bake-mech-sprites.mjs --id horn --dirs 4 --actions idle,run --dry-run
+```
+
+Phase 1 ships the **CLI contract + dry-run stub**. Full headless WebGL bake can land with Phase 3 art.
+
+## 5. Integration notes for implementers
+
+- Keep `aimX/aimZ` + fire-event muzzle fields from Milestone A
+- Swap `buildPlayerSprite` maps for baked sheets when files exist; do not fork a second mech builder for gameplay
+- `window.__rampageArt.buildPlayerMech` remains the offline art hook
+- Link Milestone B anchors: foot / pivot / muzzle must match bake JSON
+
+## 6. Parity checklist (before claiming “select == in-game”)
+
+- [ ] Same model ID / GLB / procedural seed
+- [ ] Same plate / accent / trim / core colors
+- [ ] Same horn / shoulder / rifle silhouette cues
+- [ ] Foot and muzzle anchors documented
+- [ ] No T2I-only frames in either path
+
+Until the checklist is green, README and this doc must say: **select = live 3D; in-game sprites = interim**.

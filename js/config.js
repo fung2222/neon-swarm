@@ -31,35 +31,92 @@ export const PLAYER = {
 };
 
 /**
- * The three selectable frames. Neutral names on purpose — the first two are palette/silhouette
- * homages only (no names, logos or exact reproductions of any existing IP).
- *   plate/accent/trim drive the mech hull; `title` is the home-screen card.
+ * Mech roster — shared skeleton / select UI / bake pipeline; per-mech parts via `model`.
+ * Phase 1 deep-slices `horn` (覺醒突擊型). `heavy` / `prototype` are selectable stubs
+ * (different ids + stats) — NOT recolors of the protagonist. Full unique meshes/abilities later.
+ *
+ * Shape (single source of truth for UI + Game):
+ *   id, model, stats{hp,speed,damage,fireRate}, starterWeapon, passive,
+ *   plate/accent/trim/hot/visor, muzzle{dist,y}, bonus (legacy adapter — prefer stats)
  */
 export const MECHS = [
   {
     id: 'horn',
-    zh: '角盔機型', en: 'HORN FRAME', zhShort: '角盔', enShort: 'HORN',
-    descZh: '紫綠角盔 · 均衡 · 開局多 1 點護盾', descEn: 'Violet horned · balanced · +1 starting shield',
-    hue: 'violet', plate: 0x2a1048, accent: 0x8b3dff, trim: 0x7cff3a, hot: 0xb8ff4a, visor: 0x7ad7ff,
+    model: 'horn',
+    zh: '覺醒突擊型', en: 'AWAKEN ASSAULT', zhShort: '覺醒', enShort: 'AWAKEN',
+    descZh: '深灰＋青紫 · 均衡突擊 · 開局護盾 +1 · 暴走縫隙青→洋紅', descEn: 'Deep-gray + cyan/violet · balanced · +1 shield · rampage cyan→magenta',
+    hue: 'violet', plate: 0x1a1e28, accent: 0x3a2a55, trim: 0x00e5ff, hot: 0x00e5ff, visor: 0x7ad7ff,
+    rampage: 0xff2bd6,
+    stats: { hp: 1.14, speed: 1, damage: 1, fireRate: 1 },
+    starterWeapon: 'mg',
+    passive: 'rampage',
+    muzzle: { dist: 0.78, y: 0.95 },
+    // legacy adapter (logic may still read these) — keep in sync with stats
     bonus: { maxHp: 1 },
   },
   {
+    // STUB — Phase 2/4. Same shared builder path; different model key + stats. Not a horn recolor.
     id: 'heavy',
-    zh: '重裝機型', en: 'HEAVY FRAME', zhShort: '重裝', enShort: 'HEAVY',
-    descZh: '白藍重裝 · 慢 8% · 接觸傷害 −1', descEn: 'White/blue heavy · 8% slower · contact damage −1',
-    hue: 'ice', plate: 0x101c33, accent: 0xdfe9ff, trim: 0x2f9bff, hot: 0x8fdcff, visor: 0x9ef2ff,
+    model: 'heavy',
+    zh: '高速精密型', en: 'PRECISION FRAME', zhShort: '精密', enShort: 'PRECISION',
+    descZh: '（預留）白粉精密 · 現行數值：慢 8% · 護甲 +1', descEn: '(stub) white-pink precision · current: −8% speed · +1 armor',
+    hue: 'rose', plate: 0xe8dce6, accent: 0xf5eef3, trim: 0xff7ab0, hot: 0xffb0d0, visor: 0xffd6ea,
+    stats: { hp: 1, speed: 0.92, damage: 1, fireRate: 1 },
+    starterWeapon: 'mg',
+    passive: 'precision', // stub id — no unique ability yet
+    muzzle: { dist: 0.72, y: 1.05 },
     bonus: { speedMul: 0.92, armor: 1 },
   },
   {
+    // STUB — Phase 2/4 morph states. Shared skeleton; model key only.
     id: 'prototype',
-    zh: '原創機型', en: 'PROTO FRAME', zhShort: '原創', enShort: 'PROTO',
-    descZh: '原創霓虹 · 快 6% · 經驗吸取 +25%', descEn: 'Original neon · 6% faster · +25% XP pull',
-    hue: 'citrus', plate: 0x2a1a06, accent: 0xffc21a, trim: 0x00e5ff, hot: 0xffef8a, visor: 0x7cffea,
+    model: 'prototype',
+    zh: '可變結構原型', en: 'MORPH PROTOTYPE', zhShort: '原型', enShort: 'MORPH',
+    descZh: '（預留）可變結構 · 現行數值：快 6% · 磁吸 +25%', descEn: '(stub) morph · current: +6% speed · +25% magnet',
+    hue: 'citrus', plate: 0x1a2218, accent: 0x2a3a22, trim: 0x00e5ff, hot: 0xffc21a, visor: 0x7cffea,
+    stats: { hp: 1, speed: 1.06, damage: 1, fireRate: 1 },
+    starterWeapon: 'mg',
+    passive: 'morph', // stub id — no morph states yet
+    muzzle: { dist: 0.74, y: 0.98 },
     bonus: { speedMul: 1.06, magnetMul: 1.25 },
   },
 ];
 
 export const MECH_BY_ID = Object.fromEntries(MECHS.map((m) => [m.id, m]));
+
+/**
+ * Derive runtime combat numbers from PLAYER base × mech.stats (+ legacy bonus fields).
+ * UI bars / cards MUST call this (or read the same fields Game uses) — never a second fake table.
+ */
+export function resolveMechCombat(mech) {
+  const m = typeof mech === 'string' ? MECH_BY_ID[mech] : mech;
+  const cfg = m || MECH_BY_ID.horn;
+  const st = cfg.stats || {};
+  const bonus = cfg.bonus || {};
+  const speedMul = st.speed != null ? st.speed : (bonus.speedMul || 1);
+  const damageMul = st.damage != null ? st.damage : 1;
+  const fireRateMul = st.fireRate != null ? st.fireRate : 1;
+  const armorAdd = bonus.armor || 0;
+  const magnetMul = bonus.magnetMul || 1;
+  // Prefer stats.hp multiplier when it meaningfully differs from 1; else legacy bonus.maxHp.
+  let maxHp;
+  if (st.hp != null && Math.abs(st.hp - 1) > 0.001) {
+    maxHp = Math.max(1, Math.round(PLAYER.hp * st.hp));
+  } else {
+    maxHp = PLAYER.hp + (bonus.maxHp || 0);
+  }
+  return {
+    maxHp,
+    speed: PLAYER.speed * speedMul,
+    bulletDmg: PLAYER.bulletDmg * damageMul,
+    fireCd: PLAYER.fireCd / Math.max(0.25, fireRateMul),
+    magnet: PLAYER.magnet * magnetMul,
+    armor: PLAYER.armor + armorAdd,
+    starterWeapon: cfg.starterWeapon || 'mg',
+    passive: cfg.passive || null,
+    muzzle: cfg.muzzle || { dist: 0.72, y: 0.95 },
+  };
+}
 
 /**
  * Hostiles are HUMANS first — the scientists and soldiers sent to stop the runaway mech —

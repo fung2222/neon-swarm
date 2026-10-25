@@ -70,3 +70,15 @@ Do **not** jump to 8-dir full sheets before (1)+(2) playtest.
 - Re-arting all 3 mech colorways as full unique sheets (tint / palette swap OK).
 - Complex FSM (reload / roll / stamina).
 - Monetization / hub art.
+
+---
+
+## Phase 1 extension (v0.9.0)
+
+This Milestone B contract remains in force. Phase 1 art/select upgrade adds:
+
+- [art-bible.md](./art-bible.md) — lore, color tokens, dim-arena, silhouette rules
+- [asset-naming.md](./asset-naming.md) — folder / sheet naming
+- [render-pipeline.md](./render-pipeline.md) — **single 3D source of truth**; select = live `buildPlayerMech`; in-game sprites stay interim until bake
+
+Do not contradict the split-body / anchor rules above when baking Phase 3 sheets.

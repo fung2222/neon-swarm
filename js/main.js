@@ -1,11 +1,11 @@
-// RAMPAGE MECH 暴走機甲 — v0.8.6 aim/facing split, sticky auto-aim, muzzle VFX, FX dampen, perf
+// RAMPAGE MECH 暴走機甲 — v0.9.0-phase1 art bible + awaken select 3D slice
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
   ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
@@ -20,8 +20,8 @@ const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level'] });
 const stage = createStage({
-  canvas: $('scene'), bloom: 0.28, bloomRadius: 0.32, bloomThreshold: 0.92, fov: 42, exposure: 0.92,
-  glow: 'low', glowLevels: { low: { strength: 0.28, radius: 0.4, threshold: 0.2 } },
+  canvas: $('scene'), bloom: 0.22, bloomRadius: 0.28, bloomThreshold: 0.94, fov: 42, exposure: 0.88,
+  glow: 'low', glowLevels: { low: { strength: 0.22, radius: 0.35, threshold: 0.25 } },
   onFatal: (m) => ui.fatal(m),
 });
 ui.glowToggle(stage);
@@ -70,7 +70,23 @@ const S = {
 };
 S.mech = MECH_BY_ID[S.mechId];
 
-/** Three frames on the home screen; the pick previews live on the menu mech model. */
+/** Compact bars derived from resolveMechCombat — never a second fake table. */
+function mechStatBars(m) {
+  const rc = resolveMechCombat(m);
+  const hpN = rc.maxHp / (PLAYER.hp + 1);          // ~1 when +1 shield
+  const spN = rc.speed / PLAYER.speed;
+  const dmgN = rc.bulletDmg / PLAYER.bulletDmg;
+  const rofN = PLAYER.fireCd / Math.max(0.001, rc.fireCd);
+  const rows = [
+    ['HP', hpN], ['SPD', spN], ['ATK', dmgN], ['ROF', rofN],
+  ];
+  return `<div class="mech-stats">${rows.map(([lab, v]) => {
+    const pct = Math.max(8, Math.min(100, Math.round(v * 70)));
+    return `<span class="mech-stat"><i>${lab}</i><b style="--w:${pct}%"></b></span>`;
+  }).join('')}</div>`;
+}
+
+/** Three frames on the home screen; preview is live 3D buildPlayerMech (not sprite). */
 function buildMechPicker() {
   const box = $('mech-pick');
   if (!box) return;
@@ -88,18 +104,20 @@ function buildMechPicker() {
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', m.id === S.mechId ? 'true' : 'false');
     b.dataset.id = m.id;
+    const accent = m.accent.toString(16).padStart(6, '0');
+    const trim = m.trim.toString(16).padStart(6, '0');
     b.innerHTML =
-      `<span class="mech-swatch" style="--a:#${m.accent.toString(16).padStart(6, '0')};--t:#${m.trim.toString(16).padStart(6, '0')}"></span>` +
-      `<b>${i18n.isZh() ? m.zh : m.en}</b><small>${i18n.isZh() ? m.descZh : m.descEn}</small>`;
+      `<span class="mech-swatch" style="--a:#${accent};--t:#${trim}"></span>` +
+      `<b>${i18n.isZh() ? m.zh : m.en}</b>` +
+      `<small>${i18n.isZh() ? m.descZh : m.descEn}</small>` +
+      mechStatBars(m);
     b.addEventListener('click', () => {
       S.mechId = m.id;
       S.mech = m;
       store.set('mech', m.id);
       try { audio.click(); } catch (_) {}
       buildMechPicker();
-      if (S.menuMech) {
-        view.setMenuMech(m.id);
-      }
+      if (S.menuMech) view.setMenuMech(m.id);
     });
     row.appendChild(b);
   });
@@ -126,6 +144,45 @@ new ViewInput($('scene'), {
 
 window.__swarm = S;
 S.view = view;
+
+/** Select-stage drag: horizontal yaw on #mech-stage (mouse + one finger). */
+(function wireMenuMechDrag() {
+  const el = $('mech-stage') || $('scene');
+  if (!el) return;
+  let dragging = false;
+  let lastX = 0;
+  const onDown = (x, e) => {
+    if (S.state !== 'menu') return;
+    dragging = true;
+    lastX = x;
+    if (e && e.cancelable) e.preventDefault();
+  };
+  const onMove = (x, e) => {
+    if (!dragging || S.state !== 'menu') return;
+    const dx = x - lastX;
+    lastX = x;
+    view.nudgeMenuYaw(dx * 0.012);
+    if (e && e.cancelable) e.preventDefault();
+  };
+  const onUp = () => { dragging = false; };
+  el.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    onDown(e.clientX, e);
+  });
+  window.addEventListener('mousemove', (e) => onMove(e.clientX, e));
+  window.addEventListener('mouseup', onUp);
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    onDown(e.touches[0].clientX, e);
+  }, { passive: false });
+  el.addEventListener('touchmove', (e) => {
+    if (!dragging || e.touches.length !== 1) return;
+    onMove(e.touches[0].clientX, e);
+  }, { passive: false });
+  el.addEventListener('touchend', onUp);
+  el.addEventListener('touchcancel', onUp);
+})();
+
 
 function fmtTime(sec) {
   const s = Math.max(0, Math.floor(sec));
@@ -517,9 +574,9 @@ function tick(dt) {
   if (S.state === 'menu') {
     const cam = stage.camera;
     const tm = performance.now() * 0.001;
-    // showcase orbit around the picked frame (turntable + slow dolly)
-    cam.position.set(Math.sin(tm * 0.18) * 4.2, 3.4, 5.6);
-    cam.lookAt(0, 1.05, 0);
+    // Stable showcase framing — yaw the MECH (view.nudgeMenuYaw), not the camera
+    cam.position.set(0.15, 3.15, 5.4);
+    cam.lookAt(0, 1.15, 0);
     if (S.menuMech) view.updateMenu(tm);
     return;
   }

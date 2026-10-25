@@ -6,3 +6,6 @@ android/
 ios/
 
 shots/
+
+# bake stub manifests
+tools/.cache/

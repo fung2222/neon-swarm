@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.8.6 aim/facing split · sticky auto-aim · muzzle VFX · FX dampen · nearest perf
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.0 · **狀態 Status:** v0.9.0-phase1 art bible + awaken select 3D slice
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  
@@ -12,11 +12,19 @@ You are the mech the lab built — and it is not going back in the cage. Scienti
 ## 三款機體 Three frames
 | 機體 Frame | 特點 |
 |---|---|
-| **角盔機型 HORN** | 紫綠角盔 · 均衡 · 開局多 1 點護盾 |
-| **重裝機型 HEAVY** | 白藍重裝 + 肩炮 · 慢 8% · 接觸傷害 −1 |
-| **原創機型 PROTO** | 原創霓虹 · 快 6% · 經驗吸取 +25% |
+| **覺醒突擊型 AWAKEN** (`horn`) | 深灰＋青紫 · 均衡 · 開局護盾 +1 · Phase 1 主角切片 |
+| **高速精密型 PRECISION** (`heavy`) | 預留 stub · 現行：慢 8% · 護甲 +1 |
+| **可變結構原型 MORPH** (`prototype`) | 預留 stub · 現行：快 6% · 磁吸 +25% |
 
-> 命名用中性名稱：前兩款只係**配色／剪影致敬**，冇任何商標名、logo 或原作品圖案。
+> Phase 1 只深切主角機選機 3D；其餘兩台係可選 stub（唔同 id／stats），**唔係**把主角機重新上色。數值一律讀 `MECHS` + `resolveMechCombat`。
+
+## 選機 vs 遊戲內外觀 Select vs in-game (honest)
+| 畫面 | 來源 |
+|---|---|
+| **選機 Select** | Live Three.js `buildPlayerMech`（可拖曳旋轉） |
+| **遊戲內 In-game** | 暫用 `assets/sprites/mech_*.png` billboard（**interim**） |
+
+同一 3D 來源烘焙多方向 sprite 係 Phase 3。而家**唔好**宣稱選機同遊戲內已共用烘焙圖。規格見 `docs/art-bible.md` · `docs/render-pipeline.md`。
 
 ## 敵人 Enemies
 人類主導、機甲支援：研究員 → 保安 → 士兵 → 隊長 → **首席科學家**；支援單位：偵察機甲、重裝機甲、護衛機甲。掉落：**X**（經驗方塊）、**H**（修復）、**W**（武器圖示、方塊）。
@@ -42,4 +50,4 @@ cd /workspace && python3 -m http.server 18940
 # http://127.0.0.1:18940/neon-swarm/
 node tests/logic.test.mjs && node tests/levelup.test.mjs && node tests/health.test.mjs && node tests/balance.test.mjs
 ```
-文件：[docs/HANDOFF.md](docs/HANDOFF.md) · [docs/BEATS-PLAN.md](docs/BEATS-PLAN.md) · [docs/GAMES-JSON-STUB.md](docs/GAMES-JSON-STUB.md) · [privacy.html](privacy.html)
+文件：[docs/art-bible.md](docs/art-bible.md) · [docs/render-pipeline.md](docs/render-pipeline.md) · [docs/asset-naming.md](docs/asset-naming.md) · [docs/HANDOFF.md](docs/HANDOFF.md) · [privacy.html](privacy.html)

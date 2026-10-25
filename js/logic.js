@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat } from './config.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
 
@@ -55,18 +55,22 @@ export class Game {
 
     this.px = 0; this.pz = 0;
     this.vx = 0; this.vz = 0;
-    const bonus = this.mech.bonus || {};
-    this.maxHp = PLAYER.hp + (bonus.maxHp || 0);
+    // Single source: resolveMechCombat(mech) — same numbers select UI should show
+    const rc = resolveMechCombat(this.mech);
+    this.maxHp = rc.maxHp;
     this.hp = this.maxHp;
-    this.speed = PLAYER.speed * (bonus.speedMul || 1);
-    this.fireCd = PLAYER.fireCd;
+    this.speed = rc.speed;
+    this.fireCd = rc.fireCd;
     this.fireT = 0;
-    this.bulletDmg = PLAYER.bulletDmg;
+    this.bulletDmg = rc.bulletDmg;
     this.bulletSpeed = PLAYER.bulletSpeed;
     this.bulletLife = PLAYER.bulletLife;
     this.fireRange = PLAYER.fireRange || 11;
-    this.magnet = PLAYER.magnet * (bonus.magnetMul || 1);
-    this.armor = PLAYER.armor + (bonus.armor || 0);
+    this.magnet = rc.magnet;
+    this.armor = rc.armor;
+    this.starterWeapon = rc.starterWeapon;
+    this.passive = rc.passive;
+    this.mechMuzzle = rc.muzzle;
     this.deflect = 0;
     this.orbits = 0;
     this.pierce = 0;
@@ -328,7 +332,12 @@ export class Game {
     dx /= len; dz /= len;
     const weapon = opts.weapon || 'mg';
     const speed = opts.speed != null ? opts.speed : this.bulletSpeed;
-    const mz = MUZZLE_BY_WEAPON[weapon] || MUZZLE_BY_WEAPON.mg;
+    const mzW = MUZZLE_BY_WEAPON[weapon] || MUZZLE_BY_WEAPON.mg;
+    // Per-mech muzzle (config) overlays weapon default for the starter MG path.
+    const mzM = this.mechMuzzle;
+    const mz = (weapon === 'mg' && mzM)
+      ? { dist: mzM.dist != null ? mzM.dist : mzW.dist, y: mzM.y != null ? mzM.y : mzW.y }
+      : mzW;
     // Spawn ahead of the mech along aim so shots read as fired, not dropping out of the torso.
     const muzzle = opts.muzzle != null ? opts.muzzle : mz.dist;
     const my = opts.y != null ? opts.y : mz.y;
@@ -462,6 +471,9 @@ export class Game {
   }
 
   _fireGrenade(events) {
+    // TODO(Phase 5): restrict targets to ~120° forward arc of facing/aim — never throw backward
+    // at a rear sticky target. Until then, keep Milestone A nearest/sticky behavior so combat
+    // does not regress.
     const targets = this._targetsForWeapon(1, this.fireRange);
     if (!targets.length) return false;
     const best = targets[0];

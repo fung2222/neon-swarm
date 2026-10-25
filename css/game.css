@@ -202,3 +202,93 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .result b { font-size: clamp(26px, 8vw, 34px); line-height: 1.05; color: #7ef9ff; font-variant-numeric: tabular-nums; text-shadow: 0 0 14px #00e5ff88; }
 .result em { font-style: normal; font-size: 9px; letter-spacing: 1px; color: #6f6a92; margin-top: 2px; }
 .result i { font-style: normal; font-size: 12px; color: #ffe600; font-variant-numeric: tabular-nums; }
+/* ---- v0.9.0 Phase 1: select stage + mech cards ---- */
+.mech-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+.mech-stage:active { cursor: grabbing; }
+#screen-start .menu-mid { z-index: 1; }
+#screen-start .menu-meta { z-index: 2; pointer-events: auto; }
+
+.mech-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 6px;
+  width: 100%;
+  margin-top: 6px;
+}
+.mech-stat {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 9px; letter-spacing: 0.5px; color: #8a84b0;
+}
+.mech-stat i { font-style: normal; width: 22px; flex: 0 0 auto; }
+.mech-stat b {
+  flex: 1; height: 4px; border-radius: 99px;
+  background: #1a1435;
+  position: relative; overflow: hidden;
+  font-size: 0;
+}
+.mech-stat b::after {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: var(--w, 50%);
+  background: linear-gradient(90deg, var(--a, #00e5ff), var(--t, #8b3dff));
+  border-radius: 99px;
+}
+.mech-card.on .mech-stat { color: #b8b2e0; }
+
+/* Keep「啟動暴走」clear of home chrome on short / portrait phones */
+@media (max-width: 760px) {
+  #screen-start .menu-mid {
+    --menu-brand-top: max(56px, calc(env(safe-area-inset-top, 0px) + 10vh));
+    --menu-cta-bottom: max(96px, calc(env(safe-area-inset-bottom, 0px) + 80px));
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  #screen-start .menu-brand .title {
+    font-size: clamp(32px, 9vw, 52px);
+    letter-spacing: 3px;
+  }
+  #screen-start .menu-brand .tagline {
+    -webkit-line-clamp: 2;
+    font-size: 12px;
+  }
+  #screen-start .mech-card small { display: none; }
+  #screen-start #btn-play {
+    position: relative;
+    z-index: 3;
+    min-width: min(280px, 88vw);
+    margin-bottom: 4px;
+  }
+  #screen-start .menu-meta {
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    font-size: 11px;
+  }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  #screen-start .menu-mid {
+    --menu-brand-top: max(28px, env(safe-area-inset-top, 0px));
+    --menu-cta-bottom: max(48px, calc(env(safe-area-inset-bottom, 0px) + 36px));
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 12px;
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+  }
+  #screen-start .menu-brand {
+    max-width: 42vw;
+    text-align: left;
+  }
+  #screen-start .menu-brand .tagline { display: none; }
+  #screen-start .menu-cta {
+    margin: 0;
+    width: min(360px, 48vw);
+    align-items: stretch;
+  }
+  #screen-start #btn-play { z-index: 3; }
+}

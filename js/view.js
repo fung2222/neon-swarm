@@ -102,7 +102,8 @@ function buildPlayerMech(cfg) {
   const body = new THREE.Group();
   body.name = 'body';
   root.add(body);
-  const id = cfg.id;
+  // Shared skeleton; per-mech parts keyed by model (not a recolor fork).
+  const id = cfg.model || cfg.id;
   const heavy = id === 'heavy';
   const proto = id === 'prototype';
   const horn = id === 'horn';
@@ -162,14 +163,21 @@ function buildPlayerMech(cfg) {
     body.add(vent);
   }
 
-  // ---- shoulders: tapered pauldrons with rim and (heavy) cannon mount
+  // ---- shoulders: tapered pauldrons; horn = asymmetric (Awaken Assault silhouette cue)
   for (const side of [-1, 1]) {
     const pad = new THREE.Group();
-    pad.position.set(side * (heavy ? 0.3 : 0.26), 1.15, 0);
-    const cap = slab(heavy ? 0.18 : 0.15, heavy ? 0.24 : 0.2, heavy ? 0.2 : 0.17, heavy ? 0.3 : 0.26, accentM);
-    const rim = box(heavy ? 0.26 : 0.22, 0.04, heavy ? 0.32 : 0.28, trimM, 0, 0.1, 0);
+    const asym = horn ? (side < 0 ? 1.22 : 0.82) : 1;
+    pad.position.set(side * (heavy ? 0.3 : 0.26) * (horn && side > 0 ? 1.05 : 1), 1.15, horn && side < 0 ? 0.04 : 0);
+    const cap = slab(
+      (heavy ? 0.18 : 0.15) * asym,
+      (heavy ? 0.24 : 0.2) * asym,
+      (heavy ? 0.2 : 0.17) * (horn && side < 0 ? 1.15 : 1),
+      (heavy ? 0.3 : 0.26) * asym,
+      accentM
+    );
+    const rim = box((heavy ? 0.26 : 0.22) * asym, 0.04, (heavy ? 0.32 : 0.28) * asym, trimM, 0, 0.1, 0);
     pad.add(cap, rim);
-    pad.rotation.z = side * -0.14;
+    pad.rotation.z = side * -0.14 * (horn && side < 0 ? 1.25 : 1);
     if (heavy) {
       const mount = box(0.14, 0.12, 0.26, plateM, side * 0.06, 0.1, -0.06);
       const gun = cyl(0.05, 0.06, 0.34, darkM, 10);
@@ -203,6 +211,22 @@ function buildPlayerMech(cfg) {
       tip.rotation.x = Math.PI / 2;
       tip.position.set(side * 0.02, -0.47, 0.32);
       arm.add(barrel, tip);
+    } else if (horn && side > 0) {
+      // Mid rifle — Awaken Assault cue (visible from select orbit)
+      const rifle = new THREE.Group();
+      rifle.name = 'rifle';
+      const stock = box(0.06, 0.08, 0.14, darkM, 0, -0.5, -0.02);
+      const receiver = box(0.08, 0.09, 0.22, plateM, 0, -0.48, 0.14);
+      const barrel = cyl(0.028, 0.034, 0.38, darkM, 10);
+      barrel.rotation.x = Math.PI / 2;
+      barrel.position.set(0, -0.48, 0.38);
+      const rail = box(0.03, 0.02, 0.2, trimM, 0, -0.42, 0.16);
+      const tip = cyl(0.022, 0.022, 0.05, hotM, 10);
+      tip.rotation.x = Math.PI / 2;
+      tip.position.set(0, -0.48, 0.58);
+      tip.name = 'muzzle';
+      rifle.add(stock, receiver, barrel, rail, tip);
+      arm.add(rifle);
     }
     body.add(arm);
     arms.push(arm);
@@ -220,11 +244,24 @@ function buildPlayerMech(cfg) {
     const cheek = box(0.05, 0.14, 0.16, plateM, side * 0.13, -0.03, 0.03);
     head.add(cheek);
   }
-  // twin V-fin antennae on the brow — the signature anime-mecha cue, kept small so it never
-  // reads as a hat from the top-down game camera
-  if (horn || proto) {
+  // Awaken: single horn antenna + cyan brow gem. Proto stub: small twin fins. Heavy stub: brow.
+  if (horn) {
+    const hornAnt = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.48, 5), plateM);
+    hornAnt.position.set(0.02, 0.32, -0.02);
+    hornAnt.rotation.z = -0.18;
+    hornAnt.rotation.x = -0.08;
+    head.add(hornAnt);
+    const hornTip = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.12, 5), trimM);
+    hornTip.position.set(0.06, 0.54, -0.04);
+    hornTip.rotation.z = -0.18;
+    head.add(hornTip);
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.04, 0), hotM);
+    gem.position.set(0, 0.12, 0.12);
+    gem.name = 'coreGem';
+    head.add(gem);
+  } else if (proto) {
     for (const side of [-1, 1]) {
-      const fin = box(horn ? 0.03 : 0.025, 0.2, 0.02, trimM, side * 0.08, 0.17, 0.08, 0.2);
+      const fin = box(0.025, 0.2, 0.02, trimM, side * 0.08, 0.17, 0.08, 0.2);
       fin.rotation.z = side * 0.75;
       fin.rotation.x = -0.15;
       head.add(fin);
@@ -233,20 +270,13 @@ function buildPlayerMech(cfg) {
     gem.position.set(0, 0.14, 0.1);
     head.add(gem);
   }
-  if (horn) {
-    const crest = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.42, 4), plateM);
-    crest.position.set(0, 0.28, -0.02);
-    head.add(crest);
-    const crestTip = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.12, 4), hotM);
-    crestTip.position.set(0, 0.5, -0.02);
-    head.add(crestTip);
-  } else if (heavy) {
+  if (heavy) {
     const brow = box(0.26, 0.05, 0.06, plateM, 0, 0.11, 0.11);
     head.add(brow);
     const bristle = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.16, 6), trimM);
     bristle.position.set(0, 0.16, -0.02);
     head.add(bristle);
-  } else {
+  } else if (proto) {
     const monocle = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.018, 6, 14), visorM);
     monocle.position.set(-0.08, 0.02, 0.13);
     head.add(monocle);
@@ -255,6 +285,12 @@ function buildPlayerMech(cfg) {
     head.add(crest);
   }
   body.add(head);
+
+  // Cyan personality core — chest reactor already exists; mark + enlarge for awaken
+  if (horn) {
+    reactor.scale.set(1.25, 1.25, 1.35);
+    reactor.name = 'personalityCore';
+  }
 
   // ---- backpack + thrusters
   const pack = box(heavy ? 0.38 : 0.3, 0.32, 0.17, plateM, 0, 1.04, -0.22);
@@ -284,9 +320,14 @@ function buildPlayerMech(cfg) {
   root.userData.hullMats = [accentM, plateM];
   root.userData.coreMats = [visorM, hotM, trimM];
   root.userData.thrusterMats = [hotM];
+  root.userData.seamMats = [trimM, hotM]; // rampage: cyan → magenta
+  root.userData.rampageColor = cfg.rampage != null ? cfg.rampage : 0xff2bd6;
+  root.userData.mechId = cfg.id;
+  root.userData.model = id;
   root.userData.halo = halo;
   root.userData.plate = plateM;
   root.userData.body = body;
+  root.userData.isSprite = false;
   root.userData.legs = thighs;
   root.userData.shins = shins;
   root.userData.foots = foots;
@@ -902,8 +943,9 @@ export class View {
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(floorSize, floorSize),
       new THREE.MeshStandardMaterial({
-        map: floorTex, color: 0xc8d0dc, emissive: 0x050a12, emissiveIntensity: 0.35,
-        roughness: 0.88, metalness: 0.12,
+        // Phase 1 dim-arena: keep floor quieter so cyan MG / pickups read
+        map: floorTex, color: 0x7a8490, emissive: 0x04080e, emissiveIntensity: 0.22,
+        roughness: 0.9, metalness: 0.1,
       })
     );
     floor.rotation.x = -Math.PI / 2;
@@ -997,47 +1039,100 @@ export class View {
   }
   setZoom(z) { this._zoom = z; }
 
-  /** Home-screen showcase: the chosen frame stands on the arena floor, slowly turning. */
+  /**
+   * Home-screen showcase: LIVE 3D from buildPlayerMech (same visual identity as bake source).
+   * In-game still uses interim sprites until Phase 3 bake — do not claim parity yet.
+   */
   setMenuMech(id) {
     this.hideMenuMech();
     const cfg = MECH_CACHE[id] || MECH_CACHE.horn;
-    const mech = buildPlayerSprite(cfg);
-    mech.position.set(0, 0, 0);
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.8, 1.05, 40),
-      new THREE.MeshBasicMaterial({ color: cfg.trim, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+    const wrap = new THREE.Group();
+    wrap.name = 'menuMechWrap';
+
+    // Pedestal + contact shadow (dark stage, restrained glow)
+    const pedestal = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.95, 1.05, 0.12, 48),
+      new THREE.MeshStandardMaterial({
+        color: 0x0a0e18, emissive: 0x101828, emissiveIntensity: 0.35,
+        roughness: 0.55, metalness: 0.45,
+      })
     );
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.02;
-    mech.add(ring);
-    this.menuMechRing = ring;
-    this.menuMech = mech;
-    this.group.add(mech);
+    pedestal.position.y = 0.06;
+    const pedRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.98, 1.12, 48),
+      new THREE.MeshBasicMaterial({ color: cfg.trim, transparent: true, opacity: 0.42, side: THREE.DoubleSide })
+    );
+    pedRing.rotation.x = -Math.PI / 2;
+    pedRing.position.y = 0.125;
+    const shadow = new THREE.Mesh(
+      new THREE.CircleGeometry(0.7, 32),
+      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false })
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.128;
+
+    const mech = buildPlayerMech(cfg);
+    mech.position.set(0, 0.12, 0);
+    mech.scale.setScalar((cfg.model || cfg.id) === 'heavy' ? 1.05 : 1.0);
+    // Drop the built-in halo — pedestal ring replaces it for select
+    if (mech.userData.halo) mech.userData.halo.visible = false;
+
+    wrap.add(pedestal, pedRing, shadow, mech);
+    wrap.position.set(0, 0, 0);
+
+    this.menuMechRing = pedRing;
+    this.menuMech = wrap;
+    this.menuMechModel = mech;
+    this._menuYaw = this._menuYaw != null ? this._menuYaw : 0.35;
+    this._menuAutoSpin = this._menuAutoSpin !== false;
+    this._menuDragUntil = this._menuDragUntil || 0;
+    wrap.rotation.y = this._menuYaw;
+    this.group.add(wrap);
     this.group.visible = true;
-    return mech;
+    return wrap;
   }
 
-  /** Per-frame menu motion (slow turntable + idle breathing). */
+  /** Apply horizontal yaw from user drag (radians delta). Pauses auto-spin. */
+  nudgeMenuYaw(dyaw) {
+    this._menuYaw = (this._menuYaw || 0) + dyaw;
+    this._menuAutoSpin = false;
+    this._menuDragUntil = performance.now() * 0.001 + 2.5;
+    if (this.menuMech) this.menuMech.rotation.y = this._menuYaw;
+  }
+
+  /** Per-frame menu motion: yaw auto-spin + idle breathe + light rampage seam pulse (horn). */
   updateMenu(t) {
-    const m = this.menuMech;
-    if (!m) return;
-    const ud = m.userData;
-    if (ud.isSprite) {
-      // Slow yaw of the ring only; plane faces the camera so the PNG stays readable.
-      m.rotation.y = 0;
-      if (ud.plane) ud.plane.position.y = (ud.spriteH || 2.4) * 0.5 + Math.sin(t * 1.6) * 0.04;
-      if (this.stage && this.stage.camera) billboardToCamera(m, this.stage.camera, t * 0.5);
-      if (ud.halo) ud.halo.material.opacity = 0.35 + Math.sin(t * 1.8) * 0.12;
-    } else {
-      m.rotation.y = t * 0.5;
-      if (ud.body) ud.body.position.y = Math.sin(t * 1.6) * 0.02;
-      if (ud.glowL && ud.glowR) {
-        const pulse = 1 + Math.sin(t * 2.4) * 0.06;
-        ud.glowL.scale.setScalar(pulse);
-        ud.glowR.scale.setScalar(pulse);
+    const wrap = this.menuMech;
+    if (!wrap) return;
+    if (this._menuDragUntil && t >= this._menuDragUntil) {
+      this._menuAutoSpin = true;
+      this._menuDragUntil = 0;
+    }
+    if (this._menuAutoSpin !== false && this._menuLastT != null) {
+      const dt = Math.min(0.05, Math.max(0, t - this._menuLastT));
+      this._menuYaw = (this._menuYaw || 0) + 0.35 * dt;
+    }
+    this._menuLastT = t;
+    wrap.rotation.y = this._menuYaw || 0;
+
+    const m = this.menuMechModel || wrap;
+    const ud = m.userData || {};
+    if (ud.body) ud.body.position.y = Math.sin(t * 1.6) * 0.02;
+    if (ud.glowL && ud.glowR) {
+      const pulse = 1 + Math.sin(t * 2.4) * 0.06;
+      ud.glowL.scale.setScalar(pulse);
+      ud.glowR.scale.setScalar(pulse);
+    }
+    // Small menu emissive hook: awaken seams breathe cyan → magenta (full in-game rampage later)
+    if (ud.mechId === 'horn' && ud.seamMats) {
+      const u = 0.5 + 0.5 * Math.sin(t * 1.2);
+      const c = new THREE.Color(0x00e5ff).lerp(new THREE.Color(ud.rampageColor || 0xff2bd6), u * 0.55);
+      for (const mat of ud.seamMats) {
+        if (mat.color) mat.color.copy(c);
+        if (mat.emissive) mat.emissive.copy(c);
       }
     }
-    if (this.menuMechRing) this.menuMechRing.material.opacity = 0.35 + Math.sin(t * 1.8) * 0.12;
+    if (this.menuMechRing) this.menuMechRing.material.opacity = 0.32 + Math.sin(t * 1.8) * 0.1;
   }
 
   hideMenuMech() {
@@ -1045,6 +1140,7 @@ export class View {
     this.group.remove(this.menuMech);
     disposeTree(this.menuMech);
     this.menuMech = null;
+    this.menuMechModel = null;
     this.menuMechRing = null;
   }
 
