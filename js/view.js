@@ -868,9 +868,6 @@ export class View {
     if (mech.userData.halo) mech.userData.halo.visible = false;
 
     wrap.add(pedestal, pedRing, shadow, mech);
-    // Slightly lower + toward camera so torso clears title / cards / Start overlays.
-    // Desktop left-column UI: park the turntable in the open right half.
-    wrap.position.set(1.15, -0.08, 0.45);
 
     this.menuMechRing = pedRing;
     this.menuMech = wrap;
@@ -883,7 +880,75 @@ export class View {
     this._setMenuPlayfieldHidden(true);
     this.group.add(wrap);
     this.group.visible = true;
+    // Responsive framing: desktop right-column vs mobile centered safe band.
+    const vw = (typeof window !== 'undefined' && window.innerWidth) || (this.stage && this.stage.width) || 1280;
+    const vh = (typeof window !== 'undefined' && window.innerHeight) || (this.stage && this.stage.height) || 800;
+    this.updateMenuLayout(vw, vh);
     return wrap;
+  }
+
+  /**
+   * Menu showcase framing for current viewport.
+   * Wide desktop: keep right-column turntable (x≈1.15).
+   * ≤760px: center mech in the visible band between title and mech cards;
+   * also adjusts Y / scale / camera look so head/feet stay on-screen and cards do not cover the body.
+   * Call from setMenuMech and on every resize / orientation change.
+   */
+  updateMenuLayout(viewportWidth, viewportHeight) {
+    const wrap = this.menuMech;
+    if (!wrap) return;
+    const w = viewportWidth > 0 ? viewportWidth
+      : ((typeof window !== 'undefined' && window.innerWidth) || (this.stage && this.stage.width) || 1280);
+    const h = viewportHeight > 0 ? viewportHeight
+      : ((typeof window !== 'undefined' && window.innerHeight) || (this.stage && this.stage.height) || 800);
+    // ≤760px width OR short height (phone landscape flipped to wide): mobile framing.
+    // Must not keep desktop x=1.15 on a phone held sideways (e.g. 844×390).
+    const mobile = w <= 760 || h <= 500;
+    const landscape = w > h;
+
+    if (!mobile) {
+      // Desktop / tablet landscape wide: open right half beside left-column UI.
+      wrap.position.set(1.15, -0.08, 0.45);
+      wrap.scale.setScalar(1);
+      this._menuCam = { pos: [0.15, 3.15, 5.4], lookAt: [0, 1.15, 0] };
+      return;
+    }
+
+    // Mobile / narrow: center in safe band between title and mech cards.
+    let x = 0.0;
+    let y = -0.12;
+    let z = 0.55;
+    let scale = 0.92;
+    let camPos = [0.0, 3.35, 5.55];
+    let camLook = [0.0, 1.0, 0.0];
+
+    if (landscape) {
+      // Short landscape: shrink so full model fits; keep centered (not desktop x).
+      scale = Math.min(0.62, 0.42 + h / 1100);
+      y = -0.22;
+      z = 0.15;
+      camPos = [0.0, 2.7, 4.6];
+      camLook = [0.0, 0.8, 0.0];
+    } else if (h >= 780) {
+      // Tall phone portrait (e.g. 390×844): sit in the void between title/tagline and cards.
+      // Raise + slight shrink so torso/legs clear the card stack.
+      scale = 0.52;
+      y = 1.7;
+      z = 0.3;
+      camPos = [0.0, 4.2, 5.9];
+      camLook = [0.0, 1.95, 0.0];
+    } else {
+      // Shorter portrait
+      scale = 0.48;
+      y = 1.4;
+      z = 0.25;
+      camPos = [0.0, 3.9, 5.6];
+      camLook = [0.0, 1.7, 0.0];
+    }
+
+    wrap.position.set(x, y, z);
+    wrap.scale.setScalar(scale);
+    this._menuCam = { pos: camPos, lookAt: camLook };
   }
 
   /** Apply horizontal yaw from user drag (radians delta). Pauses auto-spin. */

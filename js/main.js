@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.2 hotfix (tap, menu polish, unified muzzle)
+// RAMPAGE MECH 暴走機甲 — v0.9.3 hotfix (responsive menu framing)
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -55,7 +55,11 @@ const city = new NeonCity(stage, {
 const view = new View(stage);
 view.setVisible(false);
 const particles = new Particles(stage.scene, 5200, { floorY: 0.02 });
-stage.onResize((w, h, pr) => particles.resize(h, pr));
+stage.onResize((w, h, pr) => {
+  particles.resize(h, pr);
+  // Keep menu mech framing in sync on resize / orientation change (not only first setMenuMech).
+  if (view.menuMech) view.updateMenuLayout(w, h);
+});
 const waves = new Shockwaves(stage.scene, 24);
 const fx = new FxState();
 const audio = new SwarmAudio(store);
@@ -609,9 +613,11 @@ function tick(dt) {
   if (S.state === 'menu') {
     const cam = stage.camera;
     const tm = performance.now() * 0.001;
-    // Stable showcase framing — yaw the MECH (view.nudgeMenuYaw), not the camera
-    cam.position.set(0.15, 3.15, 5.4);
-    cam.lookAt(0, 1.15, 0);
+    // Showcase framing from updateMenuLayout (desktop right-column vs mobile centered).
+    // Yaw the MECH (view.nudgeMenuYaw), not the camera orbit.
+    const mc = view._menuCam || { pos: [0.15, 3.15, 5.4], lookAt: [0, 1.15, 0] };
+    cam.position.set(mc.pos[0], mc.pos[1], mc.pos[2]);
+    cam.lookAt(mc.lookAt[0], mc.lookAt[1], mc.lookAt[2]);
     if (S.menuMech) view.updateMenu(tm);
     return;
   }
