@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -701,98 +701,129 @@ function iconGlyph(kind, weapon) {
   return '?';
 }
 
+function dropLabel(kind, weapon) {
+  if (kind === 'xp') return 'XP';
+  if (kind === 'heal') return 'HP';
+  if (kind === 'shield') return 'SH';
+  if (kind === 'weapon') return WEAPON_DROP_LABEL[weapon] || (weapon ? String(weapon).toUpperCase().slice(0, 5) : 'GUN');
+  return (DROP[kind] && DROP[kind].letter) || '?';
+}
+
 function makeDropTexture(kind, weapon) {
-  const s = 128;
+  const s = 256;
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  const color = (DROP[kind] && DROP[kind].color) || 0x3bff8a;
+  const color = (DROP[kind] && DROP[kind].color) || 0x00e5ff;
   const hex = '#' + color.toString(16).padStart(6, '0');
-  // dark inset panel + bright border = the "icon face" on the cube
-  ctx.fillStyle = 'rgba(4,2,14,0.92)';
-  ctx.fillRect(0, 0, s, s);
-  ctx.strokeStyle = hex;
+  // Deep-gray neon commercial frame
+  ctx.clearRect(0, 0, s, s);
+  // outer glow plate
+  ctx.fillStyle = 'rgba(10, 14, 20, 0.92)';
+  roundRect(ctx, 10, 10, s - 20, s - 20, 18);
+  ctx.fill();
+  // bordered glow box
   ctx.lineWidth = 10;
-  ctx.strokeRect(7, 7, s - 14, s - 14);
-  ctx.fillStyle = hex;
   ctx.strokeStyle = hex;
-  if (kind === 'heal') {
-    ctx.lineWidth = 20;
-    ctx.beginPath(); ctx.moveTo(64, 30); ctx.lineTo(64, 98); ctx.moveTo(30, 64); ctx.lineTo(98, 64); ctx.stroke();
-  } else if (kind === 'weapon') {
-    // simple gun / blade / orb emblems so the weapon family reads at a glance
-    const shot = (WEAPON_SHOT[weapon] || WEAPON_SHOT.dmg).shot;
-    if (shot === 'blade' || shot === 'wave') {
-      ctx.lineWidth = 14;
-      ctx.beginPath(); ctx.arc(64, 70, 34, Math.PI * 0.15, Math.PI * 0.85, true); ctx.stroke();
-    } else if (shot === 'orb') {
-      ctx.lineWidth = 12;
-      ctx.beginPath(); ctx.arc(64, 64, 26, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(64, 64, 8, 0, Math.PI * 2); ctx.fill();
-    } else if (shot === 'lance' || shot === 'spike') {
-      ctx.lineWidth = 12;
-      ctx.beginPath(); ctx.moveTo(28, 96); ctx.lineTo(96, 32); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(96, 32); ctx.lineTo(74, 34); ctx.lineTo(94, 54); ctx.closePath(); ctx.fill();
-    } else if (shot === 'star') {
-      ctx.beginPath();
-      for (let i = 0; i < 8; i++) {
-        const r = i % 2 ? 16 : 40, a = (i / 8) * Math.PI * 2 - Math.PI / 2;
-        const x = 64 + Math.cos(a) * r, y = 64 + Math.sin(a) * r;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.closePath(); ctx.fill();
-    } else {
-      // gun silhouette
-      ctx.fillRect(34, 52, 58, 14);
-      ctx.fillRect(40, 66, 14, 22);
-      ctx.fillRect(84, 60, 10, 8);
-    }
-  } else {
-    ctx.font = '900 88px Orbitron, "Segoe UI", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('X', 64, 68);
+  roundRect(ctx, 18, 18, s - 36, s - 36, 14);
+  ctx.stroke();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(200, 240, 255, 0.55)';
+  roundRect(ctx, 28, 28, s - 56, s - 56, 10);
+  ctx.stroke();
+  // corner ticks
+  ctx.strokeStyle = hex;
+  ctx.lineWidth = 4;
+  const t = 22;
+  for (const [x, y, dx, dy] of [
+    [34, 34, t, 0], [34, 34, 0, t],
+    [s - 34, 34, -t, 0], [s - 34, 34, 0, t],
+    [34, s - 34, t, 0], [34, s - 34, 0, -t],
+    [s - 34, s - 34, -t, 0], [s - 34, s - 34, 0, -t],
+  ]) {
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + dx, y + dy); ctx.stroke();
   }
+  const label = dropLabel(kind, weapon);
+  ctx.fillStyle = hex;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // Size font so long labels (LASER/MULTI) still fill the box
+  const len = label.length;
+  const px = len <= 2 ? 118 : len <= 3 ? 92 : len <= 4 ? 72 : 58;
+  ctx.font = '900 ' + px + 'px "Segoe UI", "Arial Black", Orbitron, sans-serif';
+  ctx.shadowColor = hex;
+  ctx.shadowBlur = 18;
+  ctx.fillText(label, s / 2, s / 2 + 4);
+  ctx.shadowBlur = 0;
+  // tiny caption strip
+  ctx.font = '700 18px "Segoe UI", sans-serif';
+  ctx.fillStyle = 'rgba(180, 220, 240, 0.75)';
+  const cap = kind === 'weapon' ? 'WEAPON' : (kind === 'heal' ? 'REPAIR' : kind === 'xp' ? 'EXP' : String(kind).toUpperCase());
+  ctx.fillText(cap, s / 2, s - 42);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
   return tex;
 }
 
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
 function dropTexture(kind, weapon) {
-  const key = kind + ':' + (weapon || '');
+  const key = kind + ':' + (weapon || '') + ':v2';
   if (!DROP_TEX[key]) DROP_TEX[key] = makeDropTexture(kind, weapon);
   return DROP_TEX[key];
 }
 
+/** Large neon-framed letter board — always readable, faces camera in sync. */
 function dropMesh(d) {
   const g = new THREE.Group();
-  const color = (DROP[d.kind] && DROP[d.kind].color) || 0x3bff8a;
-  const cubeMat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.45, roughness: 0.35, metalness: 0.5 });
-  const cube = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.34), cubeMat);
-  cube.rotation.y = Math.PI / 4;
-  const face = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.3, 0.3),
-    new THREE.MeshBasicMaterial({ map: dropTexture(d.kind, d.weapon), transparent: true })
+  const color = (DROP[d.kind] && DROP[d.kind].color) || 0x00e5ff;
+  const board = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.15, 1.15),
+    new THREE.MeshBasicMaterial({
+      map: dropTexture(d.kind, d.weapon),
+      transparent: true,
+      alphaTest: 0.15,
+      depthWrite: false,
+      fog: false,
+      side: THREE.DoubleSide,
+    })
   );
-  face.position.z = 0.176;
-  face.name = 'face';
-  cube.add(face);
-  cube.position.y = 0.24;
-  // soft ground glow so the cube pops off the dark floor
+  board.position.y = 0.85;
+  board.name = 'face';
   const glow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.34, 20),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.3, depthWrite: false })
+    new THREE.CircleGeometry(0.55, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.28, depthWrite: false, fog: false })
   );
   glow.rotation.x = -Math.PI / 2;
-  glow.position.y = 0.02;
-  g.add(cube, glow);
-  g.userData.cube = cube;
-  g.userData.face = face;
-  g.userData.bill = null;
+  glow.position.y = 0.03;
+  // thin neon rim ring
+  const rim = new THREE.Mesh(
+    new THREE.RingGeometry(0.52, 0.58, 28),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false, fog: false })
+  );
+  rim.rotation.x = -Math.PI / 2;
+  rim.position.y = 0.04;
+  g.add(board, glow, rim);
+  g.userData.cube = board; // keep sync API field name
+  g.userData.face = board;
+  g.userData.bill = board;
   return g;
 }
 // ---------------------------------------------------------------------------
+// Map props:// ---------------------------------------------------------------------------
 // Map props: low, readable, no tall buildings (never block the view).
 // ---------------------------------------------------------------------------
 function buildObstacles(parent) {
@@ -871,8 +902,8 @@ export class View {
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(floorSize, floorSize),
       new THREE.MeshStandardMaterial({
-        map: floorTex, color: 0xd0d8e8, emissive: 0x061018, emissiveIntensity: 0.55,
-        roughness: 0.82, metalness: 0.22,
+        map: floorTex, color: 0xc8d0dc, emissive: 0x050a12, emissiveIntensity: 0.35,
+        roughness: 0.88, metalness: 0.12,
       })
     );
     floor.rotation.x = -Math.PI / 2;
@@ -881,23 +912,23 @@ export class View {
 
     // Soft playable ring + outer hard edge (cyan arena, not magenta cage)
     const softRing = new THREE.Mesh(
-      new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.1, 96),
-      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.22, side: THREE.DoubleSide })
+      new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
+      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
     );
     softRing.rotation.x = -Math.PI / 2;
     softRing.position.y = 0.04;
     this.group.add(softRing);
     const hardRing = new THREE.Mesh(
-      new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.08, 96),
-      new THREE.MeshBasicMaterial({ color: 0x7ad7ff, transparent: true, opacity: 0.28, side: THREE.DoubleSide })
+      new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.06, 96),
+      new THREE.MeshBasicMaterial({ color: 0x5a9aaa, transparent: true, opacity: 0.14, side: THREE.DoubleSide })
     );
     hardRing.rotation.x = -Math.PI / 2;
     hardRing.position.y = 0.05;
     this.group.add(hardRing);
     // Center pad ring — reads as lab arena spawn
     const pad = new THREE.Mesh(
-      new THREE.RingGeometry(2.2, 2.45, 64),
-      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.2, side: THREE.DoubleSide })
+      new THREE.RingGeometry(2.4, 2.55, 64),
+      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.1, side: THREE.DoubleSide })
     );
     pad.rotation.x = -Math.PI / 2;
     pad.position.y = 0.035;
@@ -1075,27 +1106,47 @@ export class View {
     if (ud.isSprite) {
       // Billboards face the camera; VS-style bob + flip by velocity X.
       this.player.rotation.set(0, 0, 0);
+      // Sustained aim/fire pose while auto-firing — no per-shot arm spasm.
+      const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
       let state = 'idle';
-      if (fireKick > 0.02) state = 'fire';
+      if (aiming) state = 'fire';
       else if (move > 0.12) state = 'move';
       if (ud.playerState !== state && ud.playerMaps) {
         ud.spriteMat.map = ud.playerMaps[state];
         ud.spriteMat.needsUpdate = true;
         ud.playerState = state;
       }
-      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+      // Keep torso/facing locked toward nearest foe while holding fire.
+      if (aiming && game.enemies && game.enemies.length) {
+        let best = null, bd = 1e9;
+        for (const e of game.enemies) {
+          const d = Math.hypot(e.x - game.px, e.z - game.pz);
+          if (d < bd) { bd = d; best = e; }
+        }
+        if (best) {
+          const want = Math.atan2(best.x - game.px, best.z - game.pz) + Math.PI;
+          let dd = want - this._facing;
+          while (dd > Math.PI) dd -= Math.PI * 2;
+          while (dd < -Math.PI) dd += Math.PI * 2;
+          this._facing += dd * 0.28;
+        }
+      }
+      if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.04;
+      else if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
       else ud.animPhase = (ud.animPhase || 0) * 0.9 + (game.t || 0) * 0.02;
       applySpriteMotion(this.player, {
-        moving: move > 0.08,
-        velX: game.vx,
+        // While auto-firing hold ready pose — no run bob / arm spasm.
+        moving: (!aiming) && move > 0.08,
+        velX: aiming ? 0 : game.vx,
         phase: ud.animPhase || 0,
         phaseOffset: 0,
-        strength: 1.15,
+        strength: aiming ? 0.55 : 1.15,
         camera: this.stage.camera,
         facingYaw: this._facing,
+        style: aiming ? 'idle' : (move > 0.08 ? 'ground' : 'idle'),
       });
-      // Extra lean into move direction (2D feel, not full 3D)
-      if (ud.plane && move > 0.08) {
+      // Extra lean into move direction only when not locked in fire pose
+      if (ud.plane && move > 0.08 && !aiming) {
         ud.plane.rotation.z += THREE.MathUtils.clamp(-game.vx * 0.12, -0.14, 0.14);
       }
       applySpriteFlash(this.player, { blink, hit, move });
@@ -1169,9 +1220,10 @@ export class View {
       }
       const faceYaw = Math.atan2(game.px - e.x, game.pz - e.z);
       const spd = Math.hypot(e.vx || 0, e.vz || 0);
-      const moving = spd > 0.15;
+      const moving = spd > 0.12;
+      const isFlyer = !!(m.userData.flyer || m.userData.bob || e.type === 'drone');
       let y = m.userData.baseY || 0;
-      if (m.userData.bob) y = 0.45 + Math.sin(game.t * 3 + e.wob) * 0.08;
+      if (isFlyer) y = 0.55 + Math.sin(game.t * 4.2 + e.wob) * 0.1;
       m.position.set(e.x, y, e.z);
       if (m.userData.isSprite) {
         m.rotation.set(0, 0, 0);
@@ -1180,12 +1232,15 @@ export class View {
           velX: e.vx || 0,
           phase: e.animPhase || 0,
           phaseOffset: e.wob || 0,
-          strength: m.userData.bob ? 0.55 : 1,
+          strength: isFlyer ? 0.85 : 1.55,
           camera: this.stage.camera,
           facingYaw: faceYaw,
+          style: isFlyer ? 'fly' : (moving ? 'ground' : 'idle'),
         });
         applySpriteFlash(m, { hit: e.hit > 0, blink: false, move: spd });
         if (e.slow > 0 && m.userData.spriteMat) m.userData.spriteMat.color.setRGB(0.65, 0.85, 1.2);
+        // Foot-plant dust (ground) / jet exhaust (flyers)
+        if (moving) this._enemyMotionFx(e, m, isFlyer, game);
       } else {
         m.rotation.y = faceYaw;
         const glow = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.7);
@@ -1201,16 +1256,19 @@ export class View {
     // Doctor NPC prop: face camera, idle sway
     if (this.doctor && this.doctor.userData.isSprite) {
       const d = this.doctor;
+      d.userData.idlePhase = (d.userData.idlePhase || 0) + 0.045;
       applySpriteMotion(d, {
         moving: false,
         velX: 0,
-        phase: game.t,
-        phaseOffset: 1.7,
-        strength: 0.7,
+        phase: d.userData.idlePhase,
+        phaseOffset: 0.35,
+        strength: 1.55,
         camera: this.stage.camera,
         facingYaw: Math.atan2(game.px - d.position.x, game.pz - d.position.z),
+        style: 'idle',
       });
     }
+    this._tickMotionFx(game);
 
     // ---- bullets (velocity-aligned — streaks fly toward aim, not out of the torso)
     recycleBullets(this.bulletG);
@@ -1281,13 +1339,15 @@ export class View {
         face.material.map = tex;
         face.material.needsUpdate = true;
       }
-      const pop = g.pop > 0 ? 1 + g.pop * 1.5 : 1;
+      const pop = g.pop > 0 ? 1 + g.pop * 0.9 : 1;
       slot.position.set(g.x, 0.02, g.z);
-      slot.scale.setScalar(pop);
-      const cube = slot.userData.cube;
-      cube.rotation.y = Math.sin(game.t * 1.2 + g.z) * 0.25;   // gentle sway, icon stays readable
-      cube.position.y = 0.26 + Math.sin(game.t * 3 + g.x) * 0.04;
-      if (face) face.quaternion.copy(this.stage.camera.quaternion);
+      slot.scale.setScalar(pop * 1.05);
+      const board = slot.userData.cube;
+      if (board) {
+        board.position.y = 0.9 + Math.sin(game.t * 2.4 + g.x) * 0.06;
+        board.quaternion.copy(this.stage.camera.quaternion);
+      }
+      if (face && face !== board) face.quaternion.copy(this.stage.camera.quaternion);
     }
     // sweep: unclaimed slots from LAST frame go back to the pool (never sweep live ones)
     for (const c of this._dropLive) {
@@ -1309,6 +1369,68 @@ export class View {
         const m = this._take(this._oPool, this.orbitG, () => new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.5), mat(0xffe600, 1.2)));
         m.position.set(game.px + Math.cos(ang) * R, 0.7, game.pz + Math.sin(ang) * R);
         m.rotation.y = -ang;
+      }
+    }
+  }
+
+
+  /** Foot-plant dust / jet thrust markers for enemy motion feel. */
+  _enemyMotionFx(e, m, isFlyer, game) {
+    if (!this._fxDust) this._fxDust = [];
+    if (isFlyer) {
+      // Jet exhaust puff behind flyer
+      if ((e._jetT || 0) <= 0) {
+        e._jetT = 0.05;
+        const spd = Math.hypot(e.vx || 0, e.vz || 0) || 1;
+        const bx = e.x - (e.vx || 0) / spd * 0.35;
+        const bz = e.z - (e.vz || 0) / spd * 0.35;
+        this._fxDust.push({
+          x: bx, z: bz, y: (m.position.y || 0.6) - 0.05,
+          life: 0.28, max: 0.28, r: 0.12, kind: 'jet',
+          color: 0xff8a1a,
+        });
+      } else e._jetT -= 0.016;
+    } else if (m.userData.footPlant && !e._planted) {
+      e._planted = true;
+      this._fxDust.push({
+        x: e.x, z: e.z, y: 0.04, life: 0.22, max: 0.22, r: 0.28, kind: 'dust', color: 0x8a9aaa,
+      });
+    } else if (!m.userData.footPlant) {
+      e._planted = false;
+    }
+  }
+
+  _tickMotionFx(game) {
+    if (!this._fxDust) return;
+    if (!this._dustG) {
+      this._dustG = new THREE.Group();
+      this.group.add(this._dustG);
+    }
+    while (this._dustG.children.length) this._dustG.remove(this._dustG.children[0]);
+    for (let i = this._fxDust.length - 1; i >= 0; i--) {
+      const d = this._fxDust[i];
+      d.life -= 0.016;
+      if (d.life <= 0) { this._fxDust.splice(i, 1); continue; }
+      const k = d.life / d.max;
+      if (d.kind === 'jet') {
+        const m = new THREE.Mesh(
+          new THREE.SphereGeometry(d.r * (1.2 - k * 0.5), 6, 6),
+          new THREE.MeshBasicMaterial({
+            color: d.color, transparent: true, opacity: 0.55 * k, depthWrite: false, fog: false,
+          })
+        );
+        m.position.set(d.x, d.y + (1 - k) * 0.15, d.z);
+        this._dustG.add(m);
+      } else {
+        const m = new THREE.Mesh(
+          new THREE.CircleGeometry(d.r * (1.4 - k * 0.4), 12),
+          new THREE.MeshBasicMaterial({
+            color: d.color, transparent: true, opacity: 0.35 * k, depthWrite: false, fog: false, side: THREE.DoubleSide,
+          })
+        );
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(d.x, 0.05, d.z);
+        this._dustG.add(m);
       }
     }
   }
@@ -1355,32 +1477,26 @@ function makeFloorTexture() {
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#121820';
+  ctx.fillStyle = '#14181e';
   ctx.fillRect(0, 0, s, s);
   const tile = 64;
   for (let y = 0; y < s; y += tile) {
     for (let x = 0; x < s; x += tile) {
-      const shade = 18 + ((x / tile + y / tile) % 2) * 5;
-      ctx.fillStyle = `rgb(${shade},${shade + 2},${shade + 6})`;
-      ctx.fillRect(x + 2, y + 2, tile - 4, tile - 4);
+      const shade = 20 + ((x / tile + y / tile) % 2) * 3;
+      ctx.fillStyle = `rgb(${shade},${shade + 2},${shade + 4})`;
+      ctx.fillRect(x + 1, y + 1, tile - 2, tile - 2);
     }
   }
-  ctx.strokeStyle = 'rgba(0,229,255,0.35)';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(0,180,210,0.12)';
+  ctx.lineWidth = 1;
   for (let i = 0; i <= s; i += tile) {
     ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, s); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(s, i); ctx.stroke();
   }
-  // hazard band
-  for (let x = 0; x < s; x += 16) {
-    ctx.fillStyle = 'rgba(0,200,220,0.25)';
-    ctx.beginPath();
-    ctx.moveTo(x, tile * 2); ctx.lineTo(x + 8, tile * 2);
-    ctx.lineTo(x + 20, tile * 2 + 16); ctx.lineTo(x + 12, tile * 2 + 16);
-    ctx.fill();
-  }
-  ctx.strokeStyle = 'rgba(0,245,255,0.45)';
-  ctx.strokeRect(2, 2, s - 4, s - 4);
+  ctx.strokeStyle = 'rgba(0,200,220,0.18)';
+  ctx.beginPath(); ctx.arc(s / 2, s / 2, 90, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,160,180,0.2)';
+  ctx.strokeRect(3, 3, s - 6, s - 6);
   return apply(new THREE.CanvasTexture(c));
 }
 

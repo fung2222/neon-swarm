@@ -189,6 +189,13 @@ export const WEAPON_ICONS = {
   multi: '◎', pierce: '↗', orbit: '⟳', nova: '✸',
 };
 
+/** Large English labels drawn on neon pickup frames (readable at a glance). */
+export const WEAPON_DROP_LABEL = {
+  dmg: 'MG', rate: 'ROF', laser: 'LASER', shotgun: 'SG', rocket: 'RKT',
+  grenade: 'GRN', plasma: 'PLAS', multi: 'MULTI', pierce: 'PRC',
+  orbit: 'ORB', nova: 'NOVA',
+};
+
 const CARDS_BY_ID = Object.fromEntries(CARDS.map((c) => [c.id, c]));
 
 /** True once a card has hit its `max` stacks (uncapped cards are never exhausted). */

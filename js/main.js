@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.7.1 bullet aim + lab floor + weapon variety + gore VFX
+// RAMPAGE MECH 暴走機甲 — v0.7.2 pickup frames + clean floor + run/fly + sustained fire
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -623,6 +623,9 @@ async function boot() {
   showMenu();
   ui.loaded();
   if (S.demo || flags.autostart) startRun();
+  if (flags.debug) {
+    window.__NS = { get game() { return S.game; }, get S() { return S; }, view, stage, audio };
+  }
   stage.loop((dt, time, rawDt) => {
     const capped = Math.min(0.05, dt);
     tick(capped * (fx.timeScale || 1));

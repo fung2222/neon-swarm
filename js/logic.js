@@ -79,6 +79,7 @@ export class Game {
     this.spawnAcc = 0;
     this.hitFlash = 0;
     this.muzzle = 0;
+    this.aimHold = 0;
     this.waveT = 8;
     this.killer = null;
     this.goalKills = 40;
@@ -422,7 +423,7 @@ export class Game {
     if (this.fireT <= 0) {
       if (this._fireMg()) {
         this.fireT = this.fireCd;
-        this.muzzle = 0.08;
+        this.muzzle = 0.08; this.aimHold = 0.42;
         fired = true;
         events.push({ type: 'fire', weapon: 'mg' });
       } else {
@@ -434,7 +435,7 @@ export class Game {
       this.laserT -= dt;
       if (this.laserT <= 0 && this._fireLaser()) {
         this.laserT = Math.max(0.18, 0.42 - this.laser * 0.05);
-        this.muzzle = 0.12;
+        this.muzzle = 0.12; this.aimHold = 0.48;
         fired = true;
         events.push({ type: 'fire', weapon: 'laser' });
       }
@@ -443,7 +444,7 @@ export class Game {
       this.shotgunT -= dt;
       if (this.shotgunT <= 0 && this._fireShotgun()) {
         this.shotgunT = Math.max(0.35, 0.85 - this.shotgun * 0.1);
-        this.muzzle = 0.14;
+        this.muzzle = 0.14; this.aimHold = 0.48;
         fired = true;
         events.push({ type: 'fire', weapon: 'shotgun' });
       }
@@ -452,7 +453,7 @@ export class Game {
       this.rocketT -= dt;
       if (this.rocketT <= 0 && this._fireRocket()) {
         this.rocketT = Math.max(0.9, 2.1 - this.rocket * 0.25);
-        this.muzzle = 0.16;
+        this.muzzle = 0.16; this.aimHold = 0.48;
         fired = true;
         events.push({ type: 'fire', weapon: 'rocket' });
       }
@@ -461,7 +462,7 @@ export class Game {
       this.grenadeT -= dt;
       if (this.grenadeT <= 0 && this._fireGrenade()) {
         this.grenadeT = Math.max(0.85, 1.9 - this.grenade * 0.2);
-        this.muzzle = 0.14;
+        this.muzzle = 0.14; this.aimHold = 0.48;
         fired = true;
         events.push({ type: 'fire', weapon: 'grenade' });
       }
@@ -470,7 +471,7 @@ export class Game {
       this.plasmaT -= dt;
       if (this.plasmaT <= 0 && this._firePlasma()) {
         this.plasmaT = Math.max(0.55, 1.35 - this.plasma * 0.15);
-        this.muzzle = 0.12;
+        this.muzzle = 0.12; this.aimHold = 0.48;
         fired = true;
         events.push({ type: 'fire', weapon: 'plasma' });
       }
@@ -485,6 +486,7 @@ export class Game {
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
     if (this.muzzle > 0) this.muzzle -= dt;
+    if (this.aimHold > 0) this.aimHold -= dt;
 
     this.px += this.vx * this.speed * dt;
     this.pz += this.vz * this.speed * dt;
@@ -610,7 +612,7 @@ export class Game {
       e.x += stepX;
       e.z += stepZ;
       const moving = Math.hypot(e.vx, e.vz) > 0.05;
-      e.animPhase = (e.animPhase || 0) + (moving ? Math.hypot(e.vx, e.vz) * 0.35 * dt : 0);
+      e.animPhase = (e.animPhase || 0) + (moving ? Math.max(8, Math.hypot(e.vx, e.vz) * 6.5) * dt : 0);
       const ec = this._softClamp(e.x, e.z, e.r);
       e.x = ec.x; e.z = ec.z;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {

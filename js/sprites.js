@@ -29,15 +29,15 @@ export const ENEMY_SPRITE_KEY = {
 
 /** World-space billboard size (width, height) + optional float. */
 export const ENEMY_SPRITE_SIZE = {
-  // ~70% of v0.6.1 billboard sizes (Roy: mechs too large)
-  staffer: { w: 1.02, h: 1.44 },
-  guard: { w: 1.05, h: 1.47 },
-  soldier: { w: 1.19, h: 1.40 },
-  officer: { w: 1.30, h: 1.51 },
-  chief: { w: 1.37, h: 1.65 },
-  drone: { w: 0.81, h: 0.81, float: true },
-  walker: { w: 1.47, h: 1.58 },
-  mech: { w: 1.65, h: 1.79 },
+  // ~82–85% visual scale (bump from prior ~70%)
+  staffer: { w: 1.20, h: 1.70 },
+  guard: { w: 1.24, h: 1.74 },
+  soldier: { w: 1.40, h: 1.65 },
+  officer: { w: 1.53, h: 1.78 },
+  chief: { w: 1.62, h: 1.95 },
+  drone: { w: 0.96, h: 0.96, float: true, flyer: true },
+  walker: { w: 1.74, h: 1.87 },
+  mech: { w: 1.95, h: 2.12 },
 };
 
 const RING_BY_KEY = {
@@ -137,7 +137,7 @@ export function makeBillboard(key, w, h, opts = {}) {
   root.userData.animPhase = 0;
   root.userData.idlePhase = 0;
   root.userData.bob = !!opts.float;
-  root.userData.baseY = opts.float ? 0.45 : 0;
+  root.userData.baseY = opts.float ? 0.55 : 0;
   return root;
 }
 
@@ -146,9 +146,9 @@ export function buildPlayerSprite(cfg) {
   loadSpriteTex('player_move');
   loadSpriteTex('player_fire');
   const trim = (cfg && cfg.trim) || 0xb14cff;
-  const root = makeBillboard('player_idle', 1.50, 1.79, {
+  const root = makeBillboard('player_idle', 1.78, 2.12, {
     ringColor: trim,
-    ringRadius: 0.40,
+    ringRadius: 0.46,
     ringOpacity: 0.32,
   });
   // Hot-swap maps without reallocating materials each frame.
@@ -179,6 +179,7 @@ export function buildEnemySprite(type) {
   });
   root.userData.type = type;
   root.userData.spriteKey = key;
+  root.userData.flyer = !!(size.flyer || size.float);
   return root;
 }
 
@@ -202,7 +203,8 @@ export function retargetEnemySprite(root, type) {
   root.userData.spriteW = size.w;
   root.userData.spriteH = size.h;
   root.userData.bob = !!size.float;
-  root.userData.baseY = size.float ? 0.45 : 0;
+  root.userData.flyer = !!(size.flyer || size.float);
+  root.userData.baseY = size.float ? 0.55 : 0;
   if (root.userData.halo && root.userData.halo.material) {
     root.userData.halo.material.color.setHex(RING_BY_KEY[key] || 0x00e5ff);
   }
@@ -211,9 +213,9 @@ export function retargetEnemySprite(root, type) {
 
 export function buildDoctorNpc() {
   // Chibi doctor — smaller than 70% mech scale
-  const root = makeBillboard('npc_doctor', 0.95, 1.25, {
+  const root = makeBillboard('npc_doctor', 1.12, 1.48, {
     ringColor: 0x00e5ff,
-    ringRadius: 0.30,
+    ringRadius: 0.34,
     ringOpacity: 0.45,
   });
   root.userData.isNpc = true;
@@ -267,27 +269,46 @@ export function applySpriteMotion(root, {
   strength = 1,
   camera = null,
   facingYaw = null,
+  style = 'ground', // 'ground' | 'fly' | 'idle'
 } = {}) {
   const plane = root.userData && root.userData.plane;
   if (!plane) return;
   const h = (root.userData.spriteH || 1.5);
   const p = phase + phaseOffset;
-  if (moving) {
-    const bob = Math.abs(Math.sin(p * 2.2)) * 0.07 * strength;
-    const squash = 1 + Math.sin(p * 2.2) * 0.06 * strength;
-    const stretch = 1 - Math.sin(p * 2.2) * 0.04 * strength;
+  const flipSign = () => (Math.sign(plane.scale.x || 1) || 1);
+
+  if (style === 'fly') {
+    // Jet / hover: soft float, no foot-plant squash — reads as thrust, not walking.
+    const hover = 0.42 + Math.sin(p * 2.4) * 0.07 * strength;
+    plane.position.y = h * 0.5 + hover;
+    plane.scale.y = 1 + Math.sin(p * 3.1) * 0.03 * strength;
+    plane.scale.x = flipSign() * (1 - Math.sin(p * 3.1) * 0.02 * strength);
+    plane.rotation.z = Math.sin(p * 2.0) * 0.05 * strength * (velX >= 0 ? 1 : -1);
+    root.userData.footPlant = false;
+  } else if (moving && style !== 'idle') {
+    // Ground RUN: hard bob, forward lean, squash on foot-plant (impact, not float).
+    const cycle = Math.sin(p * 3.6);
+    const plant = Math.max(0, -cycle); // 0..1 on the down beat
+    const bob = Math.abs(cycle) * 0.13 * strength;
+    const squashY = 1 + plant * 0.14 * strength;       // compress into the floor
+    const stretchX = 1 - plant * 0.08 * strength + Math.max(0, cycle) * 0.05 * strength;
     plane.position.y = h * 0.5 + bob;
-    const flip = Math.sign(plane.scale.x || 1) || 1;
-    plane.scale.y = squash;
-    plane.scale.x = flip * Math.abs(stretch);
-    plane.rotation.z = Math.sin(p * 2.2) * 0.08 * strength * (velX >= 0 ? 1 : -1);
+    plane.scale.y = squashY;
+    plane.scale.x = flipSign() * Math.abs(stretchX);
+    // Forward lean into the charge + slight bank
+    plane.rotation.z = (velX >= 0 ? 1 : -1) * (0.06 + Math.abs(cycle) * 0.1) * strength
+      + Math.sin(p * 3.6) * 0.04 * strength;
+    root.userData.footPlant = plant > 0.85;
+    root.userData.runLean = 0.1 * strength;
   } else {
-    const sway = Math.sin(p * 1.3) * 0.025 * strength;
+    // Idle sway / breathe — doctor & standing foes
+    const sway = Math.sin(p * 1.8) * 0.045 * strength;
+    const breathe = 1 + Math.sin(p * 1.1) * 0.025 * strength;
     plane.position.y = h * 0.5 + sway;
-    const flip = Math.sign(plane.scale.x || 1) || 1;
-    plane.scale.y = 1;
-    plane.scale.x = flip;
-    plane.rotation.z = Math.sin(p * 0.9) * 0.03 * strength;
+    plane.scale.y = breathe;
+    plane.scale.x = flipSign() * (2 - breathe);
+    plane.rotation.z = Math.sin(p * 1.15) * 0.05 * strength;
+    root.userData.footPlant = false;
   }
   if (camera) billboardToCamera(root, camera, facingYaw);
   // Prefer walk velocity for left/right flip (VS-style); otherwise keep camera-relative facing.
