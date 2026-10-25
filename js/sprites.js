@@ -1,14 +1,18 @@
 /**
  * Approved PNG billboards for neon-swarm (暴走機甲).
- * Player: idle / move / fire. Enemies: magenta stubby / lime claw / orange drone.
+ * Player: mech idle/move/attack/defend/hit/victory. Enemies: magenta/lime/orange.
  * NPC: scientist doctor (map prop until a shop hook exists).
  */
 import * as THREE from 'three';
 
 export const SPRITE_PATHS = {
-  player_idle: './assets/sprites/player_idle.png',
-  player_move: './assets/sprites/player_move.png',
-  player_fire: './assets/sprites/player_fire.png',
+  // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
+  mech_idle: './assets/sprites/mech_idle.png',
+  mech_move: './assets/sprites/mech_move.png',
+  mech_attack: './assets/sprites/mech_attack.png',
+  mech_defend: './assets/sprites/mech_defend.png',
+  mech_hit: './assets/sprites/mech_hit.png',
+  mech_victory: './assets/sprites/mech_victory.png',
   enemy_magenta: './assets/sprites/enemy_magenta.png',
   enemy_lime: './assets/sprites/enemy_lime.png',
   enemy_orange: './assets/sprites/enemy_orange.png',
@@ -142,24 +146,31 @@ export function makeBillboard(key, w, h, opts = {}) {
 }
 
 export function buildPlayerSprite(cfg) {
-  const idle = loadSpriteTex('player_idle');
-  loadSpriteTex('player_move');
-  loadSpriteTex('player_fire');
+  const idle = loadSpriteTex('mech_idle');
+  const move = loadSpriteTex('mech_move');
+  const attack = loadSpriteTex('mech_attack');
+  const defend = loadSpriteTex('mech_defend');
+  const hit = loadSpriteTex('mech_hit');
+  const victory = loadSpriteTex('mech_victory');
   const trim = (cfg && cfg.trim) || 0xb14cff;
-  const root = makeBillboard('player_idle', 1.78, 2.12, {
+  const root = makeBillboard('mech_idle', 1.78, 2.12, {
     ringColor: trim,
     ringRadius: 0.46,
     ringOpacity: 0.32,
   });
   // Hot-swap maps without reallocating materials each frame.
+  // Keys match View.sync states; fire aliases attack for older call sites.
   root.userData.playerMaps = {
     idle,
-    move: loadSpriteTex('player_move'),
-    fire: loadSpriteTex('player_fire'),
+    move,
+    attack,
+    fire: attack,
+    defend,
+    hit,
+    victory,
   };
   root.userData.playerState = 'idle';
   root.userData.mechId = cfg && cfg.id;
-  // Slightly taller horn / heavy silhouette via scale (same art for all three frames for now).
   const id = cfg && cfg.id;
   root.scale.setScalar(id === 'heavy' ? 1.12 : id === 'prototype' ? 0.96 : 1);
   return root;

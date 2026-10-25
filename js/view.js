@@ -896,7 +896,7 @@ export class View {
     this.group = new THREE.Group();
     stage.scene.add(this.group);
 
-    // ---- lab arena floor (cyberpunk tiles + hazard strips + neon seams)
+    // ---- arena floor (top-down background_arena)
     const floorSize = ARENA.half * 2 + 4;
     const floorTex = makeFloorTexture();
     const floor = new THREE.Mesh(
@@ -1108,13 +1108,19 @@ export class View {
       this.player.rotation.set(0, 0, 0);
       // Sustained aim/fire pose while auto-firing — no per-shot arm spasm.
       const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
+      // Pose priority: hit > attack(fire) > move > idle. defend/victory reserved when those states exist.
       let state = 'idle';
-      if (aiming) state = 'fire';
+      if (hit) state = 'hit';
+      else if (!game.alive) state = 'hit';
+      else if (aiming) state = 'attack';
       else if (move > 0.12) state = 'move';
       if (ud.playerState !== state && ud.playerMaps) {
-        ud.spriteMat.map = ud.playerMaps[state];
-        ud.spriteMat.needsUpdate = true;
-        ud.playerState = state;
+        const map = ud.playerMaps[state] || ud.playerMaps.idle;
+        if (map) {
+          ud.spriteMat.map = map;
+          ud.spriteMat.needsUpdate = true;
+          ud.playerState = state;
+        }
       }
       // Keep torso/facing locked toward nearest foe while holding fire.
       if (aiming && game.enemies && game.enemies.length) {
@@ -1457,7 +1463,7 @@ function disposeTree(obj) {
   });
 }
 
-/** Lab-arena floor: painted tile PNG (deep gray + cyan seams/hazard), canvas fallback. */
+/** Arena floor: top-down background_arena PNG (calm cyan grid), canvas fallback. */
 function makeFloorTexture() {
   const apply = (tex) => {
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -1470,7 +1476,7 @@ function makeFloorTexture() {
     return tex;
   };
   try {
-    const tex = new THREE.TextureLoader().load('./assets/floor/lab_arena.png');
+    const tex = new THREE.TextureLoader().load('./assets/floor/background_arena.png');
     return apply(tex);
   } catch (_) { /* fall through */ }
   const s = 512;
