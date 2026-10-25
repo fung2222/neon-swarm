@@ -1106,19 +1106,19 @@ export class View {
     if (ud.isSprite) {
       // Billboards face the camera; VS-style bob + flip by velocity X.
       this.player.rotation.set(0, 0, 0);
-      // Sustained aim/fire pose while auto-firing — no per-shot arm spasm.
+      // Sustained aim while auto-firing (aimHold refreshed each shot).
       const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
-      // Pose priority: hit > muzzle attack pulse > move > standing aim > idle.
-      // Do NOT lock on sustained aimHold — that froze the sprite on attack during combat (v0.8.0 bug).
+      // v0.8.3 pose priority:
+      //   hit > moving (walk cycle, even while firing) > standing+aiming (lock attack) > idle.
+      // Never flicker idle↔attack during aimHold; no stand-at-attention while shooting.
       let state = 'idle';
       if (hit) state = 'hit';
       else if (!game.alive) state = 'hit';
-      else if (fireKick > 0.02) state = 'attack';
       else if (move > 0.12) state = 'move';
       else if (aiming) state = 'attack';
       if (ud.playerMaps) {
         let map = ud.playerMaps[state] || ud.playerMaps.idle;
-        // 2-frame walk cycle synced to bob phase (~2 steps per 2π of animPhase).
+        // 2-frame walk cycle synced to bob phase; used whenever moving (incl. firing+moving).
         if (state === 'move' && ud.walkFrames && ud.walkFrames.length >= 2) {
           const fi = (Math.floor((ud.animPhase || 0) / Math.PI) & 1);
           map = ud.walkFrames[fi];
@@ -1355,7 +1355,7 @@ export class View {
       }
       const pop = g.pop > 0 ? 1 + g.pop * 0.9 : 1;
       slot.position.set(g.x, 0.02, g.z);
-      slot.scale.setScalar(pop * 1.05);
+      slot.scale.setScalar(pop * 1.05 * 0.7); // v0.8.3: pickups −30%
       const board = slot.userData.cube;
       if (board) {
         board.position.y = 0.9 + Math.sin(game.t * 2.4 + g.x) * 0.06;

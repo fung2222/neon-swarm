@@ -23,7 +23,7 @@ export const PLAYER = {
   hp: 7,
   fireCd: 0.10,          // continuous MG base RoF
   bulletSpeed: 28,
-  bulletDmg: 0.55,       // per-pellet; volume carries the DPS
+  bulletDmg: 0.30,       // per-pellet; ~45% nerf vs 0.55 (v0.8.3); RoF unchanged
   bulletLife: 0.62,
   magnet: 2.4,
   armor: 0,
