@@ -1104,64 +1104,64 @@ export class View {
     const ud = this.player.userData;
 
     if (ud.isSprite) {
-      // Billboards face the camera; VS-style bob + flip by velocity X.
+      // Billboards face the camera. Milestone A: split locomotion / weapon / hurt overlay.
+      // Whole-body PNGs cannot composite upper/lower yet — see docs/milestone-b-asset-contract.md.
       this.player.rotation.set(0, 0, 0);
-      // Sustained aim while auto-firing (aimHold refreshed each shot).
       const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
-      // v0.8.3 pose priority:
-      //   hit > moving (walk cycle, even while firing) > standing+aiming (lock attack) > idle.
-      // Never flicker idle↔attack during aimHold; no stand-at-attention while shooting.
-      let state = 'idle';
-      if (hit) state = 'hit';
-      else if (!game.alive) state = 'hit';
-      else if (move > 0.12) state = 'move';
-      else if (aiming) state = 'attack';
+      const locomotion = move > 0.12 ? 'move' : 'idle';
+      const weapon = aiming ? (fireKick > 0.02 ? 'fire' : 'aim') : 'idle';
+      // Fallback pose map (no split-body sheets):
+      //   moving + (aim|fire) → walk cycle
+      //   standing + aim/fire → attack
+      //   idle → idle
+      //   dead → hit
+      // Hurt is tint/opacity overlay only — does NOT replace locomotion with hit map.
+      let pose = 'idle';
+      if (!game.alive) pose = 'hit';
+      else if (locomotion === 'move') pose = 'move';
+      else if (weapon === 'aim' || weapon === 'fire') pose = 'attack';
       if (ud.playerMaps) {
-        let map = ud.playerMaps[state] || ud.playerMaps.idle;
-        // 2-frame walk cycle synced to bob phase; used whenever moving (incl. firing+moving).
-        if (state === 'move' && ud.walkFrames && ud.walkFrames.length >= 2) {
+        let map = ud.playerMaps[pose] || ud.playerMaps.idle;
+        if (pose === 'move' && ud.walkFrames && ud.walkFrames.length >= 2) {
           const fi = (Math.floor((ud.animPhase || 0) / Math.PI) & 1);
           map = ud.walkFrames[fi];
           ud.walkFrame = fi;
         }
-        if (map && (ud.playerState !== state || ud.walkFrame !== (ud._lastWalkFrame) || ud.spriteMat.map !== map)) {
+        if (map && (ud.playerState !== pose || ud.walkFrame !== (ud._lastWalkFrame) || ud.spriteMat.map !== map)) {
           ud.spriteMat.map = map;
           ud.spriteMat.needsUpdate = true;
-          ud.playerState = state;
+          ud.playerState = pose;
           ud._lastWalkFrame = ud.walkFrame;
         }
       }
-      // Keep torso/facing locked toward nearest foe while holding fire.
-      if (aiming && game.enemies && game.enemies.length) {
-        let best = null, bd = 1e9;
-        for (const e of game.enemies) {
-          const d = Math.hypot(e.x - game.px, e.z - game.pz);
-          if (d < bd) { bd = d; best = e; }
-        }
-        if (best) {
-          const want = Math.atan2(best.x - game.px, best.z - game.pz) + Math.PI;
-          let dd = want - this._facing;
-          while (dd > Math.PI) dd -= Math.PI * 2;
-          while (dd < -Math.PI) dd += Math.PI * 2;
-          this._facing += dd * 0.28;
-        }
+      ud.locomotion = locomotion;
+      ud.weaponState = weapon;
+      // Facing from sticky aim when aiming; else keep velocity / nearest fallback above.
+      if (aiming && (Math.abs(game.aimX || 0) + Math.abs(game.aimZ || 0)) > 0.05) {
+        const want = Math.atan2(game.aimX, game.aimZ) + Math.PI;
+        let dd = want - this._facing;
+        while (dd > Math.PI) dd -= Math.PI * 2;
+        while (dd < -Math.PI) dd += Math.PI * 2;
+        this._facing += dd * 0.32;
       }
-      // v0.8.4: phase advances in rad/sec (was per-frame → ~19 Hz shake + unreadably fast walk).
-      // ~5.5 rad/s at full speed → frame flip every ~0.57s, full cycle ~1.14s.
+      // Walk phase from actual move speed (dt-based). ~0.4s/frame at full run → ~7.8 rad/s.
       const dtp = Math.max(0.001, Math.min(0.05, dt));
-      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + Math.max(0.35, move) * 5.5 * dtp;
-      else if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.6 * dtp;
+      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + Math.max(0.35, move) * 8.2 * dtp;
+      else if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.55 * dtp;
       else ud.animPhase = (ud.animPhase || 0) * 0.9 + (game.t || 0) * 0.02;
       applySpriteMotion(this.player, {
         moving: move > 0.08,
         velX: game.vx,
+        aimX: game.aimX,
+        flipFromAim: aiming,
         phase: ud.animPhase || 0,
         phaseOffset: 0,
-        strength: (aiming && move <= 0.08) ? 0.4 : 0.55,
+        strength: (aiming && move <= 0.08) ? 0.35 : 0.5,
         camera: this.stage.camera,
         facingYaw: this._facing,
         style: move > 0.08 ? 'ground' : 'idle',
       });
+      // Hurt overlay: flash/blink only — walk continues during invuln.
       applySpriteFlash(this.player, { blink, hit, move });
     } else {
       this.player.rotation.y = this._facing;

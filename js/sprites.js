@@ -7,14 +7,14 @@ import * as THREE from 'three';
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
-  mech_idle: './assets/sprites/mech_idle.png?v=0.8.5',
-  mech_move: './assets/sprites/mech_move.png?v=0.8.5',
-  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.5',
-  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.5',
-  mech_attack: './assets/sprites/mech_attack.png?v=0.8.5',
-  mech_defend: './assets/sprites/mech_defend.png?v=0.8.5',
-  mech_hit: './assets/sprites/mech_hit.png?v=0.8.5',
-  mech_victory: './assets/sprites/mech_victory.png?v=0.8.5',
+  mech_idle: './assets/sprites/mech_idle.png?v=0.8.6',
+  mech_move: './assets/sprites/mech_move.png?v=0.8.6',
+  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.6',
+  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.6',
+  mech_attack: './assets/sprites/mech_attack.png?v=0.8.6',
+  mech_defend: './assets/sprites/mech_defend.png?v=0.8.6',
+  mech_hit: './assets/sprites/mech_hit.png?v=0.8.6',
+  mech_victory: './assets/sprites/mech_victory.png?v=0.8.6',
   enemy_magenta: './assets/sprites/enemy_magenta.png',
   enemy_lime: './assets/sprites/enemy_lime.png',
   enemy_orange: './assets/sprites/enemy_orange.png',
@@ -283,6 +283,8 @@ export function applySpriteFlash(root, { blink = false, hit = false, move = 0 } 
 export function applySpriteMotion(root, {
   moving = false,
   velX = 0,
+  aimX = null,
+  flipFromAim = false,
   phase = 0,
   phaseOffset = 0,
   strength = 1,
@@ -295,6 +297,10 @@ export function applySpriteMotion(root, {
   const h = (root.userData.spriteH || 1.5);
   const p = phase + phaseOffset;
   const flipSign = () => (Math.sign(plane.scale.x || 1) || 1);
+  // Lateral flip source: aim when shooting, else move velX
+  const leanDir = (flipFromAim && aimX != null && Math.abs(aimX) > 0.02)
+    ? (aimX >= 0 ? 1 : -1)
+    : (velX >= 0 ? 1 : -1);
 
   if (style === 'fly') {
     // Jet / hover: soft float, no foot-plant squash — reads as thrust, not walking.
@@ -302,34 +308,38 @@ export function applySpriteMotion(root, {
     plane.position.y = h * 0.5 + hover;
     plane.scale.y = 1 + Math.sin(p * 3.1) * 0.03 * strength;
     plane.scale.x = flipSign() * (1 - Math.sin(p * 3.1) * 0.02 * strength);
-    plane.rotation.z = Math.sin(p * 2.0) * 0.05 * strength * (velX >= 0 ? 1 : -1);
+    plane.rotation.z = Math.sin(p * 2.0) * 0.05 * strength * leanDir;
     root.userData.footPlant = false;
   } else if (moving && style !== 'idle') {
-    // Ground RUN: gentle bob synced 1:1 with walk phase (v0.8.5 — was *3.6 → violent jitter).
+    // Ground RUN: quieter bob/squash so feet stay planted (v0.8.6).
     const cycle = Math.sin(p);
     const plant = Math.max(0, -cycle);
-    const bob = Math.abs(cycle) * 0.035 * strength;
-    const squashY = 1 + plant * 0.03 * strength;
-    const stretchX = 1 - plant * 0.02 * strength;
+    const bob = Math.abs(cycle) * 0.016 * strength;
+    const squashY = 1 + plant * 0.012 * strength;
+    const stretchX = 1 - plant * 0.008 * strength;
     plane.position.y = h * 0.5 + bob;
     plane.scale.y = squashY;
     plane.scale.x = flipSign() * Math.abs(stretchX);
-    plane.rotation.z = (velX >= 0 ? 1 : -1) * 0.03 * strength;
+    plane.rotation.z = leanDir * 0.02 * strength;
     root.userData.footPlant = plant > 0.85;
-    root.userData.runLean = 0.04 * strength;
+    root.userData.runLean = 0.03 * strength;
   } else {
     // Idle sway / breathe — doctor & standing foes
-    const sway = Math.sin(p * 1.8) * 0.045 * strength;
-    const breathe = 1 + Math.sin(p * 1.1) * 0.025 * strength;
+    const sway = Math.sin(p * 1.8) * 0.03 * strength;
+    const breathe = 1 + Math.sin(p * 1.1) * 0.018 * strength;
     plane.position.y = h * 0.5 + sway;
     plane.scale.y = breathe;
     plane.scale.x = flipSign() * (2 - breathe);
-    plane.rotation.z = Math.sin(p * 1.15) * 0.05 * strength;
+    plane.rotation.z = Math.sin(p * 1.15) * 0.035 * strength;
     root.userData.footPlant = false;
   }
   if (camera) billboardToCamera(root, camera, facingYaw);
-  // Prefer walk velocity for left/right flip (VS-style); otherwise keep camera-relative facing.
-  if (Math.abs(velX) > 0.08) {
+  // Facing split (A2): when aiming/firing, flip from aim lateral — NOT velX.
+  // Strafe-left + shoot-right must keep gun toward aim.
+  if (flipFromAim && aimX != null && Math.abs(aimX) > 0.02) {
+    const sx = Math.abs(plane.scale.x) || 1;
+    plane.scale.x = (aimX < 0 ? -1 : 1) * sx;
+  } else if (Math.abs(velX) > 0.08) {
     const sx = Math.abs(plane.scale.x) || 1;
     plane.scale.x = (velX < 0 ? -1 : 1) * sx;
   }

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.7.2 pickup frames + clean floor + run/fly + sustained fire
+// RAMPAGE MECH 暴走機甲 — v0.8.6 aim/facing split, sticky auto-aim, muzzle VFX, FX dampen, perf
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -136,26 +136,35 @@ function refreshMenu() {
   if ($('start-time')) $('start-time').textContent = fmtTime(store.getNum('bestTime', 0));
   buildMechPicker();
 }
-function updateHUD() {
+let _hudAcc = 0;
+let _hudSnap = '';
+function checkTrialEnd() {
+  const g = S.game; if (!g || !HUB.trial) return;
+  const left = TRIAL.surviveSec - g.t;
+  if (left <= 0 && g.alive) endRun(true);
+}
+function updateHUD(force = false) {
   const g = S.game; if (!g) return;
-  $('hud-score').textContent = String(Math.floor(g.score));
-  $('hud-time').textContent = fmtTime(g.t);
-  $('hud-lv').textContent = String(g.level);
-  $('hud-hp').textContent = String(Math.max(0, g.hp));
-  const pct = Math.min(1, g.xp / g.xpNeed);
-  $('xp-fill').style.width = (pct * 100) + '%';
-  // contract goal: kills still needed (score + time are the two headline numbers)
+  const score = Math.floor(g.score);
+  const timeStr = fmtTime(g.t);
+  const lv = g.level;
+  const hp = Math.max(0, g.hp);
+  const xpPct = Math.min(1, g.xp / g.xpNeed);
+  const goalLeft = Math.max(0, (g.goalKills || 0) - g.kills);
+  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '|' + xpPct.toFixed(2) + '|' + goalLeft;
+  if (!force && snap === _hudSnap) return;
+  _hudSnap = snap;
+  $('hud-score').textContent = String(score);
+  $('hud-time').textContent = timeStr;
+  $('hud-lv').textContent = String(lv);
+  $('hud-hp').textContent = String(hp);
+  $('xp-fill').style.width = (xpPct * 100) + '%';
   const goalEl = $('hud-goal');
   if (goalEl) {
-    const left = Math.max(0, (g.goalKills || 0) - g.kills);
-    $('goal-left').textContent = String(left);
-    goalEl.classList.toggle('done', left === 0);
+    $('goal-left').textContent = String(goalLeft);
+    goalEl.classList.toggle('done', goalLeft === 0);
     const lab = goalEl.querySelector('span');
-    if (lab) lab.textContent = left === 0 ? t('goal.ready') : t('goal.kills');
-  }
-  if (HUB.trial) {
-    const left = TRIAL.surviveSec - g.t;
-    if (left <= 0 && g.alive) endRun(true);
+    if (lab) lab.textContent = goalLeft === 0 ? t('goal.ready') : t('goal.kills');
   }
 }
 
@@ -522,7 +531,10 @@ function tick(dt) {
     if (ev.type === 'fire') {
       audio.fire();
       const g = S.game;
-      const muzzle = new THREE.Vector3(g.px, 0.7, g.pz);
+      const mx = ev.muzzleX != null ? ev.muzzleX : g.px;
+      const my = ev.muzzleY != null ? ev.muzzleY : 0.95;
+      const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
+      const muzzle = new THREE.Vector3(mx, my, mz);
       particles.burst(muzzle, new THREE.Color(0x00e5ff), 3, { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
       particles.burst(muzzle, new THREE.Color(0x7ad7ff), 2, { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });
     }
@@ -541,16 +553,22 @@ function tick(dt) {
       const c = new THREE.Color(ev.enemy.color);
       const human = ev.enemy.family === 'human';
       const pos = new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z);
-      // 粉身碎骨: white flash → particles → fragments + hit-stop
-      particles.burst(pos, c, human ? 6 : 10, { speed: 4, up: 1.8, life: 0.45, bright: 1.0 });
-      particles.burst(pos, new THREE.Color(0x00e5ff), 4, { speed: 2.2, up: 2.5, life: 0.35, size: 0.45, bright: 0.95 });
-      // cyan merged
-      particles.ring(pos, c, 10, 6, 0.3);
-      waves.spawn(pos, c, { r0: 0.3, r1: 2.0, dur: 0.4, a: 0.75 });
-      if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8);
-      fx.kick({ trauma: ev.gore ? 0.12 : 0.06, slowmo: ev.gore ? 0.06 : 0.03, fovKick: 0.02, bloomDamp: ev.gore ? 0.85 : 0.55 });
-      const flash = $('fx-flash');
-      if (flash && ev.gore) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 45); }
+      const punch = !!(ev.gore || ev.elite);
+      // Ordinary kills: local particles/ring only — no chain slowmo at high kill rate.
+      // Elite / gore / heavy: keep noticeable trauma + hit-stop.
+      particles.burst(pos, c, punch ? (human ? 6 : 10) : (human ? 4 : 6), { speed: punch ? 4 : 2.6, up: punch ? 1.8 : 1.1, life: punch ? 0.45 : 0.28, bright: 1.0 });
+      if (punch) {
+        particles.burst(pos, new THREE.Color(0x00e5ff), 4, { speed: 2.2, up: 2.5, life: 0.35, size: 0.45, bright: 0.95 });
+        particles.ring(pos, c, 10, 6, 0.3);
+        waves.spawn(pos, c, { r0: 0.3, r1: 2.0, dur: 0.4, a: 0.75 });
+        if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8);
+        fx.kick({ trauma: 0.12, slowmo: 0.06, fovKick: 0.02, bloomDamp: 0.85 });
+        const flash = $('fx-flash');
+        if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 45); }
+      } else {
+        particles.ring(pos, c, 6, 3.5, 0.18);
+        waves.spawn(pos, c, { r0: 0.2, r1: 1.1, dur: 0.28, a: 0.4 });
+      }
     }
     else if (ev.type === 'explode') {
       audio.nova();
@@ -581,6 +599,7 @@ else if (ev.type === 'xp') {
       particles.burst(new THREE.Vector3(S.game.px, 0.8, S.game.pz), new THREE.Color(0xffe600), 10, { speed: 2.8, up: 2.2, size: 0.5, bright: 1.0 });
     }
     else if (ev.type === 'hurt') {
+      // Hurt feedback only — applyMoveFromInput / setMove still run during hitFlash/invuln.
       audio.hurt();
       fx.kick({ trauma: 0.14, aberr: 0.12, bloomDamp: 0.7 });
       particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), 8, { speed: 3.2, up: 1.4, size: 0.45, bright: 1.0 });
@@ -616,7 +635,9 @@ else if (ev.type === 'xp') {
       view.frameCamera(stage.camera, S.game, dt);
       fx.shake(stage.camera, performance.now() * 0.001, 0.45);
       fx.applyPost(stage, performance.now() * 0.001);
-      updateHUD();
+      checkTrialEnd();
+      _hudAcc += dt;
+      if (_hudAcc >= 0.1) { _hudAcc = 0; updateHUD(); }
       if (S.demo && S.game.t > 50) endRun(false);
     } else if (S.game) {
       view.sync(S.game, dt);
@@ -634,9 +655,23 @@ async function boot() {
   if (flags.debug) {
     window.__NS = { get game() { return S.game; }, get S() { return S; }, view, stage, audio };
   }
+  const PERF = flags.get('perf') === '1';
+  let _perfAcc = 0, _perfFrames = 0, _perfNearestMs = 0;
   stage.loop((dt, time, rawDt) => {
     const capped = Math.min(0.05, dt);
-    tick(capped * (fx.timeScale || 1));
+    if (PERF && S.game && S.state === 'play') {
+      const t0 = performance.now();
+      tick(capped * (fx.timeScale || 1));
+      const elapsed = performance.now() - t0;
+      _perfAcc += elapsed; _perfFrames++;
+      if (_perfFrames >= 60) {
+        console.log('[perf] avg tick ms', (_perfAcc / _perfFrames).toFixed(2),
+          'enemies', S.game.enemies.length, 'bullets', S.game.bullets.length);
+        _perfAcc = 0; _perfFrames = 0;
+      }
+    } else {
+      tick(capped * (fx.timeScale || 1));
+    }
     city.update(time, capped, stage.camera);
     stage.render(rawDt);
   }, { isActive: () => true, fpsEl: $('fps') });
