@@ -541,7 +541,7 @@ function loadAmmoTex(key) {
 function shotGeo(shot) {
   if (SHOT_CACHE[shot]) return SHOT_CACHE[shot];
   let g;
-  if (shot === 'line') g = new THREE.CapsuleGeometry(0.028, 0.28, 3, 6);
+  if (shot === 'line') g = new THREE.CapsuleGeometry(0.022, 0.42, 3, 6);
   else if (shot === 'laser') g = new THREE.PlaneGeometry(0.85, 0.16);
   else if (shot === 'splash') g = new THREE.PlaneGeometry(0.32, 0.32);
   else if (shot === 'rocket' || shot === 'grenade' || shot === 'plasma') g = new THREE.PlaneGeometry(0.42, 0.42);
@@ -557,6 +557,55 @@ function shotGeo(shot) {
 }
 
 const BULLET_POOLS = Object.create(null);
+
+// Align elongated shots with travel so streaks read as fired, not dropping out of the mech.
+const _shotFwd = new THREE.Vector3();
+const _shotY = new THREE.Vector3(0, 1, 0);
+const _shotX = new THREE.Vector3();
+const _shotZ = new THREE.Vector3();
+const _shotBasis = new THREE.Matrix4();
+const _shotRight = new THREE.Vector3();
+const _shotCamF = new THREE.Vector3();
+const _shotCamR = new THREE.Vector3();
+const _shotCamU = new THREE.Vector3();
+
+function orientProjectile(m, b, cam) {
+  const shot = m.userData.shot;
+  _shotFwd.set(b.vx, b.vy || 0, b.vz);
+  if (_shotFwd.lengthSq() < 1e-10) _shotFwd.set(0, 0, 1);
+  else _shotFwd.normalize();
+
+  // Capsule / cone / octa long axis = local +Y → match velocity (incl. grenade arc).
+  if (shot === 'line' || shot === 'lance' || shot === 'bolt' || shot === 'spike') {
+    m.quaternion.setFromUnitVectors(_shotY, _shotFwd);
+    return;
+  }
+
+  // Laser beam: PlaneGeometry long on +X, laid on the floor along horizontal aim.
+  if (shot === 'laser') {
+    const len = Math.hypot(b.vx, b.vz) || 1;
+    _shotX.set(b.vx / len, 0, b.vz / len);
+    _shotZ.set(0, 1, 0);
+    _shotRight.crossVectors(_shotZ, _shotX).normalize();
+    // X = forward, Y = width, Z = up
+    _shotBasis.makeBasis(_shotX, _shotRight, _shotZ);
+    m.quaternion.setFromRotationMatrix(_shotBasis);
+    return;
+  }
+
+  // Round / splash sprites: face camera, nose rotated toward travel on screen.
+  m.quaternion.copy(cam.quaternion);
+  cam.getWorldDirection(_shotCamF);
+  _shotCamU.set(0, 1, 0);
+  _shotCamR.crossVectors(_shotCamU, _shotCamF).normalize();
+  if (_shotCamR.lengthSq() < 1e-8) _shotCamR.set(1, 0, 0);
+  _shotCamU.crossVectors(_shotCamF, _shotCamR).normalize();
+  // Project world velocity onto camera right/up plane
+  const pr = b.vx * _shotCamR.x + b.vz * _shotCamR.z;
+  const pu = b.vx * _shotCamU.x + (b.vy || 0) * _shotCamU.y + b.vz * _shotCamU.z;
+  m.rotateZ(-Math.atan2(pr, pu));
+}
+
 function bulletMesh(weapon, tier) {
   const spec = WEAPON_SHOT[weapon] || WEAPON_SHOT.mg;
   const key = weapon + ':' + tier;
@@ -811,40 +860,43 @@ export class View {
     this.group = new THREE.Group();
     stage.scene.add(this.group);
 
-    // ---- floor: dark plating with a subtle radial gradient painted in
+    // ---- lab arena floor (cyberpunk tiles + hazard strips + neon seams)
     const floorSize = ARENA.half * 2 + 4;
     const floorTex = makeFloorTexture();
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(floorSize, floorSize),
       new THREE.MeshStandardMaterial({
-        map: floorTex, color: 0xbfc9e0, emissive: 0x0b1426, emissiveIntensity: 0.5,
-        roughness: 0.86, metalness: 0.14,
+        map: floorTex, color: 0xd0d8e8, emissive: 0x061018, emissiveIntensity: 0.55,
+        roughness: 0.82, metalness: 0.22,
       })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
 
-    // glow seams across the floor (a calm grid, not a cage)
+    // Soft playable ring + outer hard edge (cyan arena, not magenta cage)
     const softRing = new THREE.Mesh(
-      new THREE.RingGeometry(ARENA.soft - 0.15, ARENA.soft + 0.08, 96),
-      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+      new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.1, 96),
+      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.22, side: THREE.DoubleSide })
     );
     softRing.rotation.x = -Math.PI / 2;
     softRing.position.y = 0.04;
     this.group.add(softRing);
     const hardRing = new THREE.Mesh(
-      new THREE.RingGeometry(ARENA.half - 0.1, ARENA.half + 0.06, 96),
-      new THREE.MeshBasicMaterial({ color: 0xff2bd6, transparent: true, opacity: 0.2, side: THREE.DoubleSide })
+      new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.08, 96),
+      new THREE.MeshBasicMaterial({ color: 0x7ad7ff, transparent: true, opacity: 0.28, side: THREE.DoubleSide })
     );
     hardRing.rotation.x = -Math.PI / 2;
     hardRing.position.y = 0.05;
     this.group.add(hardRing);
-    const grid = new THREE.GridHelper(floorSize, Math.floor(floorSize / 3), 0x2f7dff, 0x16223f);
-    grid.position.y = 0.025;
-    if (Array.isArray(grid.material)) for (const m of grid.material) { m.opacity = 0.3; m.transparent = true; }
-    else { grid.material.opacity = 0.3; grid.material.transparent = true; }
-    this.group.add(grid);
+    // Center pad ring — reads as lab arena spawn
+    const pad = new THREE.Mesh(
+      new THREE.RingGeometry(2.2, 2.45, 64),
+      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.2, side: THREE.DoubleSide })
+    );
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.y = 0.035;
+    this.group.add(pad);
     buildObstacles(this.group);
 
     this.player = null;
@@ -1155,7 +1207,7 @@ export class View {
       });
     }
 
-    // ---- bullets
+    // ---- bullets (velocity-aligned — streaks fly toward aim, not out of the torso)
     recycleBullets(this.bulletG);
     for (const b of game.bullets) {
       const weapon = b.weapon || 'mg';
@@ -1165,24 +1217,12 @@ export class View {
       if (m.parent !== this.bulletG) this.bulletG.add(m);
       const spec = WEAPON_SHOT[weapon] || WEAPON_SHOT.mg;
       const size = (spec.size || 1) * (tier >= 2 ? 1.25 : tier >= 1 ? 1.12 : 1);
-      const ang = Math.atan2(b.vx, b.vz);
-      const by = b.y != null ? b.y : 0.55;
+      const by = b.y != null ? b.y : 0.95;
       m.position.set(b.x, by, b.z);
-      if (m.userData.spriteKey) {
-        // Billboard special ammo toward camera, yaw along travel
-        m.quaternion.copy(this.stage.camera.quaternion);
-        m.rotateZ(-ang);
-        m.scale.set(size, size, size);
-      } else if (m.userData.shot === 'line') {
-        m.scale.set(size * 0.85, size * 1.1, size * 0.85);
-        m.rotation.set(Math.PI / 2, ang, 0);
-      } else if (m.userData.shot === 'blade' || m.userData.shot === 'wave') {
-        m.scale.setScalar(size);
-        m.rotation.set(Math.PI / 2, 0, ang);
-      } else {
-        m.scale.setScalar(size);
-        m.rotation.set(Math.PI / 2, ang, 0);
-      }
+      orientProjectile(m, b, this.stage.camera);
+      if (m.userData.shot === 'line') m.scale.set(size * 0.7, size * 1.55, size * 0.7);
+      else if (m.userData.shot === 'laser') m.scale.set(size * 1.4, size * 0.85, size);
+      else m.scale.setScalar(size);
     }
 
     // ---- plasma puddles
@@ -1290,36 +1330,53 @@ function disposeTree(obj) {
   });
 }
 
-/** Procedural floor texture: dark plating, faint panel lines, a few coolant stains. */
+/** Lab-arena floor: painted tile PNG (deep gray + cyan seams/hazard), canvas fallback. */
 function makeFloorTexture() {
+  const apply = (tex) => {
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(4, 4);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  };
+  try {
+    const tex = new THREE.TextureLoader().load('./assets/floor/lab_arena.png');
+    return apply(tex);
+  } catch (_) { /* fall through */ }
   const s = 512;
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(s / 2, s / 2, 40, s / 2, s / 2, s * 0.72);
-  g.addColorStop(0, '#101b33');
-  g.addColorStop(1, '#070c18');
-  ctx.fillStyle = g;
+  ctx.fillStyle = '#121820';
   ctx.fillRect(0, 0, s, s);
-  // panel seams
-  ctx.strokeStyle = 'rgba(70,130,220,0.16)';
+  const tile = 64;
+  for (let y = 0; y < s; y += tile) {
+    for (let x = 0; x < s; x += tile) {
+      const shade = 18 + ((x / tile + y / tile) % 2) * 5;
+      ctx.fillStyle = `rgb(${shade},${shade + 2},${shade + 6})`;
+      ctx.fillRect(x + 2, y + 2, tile - 4, tile - 4);
+    }
+  }
+  ctx.strokeStyle = 'rgba(0,229,255,0.35)';
   ctx.lineWidth = 2;
-  for (let i = 0; i <= 8; i++) {
-    const p = (i / 8) * s;
-    ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, s); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(s, p); ctx.stroke();
+  for (let i = 0; i <= s; i += tile) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(s, i); ctx.stroke();
   }
-  // coolant stains
-  for (let i = 0; i < 40; i++) {
-    const x = Math.random() * s, y = Math.random() * s, r = 8 + Math.random() * 40;
-    ctx.fillStyle = `rgba(${40 + Math.random() * 40},${90 + Math.random() * 60},${160 + Math.random() * 60},0.05)`;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  // hazard band
+  for (let x = 0; x < s; x += 16) {
+    ctx.fillStyle = 'rgba(0,200,220,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(x, tile * 2); ctx.lineTo(x + 8, tile * 2);
+    ctx.lineTo(x + 20, tile * 2 + 16); ctx.lineTo(x + 12, tile * 2 + 16);
+    ctx.fill();
   }
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(3, 3);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+  ctx.strokeStyle = 'rgba(0,245,255,0.45)';
+  ctx.strokeRect(2, 2, s - 4, s - 4);
+  return apply(new THREE.CanvasTexture(c));
 }
 
 // Module-level load hook: ship the sprite builders on the kit global so a headless art pass

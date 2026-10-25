@@ -187,12 +187,14 @@ export class Game {
     dx /= len; dz /= len;
     const weapon = opts.weapon || 'mg';
     const speed = opts.speed != null ? opts.speed : this.bulletSpeed;
+    // Spawn ahead of the mech along aim so shots read as fired, not dropping out of the torso.
+    const muzzle = opts.muzzle != null ? opts.muzzle : 0.7;
     const b = {
       weapon,
       tier: shotTier((this.taken && this.taken[weapon]) || opts.tierStacks || 0),
-      x: this.px + (opts.ox || 0),
-      z: this.pz + (opts.oz || 0),
-      y: opts.y != null ? opts.y : 0.55,
+      x: this.px + dx * muzzle + (opts.ox || 0),
+      z: this.pz + dz * muzzle + (opts.oz || 0),
+      y: opts.y != null ? opts.y : 0.95,
       vx: dx * speed,
       vz: dz * speed,
       vy: opts.vy || 0,
@@ -209,9 +211,15 @@ export class Game {
       kind: opts.kind || weapon,
       ...opts,
     };
-    // Don't let spread opts overwrite vx after we set them
+    // Aim + muzzle win over any opts spread (ox/oz already applied above).
+    b.x = this.px + dx * muzzle + (opts.ox || 0);
+    b.z = this.pz + dz * muzzle + (opts.oz || 0);
+    b.y = opts.y != null ? opts.y : 0.95;
     b.vx = dx * speed;
     b.vz = dz * speed;
+    if (opts.vy != null) b.vy = opts.vy;
+    if (opts.grav != null) b.grav = opts.grav;
+    else b.grav = 0;
     this.bullets.push(b);
     return b;
   }

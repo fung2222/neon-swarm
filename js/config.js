@@ -22,9 +22,9 @@ export const PLAYER = {
   radius: 0.42,
   hp: 7,
   fireCd: 0.10,          // continuous MG base RoF
-  bulletSpeed: 22,
+  bulletSpeed: 28,
   bulletDmg: 0.55,       // per-pellet; volume carries the DPS
-  bulletLife: 0.55,
+  bulletLife: 0.62,
   magnet: 2.4,
   armor: 0,
   fireRange: 11,

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.7.0 motion bob + weapon variety + gore VFX
+// RAMPAGE MECH 暴走機甲 — v0.7.1 bullet aim + lab floor + weapon variety + gore VFX
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
