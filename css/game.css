@@ -137,7 +137,9 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 #fx-flash.on {
   position: fixed; inset: 0; z-index: 20; pointer-events: none;
-  background: radial-gradient(circle, #ff224466, #ff224400 60%);
+  /* v0.8.5: brief soft magenta pulse — never opaque white */
+  background: radial-gradient(circle, #ff2bd633 0%, #ff2bd600 55%);
+  opacity: 0.55;
 }
 
 /* ---- frame picker (three selectable mechs on the home screen) ---- */

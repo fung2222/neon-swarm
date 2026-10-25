@@ -19,7 +19,7 @@ const QUALITY_PR = { low: 1, med: 1.5, high: 2, auto: 2 };
  * strength / radius are multipliers, threshold is added (capped), aberration / grain are the CyberShader base values.
  */
 export const GLOW_LEVELS = {
-  low: { strength: 0.45, radius: 0.55, threshold: 0.12, thresholdMax: 0.98, aberration: 0.0006, grain: 0.01 },
+  low: { strength: 0.32, radius: 0.45, threshold: 0.18, thresholdMax: 0.98, aberration: 0.0004, grain: 0.008 },
   high: { strength: 1, radius: 1, threshold: 0, thresholdMax: 2, aberration: 0.0018, grain: 0.018 },
 };
 const GLOW_KEY = 'cyber.glow';
@@ -66,7 +66,8 @@ export function createStage(o = {}) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(o.fov ?? 50, window.innerWidth / window.innerHeight, o.near ?? 0.1, o.far ?? 900);
 
-  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: pixelRatio < 1.5 ? 4 : 0 });
+  // v0.8.5: UnsignedByteType — HalfFloat + additive particles/bloom can Inf and lock viewport permanently white
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: 0 });
   const composer = new EffectComposer(renderer, rt);
   composer.setPixelRatio(pixelRatio);
   composer.setSize(window.innerWidth, window.innerHeight);
@@ -85,6 +86,7 @@ export function createStage(o = {}) {
     renderer, scene, camera, composer, bloomPass, cyberPass, flags,
     /** base bloom strength for the current glow level (FxState.applyPost adds hit-flash on top) */
     bloomBase: look.strength, aberrBase: 0.0018, glow: 'low', glowLevels: levels,
+    _exposureBase: renderer.toneMappingExposure,
     /** 'low' | 'high' - persist=true stores the choice for every CYBER game (localStorage cyber.glow) */
     setGlow(level, { persist = false } = {}) {
       level = level === 'high' ? 'high' : 'low';

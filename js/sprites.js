@@ -7,14 +7,14 @@ import * as THREE from 'three';
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
-  mech_idle: './assets/sprites/mech_idle.png?v=0.8.4',
-  mech_move: './assets/sprites/mech_move.png?v=0.8.4',
-  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.4',
-  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.4',
-  mech_attack: './assets/sprites/mech_attack.png?v=0.8.4',
-  mech_defend: './assets/sprites/mech_defend.png?v=0.8.4',
-  mech_hit: './assets/sprites/mech_hit.png?v=0.8.4',
-  mech_victory: './assets/sprites/mech_victory.png?v=0.8.4',
+  mech_idle: './assets/sprites/mech_idle.png?v=0.8.5',
+  mech_move: './assets/sprites/mech_move.png?v=0.8.5',
+  mech_move_1: './assets/sprites/mech_move_1.png?v=0.8.5',
+  mech_move_2: './assets/sprites/mech_move_2.png?v=0.8.5',
+  mech_attack: './assets/sprites/mech_attack.png?v=0.8.5',
+  mech_defend: './assets/sprites/mech_defend.png?v=0.8.5',
+  mech_hit: './assets/sprites/mech_hit.png?v=0.8.5',
+  mech_victory: './assets/sprites/mech_victory.png?v=0.8.5',
   enemy_magenta: './assets/sprites/enemy_magenta.png',
   enemy_lime: './assets/sprites/enemy_lime.png',
   enemy_orange: './assets/sprites/enemy_orange.png',
@@ -268,7 +268,7 @@ export function applySpriteFlash(root, { blink = false, hit = false, move = 0 } 
   const mat = root.userData && root.userData.spriteMat;
   if (!mat) return;
   mat.opacity = blink ? 0.35 : 1;
-  if (hit) mat.color.setRGB(1.85, 1.35, 1.35);
+  if (hit) mat.color.setRGB(1.12, 1.05, 1.05);
   else mat.color.setRGB(1, 1, 1);
   const halo = root.userData.halo;
   if (halo && halo.material) halo.material.opacity = 0.28 + move * 0.12;
@@ -305,7 +305,7 @@ export function applySpriteMotion(root, {
     plane.rotation.z = Math.sin(p * 2.0) * 0.05 * strength * (velX >= 0 ? 1 : -1);
     root.userData.footPlant = false;
   } else if (moving && style !== 'idle') {
-    // Ground RUN: gentle bob synced 1:1 with walk phase (v0.8.4 — was *3.6 → violent jitter).
+    // Ground RUN: gentle bob synced 1:1 with walk phase (v0.8.5 — was *3.6 → violent jitter).
     const cycle = Math.sin(p);
     const plant = Math.max(0, -cycle);
     const bob = Math.abs(cycle) * 0.035 * strength;
