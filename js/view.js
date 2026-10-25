@@ -577,7 +577,12 @@ function orientProjectile(m, b, cam) {
 
   // Capsule / cone / octa long axis = local +Y → match velocity (incl. grenade arc).
   if (shot === 'line' || shot === 'lance' || shot === 'bolt' || shot === 'spike') {
-    m.quaternion.setFromUnitVectors(_shotY, _shotFwd);
+    // Avoid setFromUnitVectors singularity when velocity is nearly -Y (grenade apex).
+    if (_shotFwd.y < -0.98 && (_shotFwd.x * _shotFwd.x + _shotFwd.z * _shotFwd.z) < 0.04) {
+      m.quaternion.set(1, 0, 0, 0); // 180° about X: +Y → -Y
+    } else {
+      m.quaternion.setFromUnitVectors(_shotY, _shotFwd);
+    }
     return;
   }
 
