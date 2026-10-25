@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -8,6 +8,7 @@ import {
   buildDoctorNpc,
   billboardToCamera,
   applySpriteFlash,
+  applySpriteMotion,
 } from './sprites.js';
 
 // ---------------------------------------------------------------------------
@@ -516,17 +517,35 @@ function enemyMeshFor(type) {
   return buildEnemySprite(type);
 }
 // ---------------------------------------------------------------------------
-// Projectiles: every weapon gets its own silhouette and a colour ramp by stack level.
-//   bolt  raindrop shard     rate   slim spike (fast, dense)
-//   blade crescent           spread four-point star (wide fan)
-//   lance long bright lance  orb    glowing sphere with a ring
-//   wave  flat shock chevron
+// Projectiles: MG = cyan line/dot; specials = small ammo PNGs (deep-gray + cyan).
 // ---------------------------------------------------------------------------
 const SHOT_CACHE = Object.create(null);
+const AMMO_TEX = Object.create(null);
+const ammoLoader = new THREE.TextureLoader();
+
+function loadAmmoTex(key) {
+  if (!key) return null;
+  if (AMMO_TEX[key]) return AMMO_TEX[key];
+  const path = AMMO_PATHS[key];
+  if (!path) return null;
+  const tex = ammoLoader.load(path);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.premultiplyAlpha = false;
+  AMMO_TEX[key] = tex;
+  return tex;
+}
+
 function shotGeo(shot) {
   if (SHOT_CACHE[shot]) return SHOT_CACHE[shot];
   let g;
-  if (shot === 'lance') g = new THREE.CapsuleGeometry(0.045, 0.5, 4, 8);
+  if (shot === 'line') g = new THREE.CapsuleGeometry(0.028, 0.28, 3, 6);
+  else if (shot === 'laser') g = new THREE.PlaneGeometry(0.85, 0.16);
+  else if (shot === 'splash') g = new THREE.PlaneGeometry(0.32, 0.32);
+  else if (shot === 'rocket' || shot === 'grenade' || shot === 'plasma') g = new THREE.PlaneGeometry(0.42, 0.42);
+  else if (shot === 'lance') g = new THREE.CapsuleGeometry(0.045, 0.5, 4, 8);
   else if (shot === 'spike') g = new THREE.ConeGeometry(0.07, 0.36, 5);
   else if (shot === 'blade') g = new THREE.TorusGeometry(0.13, 0.035, 6, 14, Math.PI * 1.3);
   else if (shot === 'star') g = new THREE.OctahedronGeometry(0.13, 0);
@@ -537,38 +556,41 @@ function shotGeo(shot) {
   return g;
 }
 
-/** Bullet meshes are pooled per weapon+tier so a pooled shot never shows the wrong colour. */
 const BULLET_POOLS = Object.create(null);
 function bulletMesh(weapon, tier) {
-  const spec = WEAPON_SHOT[weapon] || WEAPON_SHOT.dmg;
+  const spec = WEAPON_SHOT[weapon] || WEAPON_SHOT.mg;
   const key = weapon + ':' + tier;
   if (!BULLET_POOLS[key]) BULLET_POOLS[key] = [];
   const m = BULLET_POOLS[key].pop();
   if (m) { m.visible = true; return m; }
   const color = new THREE.Color(spec.tiers[tier] || spec.tiers[0]);
   const shot = spec.shot;
-  const mesh = new THREE.Mesh(shotGeo(shot), new THREE.MeshBasicMaterial({ color }));
+  const spriteKey = spec.sprite;
+  let mesh;
+  if (spriteKey) {
+    const tex = loadAmmoTex(spriteKey);
+    mesh = new THREE.Mesh(
+      shotGeo(shot),
+      new THREE.MeshBasicMaterial({
+        map: tex, color: 0xffffff, transparent: true, alphaTest: 0.45,
+        depthWrite: true, fog: false, side: THREE.DoubleSide,
+      })
+    );
+  } else if (shot === 'line') {
+    // Short cyan streak — no detailed sprite
+    mesh = new THREE.Mesh(shotGeo('line'), new THREE.MeshBasicMaterial({ color, fog: false }));
+    const tip = new THREE.Mesh(
+      new THREE.SphereGeometry(0.045, 6, 6),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false })
+    );
+    tip.position.y = 0.18;
+    mesh.add(tip);
+  } else {
+    mesh = new THREE.Mesh(shotGeo(shot), new THREE.MeshBasicMaterial({ color, fog: false }));
+  }
   if (shot === 'blade' || shot === 'wave') mesh.rotation.z = Math.PI / 2;
   mesh.userData.shot = shot;
-  if (tier >= 1) {
-    // tier read without hiding the silhouette: a thin ring for tier 1, two rings for tier 2
-    const halo = new THREE.Mesh(
-      new THREE.TorusGeometry(0.19, 0.011, 4, 14),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55, depthWrite: false })
-    );
-    halo.name = 'halo';
-    halo.rotation.x = Math.PI / 2;
-    mesh.add(halo);
-    if (tier >= 2) {
-      const halo2 = new THREE.Mesh(
-        new THREE.TorusGeometry(0.27, 0.007, 4, 16),
-        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.38, depthWrite: false })
-      );
-      halo2.name = 'halo2';
-      halo2.rotation.x = Math.PI / 2;
-      mesh.add(halo2);
-    }
-  }
+  mesh.userData.spriteKey = spriteKey || null;
   return mesh;
 }
 
@@ -577,13 +599,40 @@ function recycleBullets(parent) {
     const m = parent.children[i];
     parent.remove(m);
     m.visible = false;
-    const key = m.userData.key || 'dmg:0';
+    const key = m.userData.key || 'mg:0';
     if (!BULLET_POOLS[key]) BULLET_POOLS[key] = [];
     BULLET_POOLS[key].push(m);
   }
 }
 
-// ---------------------------------------------------------------------------
+/** Flying mech fragments for 粉身碎骨 kills. */
+const FRAG_POOL = [];
+function spawnFragments(parent, x, z, colorHex, n = 8) {
+  const tex = loadAmmoTex('fragment');
+  for (let i = 0; i < n; i++) {
+    let m = FRAG_POOL.pop();
+    if (!m) {
+      m = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.28, 0.28),
+        new THREE.MeshBasicMaterial({
+          map: tex, transparent: true, alphaTest: 0.45, depthWrite: true, fog: false, side: THREE.DoubleSide,
+        })
+      );
+    }
+    m.visible = true;
+    m.position.set(x, 0.6 + Math.random() * 0.4, z);
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 3 + Math.random() * 5;
+    m.userData.vx = Math.cos(ang) * sp;
+    m.userData.vz = Math.sin(ang) * sp;
+    m.userData.vy = 4 + Math.random() * 5;
+    m.userData.life = 0.55 + Math.random() * 0.35;
+    m.userData.spin = (Math.random() - 0.5) * 12;
+    if (m.material && !m.material.map) m.material.color.setHex(colorHex || 0x8a93a8);
+    parent.add(m);
+  }
+}
+
 // Drops: a solid 3D cube with an icon face — one readable object per pickup.
 //   XP  -> green cube, "X" glyph and a rocket chevron
 //   heal-> cyan cube, "H" cross glyph
@@ -801,6 +850,7 @@ export class View {
     this.player = null;
     this.playerMechId = null;
     preloadAllSprites();
+    for (const k of Object.keys(AMMO_PATHS)) loadAmmoTex(k);
     this.setMech('horn');
 
     // Scientist doctor — visible map prop near start (shop/NPC hook later).
@@ -819,9 +869,11 @@ export class View {
 
     this.enemyG = new THREE.Group();
     this.bulletG = new THREE.Group();
+    this.zoneG = new THREE.Group();
+    this.fragG = new THREE.Group();
     this.gemG = new THREE.Group();
     this.orbitG = new THREE.Group();
-    this.group.add(this.enemyG, this.bulletG, this.gemG, this.orbitG);
+    this.group.add(this.enemyG, this.bulletG, this.zoneG, this.fragG, this.gemG, this.orbitG);
 
     this._ePool = [];
     this._bPool = [];
@@ -924,6 +976,10 @@ export class View {
     }
   }
 
+  burstGore(x, z, colorHex = 0x8a93a8) {
+    spawnFragments(this.fragG, x, z, colorHex, 10);
+  }
+
   pulseNova(r) {
     this.novaRing.scale.setScalar(1);
     this.novaRing.material.opacity = 0.85;
@@ -960,7 +1016,7 @@ export class View {
     const ud = this.player.userData;
 
     if (ud.isSprite) {
-      // Billboards face the camera; yaw only drives left/right flip.
+      // Billboards face the camera; VS-style bob + flip by velocity X.
       this.player.rotation.set(0, 0, 0);
       let state = 'idle';
       if (fireKick > 0.02) state = 'fire';
@@ -970,10 +1026,21 @@ export class View {
         ud.spriteMat.needsUpdate = true;
         ud.playerState = state;
       }
-      const bob = move > 0.08 ? Math.abs(Math.sin((ud.animPhase || 0))) * 0.05 : Math.sin((game.t || 0) * 2.4) * 0.025;
-      if (ud.plane) ud.plane.position.y = (ud.spriteH || 2.55) * 0.5 * this.player.scale.y + bob;
-      ud.animPhase = move > 0.08 ? (ud.animPhase || 0) + move * 0.55 : (ud.animPhase || 0) * 0.92;
-      billboardToCamera(this.player, this.stage.camera, this._facing);
+      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+      else ud.animPhase = (ud.animPhase || 0) * 0.9 + (game.t || 0) * 0.02;
+      applySpriteMotion(this.player, {
+        moving: move > 0.08,
+        velX: game.vx,
+        phase: ud.animPhase || 0,
+        phaseOffset: 0,
+        strength: 1.15,
+        camera: this.stage.camera,
+        facingYaw: this._facing,
+      });
+      // Extra lean into move direction (2D feel, not full 3D)
+      if (ud.plane && move > 0.08) {
+        ud.plane.rotation.z += THREE.MathUtils.clamp(-game.vx * 0.12, -0.14, 0.14);
+      }
       applySpriteFlash(this.player, { blink, hit, move });
     } else {
       this.player.rotation.y = this._facing;
@@ -1030,7 +1097,7 @@ export class View {
       if (k >= 1) { this.novaAge = -1; this.novaRing.visible = false; }
     }
 
-    // ---- enemies (colour-coded PNG billboards)
+    // ---- enemies (colour-coded PNG billboards + shared VS bob/flip)
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
@@ -1044,18 +1111,28 @@ export class View {
         }
       }
       const faceYaw = Math.atan2(game.px - e.x, game.pz - e.z);
+      const spd = Math.hypot(e.vx || 0, e.vz || 0);
+      const moving = spd > 0.15;
       let y = m.userData.baseY || 0;
       if (m.userData.bob) y = 0.45 + Math.sin(game.t * 3 + e.wob) * 0.08;
       m.position.set(e.x, y, e.z);
       if (m.userData.isSprite) {
         m.rotation.set(0, 0, 0);
-        billboardToCamera(m, this.stage.camera, faceYaw);
-        applySpriteFlash(m, { hit: e.hit > 0, blink: false, move: e.speed || 0 });
+        applySpriteMotion(m, {
+          moving,
+          velX: e.vx || 0,
+          phase: e.animPhase || 0,
+          phaseOffset: e.wob || 0,
+          strength: m.userData.bob ? 0.55 : 1,
+          camera: this.stage.camera,
+          facingYaw: faceYaw,
+        });
+        applySpriteFlash(m, { hit: e.hit > 0, blink: false, move: spd });
         if (e.slow > 0 && m.userData.spriteMat) m.userData.spriteMat.color.setRGB(0.65, 0.85, 1.2);
       } else {
         m.rotation.y = faceYaw;
         const glow = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.7);
-        const legSwing = Math.sin(game.t * (e.speed * 2.4) + e.wob) * 0.5;
+        const legSwing = Math.sin((e.animPhase || game.t) * 2.4 + e.wob) * 0.5;
         const legs = m.userData.legs || [];
         if (legs.length) { legs[0].rotation.x = legSwing; if (legs[1]) legs[1].rotation.x = -legSwing; }
         m.traverse((ch) => {
@@ -1064,38 +1141,81 @@ export class View {
       }
     }
 
-    // Doctor NPC prop: face camera, idle bob
+    // Doctor NPC prop: face camera, idle sway
     if (this.doctor && this.doctor.userData.isSprite) {
       const d = this.doctor;
-      if (d.userData.plane) {
-        d.userData.plane.position.y = (d.userData.spriteH || 2.1) * 0.5 + Math.sin(game.t * 1.5) * 0.03;
-      }
-      billboardToCamera(d, this.stage.camera, Math.atan2(game.px - d.position.x, game.pz - d.position.z));
+      applySpriteMotion(d, {
+        moving: false,
+        velX: 0,
+        phase: game.t,
+        phaseOffset: 1.7,
+        strength: 0.7,
+        camera: this.stage.camera,
+        facingYaw: Math.atan2(game.px - d.position.x, game.pz - d.position.z),
+      });
     }
 
-    // ---- bullets (one silhouette + colour per weapon and tier)
+    // ---- bullets
     recycleBullets(this.bulletG);
     for (const b of game.bullets) {
-      const weapon = b.frost ? 'frost' : (b.weapon || 'dmg');
-      const tier = b.frost ? 1 : (b.tier || 0);
+      const weapon = b.weapon || 'mg';
+      const tier = b.tier || 0;
       const m = bulletMesh(weapon, tier);
       m.userData.key = weapon + ':' + tier;
       if (m.parent !== this.bulletG) this.bulletG.add(m);
-      const spec = WEAPON_SHOT[weapon] || WEAPON_SHOT.dmg;
-      const size = (spec.size || 1) * (tier >= 2 ? 1.35 : tier >= 1 ? 1.18 : 1);
-      m.scale.setScalar(size);
-      m.position.set(b.x, 0.55, b.z);
+      const spec = WEAPON_SHOT[weapon] || WEAPON_SHOT.mg;
+      const size = (spec.size || 1) * (tier >= 2 ? 1.25 : tier >= 1 ? 1.12 : 1);
       const ang = Math.atan2(b.vx, b.vz);
-      if (m.userData.shot === 'orb') {
-        m.rotation.y += 0.15;
-        const halo = m.getObjectByName('halo');
-        if (halo) halo.scale.setScalar(1 + Math.sin(game.t * 9) * 0.14);
-      } else if (m.userData.shot === 'star') {
-        m.rotation.set(Math.PI / 2, ang, game.t * 6);
+      const by = b.y != null ? b.y : 0.55;
+      m.position.set(b.x, by, b.z);
+      if (m.userData.spriteKey) {
+        // Billboard special ammo toward camera, yaw along travel
+        m.quaternion.copy(this.stage.camera.quaternion);
+        m.rotateZ(-ang);
+        m.scale.set(size, size, size);
+      } else if (m.userData.shot === 'line') {
+        m.scale.set(size * 0.85, size * 1.1, size * 0.85);
+        m.rotation.set(Math.PI / 2, ang, 0);
       } else if (m.userData.shot === 'blade' || m.userData.shot === 'wave') {
+        m.scale.setScalar(size);
         m.rotation.set(Math.PI / 2, 0, ang);
       } else {
+        m.scale.setScalar(size);
         m.rotation.set(Math.PI / 2, ang, 0);
+      }
+    }
+
+    // ---- plasma puddles
+    while (this.zoneG.children.length) this.zoneG.remove(this.zoneG.children[0]);
+    for (const z of (game.zones || [])) {
+      const ring = new THREE.Mesh(
+        new THREE.CircleGeometry(z.r, 20),
+        new THREE.MeshBasicMaterial({
+          color: z.kind === 'plasma' ? 0xb8ff3a : 0x00e5ff,
+          transparent: true, opacity: 0.22 + 0.15 * Math.min(1, z.life), depthWrite: false, fog: false,
+        })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(z.x, 0.04, z.z);
+      this.zoneG.add(ring);
+    }
+
+    // ---- flying fragments
+    for (let i = this.fragG.children.length - 1; i >= 0; i--) {
+      const f = this.fragG.children[i];
+      const udf = f.userData;
+      udf.life -= 0.016;
+      udf.vy -= 18 * 0.016;
+      f.position.x += udf.vx * 0.016;
+      f.position.y += udf.vy * 0.016;
+      f.position.z += udf.vz * 0.016;
+      f.rotation.z += udf.spin * 0.016;
+      f.quaternion.copy(this.stage.camera.quaternion);
+      if (f.position.y < 0.05) { f.position.y = 0.05; udf.vy *= -0.3; udf.vx *= 0.7; udf.vz *= 0.7; }
+      if (udf.life <= 0) {
+        this.fragG.remove(f);
+        f.visible = false;
+        FRAG_POOL.push(f);
       }
     }
 

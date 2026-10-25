@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.5.0 three frames · human-led manhunt · readable drops
+// RAMPAGE MECH 暴走機甲 — v0.7.0 motion bob + weapon variety + gore VFX
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -203,6 +203,9 @@ function cardEmblem(c) {
     magnet: sv(`<path d="M18 18 V34 A14 14 0 0 0 46 34 V18" fill="none" stroke="${stroke}" stroke-width="5" stroke-linecap="round"/>
       <rect x="14" y="14" width="10" height="10" rx="2" fill="${stroke}"/><rect x="40" y="14" width="10" height="10" rx="2" fill="${stroke}"/>`),
     heart: sv(`<path d="M32 50 C18 40 10 30 10 22 A10 10 0 0 1 32 18 A10 10 0 0 1 54 22 C54 30 46 40 32 50 Z" fill="${stroke}"/>`),
+    orb: sv(`<circle cx="32" cy="28" r="14" fill="none" stroke="${stroke}" stroke-width="4"/>
+      <circle cx="32" cy="28" r="6" fill="${stroke}"/>
+      <path d="M24 44 H40 M28 50 H36" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round"/>`),
   };
   if (c.shape && shapes[c.shape]) return shapes[c.shape];
   return `<span class="emblem-glyph">${c.icon || '◆'}</span>`;
@@ -258,6 +261,16 @@ function startRun() {
     endless: true,
     mech: S.mechId,
   });
+  // QA / screenshot: ?arsenal=1 unlocks every special weapon at stack 1
+  if (flags.get('arsenal') === '1') {
+    const g = S.game;
+    g.laser = Math.max(g.laser, 1);
+    g.shotgun = Math.max(g.shotgun, 1);
+    g.rocket = Math.max(g.rocket, 1);
+    g.grenade = Math.max(g.grenade, 1);
+    g.plasma = Math.max(g.plasma, 1);
+    g.taken = { ...(g.taken || {}), laser: 1, shotgun: 1, rocket: 1, grenade: 1, plasma: 1 };
+  }
   view.setMech(S.mechId);
   S.state = 'play';
   S.demoT = 0;
@@ -494,12 +507,14 @@ function tick(dt) {
       particles.burst(muzzle, new THREE.Color(0x00e5ff), 14, { speed: 4, up: 0.6, size: 0.55, size: 0.65 });
       particles.burst(muzzle, new THREE.Color(0x7ad7ff), 8, { speed: 2.2, up: 1.4, life: 0.4, size: 0.5 });
     }
-    else if (ev.type === 'hit') {
+        else if (ev.type === 'hit') {
       audio.hit();
       if (ev.x != null) {
         const c = new THREE.Color(ev.color || 0x00e5ff);
-        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, 16, { speed: 4, up: 1.6, size: 0.85 });
-        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), new THREE.Color(0xffffff), 4, { speed: 2, up: 2, size: 0.35, size: 0.55 });
+        const n = ev.heavy ? 22 : 12;
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, n, { speed: ev.heavy ? 5.5 : 4, up: 1.6, life: 0.85 });
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), new THREE.Color(0xffffff), ev.heavy ? 10 : 4, { speed: 2.5, up: 2, life: 0.35, size: 0.55, bright: 4 });
+        if (ev.heavy) fx.kick({ trauma: 0.1, slowmo: 0.05 });
       }
     }
     else if (ev.type === 'kill') {
@@ -507,13 +522,32 @@ function tick(dt) {
       const c = new THREE.Color(ev.enemy.color);
       const human = ev.enemy.family === 'human';
       const pos = new THREE.Vector3(ev.enemy.x, 0.4, ev.enemy.z);
-      particles.burst(pos, c, human ? 26 : 36, { speed: 6.5, up: 3.2, size: 1.05 });
-      particles.burst(pos, new THREE.Color(0xffffff), 10, { speed: 3, up: 4, life: 0.5, size: 0.7 });
+      // 粉身碎骨: white flash → particles → fragments + hit-stop
+      particles.burst(pos, new THREE.Color(0xffffff), human ? 18 : 28, { speed: 7, up: 3.5, life: 0.45, size: 0.9, bright: 5 });
+      particles.burst(pos, c, human ? 22 : 34, { speed: 6.5, up: 3.2, life: 1.05 });
+      particles.burst(pos, new THREE.Color(0x00e5ff), 8, { speed: 3, up: 4, life: 0.5, size: 0.7 });
       particles.ring(pos, c, 28, 9, 0.35);
       waves.spawn(pos, c, { r0: 0.3, r1: 2.4, dur: 0.5, a: 2.6 });
-      fx.kick({ trauma: 0.14 });
+      if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8);
+      fx.kick({ trauma: ev.gore ? 0.32 : 0.14, slowmo: ev.gore ? 0.14 : 0.06, fovKick: 0.08 });
+      const flash = $('fx-flash');
+      if (flash && ev.gore) { flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 70); }
     }
-    else if (ev.type === 'xp') {
+    else if (ev.type === 'explode') {
+      audio.nova();
+      const pos = new THREE.Vector3(ev.x, 0.2, ev.z);
+      const col = new THREE.Color(ev.tag === 'plasma' ? 0xb8ff3a : 0x00e5ff);
+      particles.burst(pos, new THREE.Color(0xffffff), 22, { speed: 8, up: 2.5, life: 0.4, size: 1.0, bright: 5 });
+      particles.burst(pos, col, 36, { speed: 7, up: 3, life: 0.85, size: 1.05 });
+      particles.ring(pos, col, 32, 11, 0.3);
+      waves.spawn(pos, col, { r0: 0.35, r1: (ev.r || 1.6) * 1.4, dur: 0.45, a: 2.7 });
+      if (view.burstGore) view.burstGore(ev.x, ev.z, 0x8a93a8);
+      fx.kick({ trauma: 0.26, slowmo: 0.1, fovKick: 0.1 });
+    }
+    else if (ev.type === 'puddle') {
+      particles.ring(new THREE.Vector3(ev.x, 0.08, ev.z), new THREE.Color(0xb8ff3a), 18, 5, 0.2);
+    }
+else if (ev.type === 'xp') {
       audio.xp();
       particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), 18, { speed: 3.2, up: 2.6, size: 0.95 });
       particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), 8, { speed: 1.8, up: 3.5, life: 0.7, size: 0.6 });
@@ -590,8 +624,9 @@ async function boot() {
   ui.loaded();
   if (S.demo || flags.autostart) startRun();
   stage.loop((dt, time, rawDt) => {
-    tick(Math.min(0.05, dt));
-    city.update(time, dt, stage.camera);
+    const capped = Math.min(0.05, dt);
+    tick(capped * (fx.timeScale || 1));
+    city.update(time, capped, stage.camera);
     stage.render(rawDt);
   }, { isActive: () => true, fpsEl: $('fps') });
   if (flags.fps) $('fps').classList.remove('hidden');

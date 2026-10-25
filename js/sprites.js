@@ -235,7 +235,10 @@ export function billboardToCamera(root, camera, facingYaw = null) {
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
   const flip = d > 0 ? -1 : 1;
+  plane.userData = plane.userData || {};
+  plane.userData._camFlip = flip;
   const sx = Math.abs(plane.scale.x) || 1;
+  // Preserve walk-intent magnitude; cam flip applied here as base
   plane.scale.x = sx * flip;
 }
 
@@ -248,4 +251,48 @@ export function applySpriteFlash(root, { blink = false, hit = false, move = 0 } 
   else mat.color.setRGB(1, 1, 1);
   const halo = root.userData.halo;
   if (halo && halo.material) halo.material.opacity = 0.28 + move * 0.12;
+}
+
+
+/**
+ * Vampire-Survivors-style 2D feel on a billboard:
+ * bob / squash when moving, idle micro-sway when still, flip by velocity X.
+ * phaseOffset keeps a swarm from syncing.
+ */
+export function applySpriteMotion(root, {
+  moving = false,
+  velX = 0,
+  phase = 0,
+  phaseOffset = 0,
+  strength = 1,
+  camera = null,
+  facingYaw = null,
+} = {}) {
+  const plane = root.userData && root.userData.plane;
+  if (!plane) return;
+  const h = (root.userData.spriteH || 1.5);
+  const p = phase + phaseOffset;
+  if (moving) {
+    const bob = Math.abs(Math.sin(p * 2.2)) * 0.07 * strength;
+    const squash = 1 + Math.sin(p * 2.2) * 0.06 * strength;
+    const stretch = 1 - Math.sin(p * 2.2) * 0.04 * strength;
+    plane.position.y = h * 0.5 + bob;
+    const flip = Math.sign(plane.scale.x || 1) || 1;
+    plane.scale.y = squash;
+    plane.scale.x = flip * Math.abs(stretch);
+    plane.rotation.z = Math.sin(p * 2.2) * 0.08 * strength * (velX >= 0 ? 1 : -1);
+  } else {
+    const sway = Math.sin(p * 1.3) * 0.025 * strength;
+    plane.position.y = h * 0.5 + sway;
+    const flip = Math.sign(plane.scale.x || 1) || 1;
+    plane.scale.y = 1;
+    plane.scale.x = flip;
+    plane.rotation.z = Math.sin(p * 0.9) * 0.03 * strength;
+  }
+  if (camera) billboardToCamera(root, camera, facingYaw);
+  // Prefer walk velocity for left/right flip (VS-style); otherwise keep camera-relative facing.
+  if (Math.abs(velX) > 0.08) {
+    const sx = Math.abs(plane.scale.x) || 1;
+    plane.scale.x = (velX < 0 ? -1 : 1) * sx;
+  }
 }

@@ -21,12 +21,13 @@ export const PLAYER = {
   speed: 5.4,
   radius: 0.42,
   hp: 7,
-  fireCd: 0.38,
-  bulletSpeed: 14,
-  bulletDmg: 1,
-  bulletLife: 1.15,
+  fireCd: 0.10,          // continuous MG base RoF
+  bulletSpeed: 22,
+  bulletDmg: 0.55,       // per-pellet; volume carries the DPS
+  bulletLife: 0.55,
   magnet: 2.4,
   armor: 0,
+  fireRange: 11,
 };
 
 /**
@@ -130,32 +131,38 @@ export const DROP = {
 /** Level-up cards — weapons + armour. `shape` drives the big emblem in the pick UI. */
 export const CARDS = [
   { id: 'dmg', kind: 'weapon', icon: '⚡', shape: 'bolt',
-    zh: '脈衝強化', en: 'PULSE+', descZh: '傷害 +1', descEn: 'Damage +1',
-    apply: (s) => { s.bulletDmg += 1; } },
+    zh: '火力強化', en: 'FIREPOWER', descZh: '機槍傷害 +0.35', descEn: 'MG damage +0.35',
+    apply: (s) => { s.bulletDmg += 0.35; } },
   { id: 'rate', kind: 'weapon', icon: '⏱', shape: 'clock', max: 6,
-    zh: '射速超頻', en: 'FIRE RATE', descZh: '射速 +18%（最多 6 次）', descEn: 'Fire rate +18% (max 6)',
-    apply: (s) => { s.fireCd = Math.max(0.11, s.fireCd * 0.82); } },
+    zh: '連射超頻', en: 'RAPID FIRE', descZh: '機槍射速 +18%（最多 6）', descEn: 'MG rate +18% (max 6)',
+    apply: (s) => { s.fireCd = Math.max(0.045, s.fireCd * 0.82); } },
+  { id: 'laser', kind: 'weapon', icon: '═', shape: 'rail', max: 4,
+    zh: '鐳射炮', en: 'LASER', descZh: '解鎖／強化穿透鐳射束（最多 4）', descEn: 'Unlock/upgrade piercing laser (max 4)',
+    apply: (s) => { s.laser = Math.min(4, (s.laser || 0) + 1); } },
+  { id: 'shotgun', kind: 'weapon', icon: '✴', shape: 'spread', max: 4,
+    zh: '散彈槍', en: 'SHOTGUN', descZh: '近距扇形散彈（最多 4）', descEn: 'Close-range pellet cone (max 4)',
+    apply: (s) => { s.shotgun = Math.min(4, (s.shotgun || 0) + 1); } },
+  { id: 'rocket', kind: 'weapon', icon: '🚀', shape: 'nova', max: 3,
+    zh: '火箭炮', en: 'ROCKET', descZh: '慢速火箭＋範圍爆炸（最多 3）', descEn: 'Slow rocket + AoE blast (max 3)',
+    apply: (s) => { s.rocket = Math.min(3, (s.rocket || 0) + 1); } },
+  { id: 'grenade', kind: 'weapon', icon: '💣', shape: 'orb', max: 3,
+    zh: '手榴彈／迫擊砲', en: 'GRENADE / MORTAR', descZh: '拋射延遲爆破（最多 3）', descEn: 'Lobbed delayed blast (max 3)',
+    apply: (s) => { s.grenade = Math.min(3, (s.grenade || 0) + 1); } },
+  { id: 'plasma', kind: 'weapon', icon: '☢', shape: 'frost', max: 3,
+    zh: '電漿／鏹水', en: 'PLASMA / ACID', descZh: '電漿團＋殘留毒池（最多 3）', descEn: 'Plasma blob + lingering puddle (max 3)',
+    apply: (s) => { s.plasma = Math.min(3, (s.plasma || 0) + 1); } },
+  { id: 'multi', kind: 'weapon', icon: '◎', shape: 'lock', max: 3,
+    zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '機槍同時鎖定 +1（最多 4）', descEn: 'MG locks +1 foe (max 4)',
+    apply: (s) => { s.multi = Math.min(4, (s.multi || 1) + 1); } },
+  { id: 'pierce', kind: 'weapon', icon: '↗', shape: 'pierce', max: 4,
+    zh: '穿透芯', en: 'PIERCE', descZh: '機槍穿透 +1（最多 4）', descEn: 'MG pierce +1 (max 4)',
+    apply: (s) => { s.pierce = Math.min(4, (s.pierce || 0) + 1); } },
   { id: 'orbit', kind: 'weapon', icon: '⟳', shape: 'orbit', max: 4,
     zh: '軌道刃', en: 'ORBIT BLADES', descZh: '環繞刃 +1（最多 4）', descEn: '+1 orbit blade (max 4)',
     apply: (s) => { s.orbits = Math.min(4, (s.orbits || 0) + 1); } },
-  { id: 'spread', kind: 'weapon', icon: '✴', shape: 'spread', max: 3,
-    zh: '散射脈衝', en: 'SPREAD', descZh: '額外 ±18° 子彈（最多 3）', descEn: 'Extra ±18° shots (max 3)',
-    apply: (s) => { s.spread = Math.min(3, (s.spread || 0) + 1); } },
-  { id: 'pierce', kind: 'weapon', icon: '↗', shape: 'pierce', max: 4,
-    zh: '穿透芯', en: 'PIERCE', descZh: '子彈穿透 +1（最多 4）', descEn: 'Bullet pierce +1 (max 4)',
-    apply: (s) => { s.pierce = Math.min(4, (s.pierce || 0) + 1); } },
-  { id: 'multi', kind: 'weapon', icon: '◎', shape: 'lock', max: 3,
-    zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '同時鎖定 +1 敵人（最多 4）', descEn: 'Lock +1 extra foe (max 4)',
-    apply: (s) => { s.multi = Math.min(4, (s.multi || 1) + 1); } },
   { id: 'nova', kind: 'weapon', icon: '✸', shape: 'nova', max: 6,
     zh: '新星脈衝', en: 'NOVA PULSE', descZh: '週期範圍傷害（最多 6）', descEn: 'Periodic AoE blast (max 6)',
     apply: (s) => { s.nova = (s.nova || 0) + 1; s.novaCd = Math.max(2.2, 4.5 - s.nova * 0.4); } },
-  { id: 'frost', kind: 'weapon', icon: '❄', shape: 'frost', max: 3,
-    zh: '冷凍協議', en: 'FROST', descZh: '命中減速敵人（最多 3）', descEn: 'Hits slow enemies (max 3)',
-    apply: (s) => { s.frost = Math.min(0.54, (s.frost || 0) + 0.18); } },
-  { id: 'rail', kind: 'weapon', icon: '═', shape: 'rail', max: 4,
-    zh: '軌道炮', en: 'RAIL SHOT', descZh: '子彈速度 +25%、壽命↑（最多 4）', descEn: 'Bullet speed +25%, life↑ (max 4)',
-    apply: (s) => { s.bulletSpeed *= 1.25; s.bulletLife = Math.min(2.2, (s.bulletLife || 1.15) * 1.2); } },
   { id: 'armor', kind: 'armor', icon: '🛡', shape: 'shield', max: 3,
     zh: '裝甲板', en: 'ARMOR PLATE', descZh: '接觸傷害 −1（最少 1）· 裝甲層 +1', descEn: 'Contact dmg −1 (min 1) · armor +1',
     apply: (s) => { s.armor = Math.min(3, (s.armor || 0) + 1); } },
@@ -178,7 +185,8 @@ export const CARDS = [
 
 /** Icon shown on drops for the weapon that is "carrying" the run (see Game.weaponIcon). */
 export const WEAPON_ICONS = {
-  dmg: '⚡', rate: '⏱', orbit: '⟳', spread: '✴', pierce: '↗', multi: '◎', nova: '✸', frost: '❄', rail: '═',
+  dmg: '⚡', rate: '⏱', laser: '═', shotgun: '✴', rocket: '🚀', grenade: '💣', plasma: '☢',
+  multi: '◎', pierce: '↗', orbit: '⟳', nova: '✸',
 };
 
 const CARDS_BY_ID = Object.fromEntries(CARDS.map((c) => [c.id, c]));
@@ -249,16 +257,35 @@ export { CARDS_BY_ID };
  * with its stack level, and how big the shot reads. view.js turns `shot` into geometry.
  *   shot : bolt | spike | blade | star | lance | wave | orb
  */
+/**
+ * Projectile art: MG is a procedural cyan line (no sprite). Specials use small PNGs under assets/ammo/.
+ *   shot : line | laser | splash | rocket | grenade | plasma | blade | wave | orb
+ */
 export const WEAPON_SHOT = {
-  dmg:    { shot: 'bolt',  tiers: ['#4dff9a', '#8dff3a', '#ffe600'], size: 0.9 },
-  rate:   { shot: 'spike', tiers: ['#7ad7ff', '#00e5ff', '#b060ff'], size: 0.78 },
-  orbit:  { shot: 'blade', tiers: ['#ffe600', '#ff9a1f', '#ff2bd6'], size: 1.0 },
-  spread: { shot: 'star',  tiers: ['#ff6bd6', '#ff2bd6', '#ff2b6e'], size: 0.95 },
-  pierce: { shot: 'lance', tiers: ['#9ef2ff', '#4fb8ff', '#2b4dff'], size: 1.1 },
-  multi:  { shot: 'orb',   tiers: ['#b8ff4a', '#35d6ff', '#ffffff'], size: 0.85 },
-  nova:   { shot: 'wave',  tiers: ['#ffe600', '#ffb020', '#ff6b1f'], size: 1.2 },
-  frost:  { shot: 'orb',   tiers: ['#d8f6ff', '#7ad7ff', '#3b8bff'], size: 0.9 },
-  rail:   { shot: 'lance', tiers: ['#ffffff', '#c9b6ff', '#8b3dff'], size: 1.25 },
+  mg:       { shot: 'line',    tiers: ['#00e5ff', '#7ad7ff', '#ffffff'], size: 0.72, sprite: null },
+  dmg:      { shot: 'line',    tiers: ['#00e5ff', '#7ad7ff', '#ffffff'], size: 0.78, sprite: null },
+  rate:     { shot: 'line',    tiers: ['#7ad7ff', '#00e5ff', '#b060ff'], size: 0.7,  sprite: null },
+  laser:    { shot: 'laser',   tiers: ['#9ef2ff', '#00e5ff', '#ffffff'], size: 1.35, sprite: 'laser' },
+  shotgun:  { shot: 'splash',  tiers: ['#7ad7ff', '#00e5ff', '#ffe600'], size: 0.85, sprite: 'shotgun_splash' },
+  rocket:   { shot: 'rocket',  tiers: ['#c9d2e0', '#00e5ff', '#ffe600'], size: 1.15, sprite: 'rocket' },
+  grenade:  { shot: 'grenade', tiers: ['#8a93a8', '#00e5ff', '#b8ff3a'], size: 1.0,  sprite: 'grenade' },
+  mortar:   { shot: 'grenade', tiers: ['#8a93a8', '#00e5ff', '#b8ff3a'], size: 1.05, sprite: 'mortar' },
+  plasma:   { shot: 'plasma',  tiers: ['#b8ff3a', '#7affc0', '#00e5ff'], size: 1.05, sprite: 'plasma' },
+  pierce:   { shot: 'line',    tiers: ['#9ef2ff', '#4fb8ff', '#ffffff'], size: 0.85, sprite: null },
+  multi:    { shot: 'line',    tiers: ['#00e5ff', '#35d6ff', '#ffffff'], size: 0.75, sprite: null },
+  orbit:    { shot: 'blade',   tiers: ['#ffe600', '#ff9a1f', '#ff2bd6'], size: 1.0,  sprite: null },
+  nova:     { shot: 'wave',    tiers: ['#ffe600', '#ffb020', '#ff6b1f'], size: 1.2,  sprite: null },
+};
+
+/** Ammo / fragment PNG paths (relative to game root). */
+export const AMMO_PATHS = {
+  rocket: './assets/ammo/rocket.png',
+  laser: './assets/ammo/laser.png',
+  shotgun_splash: './assets/ammo/shotgun_splash.png',
+  grenade: './assets/ammo/grenade.png',
+  mortar: './assets/ammo/mortar.png',
+  plasma: './assets/ammo/plasma.png',
+  fragment: './assets/ammo/fragment.png',
 };
 
 /** stack count -> colour tier index (0 = fresh, 1 = upgraded, 2 = maxed). */

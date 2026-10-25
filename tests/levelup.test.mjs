@@ -30,9 +30,9 @@ const zero = () => 0; // deterministic rng: always grabs the first card of the p
   assert.equal(pool.length, 3);
   for (const c of pool) assert.equal(c.max, null, `fallback drew capped card ${c.id}`);
   // partially spent pool still respects remaining stacks
-  const t2 = { orbit: 4, spread: 3 };
+  const t2 = { orbit: 4, shotgun: 4 };
   const p2 = pickCards(() => 0.5, 3, t2);
-  assert.ok(p2.every((c) => c.id !== 'orbit' && c.id !== 'spread'), 'exhausted cards leaked into the draw');
+  assert.ok(p2.every((c) => c.id !== 'orbit' && c.id !== 'shotgun'), 'exhausted cards leaked into the draw');
 }
 
 // 3. Taking the same card repeatedly is counted (drives the n/max badge and the caps).
@@ -43,10 +43,20 @@ const zero = () => 0; // deterministic rng: always grabs the first card of the p
   g.applyCard(dmg);
   g.applyCard(dmg);
   assert.equal(g.taken.dmg, 2);
-  assert.equal(g.bulletDmg, before + 2);
+  assert.ok(Math.abs(g.bulletDmg - (before + 0.7)) < 1e-9, 'dmg should stack +0.35 twice');
 }
 
-// 4. Two hundred level-ups through the real loop still keep a healthy pick rate.
+// 4. Special weapon cards unlock stacks
+{
+  const g = new Game({ seed: 8 });
+  for (const id of ['laser', 'shotgun', 'rocket', 'grenade', 'plasma']) {
+    const c = CARDS.find((x) => x.id === id);
+    g.applyCard(c);
+    assert.equal(g[id], 1, id + ' unlock');
+  }
+}
+
+// 5. Two hundred level-ups through the real loop still keep a healthy pick rate.
 {
   const g = new Game({ seed: 11 });
   let offers = 0;
@@ -56,7 +66,7 @@ const zero = () => 0; // deterministic rng: always grabs the first card of the p
     g.applyCard(g.pendingCards[0]);
   }
   assert.equal(offers, 200, 'every level-up must offer a card');
-  assert.ok(g.bulletDmg >= 20 && g.maxHp > 7, 'build should keep growing (' + g.bulletDmg + ' dmg, ' + g.maxHp + ' hp)');
+  assert.ok(g.bulletDmg >= 5 && g.maxHp > 7, 'build should keep growing (' + g.bulletDmg + ' dmg, ' + g.maxHp + ' hp)');
 }
 
 console.log('levelup OK', { cards: CARDS.length, capped: CARDS.filter((c) => c.max != null).length, xpToLevel10: xpToLevel(10) });

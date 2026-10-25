@@ -48,28 +48,39 @@ export class Game {
     this.bulletDmg = PLAYER.bulletDmg;
     this.bulletSpeed = PLAYER.bulletSpeed;
     this.bulletLife = PLAYER.bulletLife;
+    this.fireRange = PLAYER.fireRange || 11;
     this.magnet = PLAYER.magnet * (bonus.magnetMul || 1);
     this.armor = PLAYER.armor + (bonus.armor || 0);
     this.deflect = 0;
     this.orbits = 0;
-    this.spread = 0;
     this.pierce = 0;
     this.multi = 1;
     this.nova = 0;
     this.novaCd = 0;
     this.novaT = 0;
     this.frost = 0;
+    // Special weapon stacks (0 = locked)
+    this.laser = 0;
+    this.shotgun = 0;
+    this.rocket = 0;
+    this.grenade = 0;
+    this.plasma = 0;
+    this.laserT = 0;
+    this.shotgunT = 0;
+    this.rocketT = 0;
+    this.grenadeT = 0;
+    this.plasmaT = 0;
     this.invuln = 1.5;
 
     this.enemies = [];
     this.bullets = [];
+    this.zones = []; // plasma puddles / delayed blasts
     this.gems = [];
     this.spawnAcc = 0;
     this.hitFlash = 0;
     this.muzzle = 0;
     this.waveT = 8;
     this.killer = null;
-    // contract goal: the kill target shown on the HUD; each clear raises it
     this.goalKills = 40;
     this.goalsCleared = 0;
     for (let i = 0; i < 10; i++) this._spawn();
@@ -104,7 +115,6 @@ export class Game {
     return pickEnemyType(this.rng, this.t);
   }
 
-  /** Soft radial clamp — gentle push near soft rim, hard stop at half. */
   _softClamp(x, z, radius = 0) {
     const lim = ARENA.half - radius;
     const soft = ARENA.soft - radius;
@@ -130,16 +140,16 @@ export class Game {
     const { hpMul, speedMul } = swarmPressure(this.t);
     this.enemies.push({
       type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
-      x: c.x, z: c.z,
+      x: c.x, z: c.z, vx: 0, vz: 0,
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
       damage: def.damage || 1, shield: def.shield || 0,
       hit: 0, slow: 0, wob: this.rng() * Math.PI * 2,
+      animPhase: this.rng() * Math.PI * 2,
     });
   }
 
-  /** A squad: soldiers first, a couple of support frames walking behind them. */
   _waveBurst() {
     const n = 4 + Math.min(10, Math.floor(this.t / 20));
     for (let i = 0; i < n; i++) {
@@ -151,19 +161,21 @@ export class Game {
     }
   }
 
-  _nearest(n = 1) {
+  _nearest(n = 1, maxRange = null) {
+    const R = maxRange == null ? 1e9 : maxRange;
     return this.enemies
       .map((e) => ({ e, d: Math.hypot(e.x - this.px, e.z - this.pz) }))
+      .filter((x) => x.d <= R)
       .sort((a, b) => a.d - b.d)
       .slice(0, n)
       .map((x) => x.e);
   }
 
-  /** The weapon whose look the muzzle / default shots borrow (highest stack owned). */
   primaryWeapon() {
-    let best = 'dmg';
-    let n = -1;
-    for (const id of WEAPON_IDS) {
+    const order = ['laser', 'rocket', 'shotgun', 'grenade', 'plasma', 'dmg', 'rate', 'pierce', 'multi', 'nova', 'orbit'];
+    let best = 'mg';
+    let n = 0;
+    for (const id of order) {
       const c = this.taken ? (this.taken[id] || 0) : 0;
       if (c > n) { n = c; best = id; }
     }
@@ -173,32 +185,178 @@ export class Game {
   _emitBullet(dx, dz, opts = {}) {
     const len = Math.hypot(dx, dz) || 1;
     dx /= len; dz /= len;
-    const weapon = opts.weapon || this.primaryWeapon();
-    this.bullets.push({
-      weapon, tier: shotTier((this.taken && this.taken[weapon]) || 0),
-      x: this.px, z: this.pz,
-      vx: dx * this.bulletSpeed, vz: dz * this.bulletSpeed,
-      life: this.bulletLife || PLAYER.bulletLife, dmg: this.bulletDmg,
-      r: 0.14, pierce: this.pierce, hitIds: new Set(),
-      frost: this.frost, ...opts,
-    });
+    const weapon = opts.weapon || 'mg';
+    const speed = opts.speed != null ? opts.speed : this.bulletSpeed;
+    const b = {
+      weapon,
+      tier: shotTier((this.taken && this.taken[weapon]) || opts.tierStacks || 0),
+      x: this.px + (opts.ox || 0),
+      z: this.pz + (opts.oz || 0),
+      y: opts.y != null ? opts.y : 0.55,
+      vx: dx * speed,
+      vz: dz * speed,
+      vy: opts.vy || 0,
+      life: opts.life != null ? opts.life : (this.bulletLife || PLAYER.bulletLife),
+      dmg: opts.dmg != null ? opts.dmg : this.bulletDmg,
+      r: opts.r != null ? opts.r : 0.12,
+      pierce: opts.pierce != null ? opts.pierce : 0,
+      hitIds: new Set(),
+      aoe: opts.aoe || 0,
+      aoeDmg: opts.aoeDmg || 0,
+      fuse: opts.fuse || 0,
+      grav: opts.grav || 0,
+      puddle: opts.puddle || 0,
+      kind: opts.kind || weapon,
+      ...opts,
+    };
+    // Don't let spread opts overwrite vx after we set them
+    b.vx = dx * speed;
+    b.vz = dz * speed;
+    this.bullets.push(b);
+    return b;
   }
 
-  _fire() {
-    const targets = this._nearest(this.multi || 1);
-    if (!targets.length) {
-      this._emitBullet(0, -1);
-      return;
-    }
+  /** Continuous cyan MG — excitement from volume. */
+  _fireMg() {
+    const targets = this._nearest(this.multi || 1, this.fireRange);
+    if (!targets.length) return false;
     for (const best of targets) {
       const base = Math.atan2(best.z - this.pz, best.x - this.px);
-      const wide = this.spread > 0;
-      this._emitBullet(Math.cos(base), Math.sin(base), { weapon: wide ? 'spread' : 'dmg' });
-      for (let s = 1; s <= this.spread; s++) {
-        this._emitBullet(Math.cos(base + s * 0.32), Math.sin(base + s * 0.32), { weapon: 'spread' });
-        this._emitBullet(Math.cos(base - s * 0.32), Math.sin(base - s * 0.32), { weapon: 'spread' });
-      }
+      const jitter = (this.rng() - 0.5) * 0.08;
+      this._emitBullet(Math.cos(base + jitter), Math.sin(base + jitter), {
+        weapon: 'mg',
+        dmg: this.bulletDmg,
+        pierce: this.pierce,
+        life: this.bulletLife,
+        speed: this.bulletSpeed,
+        r: 0.1,
+      });
     }
+    return true;
+  }
+
+  _fireLaser() {
+    const targets = this._nearest(1, this.fireRange + 4);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const base = Math.atan2(best.z - this.pz, best.x - this.px);
+    const stacks = this.laser;
+    this._emitBullet(Math.cos(base), Math.sin(base), {
+      weapon: 'laser',
+      dmg: 1.1 + stacks * 0.55,
+      pierce: 3 + stacks,
+      life: 0.28,
+      speed: 38,
+      r: 0.16,
+      tierStacks: stacks,
+    });
+    return true;
+  }
+
+  _fireShotgun() {
+    const targets = this._nearest(1, 6.5);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const base = Math.atan2(best.z - this.pz, best.x - this.px);
+    const stacks = this.shotgun;
+    const n = 5 + stacks;
+    const spread = 0.55 + stacks * 0.08;
+    for (let i = 0; i < n; i++) {
+      const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
+      const a = base + t * spread;
+      this._emitBullet(Math.cos(a), Math.sin(a), {
+        weapon: 'shotgun',
+        dmg: 0.55 + stacks * 0.2,
+        life: 0.22,
+        speed: 16 + stacks,
+        r: 0.14,
+        pierce: 0,
+        tierStacks: stacks,
+      });
+    }
+    return true;
+  }
+
+  _fireRocket() {
+    const targets = this._nearest(1, this.fireRange + 2);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const base = Math.atan2(best.z - this.pz, best.x - this.px);
+    const stacks = this.rocket;
+    this._emitBullet(Math.cos(base), Math.sin(base), {
+      weapon: 'rocket',
+      dmg: 2.2 + stacks * 1.4,
+      life: 1.6,
+      speed: 7.5 + stacks * 0.8,
+      r: 0.28,
+      pierce: 0,
+      aoe: 1.6 + stacks * 0.35,
+      aoeDmg: 2.5 + stacks * 1.2,
+      tierStacks: stacks,
+    });
+    return true;
+  }
+
+  _fireGrenade() {
+    const targets = this._nearest(1, this.fireRange);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const dx = best.x - this.px, dz = best.z - this.pz;
+    const dist = Math.hypot(dx, dz) || 1;
+    const stacks = this.grenade;
+    const speed = 6.5 + stacks * 0.5;
+    this._emitBullet(dx / dist, dz / dist, {
+      weapon: 'grenade',
+      dmg: 0.4,
+      life: 1.1,
+      speed,
+      r: 0.22,
+      pierce: 99,
+      fuse: 0.75 - stacks * 0.05,
+      grav: 14,
+      vy: 7.5 + Math.min(4, dist * 0.25),
+      y: 0.7,
+      aoe: 1.9 + stacks * 0.4,
+      aoeDmg: 3.2 + stacks * 1.4,
+      tierStacks: stacks,
+      hitIds: new Set(), // won't collide until fuse ends via life path
+    });
+    // Make grenade ignore mid-air hits: use pierce high + zero contact until fuse
+    const b = this.bullets[this.bullets.length - 1];
+    b.noHit = true;
+    return true;
+  }
+
+  _firePlasma() {
+    const targets = this._nearest(1, this.fireRange);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const base = Math.atan2(best.z - this.pz, best.x - this.px);
+    const stacks = this.plasma;
+    this._emitBullet(Math.cos(base), Math.sin(base), {
+      weapon: 'plasma',
+      dmg: 1.2 + stacks * 0.6,
+      life: 0.9,
+      speed: 9,
+      r: 0.26,
+      pierce: 0,
+      puddle: 1.4 + stacks * 0.35,
+      aoeDmg: 0.9 + stacks * 0.35,
+      tierStacks: stacks,
+    });
+    return true;
+  }
+
+  _aoeAt(x, z, radius, dmg, events, tag = 'blast') {
+    for (let j = this.enemies.length - 1; j >= 0; j--) {
+      const e = this.enemies[j];
+      if (Math.hypot(e.x - x, e.z - z) > radius + e.r) continue;
+      e.hp -= dmg * (1 - (e.shield || 0));
+      e.hit = 0.18;
+      events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy: true });
+      if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
+    }
+    events.push({ type: 'explode', x, z, r: radius, tag });
   }
 
   _novaBlast(events) {
@@ -208,13 +366,11 @@ export class Game {
       const e = this.enemies[j];
       if (Math.hypot(e.x - this.px, e.z - this.pz) > R) continue;
       e.hp -= dmg; e.hit = 0.15;
-      if (this.frost) e.slow = Math.max(e.slow, 0.6);
-      if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
+      if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
     }
     events.push({ type: 'nova', r: R });
   }
 
-  /** XP crates (+ a repair or shield cube now and then — readable drops, no mystery sprites). */
   _dropGem(e) {
     const healChance = e.family === 'human' ? 0.1 : 0.06;
     if (this.rng() < healChance) {
@@ -226,7 +382,6 @@ export class Game {
     }
   }
 
-  /** The weapon icon a kill drops every so often (big English letter "W" + gun emblem on the view). */
   weaponIcon() {
     const owned = Object.keys(this.taken || {}).filter((id) => WEAPON_IDS.includes(id));
     if (!owned.length) return 'dmg';
@@ -244,8 +399,75 @@ export class Game {
     this.score += e.score + Math.floor(this.t);
     this._dropGem(e);
     if ((e.kind === 'chief' || e.kind === 'mech') && this.rng() < 0.35) {
-      this.gems.push({ x: e.x, z: e.z, xp: 0, r: 0.22, life: 22, pop: 0.3, letter: 'W', kind: 'weapon', weapon: this.weaponIcon(), weaponIcon: WEAPON_ICONS[this.weaponIcon()] || '⚡' });
+      const w = this.weaponIcon();
+      this.gems.push({
+        x: e.x, z: e.z, xp: 0, r: 0.22, life: 22, pop: 0.3, letter: 'W', kind: 'weapon',
+        weapon: w, weaponIcon: WEAPON_ICONS[w] || '⚡',
+      });
     }
+  }
+
+  _tickWeapons(dt, events) {
+    let fired = false;
+    // Base continuous MG — only when a foe is in range
+    this.fireT -= dt;
+    if (this.fireT <= 0) {
+      if (this._fireMg()) {
+        this.fireT = this.fireCd;
+        this.muzzle = 0.08;
+        fired = true;
+        events.push({ type: 'fire', weapon: 'mg' });
+      } else {
+        this.fireT = 0.05;
+      }
+    }
+
+    if (this.laser > 0) {
+      this.laserT -= dt;
+      if (this.laserT <= 0 && this._fireLaser()) {
+        this.laserT = Math.max(0.18, 0.42 - this.laser * 0.05);
+        this.muzzle = 0.12;
+        fired = true;
+        events.push({ type: 'fire', weapon: 'laser' });
+      }
+    }
+    if (this.shotgun > 0) {
+      this.shotgunT -= dt;
+      if (this.shotgunT <= 0 && this._fireShotgun()) {
+        this.shotgunT = Math.max(0.35, 0.85 - this.shotgun * 0.1);
+        this.muzzle = 0.14;
+        fired = true;
+        events.push({ type: 'fire', weapon: 'shotgun' });
+      }
+    }
+    if (this.rocket > 0) {
+      this.rocketT -= dt;
+      if (this.rocketT <= 0 && this._fireRocket()) {
+        this.rocketT = Math.max(0.9, 2.1 - this.rocket * 0.25);
+        this.muzzle = 0.16;
+        fired = true;
+        events.push({ type: 'fire', weapon: 'rocket' });
+      }
+    }
+    if (this.grenade > 0) {
+      this.grenadeT -= dt;
+      if (this.grenadeT <= 0 && this._fireGrenade()) {
+        this.grenadeT = Math.max(0.85, 1.9 - this.grenade * 0.2);
+        this.muzzle = 0.14;
+        fired = true;
+        events.push({ type: 'fire', weapon: 'grenade' });
+      }
+    }
+    if (this.plasma > 0) {
+      this.plasmaT -= dt;
+      if (this.plasmaT <= 0 && this._firePlasma()) {
+        this.plasmaT = Math.max(0.55, 1.35 - this.plasma * 0.15);
+        this.muzzle = 0.12;
+        fired = true;
+        events.push({ type: 'fire', weapon: 'plasma' });
+      }
+    }
+    return fired;
   }
 
   step(dt) {
@@ -261,13 +483,7 @@ export class Game {
     const clamped = this._softClamp(this.px, this.pz, PLAYER.radius);
     this.px = clamped.x; this.pz = clamped.z;
 
-    this.fireT -= dt;
-    if (this.fireT <= 0 && this.enemies.length) {
-      this._fire();
-      this.fireT = this.fireCd;
-      this.muzzle = 0.14;
-      events.push({ type: 'fire' });
-    }
+    this._tickWeapons(dt, events);
 
     if (this.nova > 0) {
       this.novaT -= dt;
@@ -277,25 +493,83 @@ export class Game {
       }
     }
 
+    // ---- projectiles
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const b = this.bullets[i];
+      if (b.grav) {
+        b.vy -= b.grav * dt;
+        b.y += b.vy * dt;
+        if (b.y < 0.05) { b.y = 0.05; b.vy = 0; }
+      }
       b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
+      if (b.fuse > 0) {
+        b.fuse -= dt;
+        if (b.fuse <= 0) {
+          this._aoeAt(b.x, b.z, b.aoe || 1.8, b.aoeDmg || b.dmg, events, b.weapon);
+          this.bullets.splice(i, 1);
+          continue;
+        }
+      }
       const br = Math.hypot(b.x - this.px, b.z - this.pz);
-      if (b.life <= 0 || br > ARENA.spawnFar + 10) { this.bullets.splice(i, 1); continue; }
+      if (b.life <= 0 || br > ARENA.spawnFar + 12) {
+        if (b.aoe && !b.fuse && (b.weapon === 'rocket' || b.weapon === 'grenade')) {
+          this._aoeAt(b.x, b.z, b.aoe, b.aoeDmg || b.dmg, events, b.weapon);
+        }
+        if (b.puddle) {
+          this.zones.push({
+            x: b.x, z: b.z, r: b.puddle, life: 2.4 + (this.plasma || 0) * 0.4,
+            dps: b.aoeDmg || 1, kind: 'plasma',
+          });
+          events.push({ type: 'puddle', x: b.x, z: b.z, r: b.puddle });
+        }
+        this.bullets.splice(i, 1);
+        continue;
+      }
+      if (b.noHit) continue;
       let consumed = false;
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const e = this.enemies[j];
         if (b.hitIds.has(e)) continue;
-        if (Math.hypot(b.x - e.x, b.z - e.z) < b.r + e.r) {
-          e.hp -= b.dmg * (1 - (e.shield || 0)); e.hit = 0.12;
-          if (b.frost) e.slow = Math.max(e.slow, 0.5 + b.frost);
+        const er = b.r + e.r;
+        if (Math.hypot(b.x - e.x, b.z - e.z) < er) {
+          e.hp -= b.dmg * (1 - (e.shield || 0));
+          e.hit = 0.12;
           b.hitIds.add(e);
-          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind });
-          if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
-          if (b.pierce > 0) { b.pierce -= 1; } else { this.bullets.splice(i, 1); consumed = true; break; }
+          const heavy = b.weapon === 'rocket' || b.weapon === 'laser' || b.weapon === 'grenade';
+          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy });
+          if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
+          if (b.aoe && (b.weapon === 'rocket' || b.weapon === 'plasma')) {
+            this._aoeAt(b.x, b.z, b.aoe || b.puddle || 1.2, b.aoeDmg || b.dmg * 0.6, events, b.weapon);
+            if (b.puddle) {
+              this.zones.push({
+                x: b.x, z: b.z, r: b.puddle, life: 2.2, dps: b.aoeDmg || 1, kind: 'plasma',
+              });
+            }
+            this.bullets.splice(i, 1);
+            consumed = true;
+            break;
+          }
+          if (b.pierce > 0) { b.pierce -= 1; }
+          else { this.bullets.splice(i, 1); consumed = true; break; }
         }
       }
       if (consumed) continue;
+    }
+
+    // ---- lingering zones (acid / plasma)
+    for (let i = this.zones.length - 1; i >= 0; i--) {
+      const z = this.zones[i];
+      z.life -= dt;
+      for (let j = this.enemies.length - 1; j >= 0; j--) {
+        const e = this.enemies[j];
+        if (Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) {
+          e.hp -= z.dps * dt * 3.2;
+          e.slow = Math.max(e.slow, 0.35);
+          e.hit = Math.max(e.hit, 0.05);
+          if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
+        }
+      }
+      if (z.life <= 0) this.zones.splice(i, 1);
     }
 
     if (this.orbits > 0) {
@@ -309,8 +583,7 @@ export class Game {
           if (Math.hypot(ox - e.x, oz - e.z) < 0.35 + e.r) {
             e.hp -= 0.55 * this.bulletDmg * dt * 8;
             e.hit = 0.08;
-            if (this.frost) e.slow = Math.max(e.slow, 0.35);
-            if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e }); }
+            if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
           }
         }
       }
@@ -319,11 +592,17 @@ export class Game {
     for (const e of this.enemies) {
       if (e.hit > 0) e.hit -= dt;
       if (e.slow > 0) e.slow -= dt;
-      const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, this.frost || 0.35)) : 1;
+      const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
       const dx = this.px - e.x, dz = this.pz - e.z;
       const len = Math.hypot(dx, dz) || 1;
-      e.x += (dx / len) * e.speed * e.chase * slowMul * dt;
-      e.z += (dz / len) * e.speed * e.chase * slowMul * dt;
+      const stepX = (dx / len) * e.speed * e.chase * slowMul * dt;
+      const stepZ = (dz / len) * e.speed * e.chase * slowMul * dt;
+      e.vx = stepX / Math.max(dt, 1e-6);
+      e.vz = stepZ / Math.max(dt, 1e-6);
+      e.x += stepX;
+      e.z += stepZ;
+      const moving = Math.hypot(e.vx, e.vz) > 0.05;
+      e.animPhase = (e.animPhase || 0) + (moving ? Math.hypot(e.vx, e.vz) * 0.35 * dt : 0);
       const ec = this._softClamp(e.x, e.z, e.r);
       e.x = ec.x; e.z = ec.z;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
