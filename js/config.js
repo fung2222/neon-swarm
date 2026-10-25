@@ -32,8 +32,8 @@ export const PLAYER = {
 
 /**
  * Mech roster — shared skeleton / select UI / bake pipeline; per-mech parts via `model`.
- * Phase 1 deep-slices `horn` (覺醒突擊型). `heavy` / `prototype` are selectable stubs
- * (different ids + stats) — NOT recolors of the protagonist. Full unique meshes/abilities later.
+ * Playable vertical slice: `horn` only. `heavy` / `prototype` are showcase stubs
+ * (playable:false — 「製作中」). Stub stats are NOT formal balance.
  *
  * Shape (single source of truth for UI + Game):
  *   id, model, stats{hp,speed,damage,fireRate}, starterWeapon, passive,
@@ -43,6 +43,7 @@ export const MECHS = [
   {
     id: 'horn',
     model: 'horn',
+    playable: true,
     zh: '覺醒突擊型', en: 'AWAKEN ASSAULT', zhShort: '覺醒', enShort: 'AWAKEN',
     descZh: '深灰＋青紫 · 均衡突擊 · 開局護盾 +1 · 暴走縫隙青→洋紅', descEn: 'Deep-gray + cyan/violet · balanced · +1 shield · rampage cyan→magenta',
     hue: 'violet', plate: 0x1a1e28, accent: 0x3a2a55, trim: 0x00e5ff, hot: 0x00e5ff, visor: 0x7ad7ff,
@@ -55,11 +56,13 @@ export const MECHS = [
     bonus: { maxHp: 1 },
   },
   {
-    // STUB — Phase 2/4. Same shared builder path; different model key + stats. Not a horn recolor.
+    // STUB showcase — not startable. Stats provisional; do not treat as balance.
     id: 'heavy',
     model: 'heavy',
+    playable: false,
+    comingSoon: true,
     zh: '高速精密型', en: 'PRECISION FRAME', zhShort: '精密', enShort: 'PRECISION',
-    descZh: '（預留）白粉精密 · 現行數值：慢 8% · 護甲 +1', descEn: '(stub) white-pink precision · current: −8% speed · +1 armor',
+    descZh: '製作中 · 白粉精密機體（數值暫定，非正式平衡）', descEn: 'Coming soon · white-pink precision (stub stats, not balance)',
     hue: 'rose', plate: 0xe8dce6, accent: 0xf5eef3, trim: 0xff7ab0, hot: 0xffb0d0, visor: 0xffd6ea,
     stats: { hp: 1, speed: 0.92, damage: 1, fireRate: 1 },
     starterWeapon: 'mg',
@@ -68,11 +71,13 @@ export const MECHS = [
     bonus: { speedMul: 0.92, armor: 1 },
   },
   {
-    // STUB — Phase 2/4 morph states. Shared skeleton; model key only.
+    // STUB showcase — not startable. Stats provisional; do not treat as balance.
     id: 'prototype',
     model: 'prototype',
+    playable: false,
+    comingSoon: true,
     zh: '可變結構原型', en: 'MORPH PROTOTYPE', zhShort: '原型', enShort: 'MORPH',
-    descZh: '（預留）可變結構 · 現行數值：快 6% · 磁吸 +25%', descEn: '(stub) morph · current: +6% speed · +25% magnet',
+    descZh: '製作中 · 可變結構原型（數值暫定，非正式平衡）', descEn: 'Coming soon · morph prototype (stub stats, not balance)',
     hue: 'citrus', plate: 0x1a2218, accent: 0x2a3a22, trim: 0x00e5ff, hot: 0xffc21a, visor: 0x7cffea,
     stats: { hp: 1, speed: 1.06, damage: 1, fireRate: 1 },
     starterWeapon: 'mg',
@@ -83,6 +88,13 @@ export const MECHS = [
 ];
 
 export const MECH_BY_ID = Object.fromEntries(MECHS.map((m) => [m.id, m]));
+
+/** Only horn is startable in the current vertical slice. */
+export function isMechPlayable(mech) {
+  const m = typeof mech === 'string' ? MECH_BY_ID[mech] : mech;
+  return !!(m && m.playable !== false && !m.comingSoon);
+}
+
 
 /**
  * Derive runtime combat numbers from PLAYER base × mech.stats (+ legacy bonus fields).

@@ -1,15 +1,16 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.0-phase1 art bible + awaken select 3D slice
+// RAMPAGE MECH 暴走機甲 — v0.9.1 playable horn bake vertical slice
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
   ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
+import { bakedMuzzleWorld } from './sprites.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -98,18 +99,25 @@ function buildMechPicker() {
   const row = document.createElement('div');
   row.className = 'mech-row';
   MECHS.forEach((m) => {
+    const locked = !isMechPlayable(m);
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'mech-card' + (m.id === S.mechId ? ' on' : '') + ' mech-' + m.id;
+    b.className = 'mech-card' + (m.id === S.mechId ? ' on' : '') + ' mech-' + m.id + (locked ? ' coming' : '');
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', m.id === S.mechId ? 'true' : 'false');
     b.dataset.id = m.id;
+    b.dataset.playable = locked ? '0' : '1';
     const accent = m.accent.toString(16).padStart(6, '0');
     const trim = m.trim.toString(16).padStart(6, '0');
+    const badge = locked
+      ? `<span class="mech-badge">${t('mech.coming')}</span>`
+      : '';
+    // Stub frames: still show provisional bars but dimmed via CSS — not formal balance.
     b.innerHTML =
       `<span class="mech-swatch" style="--a:#${accent};--t:#${trim}"></span>` +
       `<b>${i18n.isZh() ? m.zh : m.en}</b>` +
       `<small>${i18n.isZh() ? m.descZh : m.descEn}</small>` +
+      badge +
       mechStatBars(m);
     b.addEventListener('click', () => {
       S.mechId = m.id;
@@ -117,11 +125,31 @@ function buildMechPicker() {
       store.set('mech', m.id);
       try { audio.click(); } catch (_) {}
       buildMechPicker();
+      refreshStartLock();
       if (S.menuMech) view.setMenuMech(m.id);
     });
     row.appendChild(b);
   });
   box.appendChild(row);
+  let note = box.querySelector('.mech-lock-note');
+  if (!note) {
+    note = document.createElement('div');
+    note.className = 'mech-lock-note';
+    box.appendChild(note);
+  }
+  refreshStartLock();
+}
+
+function refreshStartLock() {
+  const playable = isMechPlayable(S.mechId);
+  const btn = $('btn-play');
+  if (btn) {
+    btn.disabled = !playable;
+    btn.classList.toggle('locked', !playable);
+    btn.setAttribute('aria-disabled', playable ? 'false' : 'true');
+  }
+  const note = document.querySelector('#mech-pick .mech-lock-note');
+  if (note) note.textContent = playable ? '' : t('mech.locked');
 }
 
 // Mild camera zoom (pinch / wheel) — one-finger left for move stick
@@ -192,6 +220,7 @@ function refreshMenu() {
   $('start-best').textContent = String(store.getNum('best', 0));
   if ($('start-time')) $('start-time').textContent = fmtTime(store.getNum('bestTime', 0));
   buildMechPicker();
+  refreshStartLock();
 }
 let _hudAcc = 0;
 let _hudSnap = '';
@@ -337,6 +366,11 @@ function showLevelCards(cards) {
 }
 
 function startRun() {
+  if (!isMechPlayable(S.mechId)) {
+    refreshStartLock();
+    try { audio.click(); } catch (_) {}
+    return;
+  }
   audio.init();
   view.hideMenuMech();
   S.menuMech = false;
@@ -588,9 +622,15 @@ function tick(dt) {
     if (ev.type === 'fire') {
       audio.fire();
       const g = S.game;
-      const mx = ev.muzzleX != null ? ev.muzzleX : g.px;
-      const my = ev.muzzleY != null ? ev.muzzleY : 0.95;
-      const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
+      let mx = ev.muzzleX != null ? ev.muzzleX : g.px;
+      let my = ev.muzzleY != null ? ev.muzzleY : 0.95;
+      let mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
+      // Prefer baked muzzle anchors when in-game player uses buildPlayerMech sheets.
+      const pud = view.player && view.player.userData;
+      if (pud && pud.baked && ev.updateVisual) {
+        const bm = bakedMuzzleWorld(view.player, g.px, g.pz, ev.aimX, ev.aimZ);
+        mx = bm.x; my = bm.y; mz = bm.z;
+      }
       const muzzle = new THREE.Vector3(mx, my, mz);
       particles.burst(muzzle, new THREE.Color(0x00e5ff), 3, { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
       particles.burst(muzzle, new THREE.Color(0x7ad7ff), 2, { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });

@@ -1,0 +1,722 @@
+{
+  "version": "0.9.1",
+  "implemented": true,
+  "source": "buildPlayerMech (js/mech-builder.js)",
+  "id": "horn",
+  "size": 256,
+  "dirs": [
+    "n",
+    "e",
+    "s",
+    "w"
+  ],
+  "frames": 4,
+  "characterHeightFrac": 0.75,
+  "camera": {
+    "elevationDeg": 60,
+    "fov": 28,
+    "dist": 4.1
+  },
+  "anchors": {
+    "foot": [
+      0.5,
+      0.92
+    ],
+    "pivot": [
+      0.5,
+      0.52
+    ],
+    "muzzle": [
+      0.68,
+      0.48
+    ]
+  },
+  "cells": [
+    {
+      "dir": "n",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_n_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_n_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_n_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_n_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_n_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_n_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_n_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_n_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_e_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_e_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_e_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_e_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_e_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_e_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_e_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_e_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_s_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_s_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_s_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_s_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_s_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_s_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_s_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_s_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_w_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_w_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_w_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_w_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_w_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_w_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_w_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_w_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.68,
+          0.48
+        ]
+      }
+    }
+  ],
+  "outDir": "assets/mechs/horn/sheets",
+  "generatedAt": "2026-10-25T14:40:47.513Z",
+  "fallbackPng": true,
+  "layers": {
+    "body": "lower+torso locomotion / idle / hurt / death",
+    "gun": "independent aim layer (upper+rifle)"
+  },
+  "usage": {
+    "moveDir": "select body run/idle by movement yaw \u2192 n/e/s/w",
+    "aimDir": "select gun layer by visualAim yaw \u2192 n/e/s/w",
+    "hurt": "overlay hurt cell OR tint; do not cancel run",
+    "muzzle": "anchors.muzzle normalized; scale by sprite world size"
+  },
+  "inGameWired": true
+}

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bake-mech-sprites capture</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../vendor/cyber-kit/three/three.module.min.js",
+    "three/addons/": "../vendor/cyber-kit/three/addons/"
+  }
+}
+</script>
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { buildPlayerMech } from '../js/mech-builder.js';
+import { MECH_BY_ID } from '../js/config.js';
+
+const DIRS4 = ['n', 'e', 's', 'w'];
+// Mech default rifle points +Z; camera sits on +Z looking at origin → yaw 0 = front (n).
+const DIR_YAW = { n: 0, e: -Math.PI / 2, s: Math.PI, w: Math.PI / 2 };
+
+const params = new URLSearchParams(location.search);
+const SIZE = Math.max(64, Number(params.get('size') || 256));
+const ID = params.get('id') || 'horn';
+const FRAMES = Math.max(1, Number(params.get('frames') || 4));
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true,
+  preserveDrawingBuffer: true,
+  powerPreference: 'high-performance',
+});
+renderer.setSize(SIZE, SIZE, false);
+renderer.setPixelRatio(1);
+renderer.setClearColor(0x000000, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const hemi = new THREE.HemisphereLight(0xb0c4ff, 0x1a1020, 1.1);
+scene.add(hemi);
+const key = new THREE.DirectionalLight(0xffffff, 1.35);
+key.position.set(2.2, 4.5, 3.2);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x66aaff, 0.45);
+fill.position.set(-3, 2, -2);
+scene.add(fill);
+const rim = new THREE.DirectionalLight(0x00e5ff, 0.55);
+rim.position.set(0, 2.5, -3);
+scene.add(rim);
+
+const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 40);
+const elev = (60 * Math.PI) / 180;
+const dist = 4.1;
+camera.position.set(0, Math.sin(elev) * dist, Math.cos(elev) * dist);
+camera.lookAt(0, 0.88, 0);
+
+const cfg = MECH_BY_ID[ID] || MECH_BY_ID.horn;
+let mech = null;
+
+function resetMech() {
+  if (mech) {
+    scene.remove(mech);
+    mech.traverse((o) => {
+      if (o.geometry) o.geometry.dispose?.();
+      if (o.material) {
+        if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose?.());
+        else o.material.dispose?.();
+      }
+    });
+  }
+  mech = buildPlayerMech(cfg);
+  if (mech.userData.halo) mech.userData.halo.visible = false;
+  mech.position.set(0, 0, 0);
+  scene.add(mech);
+  return mech;
+}
+
+function poseIdle() {
+  const ud = mech.userData;
+  for (const leg of ud.legs || []) leg.rotation.x = 0;
+  for (const shin of ud.shins || []) shin.rotation.x = 0;
+  for (const foot of ud.foots || []) foot.rotation.x = 0;
+  for (const arm of ud.arms || []) { arm.rotation.x = 0; arm.rotation.z = 0; }
+  if (ud.body) { ud.body.position.y = 0; ud.body.rotation.x = 0; }
+  if (ud.head) { ud.head.rotation.x = 0; }
+}
+
+function poseRun(frame, frames) {
+  poseIdle();
+  const t = (frame / frames) * Math.PI * 2;
+  const swing = Math.sin(t);
+  const swingOpp = Math.sin(t + Math.PI);
+  const ud = mech.userData;
+  if (ud.legs?.length === 2) {
+    ud.legs[0].rotation.x = swing * 0.55;
+    ud.legs[1].rotation.x = swingOpp * 0.55;
+  }
+  if (ud.shins?.length === 2) {
+    ud.shins[0].rotation.x = Math.max(0, -swing) * 0.35;
+    ud.shins[1].rotation.x = Math.max(0, -swingOpp) * 0.35;
+  }
+  if (ud.foots?.length === 2) {
+    ud.foots[0].rotation.x = swing * 0.25;
+    ud.foots[1].rotation.x = swingOpp * 0.25;
+  }
+  if (ud.arms?.length === 2) {
+    ud.arms[0].rotation.x = swingOpp * 0.35;
+    ud.arms[1].rotation.x = swing * 0.25 - 0.15; // rifle arm slight aim
+  }
+  if (ud.body) ud.body.position.y = Math.abs(Math.sin(t)) * 0.02;
+}
+
+function poseHurt() {
+  poseIdle();
+  const ud = mech.userData;
+  if (ud.body) { ud.body.rotation.x = 0.12; ud.body.position.y = -0.02; }
+  if (ud.arms?.length === 2) {
+    ud.arms[0].rotation.x = -0.55;
+    ud.arms[1].rotation.x = -0.4;
+  }
+  if (ud.head) ud.head.rotation.x = 0.2;
+  // Tint hot mats reddish for hurt overlay bake
+  for (const mat of [...(ud.hullMats || []), ...(ud.coreMats || [])]) {
+    if (mat?.emissive) mat.emissive.setHex(0xff4466);
+    if (mat) mat.emissiveIntensity = (mat.emissiveIntensity || 0.4) + 0.6;
+  }
+}
+
+function poseDeath() {
+  poseIdle();
+  const ud = mech.userData;
+  if (ud.body) { ud.body.rotation.x = 0.55; ud.body.position.y = -0.08; }
+  if (ud.legs?.length === 2) {
+    ud.legs[0].rotation.x = 0.9;
+    ud.legs[1].rotation.x = 1.1;
+  }
+  if (ud.arms?.length === 2) {
+    ud.arms[0].rotation.x = 0.8;
+    ud.arms[1].rotation.x = 1.0;
+  }
+  if (ud.head) ud.head.rotation.x = 0.45;
+}
+
+/**
+ * Layer split for compositing without double-draw:
+ *  lower/body: legs + waist/chest/pack (no arms, no head)
+ *  gun: arms (+rifle) + head only
+ *  full: everything (hurt/death)
+ */
+function setLayer(mode) {
+  const ud = mech.userData;
+  if (ud.halo) ud.halo.visible = false;
+  const armSet = new Set(ud.arms || []);
+  const legSet = new Set(ud.legs || []);
+  const kids = ud.body ? ud.body.children : [];
+  if (mode === 'lower' || mode === 'body') {
+    for (const child of kids) {
+      child.visible = !armSet.has(child) && child !== ud.head;
+    }
+  } else if (mode === 'gun') {
+    for (const child of kids) {
+      child.visible = armSet.has(child) || child === ud.head;
+    }
+    if (ud.arms?.length === 2) {
+      ud.arms[0].rotation.x = -0.1;
+      ud.arms[1].rotation.x = -0.4;
+    }
+  } else {
+    // full
+    for (const child of kids) child.visible = true;
+  }
+}
+
+function capture() {
+  renderer.render(scene, camera);
+  return renderer.domElement.toDataURL('image/png');
+}
+
+function muzzleAnchorNorm() {
+  // Approximate: rifle tip relative to cell. Foot baseline ~0.92, pivot waist ~0.55.
+  // Muzzle slightly right-forward of center for horn right-hand rifle.
+  return { foot: [0.5, 0.92], pivot: [0.5, 0.52], muzzle: [0.68, 0.48] };
+}
+
+async function bakeAll() {
+  const cells = [];
+  const anchors = muzzleAnchorNorm();
+
+  function add(dir, action, frame, layer, dataUrl) {
+    cells.push({
+      dir, action, frame, layer,
+      file: `${ID}_${dir}_${action}_${String(frame).padStart(2, '0')}${layer !== 'body' ? '_' + layer : ''}.png`,
+      dataUrl,
+      anchors: { ...anchors },
+    });
+  }
+
+  // Body: idle + run + hurt + death per dir
+  for (const dir of DIRS4) {
+    resetMech();
+    mech.rotation.y = DIR_YAW[dir];
+    setLayer('body');
+    poseIdle();
+    add(dir, 'idle', 0, 'body', capture());
+
+    for (let f = 0; f < FRAMES; f++) {
+      resetMech();
+      mech.rotation.y = DIR_YAW[dir];
+      setLayer('body');
+      poseRun(f, FRAMES);
+      add(dir, 'run', f, 'body', capture());
+    }
+
+    resetMech();
+    mech.rotation.y = DIR_YAW[dir];
+    setLayer('full');
+    poseHurt();
+    add(dir, 'hurt', 0, 'body', capture());
+
+    resetMech();
+    mech.rotation.y = DIR_YAW[dir];
+    setLayer('full');
+    poseDeath();
+    add(dir, 'death', 0, 'body', capture());
+
+    // Independent gun / upper aim layer (same yaw = aim dir)
+    resetMech();
+    mech.rotation.y = DIR_YAW[dir];
+    setLayer('gun');
+    poseIdle();
+    if (mech.userData.arms?.length === 2) {
+      mech.userData.arms[1].rotation.x = -0.4;
+    }
+    add(dir, 'gun', 0, 'gun', capture());
+  }
+
+  window.__BAKE_RESULT__ = {
+    version: '0.9.1',
+    implemented: true,
+    source: 'buildPlayerMech (js/mech-builder.js)',
+    id: ID,
+    size: SIZE,
+    dirs: DIRS4,
+    frames: FRAMES,
+    characterHeightFrac: 0.75,
+    camera: { elevationDeg: 60, fov: 28, dist },
+    anchors,
+    cells: cells.map(({ dataUrl, ...meta }) => meta),
+    // data kept parallel for puppeteer extraction
+    _dataUrls: cells.map((c) => c.dataUrl),
+  };
+  document.title = 'BAKE_READY';
+  return window.__BAKE_RESULT__;
+}
+
+resetMech();
+bakeAll().then((r) => {
+  console.log('[bake-capture] cells', r.cells.length);
+}).catch((e) => {
+  console.error(e);
+  document.title = 'BAKE_ERROR';
+  window.__BAKE_ERROR__ = String(e && e.stack || e);
+});
+</script>
+</body>
+</html>

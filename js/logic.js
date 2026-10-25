@@ -12,6 +12,61 @@ const MUZZLE_BY_WEAPON = {
   plasma: { dist: 0.70, y: 0.98 },
 };
 
+/** Weapons that update body visual facing (primary). Secondaries keep their own fire-event aim. */
+const PRIMARY_VISUAL_WEAPONS = new Set(['mg', 'laser']);
+
+/** ~120° forward fan: cos(60°) = 0.5 */
+export const GRENADE_FAN_DOT = 0.5;
+/** Fixed throw distance along forward when no legal front target (rule: throw forward, never defer). */
+export const GRENADE_FORWARD_DIST = 6.5;
+
+/**
+ * Pick grenade aim: only targets in forward fan (dir·forward >= GRENADE_FAN_DOT).
+ * If none, aim along forward at GRENADE_FORWARD_DIST (fixed forward throw).
+ * Pure helper — exported for unit tests.
+ */
+export function resolveGrenadeThrow(px, pz, forwardX, forwardZ, enemies, maxRange = 11) {
+  let fx = forwardX, fz = forwardZ;
+  let fl = Math.hypot(fx, fz);
+  if (fl < 1e-6) { fx = 0; fz = 1; fl = 1; }
+  fx /= fl; fz /= fl;
+
+  let best = null;
+  let bestD = Infinity;
+  for (let i = 0; i < enemies.length; i++) {
+    const e = enemies[i];
+    if (!e || e.hp <= 0) continue;
+    const dx = e.x - px, dz = e.z - pz;
+    const dist = Math.hypot(dx, dz);
+    if (dist > maxRange || dist < 1e-6) continue;
+    const dot = (dx / dist) * fx + (dz / dist) * fz;
+    if (dot < GRENADE_FAN_DOT - 1e-9) continue;
+    if (dist < bestD) { bestD = dist; best = e; }
+  }
+  if (best) {
+    const dx = best.x - px, dz = best.z - pz;
+    const dist = Math.hypot(dx, dz) || 1;
+    return {
+      dx: dx / dist,
+      dz: dz / dist,
+      dist,
+      target: best,
+      mode: 'target',
+      forwardX: fx,
+      forwardZ: fz,
+    };
+  }
+  return {
+    dx: fx,
+    dz: fz,
+    dist: GRENADE_FORWARD_DIST,
+    target: null,
+    mode: 'forward',
+    forwardX: fx,
+    forwardZ: fz,
+  };
+}
+
 function isPunchKill(e, heavyWeapon = false) {
   if (heavyWeapon) return true;
   const k = e && e.kind;
@@ -103,6 +158,9 @@ export class Game {
     // Aim facing (unit xz) — independent of move velocity (Milestone A)
     this.aimX = 0;
     this.aimZ = 1;
+    // Primary visual body facing — updated ONLY by primary weapons (mg/laser)
+    this.visualAimX = 0;
+    this.visualAimZ = 1;
     this._sticky = null;
     this._stickyUntil = 0;
     this._nextEid = 1;
@@ -299,10 +357,32 @@ export class Game {
     this.aimZ = dz / len;
   }
 
-  _pushFire(events, weapon, dx, dz, bullet, target) {
+  /** Stable primary forward vector for grenade fan / body facing. */
+  primaryForward() {
+    let fx = this.visualAimX, fz = this.visualAimZ;
+    let fl = Math.hypot(fx, fz);
+    if (fl > 0.01) return { x: fx / fl, z: fz / fl };
+    fx = this.aimX; fz = this.aimZ;
+    fl = Math.hypot(fx, fz);
+    if (fl > 0.01) return { x: fx / fl, z: fz / fl };
+    return { x: 0, z: 1 };
+  }
+
+  /**
+   * Fire event always carries its own aimX/aimZ.
+   * Body visualAim updates only for primary weapons (mg/laser) unless opts.updateVisual overrides.
+   */
+  _pushFire(events, weapon, dx, dz, bullet, target, opts = {}) {
     const len = Math.hypot(dx, dz) || 1;
     const ax = dx / len, az = dz / len;
-    this._setAimFrom(ax, az);
+    const updateVisual = opts.updateVisual != null
+      ? !!opts.updateVisual
+      : PRIMARY_VISUAL_WEAPONS.has(weapon);
+    if (updateVisual) {
+      this._setAimFrom(ax, az);
+      this.visualAimX = ax;
+      this.visualAimZ = az;
+    }
     if (!events) return;
     events.push({
       type: 'fire',
@@ -313,6 +393,7 @@ export class Game {
       muzzleY: bullet.y != null ? bullet.y : 0.95,
       muzzleZ: bullet.z,
       targetId: target && target.id != null ? target.id : null,
+      updateVisual,
     });
   }
 
@@ -471,17 +552,17 @@ export class Game {
   }
 
   _fireGrenade(events) {
-    // TODO(Phase 5): restrict targets to ~120° forward arc of facing/aim — never throw backward
-    // at a rear sticky target. Until then, keep Milestone A nearest/sticky behavior so combat
-    // does not regress.
-    const targets = this._targetsForWeapon(1, this.fireRange);
-    if (!targets.length) return false;
-    const best = targets[0];
-    const dx0 = best.x - this.px, dz0 = best.z - this.pz;
-    const dist = Math.hypot(dx0, dz0) || 1;
+    // Forward-only ~120° fan (dot >= 0.5). Never pick nearest behind.
+    // No legal front target → fixed-distance throw along primary forward (same dir for aim/arc/impact).
+    const fwd = this.primaryForward();
+    const throwAim = resolveGrenadeThrow(
+      this.px, this.pz, fwd.x, fwd.z, this.enemies, this.fireRange
+    );
+    const dx = throwAim.dx, dz = throwAim.dz;
+    const dist = throwAim.dist;
+    const best = throwAim.target;
     const stacks = this.grenade;
     const speed = 6.5 + stacks * 0.5;
-    const dx = dx0 / dist, dz = dz0 / dist;
     const b = this._emitBullet(dx, dz, {
       weapon: 'grenade',
       dmg: 0.4,
@@ -498,7 +579,8 @@ export class Game {
       hitIds: new Set(),
     });
     b.noHit = true;
-    this._pushFire(events, 'grenade', dx, dz, b, best);
+    b.grenadeMode = throwAim.mode;
+    this._pushFire(events, 'grenade', dx, dz, b, best, { updateVisual: false });
     return true;
   }
 
@@ -853,4 +935,4 @@ export class Game {
   }
 }
 
-export { DROP, cratesFor, WEAPON_IDS };
+export { DROP, cratesFor, WEAPON_IDS, PRIMARY_VISUAL_WEAPONS };

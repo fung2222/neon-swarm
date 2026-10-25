@@ -148,6 +148,11 @@ export function makeBillboard(key, w, h, opts = {}) {
 }
 
 export function buildPlayerSprite(cfg) {
+  // Prefer baked buildPlayerMech sheets when available for this mech id.
+  const baked = buildBakedPlayerSprite(cfg);
+  if (baked) return baked;
+
+  // Legacy whole-body PNG fallback (kept until bake is verified per-mech).
   const idle = loadSpriteTex('mech_idle');
   const move = loadSpriteTex('mech_move');
   const move1 = loadSpriteTex('mech_move_1');
@@ -343,4 +348,270 @@ export function applySpriteMotion(root, {
     const sx = Math.abs(plane.scale.x) || 1;
     plane.scale.x = (velX < 0 ? -1 : 1) * sx;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Baked player sheets (from buildPlayerMech via tools/bake-mech-sprites.mjs).
+// Old whole-body PNG remains fallback until atlas loads / verifies.
+// ---------------------------------------------------------------------------
+
+export const BAKED_PLAYER_BASE = {
+  horn: {
+    id: 'horn',
+    root: './assets/mechs/horn/sheets/',
+    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.1',
+    dirs: ['n', 'e', 's', 'w'],
+    runFrames: 4,
+    cellSize: 256,
+    anchors: { foot: [0.5, 0.92], pivot: [0.5, 0.52], muzzle: [0.68, 0.48] },
+    worldW: 1.78,
+    worldH: 2.12,
+  },
+};
+
+/** Map aim/move vector → 4-dir key. 0 = +Z (n), +X = e. */
+export function yawToCardinal(x, z) {
+  const a = Math.atan2(x || 0, z || 0);
+  const t = ((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  if (t < Math.PI / 4 || t >= 7 * Math.PI / 4) return 'n';
+  if (t < 3 * Math.PI / 4) return 'e';
+  if (t < 5 * Math.PI / 4) return 's';
+  return 'w';
+}
+
+function loadTexPath(path) {
+  if (TEX[path]) return TEX[path];
+  const tex = loader.load(path);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.premultiplyAlpha = false;
+  TEX[path] = tex;
+  return tex;
+}
+
+function cellPath(spec, dir, action, frame, layer) {
+  const f = String(frame).padStart(2, '0');
+  const suffix = layer === 'gun' ? '_gun' : '';
+  // gun files: horn_n_gun_00_gun.png ; body: horn_n_idle_00.png
+  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.1`;
+  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.1`;
+}
+
+/**
+ * Layered billboard: body (lower locomotion) + gun (upper aim) + optional hurt tint.
+ * Foot planted — no bob/squash fake-run.
+ */
+export function buildBakedPlayerSprite(cfg) {
+  const id = (cfg && (cfg.model || cfg.id)) || 'horn';
+  const spec = BAKED_PLAYER_BASE[id];
+  if (!spec) return null;
+
+  const trim = (cfg && cfg.trim) || 0xb14cff;
+  const w = spec.worldW;
+  const h = spec.worldH;
+
+  const mkPlane = (name) => {
+    const mat = new THREE.MeshBasicMaterial({
+      map: null,
+      transparent: true,
+      alphaTest: 0.35,
+      side: THREE.DoubleSide,
+      depthWrite: true,
+      color: 0xffffff,
+      fog: false,
+    });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    plane.position.y = h * 0.5;
+    plane.name = name;
+    return { plane, mat };
+  };
+
+  const body = mkPlane('bodyPlane');
+  const gun = mkPlane('gunPlane');
+  gun.plane.renderOrder = 1;
+  gun.mat.depthWrite = false;
+
+  const root = new THREE.Group();
+  root.add(body.plane);
+  root.add(gun.plane);
+  const halo = groundRing(trim, 0.46, 0.32);
+  root.add(halo);
+
+  const stub = new THREE.MeshStandardMaterial({
+    color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.85,
+    transparent: true, opacity: 0, visible: false,
+  });
+
+  // Preload all cells
+  const maps = { body: {}, gun: {}, hurt: {}, death: {}, idle: {}, run: {} };
+  for (const dir of spec.dirs) {
+    maps.idle[dir] = loadTexPath(cellPath(spec, dir, 'idle', 0, 'body'));
+    maps.hurt[dir] = loadTexPath(cellPath(spec, dir, 'hurt', 0, 'body'));
+    maps.death[dir] = loadTexPath(cellPath(spec, dir, 'death', 0, 'body'));
+    maps.gun[dir] = loadTexPath(cellPath(spec, dir, 'gun', 0, 'gun'));
+    maps.run[dir] = [];
+    for (let f = 0; f < spec.runFrames; f++) {
+      maps.run[dir].push(loadTexPath(cellPath(spec, dir, 'run', f, 'body')));
+    }
+  }
+  body.mat.map = maps.idle.n;
+  gun.mat.map = maps.gun.n;
+
+  root.userData.isSprite = true;
+  root.userData.baked = true;
+  root.userData.bakedSpec = spec;
+  root.userData.bakedMaps = maps;
+  root.userData.plane = body.plane; // primary for flash/billboard helpers
+  root.userData.bodyPlane = body.plane;
+  root.userData.bodyMat = body.mat;
+  root.userData.gunPlane = gun.plane;
+  root.userData.gunMat = gun.mat;
+  root.userData.spriteMat = body.mat;
+  root.userData.spriteKey = 'baked_' + id;
+  root.userData.spriteW = w;
+  root.userData.spriteH = h;
+  root.userData.halo = halo;
+  root.userData.hullMats = [stub];
+  root.userData.coreMats = [stub];
+  root.userData.thrusterMats = [];
+  root.userData.legs = [];
+  root.userData.shins = [];
+  root.userData.foots = [];
+  root.userData.arms = [];
+  root.userData.fists = [];
+  root.userData.head = null;
+  root.userData.body = null;
+  root.userData.glowL = null;
+  root.userData.glowR = null;
+  root.userData.animPhase = 0;
+  root.userData.idlePhase = 0;
+  root.userData.bob = false;
+  root.userData.baseY = 0;
+  root.userData.mechId = id;
+  root.userData.bodyDir = 'n';
+  root.userData.gunDir = 'n';
+  root.userData.runFrame = 0;
+  root.userData.anchors = spec.anchors;
+  root.scale.setScalar(id === 'heavy' ? 1.12 : id === 'prototype' ? 0.96 : 1);
+  return root;
+}
+
+/**
+ * Sync baked layers: body from movement, gun from primary visual aim.
+ * Hurt = tint overlay only (does not swap run off). Death uses death cell.
+ * No bob / squash.
+ */
+export function syncBakedPlayerSprite(root, {
+  moveX = 0,
+  moveZ = 0,
+  moving = false,
+  aimX = 0,
+  aimZ = 1,
+  aiming = false,
+  hit = false,
+  blink = false,
+  alive = true,
+  dt = 0.016,
+  camera = null,
+} = {}) {
+  const ud = root.userData;
+  if (!ud || !ud.baked) return;
+  const maps = ud.bakedMaps;
+  const spec = ud.bakedSpec;
+  const frames = spec.runFrames || 4;
+
+  // Body dir from movement when moving; else face visual aim / last gun dir
+  let bodyDir;
+  if (moving && (Math.abs(moveX) + Math.abs(moveZ)) > 0.04) {
+    bodyDir = yawToCardinal(moveX, moveZ);
+  } else if (aiming) {
+    bodyDir = yawToCardinal(aimX, aimZ);
+  } else {
+    bodyDir = ud.bodyDir || ud.gunDir || 'n';
+  }
+  const gunDir = (aiming || (Math.abs(aimX) + Math.abs(aimZ)) > 0.05)
+    ? yawToCardinal(aimX, aimZ)
+    : (ud.gunDir || bodyDir);
+
+  if (moving) ud.animPhase = (ud.animPhase || 0) + Math.max(0.35, Math.hypot(moveX, moveZ)) * 8.2 * Math.max(0.001, Math.min(0.05, dt));
+  else ud.animPhase = (ud.animPhase || 0) * 0.88;
+
+  const runIdx = moving ? (Math.floor((ud.animPhase || 0) / (Math.PI / 2)) % frames) : 0;
+
+  let bodyMap;
+  if (!alive) {
+    bodyMap = maps.death[bodyDir] || maps.death.n;
+    if (ud.gunPlane) ud.gunPlane.visible = false;
+  } else if (moving) {
+    bodyMap = (maps.run[bodyDir] && maps.run[bodyDir][runIdx]) || maps.idle[bodyDir];
+    if (ud.gunPlane) ud.gunPlane.visible = true;
+  } else {
+    bodyMap = maps.idle[bodyDir] || maps.idle.n;
+    if (ud.gunPlane) ud.gunPlane.visible = true;
+  }
+
+  if (bodyMap && ud.bodyMat && ud.bodyMat.map !== bodyMap) {
+    ud.bodyMat.map = bodyMap;
+    ud.bodyMat.needsUpdate = true;
+  }
+  const gunMap = maps.gun[gunDir] || maps.gun.n;
+  if (gunMap && ud.gunMat && ud.gunMat.map !== gunMap) {
+    ud.gunMat.map = gunMap;
+    ud.gunMat.needsUpdate = true;
+  }
+
+  ud.bodyDir = bodyDir;
+  ud.gunDir = gunDir;
+  ud.runFrame = runIdx;
+  ud.playerState = !alive ? 'death' : (moving ? 'run' : 'idle');
+
+  // Plant feet — no bob
+  const h = ud.spriteH || 2.12;
+  if (ud.bodyPlane) {
+    ud.bodyPlane.position.y = h * 0.5;
+    ud.bodyPlane.scale.set(1, 1, 1);
+    ud.bodyPlane.rotation.z = 0;
+  }
+  if (ud.gunPlane) {
+    ud.gunPlane.position.y = h * 0.5;
+    ud.gunPlane.scale.set(1, 1, 1);
+    ud.gunPlane.rotation.z = 0;
+  }
+
+  if (camera) {
+    billboardToCamera(root, camera, null);
+    if (ud.gunPlane) ud.gunPlane.quaternion.copy(camera.quaternion);
+  }
+
+  // Hurt overlay: tint only — never cancel run
+  applySpriteFlash(root, { blink, hit, move: moving ? 1 : 0 });
+  if (ud.gunMat) {
+    ud.gunMat.opacity = blink ? 0.35 : 1;
+    if (hit) ud.gunMat.color.setRGB(1.12, 1.05, 1.05);
+    else ud.gunMat.color.setRGB(1, 1, 1);
+  }
+}
+
+/** World-space muzzle from baked anchors + aim cardinal. */
+export function bakedMuzzleWorld(root, px, pz, aimX, aimZ) {
+  const ud = root && root.userData;
+  const anc = (ud && ud.anchors) || BAKED_PLAYER_BASE.horn.anchors;
+  const w = (ud && ud.spriteW) || 1.78;
+  const h = (ud && ud.spriteH) || 2.12;
+  const [mx, my] = anc.muzzle; // normalized 0..1 in cell (x right, y down from top)
+  // Cell x: 0.5 = center; muzzle 0.68 → +0.18 * w to the character's right in sprite space.
+  // Approximate world offset along aim + slight right.
+  const len = Math.hypot(aimX, aimZ) || 1;
+  const fx = aimX / len, fz = aimZ / len;
+  const rx = fz, rz = -fx; // right perpendicular
+  const lateral = (mx - 0.5) * w;
+  const elev = (1 - my) * h; // y up from foot
+  return {
+    x: px + fx * (w * 0.35) + rx * lateral * 0.5,
+    y: elev * 0.85,
+    z: pz + fz * (w * 0.35) + rz * lateral * 0.5,
+  };
 }
