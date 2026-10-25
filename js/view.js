@@ -11,7 +11,6 @@ import {
   applySpriteFlash,
   applySpriteMotion,
   syncBakedPlayerSprite,
-  bakedMuzzleWorld,
 } from './sprites.js';
 
 // ---------------------------------------------------------------------------
@@ -787,6 +786,49 @@ export class View {
   }
   setZoom(z) { this._zoom = z; }
 
+
+  /** Hide gameplay clutter while the select-screen turntable is up. */
+  _setMenuPlayfieldHidden(hidden) {
+    const on = !hidden;
+    if (this.doctor) this.doctor.visible = on;
+    if (this.enemyG) this.enemyG.visible = on;
+    if (this.bulletG) this.bulletG.visible = on;
+    if (this.zoneG) this.zoneG.visible = on;
+    if (this.fragG) this.fragG.visible = on;
+    if (this.gemG) this.gemG.visible = on;
+    if (this.orbitG) this.orbitG.visible = on;
+    if (this.novaRing) this.novaRing.visible = on && this.novaAge >= 0;
+    // Soft arena chrome stays as stage floor; in-game player is toggled separately.
+  }
+
+  _ensureMenuLights(cfg) {
+    if (this._menuLights) return;
+    const accent = (cfg && cfg.trim) || 0x00e5ff;
+    const key = new THREE.DirectionalLight(0xffffff, 1.15);
+    key.position.set(2.4, 4.2, 3.2);
+    key.name = 'menuKey';
+    const fill = new THREE.DirectionalLight(0x7ec8ff, 0.45);
+    fill.position.set(-2.8, 2.2, -1.4);
+    fill.name = 'menuFill';
+    const rim = new THREE.DirectionalLight(accent, 0.55);
+    rim.position.set(-1.2, 2.8, -3.4);
+    rim.name = 'menuRim';
+    const amb = new THREE.AmbientLight(0x1a2238, 0.35);
+    amb.name = 'menuAmb';
+    // Attach to scene group (not spinning wrap) so key/fill/rim stay world-stable.
+    this.group.add(key, fill, rim, amb);
+    this._menuLights = [key, fill, rim, amb];
+  }
+
+  _clearMenuLights() {
+    if (!this._menuLights) return;
+    for (const L of this._menuLights) {
+      this.group.remove(L);
+      if (L.dispose) L.dispose();
+    }
+    this._menuLights = null;
+  }
+
   /**
    * Home-screen showcase: LIVE 3D from buildPlayerMech (same visual identity as bake source).
    * In-game prefers baked sheets from the same buildPlayerMech when present; PNG fallback otherwise.
@@ -826,7 +868,9 @@ export class View {
     if (mech.userData.halo) mech.userData.halo.visible = false;
 
     wrap.add(pedestal, pedRing, shadow, mech);
-    wrap.position.set(0, 0, 0);
+    // Slightly lower + toward camera so torso clears title / cards / Start overlays.
+    // Desktop left-column UI: park the turntable in the open right half.
+    wrap.position.set(1.15, -0.08, 0.45);
 
     this.menuMechRing = pedRing;
     this.menuMech = wrap;
@@ -835,6 +879,8 @@ export class View {
     this._menuAutoSpin = this._menuAutoSpin !== false;
     this._menuDragUntil = this._menuDragUntil || 0;
     wrap.rotation.y = this._menuYaw;
+    this._ensureMenuLights(cfg);
+    this._setMenuPlayfieldHidden(true);
     this.group.add(wrap);
     this.group.visible = true;
     return wrap;
@@ -884,12 +930,17 @@ export class View {
   }
 
   hideMenuMech() {
-    if (!this.menuMech) return;
+    if (!this.menuMech) {
+      this._setMenuPlayfieldHidden(false);
+      return;
+    }
     this.group.remove(this.menuMech);
     disposeTree(this.menuMech);
     this.menuMech = null;
     this.menuMechModel = null;
     this.menuMechRing = null;
+    this._clearMenuLights();
+    this._setMenuPlayfieldHidden(false);
   }
 
   _take(pool, parent, make) {

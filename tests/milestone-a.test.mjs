@@ -3,6 +3,7 @@
  * Run: node tests/milestone-a.test.mjs
  */
 import { Game } from '../js/logic.js';
+import { muzzleWorld } from '../js/muzzle.js';
 import assert from 'assert';
 
 function spawnAt(game, x, z, type = 'soldier') {
@@ -104,9 +105,11 @@ function spawnAt(game, x, z, type = 'soldier') {
   assert.ok(typeof ev.aimX === 'number' && typeof ev.aimZ === 'number');
   assert.ok(typeof ev.muzzleX === 'number' && typeof ev.muzzleY === 'number' && typeof ev.muzzleZ === 'number');
   assert.ok(ev.targetId != null);
-  // muzzle should be ahead of player toward +X (target at 5,0)
-  assert.ok(ev.muzzleX > g.px, 'muzzle ahead on X');
+  // muzzle uses shared per-dir world helper (east target → ahead on +X)
+  assert.ok(ev.muzzleX > g.px, 'muzzle ahead on X toward east target');
   assert.ok(Math.abs(g.aimX) > 0.5, 'aimX set toward target');
+  const mw = muzzleWorld(g.px, g.pz, ev.aimX, ev.aimZ);
+  assert.ok(Math.abs(ev.muzzleX - mw.x) < 1e-9 && Math.abs(ev.muzzleZ - mw.z) < 1e-9, 'fire event muzzle == helper');
 }
 
 // ---- hurt does not clear velocity / moveDir still works ----

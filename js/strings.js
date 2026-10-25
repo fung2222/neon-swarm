@@ -7,7 +7,7 @@ i18n.add({
   kicker: ['LAB LOCKDOWN · MANHUNT', 'LAB LOCKDOWN · MANHUNT'],
   tagline: ['人格同步實驗失控 · 覺醒機甲逃離收容 · 生存到底', 'Personality-sync gone wrong · awaken and break out · survive the hunt'],
   play: ['啟動暴走', 'BREAK OUT'],
-  playS: ['BREAK OUT', 'BREAK OUT'],
+  playS: ['BREAK OUT', 'ENGAGE'],
   endless: ['無盡暴走', 'ENDLESS RAMPAGE'],
   endlessS: ['NO CAP', 'NO CAP'],
   best: ['最佳分數', 'BEST'],

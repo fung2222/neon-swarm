@@ -184,6 +184,7 @@ function capture() {
   return renderer.domElement.toDataURL('image/png');
 }
 
+/** Shared fallback UV — runtime uses js/muzzle.js per-dir recorded projections. */
 function muzzleAnchorNorm() {
   // Approximate: rifle tip relative to cell. Foot baseline ~0.92, pivot waist ~0.55.
   // Muzzle slightly right-forward of center for horn right-hand rifle.
@@ -243,7 +244,7 @@ async function bakeAll() {
   }
 
   window.__BAKE_RESULT__ = {
-    version: '0.9.1',
+    version: '0.9.2',
     implemented: true,
     source: 'buildPlayerMech (js/mech-builder.js)',
     id: ID,

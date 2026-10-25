@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.1 playable horn bake vertical slice
+// RAMPAGE MECH 暴走機甲 — v0.9.2 hotfix (tap, menu polish, unified muzzle)
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -10,7 +10,6 @@ import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
-import { bakedMuzzleWorld } from './sprites.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -167,6 +166,8 @@ new ViewInput($('scene'), {
   twist: () => {},
   pan: () => {},
   orbit: () => {},
+  // ViewInput always calls h.tap on clean pointerup — stub required (do not patch vendor).
+  tap: () => {},
   down: () => { audio.init(); },
 }, { oneFingerOrbit: false });
 
@@ -622,15 +623,10 @@ function tick(dt) {
     if (ev.type === 'fire') {
       audio.fire();
       const g = S.game;
-      let mx = ev.muzzleX != null ? ev.muzzleX : g.px;
-      let my = ev.muzzleY != null ? ev.muzzleY : 0.95;
-      let mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
-      // Prefer baked muzzle anchors when in-game player uses buildPlayerMech sheets.
-      const pud = view.player && view.player.userData;
-      if (pud && pud.baked && ev.updateVisual) {
-        const bm = bakedMuzzleWorld(view.player, g.px, g.pz, ev.aimX, ev.aimZ);
-        mx = bm.x; my = bm.y; mz = bm.z;
-      }
+      // Muzzle flash uses the SAME coords computed once at bullet spawn (js/muzzle.js).
+      const mx = ev.muzzleX != null ? ev.muzzleX : g.px;
+      const my = ev.muzzleY != null ? ev.muzzleY : 0.95;
+      const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
       const muzzle = new THREE.Vector3(mx, my, mz);
       particles.burst(muzzle, new THREE.Color(0x00e5ff), 3, { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
       particles.burst(muzzle, new THREE.Color(0x7ad7ff), 2, { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });

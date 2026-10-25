@@ -4,6 +4,8 @@
  * NPC: scientist doctor (map prop until a shop hook exists).
  */
 import * as THREE from 'three';
+import { yawToCardinal as yawToCardinalShared, muzzleWorld, HORN_MUZZLE_BY_DIR, muzzleUvAnchors } from './muzzle.js';
+export { yawToCardinalShared as yawToCardinal, muzzleWorld, HORN_MUZZLE_BY_DIR };
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
@@ -359,25 +361,20 @@ export const BAKED_PLAYER_BASE = {
   horn: {
     id: 'horn',
     root: './assets/mechs/horn/sheets/',
-    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.1',
+    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.2',
     dirs: ['n', 'e', 's', 'w'],
     runFrames: 4,
     cellSize: 256,
-    anchors: { foot: [0.5, 0.92], pivot: [0.5, 0.52], muzzle: [0.68, 0.48] },
+    anchors: { foot: [0.5, 0.92], pivot: [0.5, 0.52], muzzle: HORN_MUZZLE_BY_DIR.n.uv.slice() },
+    anchorsByDir: muzzleUvAnchors(HORN_MUZZLE_BY_DIR),
+    muzzleByDir: HORN_MUZZLE_BY_DIR,
     worldW: 1.78,
     worldH: 2.12,
   },
 };
 
-/** Map aim/move vector → 4-dir key. 0 = +Z (n), +X = e. */
-export function yawToCardinal(x, z) {
-  const a = Math.atan2(x || 0, z || 0);
-  const t = ((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-  if (t < Math.PI / 4 || t >= 7 * Math.PI / 4) return 'n';
-  if (t < 3 * Math.PI / 4) return 'e';
-  if (t < 5 * Math.PI / 4) return 's';
-  return 'w';
-}
+/** @deprecated use yawToCardinal from muzzle.js — kept as local alias */
+const yawToCardinal = yawToCardinalShared;
 
 function loadTexPath(path) {
   if (TEX[path]) return TEX[path];
@@ -396,8 +393,8 @@ function cellPath(spec, dir, action, frame, layer) {
   const f = String(frame).padStart(2, '0');
   const suffix = layer === 'gun' ? '_gun' : '';
   // gun files: horn_n_gun_00_gun.png ; body: horn_n_idle_00.png
-  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.1`;
-  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.1`;
+  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.2`;
+  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.2`;
 }
 
 /**
@@ -495,6 +492,8 @@ export function buildBakedPlayerSprite(cfg) {
   root.userData.gunDir = 'n';
   root.userData.runFrame = 0;
   root.userData.anchors = spec.anchors;
+  root.userData.anchorsByDir = spec.anchorsByDir || null;
+  root.userData.muzzleByDir = spec.muzzleByDir || HORN_MUZZLE_BY_DIR;
   root.scale.setScalar(id === 'heavy' ? 1.12 : id === 'prototype' ? 0.96 : 1);
   return root;
 }
@@ -595,23 +594,15 @@ export function syncBakedPlayerSprite(root, {
   }
 }
 
-/** World-space muzzle from baked anchors + aim cardinal. */
+/**
+ * World-space muzzle — delegates to shared pure helper (same path as bullet spawn).
+ * Per-dir recorded projections; no identical 4-dir estimate.
+ */
 export function bakedMuzzleWorld(root, px, pz, aimX, aimZ) {
   const ud = root && root.userData;
-  const anc = (ud && ud.anchors) || BAKED_PLAYER_BASE.horn.anchors;
-  const w = (ud && ud.spriteW) || 1.78;
-  const h = (ud && ud.spriteH) || 2.12;
-  const [mx, my] = anc.muzzle; // normalized 0..1 in cell (x right, y down from top)
-  // Cell x: 0.5 = center; muzzle 0.68 → +0.18 * w to the character's right in sprite space.
-  // Approximate world offset along aim + slight right.
-  const len = Math.hypot(aimX, aimZ) || 1;
-  const fx = aimX / len, fz = aimZ / len;
-  const rx = fz, rz = -fx; // right perpendicular
-  const lateral = (mx - 0.5) * w;
-  const elev = (1 - my) * h; // y up from foot
-  return {
-    x: px + fx * (w * 0.35) + rx * lateral * 0.5,
-    y: elev * 0.85,
-    z: pz + fz * (w * 0.35) + rz * lateral * 0.5,
-  };
+  const byDir = (ud && ud.muzzleByDir)
+    || (ud && ud.bakedSpec && ud.bakedSpec.muzzleByDir)
+    || HORN_MUZZLE_BY_DIR;
+  const m = muzzleWorld(px, pz, aimX, aimZ, { byDir });
+  return { x: m.x, y: m.y, z: m.z };
 }

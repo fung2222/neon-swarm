@@ -7,6 +7,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { isMechPlayable, MECH_BY_ID } from '../js/config.js';
+import { yawToCardinal, HORN_MUZZLE_BY_DIR } from '../js/muzzle.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SHEETS = join(ROOT, 'assets/mechs/horn/sheets');
@@ -31,23 +32,20 @@ const SHEETS = join(ROOT, 'assets/mechs/horn/sheets');
   console.log('atlas + cells OK', atlas.cells.length);
 }
 
-// ---- yawToCardinal (inline mirror of sprites.js — avoid three import in node) ----
+// ---- yaw / muzzle from shared muzzle.js (not a copied mirror) ----
 {
-  function yawToCardinal(x, z) {
-    const a = Math.atan2(x || 0, z || 0);
-    const t = ((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    if (t < Math.PI / 4 || t >= 7 * Math.PI / 4) return 'n';
-    if (t < 3 * Math.PI / 4) return 'e';
-    if (t < 5 * Math.PI / 4) return 's';
-    return 'w';
-  }
   assert.equal(yawToCardinal(0, 1), 'n');
   assert.equal(yawToCardinal(1, 0), 'e');
   assert.equal(yawToCardinal(0, -1), 's');
   assert.equal(yawToCardinal(-1, 0), 'w');
   assert.equal(yawToCardinal(0.1, 1), 'n');
   assert.equal(yawToCardinal(1, 0.1), 'e');
-  console.log('yawToCardinal OK');
+  assert.equal(new Set(Object.values(HORN_MUZZLE_BY_DIR).map((e) => e.world.join(','))).size, 4);
+  const atlas = JSON.parse(readFileSync(join(SHEETS, 'horn_atlas.json'), 'utf8'));
+  assert.equal(atlas.version, '0.9.2');
+  assert.ok(atlas.muzzleWorldByDir);
+  assert.equal(new Set(Object.values(atlas.muzzleWorldByDir).map((w) => w.join(','))).size, 4);
+  console.log('yawToCardinal + atlas per-dir muzzle OK');
 }
 
 // ---- old PNG fallback files still on disk ----

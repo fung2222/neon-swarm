@@ -1,4 +1,5 @@
 import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat } from './config.js';
+import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
 
@@ -413,20 +414,14 @@ export class Game {
     dx /= len; dz /= len;
     const weapon = opts.weapon || 'mg';
     const speed = opts.speed != null ? opts.speed : this.bulletSpeed;
-    const mzW = MUZZLE_BY_WEAPON[weapon] || MUZZLE_BY_WEAPON.mg;
-    // Per-mech muzzle (config) overlays weapon default for the starter MG path.
-    const mzM = this.mechMuzzle;
-    const mz = (weapon === 'mg' && mzM)
-      ? { dist: mzM.dist != null ? mzM.dist : mzW.dist, y: mzM.y != null ? mzM.y : mzW.y }
-      : mzW;
-    // Spawn ahead of the mech along aim so shots read as fired, not dropping out of the torso.
-    const muzzle = opts.muzzle != null ? opts.muzzle : mz.dist;
-    const my = opts.y != null ? opts.y : mz.y;
+    // Shared pure muzzle-world (same helper as VFX flash) — per-dir recorded projections.
+    const mw = muzzleWorld(this.px, this.pz, dx, dz);
+    const my = opts.y != null ? opts.y : mw.y;
     const b = {
       weapon,
       tier: shotTier((this.taken && this.taken[weapon]) || opts.tierStacks || 0),
-      x: this.px + dx * muzzle + (opts.ox || 0),
-      z: this.pz + dz * muzzle + (opts.oz || 0),
+      x: mw.x + (opts.ox || 0),
+      z: mw.z + (opts.oz || 0),
       y: my,
       vx: dx * speed,
       vz: dz * speed,
@@ -444,9 +439,9 @@ export class Game {
       kind: opts.kind || weapon,
       ...opts,
     };
-    // Aim + muzzle win over any opts spread (ox/oz already applied above).
-    b.x = this.px + dx * muzzle + (opts.ox || 0);
-    b.z = this.pz + dz * muzzle + (opts.oz || 0);
+    // Aim + shared muzzle win over any opts spread (ox/oz already applied above).
+    b.x = mw.x + (opts.ox || 0);
+    b.z = mw.z + (opts.oz || 0);
     b.y = my;
     b.vx = dx * speed;
     b.vz = dz * speed;
