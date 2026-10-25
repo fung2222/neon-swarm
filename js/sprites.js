@@ -29,14 +29,15 @@ export const ENEMY_SPRITE_KEY = {
 
 /** World-space billboard size (width, height) + optional float. */
 export const ENEMY_SPRITE_SIZE = {
-  staffer: { w: 1.45, h: 2.05 },
-  guard: { w: 1.5, h: 2.1 },
-  soldier: { w: 1.7, h: 2.0 },
-  officer: { w: 1.85, h: 2.15 },
-  chief: { w: 1.95, h: 2.35 },
-  drone: { w: 1.15, h: 1.15, float: true },
-  walker: { w: 2.1, h: 2.25 },
-  mech: { w: 2.35, h: 2.55 },
+  // ~70% of v0.6.1 billboard sizes (Roy: mechs too large)
+  staffer: { w: 1.02, h: 1.44 },
+  guard: { w: 1.05, h: 1.47 },
+  soldier: { w: 1.19, h: 1.40 },
+  officer: { w: 1.30, h: 1.51 },
+  chief: { w: 1.37, h: 1.65 },
+  drone: { w: 0.81, h: 0.81, float: true },
+  walker: { w: 1.47, h: 1.58 },
+  mech: { w: 1.65, h: 1.79 },
 };
 
 const RING_BY_KEY = {
@@ -56,8 +57,11 @@ export function loadSpriteTex(key) {
   const tex = loader.load(path);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  // No mipmaps: averaging fringe under alphaTest looks like soft fog at distance.
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
   tex.magFilter = THREE.LinearFilter;
+  tex.premultiplyAlpha = false;
   TEX[key] = tex;
   return tex;
 }
@@ -71,7 +75,7 @@ function groundRing(color, radius, opacity = 0.4) {
   const m = new THREE.Mesh(
     new THREE.RingGeometry(radius * 0.72, radius, 28),
     new THREE.MeshBasicMaterial({
-      color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false,
+      color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false, fog: false,
     })
   );
   m.rotation.x = -Math.PI / 2;
@@ -88,10 +92,11 @@ export function makeBillboard(key, w, h, opts = {}) {
   const mat = new THREE.MeshBasicMaterial({
     map: tex,
     transparent: true,
-    alphaTest: 0.1,
+    alphaTest: 0.45,       // hard cut — kills soft fringe / fog pixels
     side: THREE.DoubleSide,
-    depthWrite: false,
+    depthWrite: true,
     color: 0xffffff,
+    fog: false,            // scene FogExp2 must not tint sprite planes
   });
   const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
   plane.position.y = h * 0.5;
@@ -141,9 +146,9 @@ export function buildPlayerSprite(cfg) {
   loadSpriteTex('player_move');
   loadSpriteTex('player_fire');
   const trim = (cfg && cfg.trim) || 0xb14cff;
-  const root = makeBillboard('player_idle', 2.15, 2.55, {
+  const root = makeBillboard('player_idle', 1.50, 1.79, {
     ringColor: trim,
-    ringRadius: 0.55,
+    ringRadius: 0.40,
     ringOpacity: 0.32,
   });
   // Hot-swap maps without reallocating materials each frame.
@@ -166,7 +171,7 @@ export function enemySpriteKey(type) {
 
 export function buildEnemySprite(type) {
   const key = enemySpriteKey(type);
-  const size = ENEMY_SPRITE_SIZE[type] || { w: 1.6, h: 2.0 };
+  const size = ENEMY_SPRITE_SIZE[type] || { w: 1.12, h: 1.40 };
   const root = makeBillboard(key, size.w, size.h, {
     ringColor: RING_BY_KEY[key],
     ringRadius: Math.max(0.26, size.w * 0.26),
@@ -180,7 +185,7 @@ export function buildEnemySprite(type) {
 /** Retarget a pooled enemy billboard to another type (swap map + rescale). */
 export function retargetEnemySprite(root, type) {
   const key = enemySpriteKey(type);
-  const size = ENEMY_SPRITE_SIZE[type] || { w: 1.6, h: 2.0 };
+  const size = ENEMY_SPRITE_SIZE[type] || { w: 1.12, h: 1.40 };
   const mat = root.userData.spriteMat;
   const plane = root.userData.plane;
   if (mat) {
@@ -205,9 +210,10 @@ export function retargetEnemySprite(root, type) {
 }
 
 export function buildDoctorNpc() {
-  const root = makeBillboard('npc_doctor', 1.55, 2.15, {
+  // Chibi doctor — smaller than 70% mech scale
+  const root = makeBillboard('npc_doctor', 0.95, 1.25, {
     ringColor: 0x00e5ff,
-    ringRadius: 0.42,
+    ringRadius: 0.30,
     ringOpacity: 0.45,
   });
   root.userData.isNpc = true;

@@ -4,8 +4,8 @@
 > **Contact style (Roy):** 解釋用繁體中文（廣東話都睇得明）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 喺下面。  
 > Timezone: **Asia/Hong_Kong (UTC+8)**. Owner: **fung2222 (Roy Chan / 嘉豐)**.
 
-**Status:** **v0.6.1** PNG sprite billboards (player idle/move/fire, colour-coded enemies, doctor NPC prop) · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
-**HEAD:** v0.6.1 on `main` · 2026-10-25 HKT  
+**Status:** **v0.6.2** sprite visual fix (sharp knockout, no fog, 70% scale, brighter plates, chibi doctor) · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
+**HEAD:** v0.6.2 on `main` · 2026-10-25 HKT  
 **Live:** https://fung2222.github.io/neon-swarm/ · demo `?demo=1` · trial probe `?hub=1&trial=1`  
 **Repo:** https://github.com/fung2222/neon-swarm
 
@@ -193,3 +193,14 @@ Approved art wired as camera-facing billboard planes (not procedural meshes):
 - `assets/sprites/npc_doctor.png` — map prop near spawn `(3.6, 0, -2.4)` until a shop hook exists
 - Cache bump `?v=0.6.1` on `css/game.css` + `js/main.js`
 - **Later:** VFX / shot feel (Roy: one-pellet fire feels weak) — sprites-first, no big VFX rewrite in 0.6.1
+
+## 4f. v0.6.2 sprite visual fix (2026-10-25)
+
+Roy [t146u]/t147u]: mechs ~70% size; remove blurry fog/mist behind every sprite; brighten dark armor for black map; doctor smaller/chibi-er; sprites must be absolutely sharp with clean true-alpha (no baked fog/haze).
+
+- Re-knockout all PNGs → binary alpha (no soft fringe / checker residue); brighten charcoal plates, keep cyan/purple accents
+- `npc_doctor.png` regenerated chibi + magenta-keyed
+- `js/sprites.js`: `material.fog = false`, `alphaTest: 0.45`, `depthWrite: true`, no mipmaps, billboards ×0.70 (doctor even smaller)
+- Cache bump `?v=0.6.2`
+- **Not in this pass:** combat VFX rewrite
+

@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.6.0 日系機甲美術 + 逐武器彈體 + 方塊掉落 + 計分／時間結算
+**試玩 Play:** https://fung2222.github.io/neon-swarm/ · **狀態 Status:** v0.6.2 sprite visual fix — sharp alpha, 70% scale, brighter plates + 逐武器彈體 + 方塊掉落 + 計分／時間結算
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  
