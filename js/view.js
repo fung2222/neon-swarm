@@ -1,5 +1,14 @@
 import * as THREE from 'three';
 import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT } from './config.js';
+import {
+  preloadAllSprites,
+  buildPlayerSprite,
+  buildEnemySprite,
+  retargetEnemySprite,
+  buildDoctorNpc,
+  billboardToCamera,
+  applySpriteFlash,
+} from './sprites.js';
 
 // ---------------------------------------------------------------------------
 // Shared materials. Everything is a lit standard material plus an emissive edge so
@@ -503,9 +512,8 @@ function supportMesh(kind, color) {
 }
 
 function enemyMeshFor(type) {
-  const def = ENEMIES[type] || ENEMIES.staffer;
-  if (def.family === 'human') return humanMesh(def.kind, def.color, def.coat);
-  return supportMesh(def.kind, def.color);
+  // Approved colour-coded PNG billboards (magenta / lime / orange) — no shared cyan mesh.
+  return buildEnemySprite(type);
 }
 // ---------------------------------------------------------------------------
 // Projectiles: every weapon gets its own silhouette and a colour ramp by stack level.
@@ -792,7 +800,13 @@ export class View {
 
     this.player = null;
     this.playerMechId = null;
+    preloadAllSprites();
     this.setMech('horn');
+
+    // Scientist doctor — visible map prop near start (shop/NPC hook later).
+    this.doctor = buildDoctorNpc();
+    this.doctor.position.set(3.6, 0, -2.4);
+    this.group.add(this.doctor);
 
     this.novaRing = new THREE.Mesh(
       new THREE.RingGeometry(0.2, 0.35, 32),
@@ -825,7 +839,7 @@ export class View {
     const mech = typeof cfg === 'string' ? (MECH_CACHE[cfg] || MECH_CACHE.horn) : cfg;
     if (this.playerMechId === id && this.player) return;
     if (this.player) { this.group.remove(this.player); disposeTree(this.player); this.player = null; }
-    this.player = buildPlayerMech(mech);
+    this.player = buildPlayerSprite(mech);
     this.player.visible = this._playerVisible !== false;
     this.playerMechId = id;
     this.playerBody = { material: this.player.userData.hullMats[0] };
@@ -847,7 +861,7 @@ export class View {
   setMenuMech(id) {
     this.hideMenuMech();
     const cfg = MECH_CACHE[id] || MECH_CACHE.horn;
-    const mech = buildPlayerMech(cfg);
+    const mech = buildPlayerSprite(cfg);
     mech.position.set(0, 0, 0);
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.8, 1.05, 40),
@@ -867,13 +881,21 @@ export class View {
   updateMenu(t) {
     const m = this.menuMech;
     if (!m) return;
-    m.rotation.y = t * 0.5;
     const ud = m.userData;
-    if (ud.body) ud.body.position.y = Math.sin(t * 1.6) * 0.02;
-    if (ud.glowL && ud.glowR) {
-      const pulse = 1 + Math.sin(t * 2.4) * 0.06;
-      ud.glowL.scale.setScalar(pulse);
-      ud.glowR.scale.setScalar(pulse);
+    if (ud.isSprite) {
+      // Slow yaw of the ring only; plane faces the camera so the PNG stays readable.
+      m.rotation.y = 0;
+      if (ud.plane) ud.plane.position.y = (ud.spriteH || 2.4) * 0.5 + Math.sin(t * 1.6) * 0.04;
+      if (this.stage && this.stage.camera) billboardToCamera(m, this.stage.camera, t * 0.5);
+      if (ud.halo) ud.halo.material.opacity = 0.35 + Math.sin(t * 1.8) * 0.12;
+    } else {
+      m.rotation.y = t * 0.5;
+      if (ud.body) ud.body.position.y = Math.sin(t * 1.6) * 0.02;
+      if (ud.glowL && ud.glowR) {
+        const pulse = 1 + Math.sin(t * 2.4) * 0.06;
+        ud.glowL.scale.setScalar(pulse);
+        ud.glowR.scale.setScalar(pulse);
+      }
     }
     if (this.menuMechRing) this.menuMechRing.material.opacity = 0.35 + Math.sin(t * 1.8) * 0.12;
   }
@@ -931,56 +953,72 @@ export class View {
       while (d < -Math.PI) d += Math.PI * 2;
       this._facing += d * 0.22;
     }
-    this.player.rotation.y = this._facing;
-    const bank = THREE.MathUtils.clamp(-game.vx * 0.25, -0.2, 0.2);
-    this.player.rotation.z += (bank - this.player.rotation.z) * 0.15;
-    this.player.rotation.x = Math.hypot(game.vx, game.vz) > 0.1 ? -0.05 : 0;
-
+    const move = Math.hypot(game.vx, game.vz);
     const blink = game.invuln > 0 && (game.invuln * 20) % 2 < 1;
     const hit = game.hitFlash > 0;
-    const hullE = blink ? 0.1 : (hit ? 1.6 : 0.85);
-    const coreE = blink ? 0.2 : (hit ? 2.2 : 1.25);
-    const thrE = blink ? 0.2 : (hit ? 2 : (1.1 + Math.hypot(game.vx, game.vz) * 0.4));
-    this._setEmissive(this.player.userData.hullMats, hullE);
-    this._setEmissive(this.player.userData.coreMats, coreE);
-    this._setEmissive(this.player.userData.thrusterMats, thrE);
-    if (this.playerBody) this.playerBody.material.emissiveIntensity = hullE;
-    if (this.playerCore) this.playerCore.material.emissiveIntensity = coreE;
-
-    // ---- animation: walk cycle, idle hover, fire kick, hurt flinch
-    const move = Math.hypot(game.vx, game.vz);
-    const halo = this.player.userData.halo;
-    if (halo) halo.material.opacity = 0.24 + move * 0.1;
-    const ud = this.player.userData;
-    ud.idlePhase = (game.t || 0) * 2.4;
-    if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
-    else ud.animPhase = (ud.animPhase || 0) * 0.92;
-    const walk = ud.animPhase || 0;
-    const swing = Math.sin(walk) * Math.min(1, move * 1.4);
-    const swingOpp = Math.sin(walk + Math.PI) * Math.min(1, move * 1.4);
-    if (ud.legs && ud.legs.length === 2) { ud.legs[0].rotation.x = swing * 0.55; ud.legs[1].rotation.x = swingOpp * 0.55; }
-    if (ud.shins && ud.shins.length === 2) { ud.shins[0].rotation.x = Math.max(0, -swing) * 0.35; ud.shins[1].rotation.x = Math.max(0, -swingOpp) * 0.35; }
-    if (ud.foots && ud.foots.length === 2) { ud.foots[0].rotation.x = swing * 0.25; ud.foots[1].rotation.x = swingOpp * 0.25; }
     const fireKick = Math.max(0, game.muzzle || 0);
-    const hurtKick = Math.max(0, game.hitFlash || 0);
-    if (ud.arms && ud.arms.length === 2) {
-      ud.arms[0].rotation.x = swingOpp * 0.4 - fireKick * 1.1 - hurtKick * 0.5;
-      ud.arms[1].rotation.x = swing * 0.4 - fireKick * 0.85 - hurtKick * 0.35;
-    }
-    if (ud.fists) for (const f of ud.fists) f.scale.setScalar(1 + fireKick * 0.35);
-    if (ud.head) {
-      ud.head.rotation.x = -fireKick * 0.12 + Math.sin(ud.idlePhase) * 0.03;
-      ud.head.position.y = 1.24 + Math.sin(ud.idlePhase * 0.5) * 0.015;
-    }
-    if (ud.body) {
-      const bob = move > 0.08 ? Math.abs(Math.sin(walk)) * 0.06 : Math.sin(ud.idlePhase) * 0.025;
-      ud.body.position.y = bob;
-      ud.body.rotation.x = move > 0.08 ? -0.04 : Math.sin(ud.idlePhase * 0.7) * 0.02;
-    }
-    if (ud.glowL && ud.glowR) {
-      const pulse = 1 + move * 0.35 + fireKick * 1.2 + Math.sin(ud.idlePhase * 2) * 0.08;
-      ud.glowL.scale.setScalar(pulse);
-      ud.glowR.scale.setScalar(pulse);
+    const ud = this.player.userData;
+
+    if (ud.isSprite) {
+      // Billboards face the camera; yaw only drives left/right flip.
+      this.player.rotation.set(0, 0, 0);
+      let state = 'idle';
+      if (fireKick > 0.02) state = 'fire';
+      else if (move > 0.12) state = 'move';
+      if (ud.playerState !== state && ud.playerMaps) {
+        ud.spriteMat.map = ud.playerMaps[state];
+        ud.spriteMat.needsUpdate = true;
+        ud.playerState = state;
+      }
+      const bob = move > 0.08 ? Math.abs(Math.sin((ud.animPhase || 0))) * 0.05 : Math.sin((game.t || 0) * 2.4) * 0.025;
+      if (ud.plane) ud.plane.position.y = (ud.spriteH || 2.55) * 0.5 * this.player.scale.y + bob;
+      ud.animPhase = move > 0.08 ? (ud.animPhase || 0) + move * 0.55 : (ud.animPhase || 0) * 0.92;
+      billboardToCamera(this.player, this.stage.camera, this._facing);
+      applySpriteFlash(this.player, { blink, hit, move });
+    } else {
+      this.player.rotation.y = this._facing;
+      const bank = THREE.MathUtils.clamp(-game.vx * 0.25, -0.2, 0.2);
+      this.player.rotation.z += (bank - this.player.rotation.z) * 0.15;
+      this.player.rotation.x = move > 0.1 ? -0.05 : 0;
+      const hullE = blink ? 0.1 : (hit ? 1.6 : 0.85);
+      const coreE = blink ? 0.2 : (hit ? 2.2 : 1.25);
+      const thrE = blink ? 0.2 : (hit ? 2 : (1.1 + move * 0.4));
+      this._setEmissive(ud.hullMats, hullE);
+      this._setEmissive(ud.coreMats, coreE);
+      this._setEmissive(ud.thrusterMats, thrE);
+      if (this.playerBody) this.playerBody.material.emissiveIntensity = hullE;
+      if (this.playerCore) this.playerCore.material.emissiveIntensity = coreE;
+      const halo = ud.halo;
+      if (halo) halo.material.opacity = 0.24 + move * 0.1;
+      ud.idlePhase = (game.t || 0) * 2.4;
+      if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + move * 0.55;
+      else ud.animPhase = (ud.animPhase || 0) * 0.92;
+      const walk = ud.animPhase || 0;
+      const swing = Math.sin(walk) * Math.min(1, move * 1.4);
+      const swingOpp = Math.sin(walk + Math.PI) * Math.min(1, move * 1.4);
+      if (ud.legs && ud.legs.length === 2) { ud.legs[0].rotation.x = swing * 0.55; ud.legs[1].rotation.x = swingOpp * 0.55; }
+      if (ud.shins && ud.shins.length === 2) { ud.shins[0].rotation.x = Math.max(0, -swing) * 0.35; ud.shins[1].rotation.x = Math.max(0, -swingOpp) * 0.35; }
+      if (ud.foots && ud.foots.length === 2) { ud.foots[0].rotation.x = swing * 0.25; ud.foots[1].rotation.x = swingOpp * 0.25; }
+      const hurtKick = Math.max(0, game.hitFlash || 0);
+      if (ud.arms && ud.arms.length === 2) {
+        ud.arms[0].rotation.x = swingOpp * 0.4 - fireKick * 1.1 - hurtKick * 0.5;
+        ud.arms[1].rotation.x = swing * 0.4 - fireKick * 0.85 - hurtKick * 0.35;
+      }
+      if (ud.fists) for (const f of ud.fists) f.scale.setScalar(1 + fireKick * 0.35);
+      if (ud.head) {
+        ud.head.rotation.x = -fireKick * 0.12 + Math.sin(ud.idlePhase) * 0.03;
+        ud.head.position.y = 1.24 + Math.sin(ud.idlePhase * 0.5) * 0.015;
+      }
+      if (ud.body) {
+        const bob = move > 0.08 ? Math.abs(Math.sin(walk)) * 0.06 : Math.sin(ud.idlePhase) * 0.025;
+        ud.body.position.y = bob;
+        ud.body.rotation.x = move > 0.08 ? -0.04 : Math.sin(ud.idlePhase * 0.7) * 0.02;
+      }
+      if (ud.glowL && ud.glowR) {
+        const pulse = 1 + move * 0.35 + fireKick * 1.2 + Math.sin(ud.idlePhase * 2) * 0.08;
+        ud.glowL.scale.setScalar(pulse);
+        ud.glowR.scale.setScalar(pulse);
+      }
     }
 
     if (this.novaAge >= 0) {
@@ -992,25 +1030,47 @@ export class View {
       if (k >= 1) { this.novaAge = -1; this.novaRing.visible = false; }
     }
 
-    // ---- enemies
+    // ---- enemies (colour-coded PNG billboards)
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
       if (m.userData.type !== e.type) {
-        while (m.children.length) m.remove(m.children[0]);
-        const fresh = enemyMeshFor(e.type);
-        while (fresh.children.length) m.add(fresh.children[0]);
-        m.userData = { ...fresh.userData, type: e.type };
+        if (m.userData.isSprite) retargetEnemySprite(m, e.type);
+        else {
+          while (m.children.length) m.remove(m.children[0]);
+          const fresh = enemyMeshFor(e.type);
+          while (fresh.children.length) m.add(fresh.children[0]);
+          m.userData = { ...fresh.userData, type: e.type };
+        }
       }
-      m.position.set(e.x, (ENEMIES[e.type] && ENEMIES[e.type].kind === 'drone') ? 0.45 + Math.sin(game.t * 3 + e.wob) * 0.08 : 0, e.z);
-      m.rotation.y = Math.atan2(game.px - e.x, game.pz - e.z);
-      const glow = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.7);
-      const legSwing = Math.sin(game.t * (e.speed * 2.4) + e.wob) * 0.5;
-      const legs = m.userData.legs || [];
-      if (legs.length) { legs[0].rotation.x = legSwing; if (legs[1]) legs[1].rotation.x = -legSwing; }
-      m.traverse((ch) => {
-        if (ch.isMesh && ch.material && ch.material.emissive) ch.material.emissiveIntensity = glow;
-      });
+      const faceYaw = Math.atan2(game.px - e.x, game.pz - e.z);
+      let y = m.userData.baseY || 0;
+      if (m.userData.bob) y = 0.45 + Math.sin(game.t * 3 + e.wob) * 0.08;
+      m.position.set(e.x, y, e.z);
+      if (m.userData.isSprite) {
+        m.rotation.set(0, 0, 0);
+        billboardToCamera(m, this.stage.camera, faceYaw);
+        applySpriteFlash(m, { hit: e.hit > 0, blink: false, move: e.speed || 0 });
+        if (e.slow > 0 && m.userData.spriteMat) m.userData.spriteMat.color.setRGB(0.65, 0.85, 1.2);
+      } else {
+        m.rotation.y = faceYaw;
+        const glow = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.7);
+        const legSwing = Math.sin(game.t * (e.speed * 2.4) + e.wob) * 0.5;
+        const legs = m.userData.legs || [];
+        if (legs.length) { legs[0].rotation.x = legSwing; if (legs[1]) legs[1].rotation.x = -legSwing; }
+        m.traverse((ch) => {
+          if (ch.isMesh && ch.material && ch.material.emissive) ch.material.emissiveIntensity = glow;
+        });
+      }
+    }
+
+    // Doctor NPC prop: face camera, idle bob
+    if (this.doctor && this.doctor.userData.isSprite) {
+      const d = this.doctor;
+      if (d.userData.plane) {
+        d.userData.plane.position.y = (d.userData.spriteH || 2.1) * 0.5 + Math.sin(game.t * 1.5) * 0.03;
+      }
+      billboardToCamera(d, this.stage.camera, Math.atan2(game.px - d.position.x, game.pz - d.position.z));
     }
 
     // ---- bullets (one silhouette + colour per weapon and tier)
@@ -1148,6 +1208,9 @@ if (typeof window !== 'undefined') {
   window.__MECHS = MECH_BY_ID ? Object.values(MECH_BY_ID) : [];
   window.__rampageArt = {
     buildPlayerMech,
+    buildPlayerSprite,
+    buildEnemySprite,
+    buildDoctorNpc,
     humanMesh,
     supportMesh,
     enemyMeshFor,

@@ -491,8 +491,8 @@ function tick(dt) {
       audio.fire();
       const g = S.game;
       const muzzle = new THREE.Vector3(g.px, 0.7, g.pz);
-      particles.burst(muzzle, new THREE.Color(0x00e5ff), 10, { speed: 4, up: 0.6, size: 0.55, size: 0.65 });
-      particles.burst(muzzle, new THREE.Color(0x7ad7ff), 6, { speed: 2.2, up: 1.4, life: 0.4, size: 0.5 });
+      particles.burst(muzzle, new THREE.Color(0x00e5ff), 14, { speed: 4, up: 0.6, size: 0.55, size: 0.65 });
+      particles.burst(muzzle, new THREE.Color(0x7ad7ff), 8, { speed: 2.2, up: 1.4, life: 0.4, size: 0.5 });
     }
     else if (ev.type === 'hit') {
       audio.hit();

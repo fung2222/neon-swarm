@@ -4,8 +4,8 @@
 > **Contact style (Roy):** 解釋用繁體中文（廣東話都睇得明）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 喺下面。  
 > Timezone: **Asia/Hong_Kong (UTC+8)**. Owner: **fung2222 (Roy Chan / 嘉豐)**.
 
-**Status:** **v0.6.0** art pass — anime mecha frames, readable human manhunt, per-weapon projectiles, cube drops, score+time results · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
-**HEAD:** v0.6.0 commit on `main` after `7776e74` · 2026-10-19 HKT  
+**Status:** **v0.6.1** PNG sprite billboards (player idle/move/fire, colour-coded enemies, doctor NPC prop) · kit **v0.3.16** · CYBER ARCADE tier **Gold** · `games.json` status **wip**  
+**HEAD:** v0.6.1 on `main` · 2026-10-25 HKT  
 **Live:** https://fung2222.github.io/neon-swarm/ · demo `?demo=1` · trial probe `?hub=1&trial=1`  
 **Repo:** https://github.com/fung2222/neon-swarm
 
@@ -182,3 +182,14 @@ node tests/logic.test.mjs && node tests/levelup.test.mjs && node tests/health.te
 node tests/balance.test.mjs   # long-run pacing numbers (prints 30/60/…s marks)
 python tests/smoke_files.py
 ```
+
+
+## 4e. v0.6.1 PNG sprites (2026-10-25)
+
+Approved art wired as camera-facing billboard planes (not procedural meshes):
+
+- `assets/sprites/player_{idle,move,fire}.png` — state swap by move / muzzle
+- `assets/sprites/enemy_{magenta,lime,orange}.png` — type map in `js/sprites.js` (`ENEMY_SPRITE_KEY`)
+- `assets/sprites/npc_doctor.png` — map prop near spawn `(3.6, 0, -2.4)` until a shop hook exists
+- Cache bump `?v=0.6.1` on `css/game.css` + `js/main.js`
+- **Later:** VFX / shot feel (Roy: one-pellet fire feels weak) — sprites-first, no big VFX rewrite in 0.6.1
