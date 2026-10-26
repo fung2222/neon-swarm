@@ -10,32 +10,33 @@
 
 ## Active task
 
-**Task ID:** `WEBGL-CONTEXT-LOSS-001`  
-**名稱：** 手機中途白畫面／WebGL context loss 恢復與減壓  
-**性質：** 穩定性；不改平衡、bake、選機、敵人內容。  
-**狀態：** implemented（headless tested；**not** device verified）— v0.9.5
+**Task ID:** `MOBILE-GPU-PRESSURE-001`  
+**名稱：** 手機更強 GPU 減壓（降 context loss 機率）  
+**性質：** 穩定性／效能；不改武器傷害、刷怪數值、bake、選機。  
+**狀態：** implemented（headless tested；**not** device verified）— v0.9.6
 
 ### 實作摘要（2026-10-26）
 
-- Context lost：`preventDefault` → freeze loop／HUD → `#screen-gfx` 可恢復 overlay（zh-HK + EN）→「重新載入」`location.reload()`。
-- Context restored：一律 `location.reload()`（Three.js textures／RT 多半已失效；唔再只 reset bloom）。
-- Boot `onFatal`：遊戲側可恢復文案（暫時無法繪圖／關閉瀏覽器再開），唔再只顯示 kit「唔支援 WebGL」。
-- 手機／coarse：Particles 池 2200、`maxPixelRatio` ≤1.5（細屏 1）、burst 約 ×0.6。無 vendor 改動。
+- `MOBILE_GFX` only：`PARTICLE_POOL` 1200、`MAX_PR` 固定 1、`burstN` ×0.4、Shockwaves 池 10。
+- `kickFx` wrapper：手機 `bloomDamp` ≤0.25，trauma／slowmo ×0.5；桌面原樣 `fx.kick`。
+- 普通擊殺：手機跳過 `particles.ring` + `waves.spawn`；burst 保留。精英／punch／explode／nova 仍有 ring／wave，但 kick 已削弱。
+- NeonCity dust：手機 `dustArea` 28／`dustHeight` 5（桌面 48／8）。
+- cache-bust **0.9.6**（`index.html` + `main.js` 註解）。無 vendor 改動；恢復 overlay 保留。
 
-### 背景（Roy 2026-10-26 實機）
+### 背景（Roy 2026-10-26）
 
-- 玩到一半跳白畫面；返 CYBER ARCADE 主頁再入顯示「你的瀏覽器唔支援 WebGL」。
-- 完整關閉瀏覽器再開可恢復；光圈減噪在 200 敵下他確認清晰。
+- v0.9.5 恢復 overlay **已實機出現**（「繪圖暫時中斷」）——捕捉 OK。
+- 試玩到終點附近仍觸發 context loss；需再減手機繪圖壓力，唔係再改文案。
 
 ### 完成條件
 
 - 相關改動已 commit／push。
 - Headless smoke／既有 unit 仍過。
-- 真機再發白畫面機率：**not verified**（等 Roy 再試）。
+- 真機再玩到終點 context loss 機率：**not verified**（等 Roy 再試）。
 
 ### Recommended next（do not start here）
 
-請 Roy 實機驗證 v0.9.5：中途白畫面是否改為可恢復 overlay；若仍炸 GPU，再考慮更進取減壓或降 bloom／敵人光效（另開 task）。
+請 Roy 實機驗證 v0.9.6：試玩到終點附近是否仍常觸發「繪圖暫時中斷」。若仍炸 GPU，另開 task 再減 bloom／敵人光效或更激進池裁切。
 
 ### 回報格式
 

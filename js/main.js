@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.5 WebGL context-loss recover + mobile particle/PR cut
+// RAMPAGE MECH 暴走機甲 — v0.9.6 mobile GPU pressure cut (pools/PR/bloomKick/ordinary-kill FX)
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -19,7 +19,7 @@ const AD_FLAGS = { adsim: flags.adsim || HUB.ads === true || HUB.ads === '1', de
 const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 
-// v0.9.5: mobile / coarse-pointer GPU pressure cut (stability only — no balance changes)
+// v0.9.6: stronger mobile / coarse-pointer GPU pressure cut (stability only — no balance changes)
 const MOBILE_GFX = (() => {
   try {
     const coarse = matchMedia('(pointer: coarse)').matches;
@@ -29,12 +29,10 @@ const MOBILE_GFX = (() => {
     return !!(coarse || (touch && narrow) || ua);
   } catch (_) { return false; }
 })();
-const PARTICLE_POOL = MOBILE_GFX ? 2200 : 5200;
-const MAX_PR = MOBILE_GFX
-  ? (Math.min(screen.width || 9999, screen.height || 9999) < 400 ? 1 : 1.5)
-  : 2;
-/** Scale burst counts on mobile (already small caps; further cut for GPU stability). */
-const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.6)) : n;
+const PARTICLE_POOL = MOBILE_GFX ? 1200 : 5200;
+const MAX_PR = MOBILE_GFX ? 1 : 2;
+/** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
+const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.4)) : n;
 
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
 
@@ -74,7 +72,7 @@ const theme = new ThemeController(); theme.set(1, true);
 const city = new NeonCity(stage, {
   floor: 'plain', floorY: -0.9, innerRadius: 90, buildings: 0,
   billboard: null, signs: false, rain: false, traffic: false,
-  dustArea: 48, dustHeight: 8,
+  dustArea: MOBILE_GFX ? 28 : 48, dustHeight: MOBILE_GFX ? 5 : 8,
 });
 
 const view = new View(stage);
@@ -85,8 +83,17 @@ stage.onResize((w, h, pr) => {
   // Keep menu mech framing in sync on resize / orientation change (not only first setMenuMech).
   if (view.menuMech) view.updateMenuLayout(w, h);
 });
-const waves = new Shockwaves(stage.scene, 24);
+const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 10 : 24);
 const fx = new FxState();
+/** Mobile: clamp bloomDamp and roughly half trauma/slowmo so late-run AoE cannot white-out GPU. Desktop unchanged. */
+function kickFx(o) {
+  if (!MOBILE_GFX) { fx.kick(o); return; }
+  const m = { ...o };
+  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.25);
+  if (m.trauma != null) m.trauma *= 0.5;
+  if (m.slowmo != null) m.slowmo *= 0.5;
+  fx.kick(m);
+}
 const audio = new SwarmAudio(store);
 ui.setMuted(audio.muted);
 const ads = createAds({ gameId: GAME_ID, ...ADS, flags: AD_FLAGS, onAdOpen: (on) => audio.duckAll(on) });
@@ -689,7 +696,7 @@ function tick(dt) {
         const n = ev.heavy ? 22 : 12;
         particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, burstN(Math.min(n, 8)), { speed: ev.heavy ? 4 : 3, up: 1.2, life: 0.55, bright: 1.0 });
         // v0.8.5: no white hit particles
-        if (ev.heavy) fx.kick({ trauma: 0.08, slowmo: 0.04, bloomDamp: 0.35 });
+        if (ev.heavy) kickFx({ trauma: 0.08, slowmo: 0.04, bloomDamp: 0.35 });
       }
     }
     else if (ev.type === 'kill') {
@@ -706,10 +713,11 @@ function tick(dt) {
         particles.ring(pos, c, 10, 6, 0.3);
         waves.spawn(pos, c, { r0: 0.3, r1: 2.0, dur: 0.4, a: 0.75 });
         if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8);
-        fx.kick({ trauma: 0.12, slowmo: 0.06, fovKick: 0.02, bloomDamp: 0.85 });
+        kickFx({ trauma: 0.12, slowmo: 0.06, fovKick: 0.02, bloomDamp: 0.85 });
         const flash = $('fx-flash');
         if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 45); }
-      } else {
+      } else if (!MOBILE_GFX) {
+        // Ordinary kill ring/wave skipped on mobile (v0.9.6); small burst kept above.
         particles.ring(pos, c, 6, 3.5, 0.18);
         waves.spawn(pos, c, { r0: 0.2, r1: 1.1, dur: 0.28, a: 0.4 });
       }
@@ -723,7 +731,7 @@ function tick(dt) {
       particles.ring(pos, col, 12, 7, 0.28);
       waves.spawn(pos, col, { r0: 0.35, r1: (ev.r || 1.6) * 1.1, dur: 0.4, a: 0.8 });
       if (view.burstGore) view.burstGore(ev.x, ev.z, 0x8a93a8);
-      fx.kick({ trauma: 0.1, slowmo: 0.04, fovKick: 0.03, bloomDamp: 0.9 });
+      kickFx({ trauma: 0.1, slowmo: 0.04, fovKick: 0.03, bloomDamp: 0.9 });
     }
     else if (ev.type === 'puddle') {
       particles.ring(new THREE.Vector3(ev.x, 0.08, ev.z), new THREE.Color(0xb8ff3a), 8, 4, 0.18);
@@ -745,7 +753,7 @@ else if (ev.type === 'xp') {
     else if (ev.type === 'hurt') {
       // Hurt feedback only — applyMoveFromInput / setMove still run during hitFlash/invuln.
       audio.hurt();
-      fx.kick({ trauma: 0.14, aberr: 0.12, bloomDamp: 0.7 });
+      kickFx({ trauma: 0.14, aberr: 0.12, bloomDamp: 0.7 });
       particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), burstN(8), { speed: 3.2, up: 1.4, size: 0.45, bright: 1.0 });
       const flash = $('fx-flash');
       if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 50); }
@@ -759,7 +767,7 @@ else if (ev.type === 'xp') {
       particles.burst(npos.clone().setY(0.4), new THREE.Color(0xffe600), burstN(14), { speed: 5, up: 1.4, life: 0.4, size: 0.6, bright: 1.0 });
       particles.ring(npos, new THREE.Color(0xffe600), 12, 6, 0.22);
       waves.spawn(npos, new THREE.Color(0xffe600), { r0: 0.4, r1: ev.r * 1.1, dur: 0.4, a: 0.85 });
-      fx.kick({ trauma: 0.12, bloomDamp: 1.0 });
+      kickFx({ trauma: 0.12, bloomDamp: 1.0 });
     }
     else if (ev.type === 'wave') {
       audio.wave();
