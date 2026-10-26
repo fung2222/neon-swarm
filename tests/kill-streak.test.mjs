@@ -98,7 +98,7 @@ assert.equal(STREAK_KICK_AT, 10);
   assert.ok(!/\b(dmg|damage|xp|score)\s*[+*]=/.test(mod), 'no economy mutation');
   assert.ok(!/return\s*\{[^}]*bonus/i.test(mod));
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.ok(html.includes('?v=0.9.38'));
+  assert.ok(/\?v=0\.9\.\d+/.test(html));
   const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
   assert.ok(css.includes('kind-streak'));
 }

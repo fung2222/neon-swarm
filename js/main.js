@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.38 kill-streak lite; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.39 result share; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -25,6 +25,10 @@ import {
   createStreakState, resetStreak, noteStreakKill, noteStreakBreak,
   STREAK_TOAST_MS, STREAK_WINDOW_MS,
 } from './kill-streak.js';
+import {
+  buildShareText, canNativeShare, shareButtonLabels, confirmCopy, shareOrCopy,
+  LIVE_URL, SHARE_CONFIRM_MS,
+} from './result-share.js';
 import {
   createDamageFloatPool, ndcToCss,
   DMG_FLOAT_MAX_DESKTOP, DMG_FLOAT_MAX_MOBILE,
@@ -1006,6 +1010,16 @@ function endRun(trial = false) {
   const zh = i18n.isZh();
   if ($('over-zone')) $('over-zone').textContent = zoneShortLabel(g.mapZone || 'lab', zh);
   if ($('over-loadout')) $('over-loadout').textContent = formatLoadoutFromGame(g, CARDS_BY_ID, zh);
+  // v0.9.39: stash run summary for share/copy
+  S._lastShare = {
+    timeStr: fmtTime(g.t),
+    kills: g.kills | 0,
+    zone: zoneShortLabel(g.mapZone || 'lab', zh),
+    score: Math.floor(g.score),
+    isZh: zh,
+  };
+  refreshShareButton();
+  hideShareConfirm();
   hideRunCoach();
   ui.show('over');
   audio.dead();
@@ -1134,7 +1148,62 @@ $('btn-pause')?.addEventListener('click', () => { pauseRun(); });
 $('btn-resume')?.addEventListener('click', () => { S.state = 'play'; ui.show(null); });
 $('btn-restart')?.addEventListener('click', () => startRun());
 $('btn-quit')?.addEventListener('click', () => showMenu());
+
+/** v0.9.39 over-screen share / copy — secondary ghost; no SDK. */
+function hideShareConfirm() {
+  const el = $('share-confirm');
+  if (el) { el.classList.add('hidden'); el.classList.remove('fail'); el.textContent = ''; }
+  if (S._shareConfirmTimer) { clearTimeout(S._shareConfirmTimer); S._shareConfirmTimer = 0; }
+}
+
+function showShareConfirm(zh, en, fail = false) {
+  const el = $('share-confirm');
+  if (!el) return;
+  const zhMode = (typeof i18n !== 'undefined' && i18n.isZh && i18n.isZh());
+  el.textContent = zhMode ? (zh || '') : (en || zh || '');
+  el.classList.toggle('fail', !!fail);
+  el.classList.remove('hidden');
+  if (S._shareConfirmTimer) clearTimeout(S._shareConfirmTimer);
+  S._shareConfirmTimer = setTimeout(() => hideShareConfirm(), SHARE_CONFIRM_MS);
+}
+
+function refreshShareButton() {
+  const useShare = canNativeShare();
+  const labels = shareButtonLabels(useShare);
+  const zhEl = $('share-zh');
+  const enEl = $('share-en');
+  if (zhEl) zhEl.textContent = labels.zh;
+  if (enEl) enEl.textContent = labels.en;
+  const btn = $('btn-share');
+  if (btn) btn.dataset.mode = useShare ? 'share' : 'copy';
+}
+
+async function onShareRun() {
+  const snap = S._lastShare || {
+    timeStr: ($('over-time') && $('over-time').textContent) || '0:00',
+    kills: ($('over-kills') && $('over-kills').textContent) || '0',
+    zone: ($('over-zone') && $('over-zone').textContent) || '—',
+    score: ($('over-score') && $('over-score').textContent) || '0',
+    isZh: i18n.isZh(),
+  };
+  const text = buildShareText({ ...snap, url: LIVE_URL });
+  const result = await shareOrCopy(text, {
+    title: snap.isZh ? '暴走機甲' : 'RAMPAGE MECH',
+    preferShare: true,
+  });
+  if (result.aborted) return; // user cancelled share sheet
+  const msg = confirmCopy(!!result.ok, !!result.usedShare);
+  showShareConfirm(msg.zh, msg.en, !result.ok);
+  try { if (result.ok && audio && audio.click) audio.click(); } catch (_) {}
+}
+
+S.buildShareText = buildShareText;
+S.shareOrCopy = shareOrCopy;
+S.refreshShareButton = refreshShareButton;
+S.showShareConfirm = showShareConfirm;
+
 $('btn-retry')?.addEventListener('click', () => startRun());
+$('btn-share')?.addEventListener('click', () => { onShareRun().catch(() => {}); });
 $('btn-menu')?.addEventListener('click', () => showMenu());
 $('btn-mute')?.addEventListener('click', () => { toggleMutePersist(); });
 $('btn-mute-menu')?.addEventListener('click', () => { try { audio.init(); } catch (_) {} toggleMutePersist(); });

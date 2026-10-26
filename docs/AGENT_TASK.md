@@ -3,39 +3,38 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE6-KILL-STREAK-LITE-001 → **Complete**（`?v=0.9.38`）
+## 狀態：PHASE6-RESULT-SHARE-001 → **Complete**（`?v=0.9.39`）
 
 **ROY（2026-10-26）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Just shipped
 
-**PHASE6-KILL-STREAK-LITE-001** → live cache-bust **`?v=0.9.38`**.
+**PHASE6-RESULT-SHARE-001** → live cache-bust **`?v=0.9.39`**.
 
-- Soft consecutive-kill streak（window **2.2s**）；reset on timeout／hurt／death
-- Milestone toasts only（**5／10／15**）via `#early-toast`「連殺 ×N」／STREAK ×N ~1.0s；`pointer-events:none`
-- **Feedback only — no DPS／XP／score multiplier from streak**（documented）
-- Skip／catch-up if first-kill／early toast busy；tiny `kickFx` at **10+** only
-- Mobile-light；no heavy particles
-- Shots `tests/screenshots/phase6-kill-streak/`（1280+390 streak-5／10）；test `tests/kill-streak.test.mjs`
+- Over-screen secondary ghost `#btn-share`：touch＋`navigator.share` →「分享戰績」；else clipboard「複製戰績」
+- zh-HK line e.g. `暴走機甲 · 存活 3:21 · 擊殺 128 · 區域 機甲組裝區 · 分數 4200` + live URL
+- Confirm「已複製」／COPIED ~1s；fail soft；no social SDK／analytics／backend
+- Retry／menu remain primary
 
-### Queue（usability very thin）
+### Soft-juice usability queue → **DONE**
 
-1. **PHASE6-RESULT-SHARE-001**（recommended if quick）— over-screen share／copy line
-2. HIT-FEEL-DEVICE — when Roy can play on phone（SwiftShader ≠ device）
-3. Stop auto-inventing soft juice；phone GPU／horn art lock — deferred／only after Roy OK
+Do **not** invent more toast／streak／coach／banner polish.
 
-**Honest note：** Phase 6 usability queue nearly empty after streak；prefer result-share once more then pause invention until phone HIT-FEEL.
+### Next
 
-**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance／economy／break early-feedback／safe-area／mute／damage numbers.
+1. **HIT-FEEL-DEVICE** — when Roy can play on phone（SwiftShader ≠ device）
+2. OR Roy-named Active only
+3. Phone GPU／horn art lock — deferred／only after Roy OK
+
+**Do NOT start：** Phase 4／horn art lock／§9／phone GPU／balance／more soft-juice invention.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-RESULT-SHARE-001` → **v0.9.39** (`PENDING`)
 - `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** (`fc61ddc`)
 - `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
 - `PHASE6-SAFE-AREA-001` → **v0.9.36** (`eee063e`)
 - `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`)
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`)
-- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`)
 
 ---
 
