@@ -34,7 +34,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Completed this turn
 
-**Task ID：** `PHASE3-ENEMY-SNIPER-001` — live cache-bust **`?v=0.9.23`**.
+**Task ID：** `PHASE3-ENEMY-SNIPER-001` — live cache-bust **`?v=0.9.23`** / SHA **`99fdb3e`**.
 
 - `ENEMIES.sniper`：狙擊單位 / Sniper Unit；olive＋crimson trim；long-rifle procedural mesh（≠ soldier／officer recolor）。
 - Behavior：`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan shot；events `telegraph kind:sniper` + `sniperShot`；no silent instant snipe.
