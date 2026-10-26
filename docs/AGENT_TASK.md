@@ -1,57 +1,36 @@
-# RAMPAGE MECH — Active Agent Task
+# AGENT_TASK — 暴走機甲 / neon-swarm
 
-> 開始前必讀 `docs/HANDOFF.md`。本文件是唯一本輪授權範圍。
-> **所有文案／任務 MD 直接 commit＋push 到 GitHub**；Roy／Kimi 在 repo 打開即可，唔使下載轉發。
+> Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
+> 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 角色與責任
-
-- **Roy：** 產品方向、試玩、最終驗收；可下 `ROY_OVERRIDE` 繞過規則（須記錄範圍／原因）。
-- **Kimi K3.1：** 流程設計、獨立檢查、bug 重現、重大改動審核；**亦可直接改程式／文件**（改完同樣寫交接）。
-- **Grok bot：** 按 `HANDOFF`＋本文件 queue **自動推進**實作／測試／文件；常規工作**唔使逐項等 Kimi**。
-
-Grok 回報的測試 ≠ Kimi 獨立驗證。兩邊都改完要記：**作者、Task ID、版本、SHA、改了甚麼、測試、截圖、未驗證、下一步**。
-
-## 自動推進 vs 停等審核
-
-| 類型 | 處理 |
-| --- | --- |
-| 常規 bugfix、補測試、文件、按現有風格 rebake、小型 UI／效能修正 | Grok 完成→測→記→接 queue 下一項；**唔等 Kimi** |
-| 新機體、核心操作、渲染／烘焙管線、碰撞 update order、重大數值經濟、廣告／付費、save format、Google Play 上架 | **重大改動**：完成後停等 Kimi 審核（或 Roy 點名審） |
-| 美術一致性 | 跟 art bible／剪影規則執行；方向改變先停 |
-| `ROY_OVERRIDE` | 照做、記範圍；唔擅自永久改規則 |
-| 兩邊同時開工 | 唔改同一批檔；分開小範圍 commit |
-
-## 產品優先（CYBER ARCADE／暴走機甲旗艦）
-
-Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入局、容易單手、坐車短局、吸引力、手機穩定慳電**。  
-**優先：命中可靠 → 手機穩定 → 主角好看 → 再擴內容。** 詳見 `HANDOFF.md` §1b。
-
----
-
-## 狀態：PHASE6-SAFE-AREA-001 → **Complete**（`?v=0.9.36`）
+## 狀態：PHASE6-EARLY-FEEDBACK-001 → **Complete**（`?v=0.9.37`）
 
 **ROY（2026-10-26）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Just shipped
 
-**PHASE6-SAFE-AREA-001** → live cache-bust **`?v=0.9.36`**.
+**PHASE6-EARLY-FEEDBACK-001** → live cache-bust **`?v=0.9.37`**.
 
-- `:root` `--sa-*` wraps `env(safe-area-inset-*)` (testable overrides)
-- Gaps fixed: `.hud-left` L；`.hud-buttons.top` R；mobile `.hud-goal` L；`.xp-bar` L/R media；screen pause/over/level/gfx padding；weapon-slots／beat／coach width；cheap landscape
-- `viewport-fit=cover` already present（verified）
-- Shots `tests/screenshots/phase6-safe-area/`（simulated large insets）；test `tests/safe-area.test.mjs`
+- Once-per-run **first kill** zh-HK toast「首殺」／FIRST BLOOD (~1.2s) via dedicated `#early-toast`（pointer-events:none；z below coach／beat）；light `kickFx`；deferred while run-coach visible
+- Once-per-run **first level-up**（`from==='level'` only）：stronger `levelChime` + XP bar pulse（`.xp-first-level`）+ brief first-level glow；no card-pool change
+- Soft **first heal** green micro-toast — skipped if coach／toast／pending kill toast（avoid stacking）
+- Mobile：no heavy particles；MOBILE_GFX cuts respected
+- Shots `tests/screenshots/phase6-early-feedback/`（1280+390 first-kill／first-level）；test `tests/early-feedback.test.mjs`
 
 ### Queue（usability thinning — next concrete）
 
-1. **PHASE6-EARLY-FEEDBACK-001**（recommended）— first-kill／first-level lite juice；still「未用得」feel without inventing Phase 4
-2. OR kill-streak juice lite／result share copy
+1. **PHASE6-KILL-STREAK-LITE-001**（recommended）— soft streak toast／chime；still「未用得」without inventing Phase 4
+2. OR **PHASE6-RESULT-SHARE-COPY-001** — over-screen share／copy juice
 3. HIT-FEEL-DEVICE — preferred **when Roy can play on phone**（SwiftShader ≠ device）
 4. Phone GPU／horn art lock — deferred／only after Roy OK
 
-**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance rewrite.
+**Honest note：** Phase 6 usability queue thinning — remaining soft juice is thin; HIT-FEEL needs real phone.
+
+**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance rewrite／break mute／safe-area／damage numbers／run-loop coach.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`2c6b6df`)
 - `PHASE6-SAFE-AREA-001` → **v0.9.36** (`eee063e`)
 - `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`)
 - `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`)

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.36 safe-area; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.37 early-feedback; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -16,6 +16,11 @@ import {
   shouldShowCoach, markCoachSeen, zoneShortLabel, formatLoadoutFromGame,
   COACH_MS, HURT_VIGNETTE_MS, STICK_HINT_MS,
 } from './run-loop-ux.js';
+import {
+  createEarlyFeedbackState, resetEarlyFeedback,
+  noteFirstKill, noteFirstLevel, noteFirstHeal, takePendingEarly,
+  FIRST_KILL_MS, EARLY_COPY,
+} from './early-feedback.js';
 import {
   createDamageFloatPool, ndcToCss,
   DMG_FLOAT_MAX_DESKTOP, DMG_FLOAT_MAX_MOBILE,
@@ -348,6 +353,8 @@ window.__swarm = S;
 S.view = view;
 S._coachSessionShown = false;
 S._coachTimer = 0;
+S._early = createEarlyFeedbackState();
+S._earlyToastTimer = 0;
 S._stickHintTimer = 0;
 
 
@@ -765,7 +772,85 @@ function showLevelCards(cards, opts = {}) {
   ui.show('level');
   audio.levelChime();
 }
+
 S.showLevelCards = showLevelCards;
+
+/** v0.9.37 early-run toast — pointer-events none; never steals stick. */
+function isCoachVisible() {
+  const el = $('run-coach');
+  return !!(el && !el.classList.contains('hidden'));
+}
+
+function isEarlyToastBusy() {
+  const el = $('early-toast');
+  return !!(el && !el.classList.contains('hidden'));
+}
+
+function hideEarlyToast() {
+  const el = $('early-toast');
+  if (el) {
+    el.classList.add('hidden');
+    el.classList.remove('kind-kill', 'kind-level', 'kind-heal');
+  }
+  if (S._earlyToastTimer) { clearTimeout(S._earlyToastTimer); S._earlyToastTimer = 0; }
+}
+
+function showEarlyToast(zh, en, ms, kind) {
+  const el = $('early-toast');
+  const zhEl = $('early-toast-zh');
+  const enEl = $('early-toast-en');
+  if (!el) return false;
+  if (zhEl) zhEl.textContent = zh || '';
+  if (enEl) enEl.textContent = en || '';
+  el.classList.remove('kind-kill', 'kind-level', 'kind-heal');
+  if (kind === 'firstKill') el.classList.add('kind-kill');
+  else if (kind === 'firstLevel') el.classList.add('kind-level');
+  else if (kind === 'firstHeal') el.classList.add('kind-heal');
+  el.classList.remove('hidden');
+  if (S._earlyToastTimer) clearTimeout(S._earlyToastTimer);
+  S._earlyToastTimer = setTimeout(() => hideEarlyToast(), Math.max(400, ms || FIRST_KILL_MS));
+  return true;
+}
+
+function flushPendingEarlyToast() {
+  if (!S._early) return;
+  const p = takePendingEarly(S._early);
+  if (!p) return;
+  if (isCoachVisible()) {
+    // still up — re-defer
+    S._early.pending = p;
+    return;
+  }
+  showEarlyToast(p.zh, p.en, p.ms, p.kind);
+}
+
+function pulseXpBarFirstLevel() {
+  const bar = document.querySelector('.xp-bar');
+  if (!bar) return;
+  bar.classList.add('xp-first-level');
+  clearTimeout(bar._xpPulseT);
+  bar._xpPulseT = setTimeout(() => bar.classList.remove('xp-first-level'), 700);
+}
+
+function applyFirstLevelJuice(panel) {
+  pulseXpBarFirstLevel();
+  // Slightly stronger chime on first XP level-up (extra arpeggio beat)
+  try {
+    if (audio && audio.levelChime) {
+      setTimeout(() => { try { audio.levelChime(); } catch (_) {} }, 90);
+    }
+  } catch (_) {}
+  if (panel) {
+    panel.classList.add('first-level-glow');
+    clearTimeout(panel._flgT);
+    panel._flgT = setTimeout(() => panel.classList.remove('first-level-glow'), 1200);
+  }
+}
+
+S.showEarlyToast = showEarlyToast;
+S.hideEarlyToast = hideEarlyToast;
+S.flushPendingEarlyToast = flushPendingEarlyToast;
+S.isCoachVisible = isCoachVisible;
 
 
 /** v0.9.33 first-run coach — pointer-events none; dismiss on timeout or first stick. */
@@ -773,6 +858,8 @@ function hideRunCoach() {
   const el = $('run-coach');
   if (el) el.classList.add('hidden');
   if (S._coachTimer) { clearTimeout(S._coachTimer); S._coachTimer = 0; }
+  // v0.9.37: coach out → show deferred first-kill toast (no stack in first 2s)
+  try { flushPendingEarlyToast(); } catch (_) {}
 }
 
 function showRunCoach(opts = {}) {
@@ -868,6 +955,9 @@ function startRun() {
   $('stick').classList.remove('active', 'following', 'hint-pulse');
   updateHUD();
   audio.click();
+  // v0.9.37: once-per-run early feedback flags
+  S._early = resetEarlyFeedback(S._early || createEarlyFeedbackState());
+  hideEarlyToast();
   // First-run coach OR light stick pulse (not both noisy)
   const showedCoach = maybeShowRunCoach(touch);
   if (!showedCoach) {
@@ -1154,6 +1244,18 @@ function tick(dt) {
       }
       // v0.9.22: ordinary kill — local burst only (no ring/wave/slowmo clutter in dense combat).
       // Elite/gore punch path above keeps ring + wave + hit-stop.
+      // v0.9.37: first kill toast (once); defer if coach visible
+      try {
+        const fk = noteFirstKill(S._early, { coachVisible: isCoachVisible() });
+        if (fk) {
+          if (fk.show) {
+            showEarlyToast(fk.zh, fk.en, fk.ms, fk.kind);
+            if (!MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });
+            else kickFx({ trauma: 0.03 });
+          }
+          // defer path: pending set inside noteFirstKill; flush on hideRunCoach
+        }
+      } catch (_) {}
     }
     else if (ev.type === 'explode') {
       audio.nova();
@@ -1188,6 +1290,14 @@ else if (ev.type === 'xp') {
           jitterY: -12,
         });
       }
+      // v0.9.37: soft first-heal micro-toast (skip if coach / busy)
+      try {
+        const fh = noteFirstHeal(S._early, {
+          coachVisible: isCoachVisible(),
+          toastBusy: isEarlyToastBusy(),
+        });
+        if (fh && fh.show) showEarlyToast(fh.zh, fh.en, fh.ms, fh.kind);
+      } catch (_) {}
     }
     else if (ev.type === 'weapon') {
       audio.nova();
@@ -1215,7 +1325,17 @@ else if (ev.type === 'xp') {
       }
     }
     else if (ev.type === 'dead') endRun(false);
-    else if (ev.type === 'levelup') showLevelCards(ev.cards, { from: ev.from || 'level' });
+    else if (ev.type === 'levelup') {
+      const from = ev.from || 'level';
+      try {
+        const fl = noteFirstLevel(S._early, { from });
+        if (fl) {
+          applyFirstLevelJuice($('screen-level'));
+          // Tiny toast only if cards not yet covering — pulse is primary; skip toast under panel
+        }
+      } catch (_) {}
+      showLevelCards(ev.cards, { from });
+    }
     else if (ev.type === 'nova') {
       audio.nova();
       view.pulseNova(ev.r);

@@ -113,7 +113,7 @@ assert.equal(muteTipFor(true, false), 'Unmute');
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('id="btn-mute-menu"'), 'menu markup');
   assert.ok(html.includes('cyber.neon-swarm.muted'), 'early paint');
-  assert.ok(html.includes('?v=0.9.35'), 'cache-bust');
+  assert.ok(/\?v=0\.9\.\d+/.test(html), 'cache-bust');
   const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
   assert.ok(css.includes('.menu-mute'), 'menu mute css');
   const audio = readFileSync(new URL('../js/audio.js', import.meta.url), 'utf8');

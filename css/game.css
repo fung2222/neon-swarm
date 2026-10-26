@@ -909,6 +909,98 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .beat-banner { top: max(8%, calc(48px + var(--sa-top))); }
 }
 
+
+
+/* ---- v0.9.37 early-feedback: first-kill / first-level / first-heal toast ---- */
+.early-toast {
+  position: fixed;
+  left: 50%;
+  top: max(16%, calc(88px + var(--sa-top)));
+  transform: translateX(-50%);
+  z-index: 26; /* below coach(27) / beat(28); above HUD */
+  pointer-events: none;
+  text-align: center;
+  padding: 8px 18px;
+  min-width: min(160px, 50vw);
+  max-width: min(320px, calc(100vw - 24px - var(--sa-left) - var(--sa-right)));
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  background: rgba(6, 4, 18, 0.78);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.28);
+  animation: early-toast-in 0.18s ease-out;
+}
+.early-toast.hidden { display: none; }
+.early-toast-zh {
+  font-family: var(--font-zh, inherit);
+  font-size: clamp(16px, 4.2vw, 22px);
+  font-weight: 800;
+  color: #e8ffff;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.55);
+}
+.early-toast-en {
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9ab0c8;
+  font-weight: 700;
+}
+.early-toast.kind-kill {
+  border-color: rgba(255, 80, 120, 0.6);
+  box-shadow: 0 0 20px rgba(255, 60, 100, 0.3);
+}
+.early-toast.kind-kill .early-toast-zh {
+  color: #ffd0dc;
+  text-shadow: 0 0 12px rgba(255, 60, 100, 0.65);
+}
+.early-toast.kind-level {
+  border-color: rgba(255, 230, 0, 0.55);
+  box-shadow: 0 0 20px rgba(255, 230, 0, 0.28);
+}
+.early-toast.kind-level .early-toast-zh {
+  color: #fff6b0;
+  text-shadow: 0 0 12px rgba(255, 230, 0, 0.6);
+}
+.early-toast.kind-heal {
+  border-color: rgba(60, 255, 160, 0.55);
+  box-shadow: 0 0 16px rgba(60, 255, 160, 0.25);
+}
+.early-toast.kind-heal .early-toast-zh {
+  color: #c8ffe0;
+  text-shadow: 0 0 10px rgba(60, 255, 160, 0.55);
+}
+@keyframes early-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.96); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+@media (max-width: 520px) {
+  .early-toast {
+    top: max(14%, calc(72px + var(--sa-top)));
+    padding: 7px 14px;
+  }
+  .early-toast-zh { font-size: clamp(15px, 4.4vw, 19px); }
+}
+
+.xp-bar.xp-first-level {
+  box-shadow:
+    0 0 16px rgba(255, 230, 0, 0.55),
+    0 0 28px rgba(0, 229, 255, 0.35),
+    inset 0 0 6px rgba(0,0,0,0.45);
+  border-color: rgba(255, 230, 0, 0.85);
+  animation: xp-first-pulse 0.55s ease-out 1;
+}
+@keyframes xp-first-pulse {
+  0% { transform: scaleX(1); filter: brightness(1); }
+  40% { transform: scaleX(1.02); filter: brightness(1.35); }
+  100% { transform: scaleX(1); filter: brightness(1); }
+}
+
+#screen-level.first-level-glow .panel,
+#screen-level.first-level-glow .level-panel {
+  box-shadow: 0 0 28px rgba(255, 230, 0, 0.28), 0 0 48px rgba(180, 77, 255, 0.18);
+  border-color: rgba(255, 230, 0, 0.45);
+}
+
 /* ---- v0.9.35 mute persist: menu mute chrome (menu-icon-btn so kit tidyTopRight keeps it) ---- */
 .menu-top-right { display: flex; align-items: center; gap: 8px; }
 .menu-mute.menu-icon-btn {

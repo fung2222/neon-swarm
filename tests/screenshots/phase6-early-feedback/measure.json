@@ -1,0 +1,26 @@
+{
+  "shots": [
+    "1280-first-kill.png",
+    "1280-first-level.png",
+    "390-first-kill.png",
+    "390-first-level.png"
+  ],
+  "checks": [
+    {
+      "view": "1280-kill",
+      "killOk": {
+        "pe": "none",
+        "w": 160,
+        "zh": "首殺",
+        "top": 128
+      }
+    },
+    {
+      "view": "coach-defer",
+      "deferOk": {
+        "coachWas": true,
+        "coachNow": false
+      }
+    }
+  ]
+}
