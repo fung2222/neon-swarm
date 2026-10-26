@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.31 level-up card UX; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.32 banner timing / queue; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -11,6 +11,7 @@ import { Game } from './logic.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
+import { createBannerController, BANNER_MS } from './banner-queue.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -462,19 +463,37 @@ function cardEmblem(c) {
   return `<span class="emblem-glyph">${c.icon || '◆'}</span>`;
 }
 
-let _beatBannerT = 0;
-function showBeatBanner(zh, en, ms = 1600, opts = {}) {
-  const el = $('beat-banner');
-  const zhEl = $('beat-zh');
-  const enEl = $('beat-en');
-  if (!el) return;
-  if (zhEl) zhEl.textContent = zh || t('beat.eliteIn');
-  if (enEl) enEl.textContent = en || t('beat.eliteInEn');
-  el.classList.toggle('boss', !!opts.boss);
-  el.classList.remove('hidden');
-  clearTimeout(_beatBannerT);
-  _beatBannerT = setTimeout(() => el.classList.add('hidden'), ms);
+/** v0.9.32: short priority queue + min display — see js/banner-queue.js */
+const _bannerCtl = createBannerController({
+  show(item) {
+    const el = $('beat-banner');
+    const zhEl = $('beat-zh');
+    const enEl = $('beat-en');
+    if (!el) return;
+    if (zhEl) zhEl.textContent = item.zh || t('beat.eliteIn');
+    if (enEl) enEl.textContent = item.en || t('beat.eliteInEn');
+    el.classList.toggle('boss', !!item.boss);
+    el.classList.remove('hidden');
+  },
+  hide() {
+    const el = $('beat-banner');
+    if (el) el.classList.add('hidden');
+  },
+});
+
+function showBeatBanner(zh, en, ms, opts = {}) {
+  const kind = opts.kind || (opts.boss ? 'boss' : 'default');
+  _bannerCtl.push({
+    kind,
+    zh,
+    en,
+    ms: ms != null ? ms : undefined,
+    boss: !!opts.boss || kind === 'boss' || kind === 'phase',
+  });
 }
+S.showBeatBanner = showBeatBanner;
+S._bannerCtl = _bannerCtl;
+S.BANNER_MS = BANNER_MS;
 
 function updateBossHp() {
   const bar = $('boss-hp');
@@ -1028,7 +1047,7 @@ else if (ev.type === 'xp') {
       }[ev.zone] || 'zone.assemblyEn';
       const zh = t(zoneKey);
       const en = t(zoneKeyEn);
-      showBeatBanner(zh, en, 1800);
+      showBeatBanner(zh, en, BANNER_MS.zone, { kind: 'zone' });
       try { audio.wave(); } catch (_) {}
     }
     else if (ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite')) {
@@ -1038,7 +1057,7 @@ else if (ev.type === 'xp') {
       const en = ev.nameEn
         ? (`ELITE INBOUND · ${ev.nameEn}`)
         : t('beat.eliteInEn');
-      showBeatBanner(zh, en, 1800);
+      showBeatBanner(zh, en, BANNER_MS.elite, { kind: 'elite' });
       audio.wave();
       // v0.9.20: skip elite inbound bloom kick on mobile
       if (!MOBILE_GFX) kickFx({ trauma: 0.08, bloomDamp: 0.35 }); // v0.9.22 less bloom spam
@@ -1050,7 +1069,7 @@ else if (ev.type === 'xp') {
       const en = ev.nameEn
         ? (`BOSS INBOUND · ${ev.nameEn}`)
         : t('beat.bossInEn');
-      showBeatBanner(zh, en, 2200, { boss: true });
+      showBeatBanner(zh, en, BANNER_MS.boss, { kind: 'boss', boss: true });
       audio.wave();
       kickFx({ trauma: 0.12, bloomDamp: 0.7 });
       updateBossHp();
@@ -1061,7 +1080,7 @@ else if (ev.type === 'xp') {
         const zh = t(key);
         // Only flash phase banner for volley/frenzy (orbit is inbound)
         if (ev.phase === 'volley' || ev.phase === 'frenzy') {
-          showBeatBanner(zh, ev.phase.toUpperCase() + ' PHASE', 1200, { boss: true });
+          showBeatBanner(zh, ev.phase.toUpperCase() + ' PHASE', BANNER_MS.phase, { kind: 'phase', boss: true });
         }
       } catch (_) {}
     }

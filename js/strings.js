@@ -23,6 +23,7 @@ i18n.add({
   'pickup.swap': ['欄位已滿 · 撳一格換走', 'SLOTS FULL — TAP A SLOT TO SWAP'],
   paused: ['已暫停', 'PAUSED'],
   pausedS: ['PAUSED', 'PAUSED'],
+  pauseHint: ['點「繼續」返戰場 · 背景唔會自動恢復', 'TAP RESUME · NO AUTO-RESUME'],
   resume: ['繼續', 'RESUME'],
   resumeS: ['BACK TO RUN', 'BACK TO RUN'],
   restart: ['重來', 'RESTART'],

@@ -28,40 +28,39 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-LEVELUP-CARD-UX-001 → **complete**（v0.9.31 / ）
+## 狀態：PHASE6-BANNER-TIMING-001 → **complete**（v0.9.32）
 
-**ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
+**ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content **ended** after this last clear Phase6 polish. Do NOT invent new systems.
 
 ### Active this turn
 
-**none** — last shipped: `PHASE6-LEVELUP-CARD-UX-001` → **`?v=0.9.31`**.
+**none** — **HOLD for product sync.** Last shipped: `PHASE6-BANNER-TIMING-001` → **`?v=0.9.32`**.
 
 **Shipped behavior：**
-- Clearer card hierarchy (zh title + EN under / kind pill / desc clamp)
-- Stronger contrast + larger emblems; stack `n/max` pill + progress bar
-- Thumb-friendly min-height ~96px on 390; :hover/:active/:focus-visible
-- Light slot hint on new slot weapons: 裝入空欄 / 欄滿・需替換
-- Pickup-offer shares chrome; keep/swap/convertHeal intact
-- Screenshots `tests/screenshots/phase6-levelup-ux/`
+- Short priority banner queue (max 2 pending) + **min display 700ms** (`js/banner-queue.js`)
+- Priority: boss (3) > elite (2) > zone (1) > phase (0); higher jumps pending; same/lower latest-wins on overflow
+- Timings: zone **1400** / elite **1600** / boss **2600** / phase **900**
+- Pause: zh-HK title first + `pauseHint`（背景唔會自動恢復）; resume path unchanged (v0.9.20 no auto-resume)
+- CSS: readable `#beat-banner` on 390+1280; sit under goal HUD, clear of weapon-slots
+- Screenshots `tests/screenshots/phase6-banner-timing/`
+- Tests: `banner-queue.test.mjs` + `bg-pause.test.mjs` green
 
-### Queue（recommended next — safe, no Phase 4）
+### Queue（CRITICAL — sync with Roy）
 
-1. **PHASE6-BANNER-TIMING-001** — pause／zone banner timing QOL — preferred next (last clear safe Phase6 polish)
-2. After banner QOL (or if skipped): **sync with Roy before Phase 4** — do not invent systems
-3. **HIT-FEEL-DEVICE**（needs Roy 真機）— skip wait；keep queued
-4. Phone GPU／WebGL — **deferred by Roy**
-5. Horn art lock — **only after** Roy later OK
+1. **SYNC WITH ROY BEFORE PHASE 4** — Active **none** / **HOLD**. Grok **stops** auto-advance of new content slices until Roy says continue again **OR** names next Active.
+2. For Roy product sync: HIT-FEEL 真機 play / horn direction / whether to open Phase 4 later
+3. Phone GPU／WebGL — deferred；horn art lock — only after Roy OK
 
-**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU 深入／further horn polish.
+**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU／any invented feature.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-BANNER-TIMING-001` → **v0.9.32**.
 - `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
 - `PHASE6-DROP-READABILITY-001` → **v0.9.30**.
 - `PHASE6-PICKUP-POLISH-001` → **v0.9.29**.
 - `PHASE6-MULTI-SLOT-INVENTORY-001` → **v0.9.28**.
 - `GUN-8DIR-001` → **v0.9.27**.
-- `PHASE3-ELITE-COMMANDER-001` → **v0.9.26**.
 
 ---
 
