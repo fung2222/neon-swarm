@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.25 Phase 3 heavy artillery（big barrel + orange blast telegraph；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.26 Phase 3 army commander elite（summon／mode telegraph；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.25`**（Phase 3 artillery；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.26`**（Phase 3 army commander；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -57,6 +57,7 @@
   - v0.9.23 — PHASE3-ENEMY-SNIPER-001：`ENEMIES.sniper` 狙擊單位／Sniper Unit；olive＋crimson；long-rifle procedural mesh（≠ soldier／officer recolor）；`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan；events `telegraph kind:sniper`＋`sniperShot`；waveMix mid-late lab＋reactor／blockade／rooftop／assembly lightly；截圖 `tests/screenshots/phase3-sniper/`；測試 `tests/sniper.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.24 — PHASE3-ENEMY-SHIELD-001：`ENEMIES.shield` 盾衛／Shield Guard；steel＋cyan-blue；large front-plate procedural mesh（≠ soldier／walker recolor）；`_tickShield` slow chase＋face player；frontal mitigation only（`face · normalize(src−enemy) ≥ 0.5` → ×0.15 dmg；flank／rear full）；bash = short **red** contact telegraph；waveMix assembly／blockade ~0.12、lab after ~65s light、**no** early lab；截圖 `tests/screenshots/phase3-shield/`；測試 `tests/shield.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.25 — PHASE3-ENEMY-ARTILLERY-001：`ENEMIES.artillery` 重炮單位／Heavy Artillery；amber＋olive；procedural **big howitzer barrel** mesh（≠ walker／mech／sniper recolor）；`_tickArtillery` slow／stationary-ish → **orange** blast telegraph（`ARTILLERY.telegraphSec=1.0`）→ AoE impact at predicted／player-area；events `telegraph kind:artillery`＋`artilleryImpact`；waveMix blockade／rooftop light-mid、late lab light、assembly rare、**no** early lab；截圖 `tests/screenshots/phase3-artillery/`；測試 `tests/artillery.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
+  - v0.9.26 — PHASE3-ELITE-COMMANDER-001：`ENEMIES.commander` 軍指揮官／ARMY COMMANDER；amber-gold **tall officer-mech**（crest／epaulettes／baton／signal mast；≠ sentinel／hunter／chief recolor）；mode shifts — summon soldiers／drones（orange/red marks ≥1.0s）↔ personal attack telegraph≥1.1s→charge；fixed beat @300＋`ENDLESS.eliteRotate=['sentinel','hunter','commander']`；max one elite；zh-HK banner；截圖 `tests/screenshots/phase3-commander/`；測試 `tests/commander.test.mjs`＋`beats.test.mjs`。Player balance **unchanged**。未做：Phase 4／horn art lock／phone GPU。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
 
@@ -74,7 +75,7 @@
 - PERF-REBASELINE 已更新桌面 GTX 1070 Ti／v0.9.20（≈58–60 FPS）；**手機真機 200 敵效能仍未驗收**（Roy deferred phone GPU）。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 戰鬥可讀性：**v0.9.22 follow-up completed**（grunt rings off；elite／danger／pickups／floor／FX）；真機 hit-feel 仍待 Roy。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → **HIT-FEEL-DEVICE**（Roy 真機 play）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）**＋ **PHASE3-ELITE-COMMANDER-001（v0.9.26）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → multi-slot inventory／pickup polish／8-dir gun eval（Roy continuous auto-advance；skip HIT-FEEL wait）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -452,14 +453,15 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.25（PHASE3-ENEMY-ARTILLERY-001；HEAD 以 `main`／live `?v=0.9.25` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
+**目前基準 v0.9.26（PHASE3-ELITE-COMMANDER-001；HEAD 以 `main`／live `?v=0.9.26` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
+- `PHASE3-ELITE-COMMANDER-001` **已完成**（v0.9.26）：army commander tall officer-mech＋summon／attack mode telegraphs≥0.8–1.2s；beat@300＋endless rotate；截圖 `tests/screenshots/phase3-commander/`。
 - `PHASE3-ENEMY-ARTILLERY-001` **已完成**（v0.9.25）：heavy artillery big-barrel silhouette＋orange blast telegraph≥1.0s＋AoE impact；截圖 `tests/screenshots/phase3-artillery/`。
 - `PHASE3-ENEMY-SHIELD-001` **已完成**（v0.9.24）：shield front-plate silhouette＋frontal mitigation＋red bash telegraph；截圖 `tests/screenshots/phase3-shield/`。
 - `PHASE3-ENEMY-SNIPER-001` **已完成**（v0.9.23）：sniper long-rifle silhouette＋red aim telegraph≥1.0s＋hitscan；截圖 `tests/screenshots/phase3-sniper/`。
 - `PHASE2-COMBAT-READABILITY-002` **已完成**（v0.9.22）：ordinary rings off；floor／FX／telegraph／pickup readability；截圖 `tests/screenshots/phase2-readability/`。
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
-- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.25。
+- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
 - Roy deferred phone GPU／mid-run WebGL；**下一項：** **HIT-FEEL-DEVICE**（needs Roy phone play）— **do not** start Phase 4／horn art lock。
 - AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。

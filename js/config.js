@@ -211,6 +211,12 @@ export const ENEMIES = {
     hp: 95, speed: 1.35, radius: 0.68, xp: 18, score: 420, chase: 0.95, damage: 3,
     color: 0x3de0ff, elite: true,
   },
+  // ---- Phase 3 elite #3 (ARMY COMMANDER) — tall officer-mech; summon / attack mode shifts ----
+  commander: {
+    zh: '軍指揮官', en: 'ARMY COMMANDER', family: 'support', kind: 'commander', tier: 5,
+    hp: 100, speed: 1.05, radius: 0.70, xp: 20, score: 450, chase: 0.8, damage: 3,
+    color: 0xffb020, elite: true,
+  },
   // ---- Phase 3 boss beat (SWARM CORE) ----
   swarm_core: {
     zh: '洪流核心', en: 'SWARM CORE', family: 'support', kind: 'swarm_core', tier: 6,
@@ -305,6 +311,24 @@ export const ELITE = {
       comboSegs: 2,
       dualLane: true,
     },
+    commander: {
+      telegraphSec: 1.1,
+      summonTelegraphSec: 1.0,
+      attackTelegraphSec: 1.1,
+      chargeSpeed: 8.8,
+      chargeSec: 0.52,
+      recoverSec: 1.7,
+      recoverShortSec: 0.6,
+      walkSecMin: 1.5,
+      walkSecMax: 2.6,
+      walkSpeedMul: 0.78,
+      chargeDamage: 3,
+      comboSegs: 1,
+      dualLane: false,
+      summonCount: 4,
+      summonTypes: ['soldier', 'drone'],
+      modeShift: true,
+    },
   },
 };
 
@@ -350,13 +374,14 @@ export const BOSS = {
 export const BEATS = [
   { at: 120, kind: 'elite', id: 'sentinel' },
   { at: 240, kind: 'elite', id: 'hunter' },
+  { at: 300, kind: 'elite', id: 'commander' },
   { at: 360, kind: 'boss', id: 'swarm_core' },
 ];
 
 /**
  * Endless cadence after fixed boss (BEATS-PLAN §1 / v0.9.18).
  * Shape: ENDLESS config + Game._beatCheck → _endlessBeatCheck (not dynamic BEATS rows).
- * - Elites every eliteEvery sec after startAfter, alternating eliteRotate (existing types only).
+ * - Elites every eliteEvery sec after startAfter, rotating eliteRotate (sentinel/hunter/commander).
  * - Boss every bossEvery sec, reusing swarm_core.
  * - Max one elite; schedule defers while elite (or boss for boss beats) still alive.
  * - Gated on Game.endless === true so endless:false skips cadence; trial surviveSec unchanged.
@@ -365,7 +390,7 @@ export const ENDLESS = {
   startAfter: 360,
   eliteEvery: 90,
   bossEvery: 300,
-  eliteRotate: ['sentinel', 'hunter'],
+  eliteRotate: ['sentinel', 'hunter', 'commander'],
   bossId: 'swarm_core',
 };
 

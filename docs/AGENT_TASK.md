@@ -28,34 +28,34 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE3-ENEMY-ARTILLERY-001 → **completed**（v0.9.25）
+## 狀態：PHASE3-ELITE-COMMANDER-001 → **completed**（v0.9.26）
 
-**ROY（2026-10-26）：** continue pipeline after shield v0.9.24 — next safe CONTENT = heavy artillery（大管 + orange blast telegraph；非 Phase 4／horn／phone GPU）。
+**ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Completed this turn
 
-**Task ID：** `PHASE3-ENEMY-ARTILLERY-001` — live cache-bust **`?v=0.9.25`**.
+**Task ID：** `PHASE3-ELITE-COMMANDER-001` — live cache-bust **`?v=0.9.26`**.
 
-- `ENEMIES.artillery`：重炮單位 / Heavy Artillery；amber＋olive carriage；procedural **big howitzer barrel** mesh（≠ walker／mech／sniper recolor）。
-- Behavior：`_tickArtillery` slow／stationary-ish reposition → **orange** blast telegraph（`ARTILLERY.telegraphSec=1.0`，blast radius ring）→ AoE impact at predicted／player-area aim zone；events `telegraph kind:artillery`＋`artilleryImpact`；**never silent**.
-- Wave mix：blockade／rooftop light-mid；late lab light；assembly rare；**no** early lab.
-- View：artillery mesh＋orange blast ring pool；impact particles／ring VFX.
-- Screenshots：`tests/screenshots/phase3-artillery/`（silhouette／orange telegraph／barrel identity／mobile）.
-- Tests：`tests/artillery.test.mjs`＋map-zone pick／weight asserts；full headless regression green.
-- Elite／boss／player weapon balance tables **unchanged**. No Phase 4／horn／phone GPU.
+- `ENEMIES.commander`：軍指揮官 / ARMY COMMANDER；amber-gold tall officer-mech（crest／epaulettes／baton／signal mast；≠ sentinel／hunter／chief recolor）。
+- Behavior：mode shifts — (1) **summon** wave of soldiers／drones with orange/red telegraph marks（`summonTelegraphSec=1.0`）→ `commanderSummon`；(2) **personal attack** telegraph lane（`attackTelegraphSec=1.1`）→ charge. Readable telegraphs ≥0.8–1.2s. Max one elite still holds.
+- Beats：fixed `BEATS` commander @300（after hunter@240，before boss@360）；`ENDLESS.eliteRotate=['sentinel','hunter','commander']`.
+- Banner zh-HK first（精英出現 · 軍指揮官）.
+- Screenshots：`tests/screenshots/phase3-commander/`.
+- Tests：`tests/commander.test.mjs`＋extended `tests/beats.test.mjs`；full regression green.
+- No player balance table rewrite. No Phase 4／horn／phone GPU.
 
-### Queue（recommended next）
+### Queue（recommended next — safe, no Phase 4）
 
-1. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。← **recommended next（needs Roy play）**
-2. CONTENT light only if safe — **no** Phase 4 Precision／Morph bulk。
-3. Phone GPU／WebGL mid-run — **deferred by Roy**。
-4. （背景）AIM-HIT-FAST-002 Kimi 獨立審。
-5. Horn art lock／further silhouette polish — **only after** Roy later OK；interim direction accepted for pipeline.
+1. **Multi-slot inventory** OR **pickup polish** OR **8-dir gun eval** — implementer note；parent will chain. ← **recommended next**
+2. **HIT-FEEL-DEVICE**（needs Roy 真機 play）— skip wait per Roy continuous auto-advance；keep queued.
+3. Phone GPU／WebGL mid-run — **deferred by Roy**.
+4. Horn art lock／further silhouette polish — **only after** Roy later OK.
 
-**Do NOT start：** Phase 4／horn art lock／§9 落地／phone GPU 深入／further horn polish。
+**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU 深入／further horn polish.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE3-ELITE-COMMANDER-001` → **v0.9.26**.
 - `PHASE3-ENEMY-ARTILLERY-001` → **v0.9.25**.
 - `PHASE3-ENEMY-SHIELD-001` → **v0.9.24**.
 - `PHASE3-ENEMY-SNIPER-001` → **v0.9.23**.

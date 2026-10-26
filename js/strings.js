@@ -87,6 +87,8 @@ i18n.add({
   'beat.eliteIn': ['精英出現 · 哨戒長', 'ELITE INBOUND · SENTINEL PRIME'],
   'beat.eliteInEn': ['ELITE INBOUND', 'ELITE INBOUND'],
   'beat.eliteIn.hunter': ['精英出現 · 獵殺機甲', 'ELITE INBOUND · HUNTER RAID'],
+  'beat.eliteIn.commander': ['精英出現 · 軍指揮官', 'ELITE INBOUND · ARMY COMMANDER'],
+  'beat.commanderSummon': ['召喚部隊', 'SUMMONING FORCES'],
   'beat.telegraph': ['衝刺預警', 'CHARGE INCOMING'],
   'beat.sniperAim': ['狙擊鎖定', 'SNIPER LOCK'],
   'beat.shieldBash': ['盾擊', 'SHIELD BASH'],

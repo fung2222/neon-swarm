@@ -683,6 +683,97 @@ function hunterMesh() {
   return g;
 }
 
+/** Phase 3 elite #3: tall officer-mech / army commander — crest, baton, signal mast (≠ sentinel/hunter). */
+function commanderMesh() {
+  const amber = 0xffb020;
+  const brass = 0xd4a24a;
+  const g = new THREE.Group();
+  const metal = new THREE.MeshStandardMaterial({
+    color: 0x3a3228, emissive: 0x241c14, emissiveIntensity: 0.5, roughness: 0.44, metalness: 0.68,
+  });
+  const plate = new THREE.MeshStandardMaterial({
+    color: 0x1e1a16, emissive: 0x12100c, emissiveIntensity: 0.38, roughness: 0.5, metalness: 0.72,
+  });
+  const trim = new THREE.MeshStandardMaterial({
+    color: amber, emissive: amber, emissiveIntensity: 0.95, roughness: 0.3, metalness: 0.4,
+  });
+  const brassM = new THREE.MeshStandardMaterial({
+    color: brass, emissive: amber, emissiveIntensity: 0.45, roughness: 0.35, metalness: 0.8,
+  });
+  const ringM = new THREE.MeshBasicMaterial({ color: amber, transparent: true, opacity: 0.85 });
+
+  // Tall biped torso (officer silhouette — taller/narrower than SENTINEL cannons)
+  const torso = slab(0.42, 0.52, 0.78, 0.42, metal);
+  torso.position.y = 0.72;
+  const chest = box(0.3, 0.2, 0.08, trim, 0, 0.82, 0.24);
+  // Peaked command helm / crest
+  const head = box(0.26, 0.24, 0.28, plate, 0, 1.22, 0.02, 0.12);
+  const vis = box(0.22, 0.05, 0.04, trim, 0, 1.22, 0.16);
+  const crest = box(0.06, 0.22, 0.14, brassM, 0, 1.42, -0.02);
+  const brim = box(0.3, 0.04, 0.12, plate, 0, 1.12, 0.14);
+  g.add(torso, chest, head, vis, crest, brim);
+
+  // Wide epaulettes (officer read — not shoulder cannons)
+  for (const side of [-1, 1]) {
+    const epaul = slab(0.22, 0.28, 0.12, 0.28, brassM);
+    epaul.position.set(side * 0.38, 1.05, 0);
+    g.add(epaul);
+  }
+
+  // Long coat / cape plate hanging behind hips
+  const coat = slab(0.48, 0.55, 0.45, 0.12, plate);
+  coat.position.set(0, 0.42, -0.22);
+  g.add(coat);
+
+  // Command baton (right) + open gesturing pad (left)
+  const batonArm = new THREE.Group();
+  batonArm.position.set(0.42, 0.88, 0.05);
+  const baton = cyl(0.035, 0.04, 0.55, brassM, 8);
+  baton.rotation.z = Math.PI / 2;
+  baton.position.set(0.22, 0.05, 0.1);
+  const batonTip = box(0.08, 0.08, 0.08, trim, 0.48, 0.05, 0.1);
+  batonArm.add(baton, batonTip);
+  g.add(batonArm);
+
+  // Signal mast / antenna (command silhouette vs hunter dorsal fin)
+  const mast = box(0.07, 0.55, 0.07, plate, -0.12, 1.35, -0.18);
+  const dish = cyl(0.12, 0.12, 0.04, trim, 12);
+  dish.position.set(-0.12, 1.62, -0.18);
+  dish.rotation.x = Math.PI / 2;
+  const blink = box(0.05, 0.05, 0.05, trim, -0.12, 1.72, -0.18);
+  g.add(mast, dish, blink);
+
+  // Tall legs
+  const legs = [];
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.16, 0.38, 0);
+    const thigh = slab(0.15, 0.18, 0.42, 0.18, metal);
+    thigh.position.set(0, -0.2, 0);
+    const shin = slab(0.13, 0.15, 0.36, 0.16, plate);
+    shin.position.set(0, -0.55, 0.02);
+    const foot = slab(0.16, 0.22, 0.1, 0.28, plate);
+    foot.position.set(0, -0.78, 0.05);
+    leg.add(thigh, shin, foot);
+    g.add(leg);
+    legs.push(leg);
+  }
+
+  const eliteRing = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.032, 8, 36), ringM);
+  eliteRing.rotation.x = -Math.PI / 2;
+  eliteRing.position.y = 0.07;
+  eliteRing.userData.eliteRing = true;
+  g.add(eliteRing);
+  g.add(unitRing(amber, 0.54, 0.44));
+
+  g.scale.setScalar(1.65);
+  g.userData.legs = legs;
+  g.userData.eliteRing = eliteRing;
+  g.userData.type = 'commander';
+  g.userData.elite = true;
+  return g;
+}
+
 /** Ground warning lane: thin additive strip elite → player during telegraph. */
 function warningLane() {
   const g = new THREE.Group();
@@ -733,6 +824,29 @@ function sniperAimLine() {
   return g;
 }
 
+
+
+/** Orange/red drop marks for commander summon telegraph. */
+function commanderSummonRing() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff4a1a, transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.85, 28), mat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.07;
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: 0xff6a1a, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const fill = new THREE.Mesh(new THREE.CircleGeometry(0.55, 24), fillMat);
+  fill.rotation.x = -Math.PI / 2;
+  fill.position.y = 0.05;
+  g.add(ring, fill);
+  g.userData.mat = mat;
+  g.userData.fillMat = fillMat;
+  g.visible = false;
+  return g;
+}
 
 /** Orange blast circle/ring for artillery telegraph (orange = AoE blast radius). */
 function artilleryBlastRing() {
@@ -850,6 +964,7 @@ function enemyMeshFor(type) {
   }
   if (type === 'sentinel') return eliteMesh();
   if (type === 'hunter') return hunterMesh();
+  if (type === 'commander') return commanderMesh();
   if (type === 'swarm_core') return bossMesh();
   // Remaining types keep approved colour-coded PNG billboards.
   return buildEnemySprite(type);
@@ -1742,6 +1857,13 @@ export class View {
       this.group.add(ring);
       this.artilleryBlastRings.push(ring);
     }
+    // Phase 3 commander: up to 6 orange/red summon drop marks
+    this.commanderSummonRings = [];
+    for (let i = 0; i < 6; i++) {
+      const ring = commanderSummonRing();
+      this.group.add(ring);
+      this.commanderSummonRings.push(ring);
+    }
     // Boss volley lanes (up to 6) + orbit floor ring
     this.bossLanes = [];
     for (let i = 0; i < 6; i++) {
@@ -2251,7 +2373,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2340,6 +2462,7 @@ export class View {
     this._syncSniperAim(game);
     this._syncShieldBash(game);
     this._syncArtilleryBlast(game);
+    this._syncCommanderSummon(game);
     this._syncBossHazards(game);
 
     // Doctor NPC prop: face camera, idle sway
@@ -2611,6 +2734,30 @@ export class View {
     }
   }
 
+  /** Orange/red drop marks while commander is in summon telegraph. */
+  _syncCommanderSummon(game) {
+    const rings = this.commanderSummonRings || [];
+    for (const ln of rings) ln.visible = false;
+    let li = 0;
+    for (const e of game.enemies) {
+      if (e.type !== 'commander' || e.phase !== 'telegraph_summon') continue;
+      const marks = e.summonMarks || [];
+      const u = Math.max(0, Math.min(1, 1 - (e.phaseT || 0) / Math.max(0.01, e.telegraphDur || 1)));
+      for (const m of marks) {
+        if (li >= rings.length) break;
+        const ln = rings[li++];
+        ln.visible = true;
+        ln.position.set(m.x, 0, m.z);
+        const pulse = 0.85 + u * 0.35 + Math.sin((game.t || 0) * 10 + li) * 0.05;
+        ln.scale.setScalar(pulse);
+        const mat = ln.userData.mat;
+        const fillMat = ln.userData.fillMat;
+        if (mat) mat.opacity = 0.4 + u * 0.45;
+        if (fillMat) fillMat.opacity = 0.12 + u * 0.25;
+      }
+    }
+  }
+
   /** Draw ground warning strip from elite → locked charge aim while telegraphing. */
   _syncWarnLane(game) {
     const lane = this.warnLane;
@@ -2618,7 +2765,7 @@ export class View {
     if (!lane) return;
     let elite = null;
     for (const e of game.enemies) {
-      if (e.elite && e.phase === 'telegraph') { elite = e; break; }
+      if (e.elite && (e.phase === 'telegraph' || e.phase === 'telegraph_attack')) { elite = e; break; }
     }
     if (!elite) {
       lane.visible = false;
@@ -2840,6 +2987,8 @@ if (typeof window !== 'undefined') {
     supportMesh,
     eliteMesh,
     hunterMesh,
+    commanderMesh,
+    commanderSummonRing,
     bossMesh,
     warningLane,
     enemyMeshFor,

@@ -1,6 +1,6 @@
 /**
- * Phase 3 beats — SENTINEL PRIME + HUNTER RAID + SWARM CORE boss.
- * Phase 6 endless — elites ~90s / boss ~300s after startAfter=360 (v0.9.18).
+ * Phase 3 beats — SENTINEL PRIME + HUNTER RAID + ARMY COMMANDER + SWARM CORE boss.
+ * Phase 6 endless — elites ~90s / boss ~300s after startAfter=360 (rotate sentinel/hunter/commander).
  * Run: node tests/beats.test.mjs
  */
 import assert from 'assert';
@@ -9,10 +9,14 @@ import { ELITE, BOSS, BEATS, ENDLESS, ENEMIES, TRIAL, eliteCfg } from '../js/con
 
 assert.ok(ENEMIES.sentinel, 'sentinel enemy def');
 assert.ok(ENEMIES.hunter, 'hunter enemy def');
+assert.ok(ENEMIES.commander, 'commander enemy def');
 assert.ok(ENEMIES.swarm_core, 'swarm_core enemy def');
 assert.ok(ELITE.telegraphSec >= 1.0, 'telegraphSec >= 1s');
 assert.ok(eliteCfg('hunter').telegraphSec >= 1.2, 'hunter telegraph >= 1.2s');
 assert.ok(eliteCfg('hunter').comboSegs >= 2, 'hunter multi-segment');
+assert.ok(eliteCfg('commander').summonTelegraphSec >= 0.8, 'commander summon telegraph >= 0.8s');
+assert.ok(eliteCfg('commander').attackTelegraphSec >= 0.8, 'commander attack telegraph >= 0.8s');
+assert.ok(eliteCfg('commander').modeShift, 'commander modeShift');
 assert.ok(BOSS.volleyTelegraphSec >= 0.8, 'volley telegraph >= 0.8s');
 assert.equal(BEATS[0].at, 120);
 assert.equal(BEATS[0].kind, 'elite');
@@ -20,15 +24,18 @@ assert.equal(BEATS[0].id, 'sentinel');
 assert.equal(BEATS[1].at, 240);
 assert.equal(BEATS[1].kind, 'elite');
 assert.equal(BEATS[1].id, 'hunter');
-assert.equal(BEATS[2].at, 360);
-assert.equal(BEATS[2].kind, 'boss');
-assert.equal(BEATS[2].id, 'swarm_core');
+assert.equal(BEATS[2].at, 300);
+assert.equal(BEATS[2].kind, 'elite');
+assert.equal(BEATS[2].id, 'commander');
+assert.equal(BEATS[3].at, 360);
+assert.equal(BEATS[3].kind, 'boss');
+assert.equal(BEATS[3].id, 'swarm_core');
 assert.equal(BOSS.cardChoices, 3);
 assert.equal(TRIAL.surviveSec, 480);
 assert.equal(ENDLESS.startAfter, 360);
 assert.equal(ENDLESS.eliteEvery, 90);
 assert.equal(ENDLESS.bossEvery, 300);
-assert.deepEqual(ENDLESS.eliteRotate, ['sentinel', 'hunter']);
+assert.deepEqual(ENDLESS.eliteRotate, ['sentinel', 'hunter', 'commander']);
 assert.equal(ENDLESS.bossId, 'swarm_core');
 
 const dt = 1 / 30;
@@ -89,6 +96,7 @@ const dt = 1 / 30;
   g2.t = 120;
   g2._beatsFired['120:sentinel'] = true;
   g2._beatsFired['240:hunter'] = true;
+  g2._beatsFired['300:commander'] = true;
   g2._spawnPauseUntil = 0;
   const evs = [];
   const e2 = g2._spawnElite({ at: 120, kind: 'elite', id: 'sentinel' }, evs);
@@ -146,6 +154,7 @@ const dt = 1 / 30;
   g.t = 359;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   let sawBoss = false;
   let boss = null;
   while (g.t < 362 && g.alive) {
@@ -173,6 +182,7 @@ const dt = 1 / 30;
   g.t = 360;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const evs = [];
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, evs);
@@ -200,6 +210,7 @@ const dt = 1 / 30;
   g.t = 360;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, []);
   boss.hp = boss.maxHp * 0.5; // force volley
@@ -272,6 +283,7 @@ const dt = 1 / 30;
   g.t = 360;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, []);
   const scoreBefore = g.score;
@@ -293,6 +305,7 @@ const dt = 1 / 30;
   g.t = TRIAL.surviveSec - 0.5;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, []);
   assert.ok(boss);
@@ -344,6 +357,7 @@ const dt = 1 / 30;
   g.t = 240;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._spawnPauseUntil = 0;
   const hCfg = eliteCfg('hunter');
   const e = g._spawnElite({ at: 240, kind: 'elite', id: 'hunter' }, []);
@@ -414,6 +428,134 @@ const dt = 1 / 30;
   assert.ok(!g.enemies.some((e) => e.type === 'hunter'), 'no hunter while sentinel alive');
 }
 
+
+// ---------- Elite #3 ARMY COMMANDER @300 — summon / attack mode shifts ----------
+{
+  const g = new Game({ seed: 42 });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  g.t = 299;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  let sawCmd = false;
+  let cmd = null;
+  while (g.t < 302 && g.alive) {
+    if (g.pausedForLevel && g.pendingCards) g.applyCard(g.pendingCards[0]);
+    g.stopMove();
+    const { events } = g.step(dt);
+    for (const ev of events) {
+      if (ev.type === 'beat' && ev.kind === 'elite' && ev.id === 'commander') sawCmd = true;
+      if (ev.type === 'eliteIn' && ev.nameEn === 'ARMY COMMANDER') sawCmd = true;
+    }
+    if (!cmd) cmd = g.enemies.find((e) => e.elite && e.type === 'commander') || null;
+  }
+  assert.ok(sawCmd, 'commander beat should fire near t=300');
+  assert.ok(cmd, 'commander entity should exist');
+  assert.equal(cmd.type, 'commander');
+  assert.equal(cmd.cmdMode, 'summon');
+  assert.equal(g.enemies.filter((e) => e.elite).length, 1, 'max one elite at commander spawn');
+}
+
+// Commander: summon telegraph ≥0.8s then soldiers/drones; no hurt during summon telegraph
+{
+  const g = new Game({ seed: 66 });
+  g.enemies.length = 0;
+  g.invuln = 0;
+  g.hp = 30;
+  g.t = 300;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
+  g._spawnPauseUntil = 0;
+  const e = g._spawnElite({ at: 300, kind: 'elite', id: 'commander' }, []);
+  assert.ok(e);
+  e.x = g.px + 5;
+  e.z = g.pz;
+  e.phase = 'walk';
+  e.phaseT = 0.01;
+  e.cmdMode = 'summon';
+  let teleEv = null;
+  let summonEv = null;
+  let hurtInTele = false;
+  const beforeCount = g.enemies.length;
+  let guard = 0;
+  while (guard++ < 4000 && g.alive && !summonEv) {
+    if (g.pausedForLevel && g.pendingCards) g.applyCard(g.pendingCards[0]);
+    g.stopMove();
+    const el = g.enemies.find((x) => x.elite);
+    if (!el) break;
+    el.hp = Math.max(el.hp, 40);
+    const { events } = g.step(dt);
+    for (const ev of events) {
+      if (ev.type === 'telegraph' && ev.kind === 'commanderSummon' && !teleEv) teleEv = ev;
+      if (ev.type === 'commanderSummon') summonEv = ev;
+      if (ev.type === 'hurt' && el.phase === 'telegraph_summon') hurtInTele = true;
+    }
+    assert.equal(g.enemies.filter((x) => x.elite).length, 1, 'max one elite during summon');
+  }
+  assert.ok(teleEv, 'commander summon telegraph event');
+  assert.ok(teleEv.duration >= 0.8, 'summon telegraph ≥0.8s');
+  assert.ok(summonEv, 'commanderSummon after telegraph');
+  assert.ok(summonEv.count >= 2, 'summons at least 2 units');
+  assert.ok(g.enemies.length > beforeCount, 'soldiers/drones added');
+  assert.equal(hurtInTele, false, 'no hurt during summon telegraph');
+  assert.equal(e.cmdMode, 'attack', 'mode shifts to attack after summon');
+}
+
+// Commander attack telegraph ≥0.8s then charge damage; no hurt during telegraph
+{
+  const g = new Game({ seed: 67 });
+  g.enemies.length = 0;
+  g.invuln = 0;
+  g.hp = 30;
+  g.t = 300;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
+  g._spawnPauseUntil = 0;
+  const cfg = eliteCfg('commander');
+  const e = g._spawnElite({ at: 300, kind: 'elite', id: 'commander' }, []);
+  e.x = g.px + 4;
+  e.z = g.pz;
+  e.cmdMode = 'attack';
+  e.phase = 'walk';
+  e.phaseT = 0.01;
+  let teleEv = null;
+  let chargeEv = null;
+  let hurtInTele = false;
+  let guard = 0;
+  while (guard++ < 4000 && g.alive && !chargeEv) {
+    if (g.pausedForLevel && g.pendingCards) g.applyCard(g.pendingCards[0]);
+    g.stopMove();
+    const el = g.enemies.find((x) => x.elite);
+    if (!el) break;
+    el.hp = Math.max(el.hp, 40);
+    if (el.phase === 'telegraph_attack') {
+      el.x = g.px; el.z = g.pz;
+    }
+    const { events } = g.step(dt);
+    for (const ev of events) {
+      if (ev.type === 'telegraph' && ev.kind === 'commanderAttack' && !teleEv) teleEv = ev;
+      if (ev.type === 'eliteCharge') chargeEv = ev;
+      if (ev.type === 'hurt' && el.phase === 'telegraph_attack') hurtInTele = true;
+    }
+  }
+  assert.ok(teleEv, 'commander attack telegraph');
+  assert.ok(teleEv.duration >= 0.8, 'attack telegraph ≥0.8s');
+  assert.ok(chargeEv, 'eliteCharge after attack telegraph');
+  assert.equal(hurtInTele, false, 'no hurt during attack telegraph');
+  // Force charge contact
+  const el = g.enemies.find((x) => x.elite);
+  el.phase = 'charge';
+  el.phaseT = cfg.chargeSec;
+  el.chargeDx = 0; el.chargeDz = 1;
+  el.x = g.px; el.z = g.pz;
+  g.invuln = 0;
+  const hpBefore = g.hp;
+  const { events: cev } = g.step(dt);
+  assert.ok(cev.some((ev) => ev.type === 'hurt') || g.hp < hpBefore, 'charge deals damage');
+}
+
 // ---------- Endless elites after boss (v0.9.18) ----------
 function driveQuiet(g, until, onEvents) {
   let guard = 0;
@@ -434,7 +576,7 @@ function driveQuiet(g, until, onEvents) {
   }
 }
 
-// After ~450 and ~540 another elite can spawn (rotate sentinel → hunter)
+// After ~450 and ~540 another elite can spawn (rotate sentinel → hunter → commander)
 {
   const g = new Game({ seed: 77, endless: true });
   g.enemies.length = 0;
@@ -442,6 +584,7 @@ function driveQuiet(g, until, onEvents) {
   // Skip fixed beats so we only observe endless cadence
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   g.t = ENDLESS.startAfter - 0.05;
   g._spawnPauseUntil = 0;
@@ -485,6 +628,7 @@ function driveQuiet(g, until, onEvents) {
   g.invuln = 999;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   g.t = ENDLESS.startAfter + ENDLESS.eliteEvery - 0.05;
   g._spawnPauseUntil = 0;
@@ -520,6 +664,7 @@ function driveQuiet(g, until, onEvents) {
   g.invuln = 999;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   g.t = ENDLESS.startAfter + ENDLESS.eliteEvery - 0.05;
   driveQuiet(g, ENDLESS.startAfter + ENDLESS.eliteEvery + 5, null);
@@ -534,6 +679,7 @@ function driveQuiet(g, until, onEvents) {
   g.invuln = 999;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   g.t = ENDLESS.startAfter + ENDLESS.bossEvery - 0.05;
   g._spawnPauseUntil = 0;
@@ -558,6 +704,7 @@ function driveQuiet(g, until, onEvents) {
   g.invuln = 999;
   g._beatsFired['120:sentinel'] = true;
   g._beatsFired['240:hunter'] = true;
+  g._beatsFired['300:commander'] = true;
   g._beatsFired['360:swarm_core'] = true;
   g.t = TRIAL.surviveSec - 0.5;
   driveQuiet(g, TRIAL.surviveSec + 1.0, null);
@@ -569,11 +716,14 @@ function driveQuiet(g, until, onEvents) {
 console.log('beats OK', {
   eliteAt: BEATS[0].at,
   elite2At: BEATS[1].at,
-  bossAt: BEATS[2].at,
+  elite3At: BEATS[2].at,
+  bossAt: BEATS[3].at,
   endlessEliteEvery: ENDLESS.eliteEvery,
   endlessBossEvery: ENDLESS.bossEvery,
   endlessStartAfter: ENDLESS.startAfter,
+  eliteRotate: ENDLESS.eliteRotate,
   hunterComboSegs: eliteCfg('hunter').comboSegs,
+  commanderModeShift: eliteCfg('commander').modeShift,
   volleyTelegraphSec: BOSS.volleyTelegraphSec,
   cardChoices: BOSS.cardChoices,
   trialSurviveSec: TRIAL.surviveSec,

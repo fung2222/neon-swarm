@@ -221,7 +221,7 @@ export function closeMuzzlePos(px, pz, mwX, mwZ, aimX, aimZ, targetDist, targetR
 function isPunchKill(e, heavyWeapon = false) {
   if (heavyWeapon) return true;
   const k = e && e.kind;
-  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || k === 'hunter' || k === 'swarm_core' || !!(e && (e.elite || e.boss));
+  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || k === 'hunter' || k === 'commander' || k === 'swarm_core' || !!(e && (e.elite || e.boss));
 }
 
 function mulberry32(a) {
@@ -489,7 +489,7 @@ export class Game {
     if (this.t >= eAt) {
       const eliteAlive = this.enemies.some((e) => e.elite && !e.boss);
       if (!eliteAlive) {
-        const rotate = ENDLESS.eliteRotate || ['sentinel', 'hunter'];
+        const rotate = ENDLESS.eliteRotate || ['sentinel', 'hunter', 'commander'];
         const id = rotate[this._endlessEliteIdx % rotate.length];
         this._endlessEliteIdx += 1;
         this._spawnElite({ at: eAt, kind: 'elite', id }, events);
@@ -548,6 +548,10 @@ export class Game {
       comboSegs: Math.max(1, cfg.comboSegs || 1),
       dualLane: !!cfg.dualLane,
       _comboContinue: false,
+      // Army commander: alternate summon / personal attack modes
+      cmdMode: cfg.modeShift ? 'summon' : null,
+      cmdPhase: null,
+      summonMarks: null,
     };
     this.enemies.push(e);
     events.push({
@@ -591,6 +595,10 @@ export class Game {
    * Contact damage only during charge after telegraph completes.
    */
   _tickElite(e, dt, events) {
+    if (e.type === 'commander') {
+      this._tickCommander(e, dt, events);
+      return;
+    }
     const cfg = eliteCfg(e.type);
     e.phaseT -= dt;
     if (e.hit > 0) e.hit -= dt;
@@ -671,6 +679,194 @@ export class Game {
       e.phase = 'walk';
       e.phaseT = 1.5;
     }
+  }
+
+
+  /**
+   * Army Commander elite: mode shifts
+   *   walk → telegraph_summon (≥1.0s orange/red marks) → summon soldiers/drones → recover
+   *        → telegraph_attack (≥1.1s lane) → charge → recover → (repeat alternate)
+   * Contact damage only during charge after attack telegraph. Max one elite still holds.
+   */
+  _tickCommander(e, dt, events) {
+    const cfg = eliteCfg(e.type);
+    e.phaseT -= dt;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? 0.55 : 1;
+    if (!e.cmdMode) e.cmdMode = 'summon';
+
+    if (e.phase === 'walk') {
+      const dx = this.px - e.x, dz = this.pz - e.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const spd = e.speed * e.chase * (cfg.walkSpeedMul || 0.8) * slowMul;
+      e.vx = (dx / len) * spd;
+      e.vz = (dz / len) * spd;
+      e.x += e.vx * dt;
+      e.z += e.vz * dt;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.animPhase = (e.animPhase || 0) + Math.max(6, spd * 5) * dt;
+      if (e.phaseT <= 0) {
+        if (e.cmdMode === 'summon') this._beginCommanderSummonTelegraph(e, events, cfg);
+        else this._beginCommanderAttackTelegraph(e, events, cfg);
+      }
+    } else if (e.phase === 'telegraph_summon') {
+      e.vx = 0; e.vz = 0;
+      if (e.phaseT <= 0) {
+        this._commanderDoSummon(e, events, cfg);
+        e.phase = 'recover';
+        e.phaseT = cfg.recoverSec || 1.7;
+        e.cmdMode = 'attack';
+        e.summonMarks = null;
+      }
+    } else if (e.phase === 'telegraph' || e.phase === 'telegraph_attack') {
+      e.vx = 0; e.vz = 0;
+      if (e.phaseT <= 0) {
+        e.phase = 'charge';
+        e.phaseT = cfg.chargeSec;
+        events.push({ type: 'eliteCharge', eliteId: e.id, segment: 0, eliteType: 'commander', mode: 'attack' });
+      }
+    } else if (e.phase === 'charge') {
+      const spd = (cfg.chargeSpeed || 8.8) * slowMul;
+      e.vx = e.chargeDx * spd;
+      e.vz = e.chargeDz * spd;
+      e.x += e.vx * dt;
+      e.z += e.vz * dt;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.animPhase = (e.animPhase || 0) + 14 * dt;
+      if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+        const dmg = cfg.chargeDamage != null ? cfg.chargeDamage : (e.damage || 3);
+        const taken = Math.max(1, dmg - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
+        this.hitFlash = 0.28;
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        e.x -= e.chargeDx * 1.1;
+        e.z -= e.chargeDz * 1.1;
+        if (this.hp <= 0) {
+          this.alive = false;
+          this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+          events.push({ type: 'dead' });
+        }
+      }
+      if (e.phaseT <= 0) {
+        e.phase = 'recover';
+        e.phaseT = cfg.recoverSec || 1.7;
+        e.vx = 0; e.vz = 0;
+        e.cmdMode = 'summon';
+      }
+    } else if (e.phase === 'recover') {
+      e.vx = 0; e.vz = 0;
+      if (e.phaseT <= 0) {
+        e.phase = 'walk';
+        e.phaseT = (cfg.walkSecMin || 1.5) + this.rng() * ((cfg.walkSecMax || 2.6) - (cfg.walkSecMin || 1.5));
+      }
+    } else {
+      e.phase = 'walk';
+      e.phaseT = 1.5;
+    }
+  }
+
+  _beginCommanderSummonTelegraph(e, events, cfg) {
+    const tele = cfg.summonTelegraphSec != null ? cfg.summonTelegraphSec : 1.0;
+    e.phase = 'telegraph_summon';
+    e.phaseT = tele;
+    e.telegraphDur = tele;
+    e.telegraphAt = this.t;
+    e.damageAt = this.t + tele;
+    e.vx = 0; e.vz = 0;
+    const n = Math.max(2, cfg.summonCount || 4);
+    const marks = [];
+    for (let i = 0; i < n; i++) {
+      const ang = this.rng() * Math.PI * 2;
+      const dist = 1.6 + this.rng() * 1.8;
+      const c = this._softClamp(e.x + Math.cos(ang) * dist, e.z + Math.sin(ang) * dist, 0.35);
+      marks.push({ x: c.x, z: c.z });
+    }
+    e.summonMarks = marks;
+    events.push({
+      type: 'telegraph',
+      kind: 'commanderSummon',
+      eliteId: e.id,
+      eliteType: 'commander',
+      mode: 'summon',
+      x: e.x, z: e.z,
+      marks: marks.map((m) => ({ x: m.x, z: m.z })),
+      duration: tele,
+      damageAt: e.damageAt,
+    });
+  }
+
+  _beginCommanderAttackTelegraph(e, events, cfg) {
+    const tele = cfg.attackTelegraphSec != null ? cfg.attackTelegraphSec : (cfg.telegraphSec || 1.1);
+    e.phase = 'telegraph_attack';
+    // Keep phase==='telegraph' compatible for warn-lane sync: also set a flag
+    // View treats telegraph_attack like telegraph for lanes.
+    e.phaseT = tele;
+    e.telegraphDur = tele;
+    e.telegraphAt = this.t;
+    e.damageAt = this.t + tele;
+    const adx = this.px - e.x, adz = this.pz - e.z;
+    const al = Math.hypot(adx, adz) || 1;
+    e.chargeDx = adx / al;
+    e.chargeDz = adz / al;
+    e.vx = 0; e.vz = 0;
+    e.summonMarks = null;
+    events.push({
+      type: 'telegraph',
+      kind: 'commanderAttack',
+      eliteId: e.id,
+      eliteType: 'commander',
+      mode: 'attack',
+      x: e.x, z: e.z,
+      dx: e.chargeDx, dz: e.chargeDz,
+      duration: tele,
+      damageAt: e.damageAt,
+      dualLane: false,
+    });
+  }
+
+  _commanderDoSummon(e, events, cfg) {
+    const types = (cfg.summonTypes && cfg.summonTypes.length) ? cfg.summonTypes : ['soldier', 'drone'];
+    const marks = e.summonMarks || [];
+    let spawned = 0;
+    for (let i = 0; i < marks.length; i++) {
+      const typ = types[i % types.length];
+      const def = ENEMIES[typ];
+      if (!def) continue;
+      // Soft cap: don't flood if arena already dense
+      if (this.enemies.length >= 70) break;
+      const m = marks[i];
+      const { hpMul, speedMul } = swarmPressure(this.t);
+      this.enemies.push({
+        id: this._nextEid++,
+        type: typ, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
+        x: m.x, z: m.z, prevX: m.x, prevZ: m.z, vx: 0, vz: 0,
+        hp: def.hp * hpMul, maxHp: def.hp * hpMul,
+        speed: def.speed * speedMul, r: def.radius,
+        xp: def.xp, score: def.score, color: def.color, chase: def.chase,
+        damage: def.damage || 1, shield: def.shield || 0,
+        hit: 0, slow: 0, wob: this.rng() * Math.PI * 2,
+        animPhase: this.rng() * Math.PI * 2,
+        panic: !!def.panic,
+        elite: false,
+        boss: false,
+        summonedBy: e.id,
+        faceDx: 0, faceDz: 1,
+        telegraphDur: 0, telegraphAt: 0,
+        aimDx: 0, aimDz: 1, aimX: 0, aimZ: 0,
+      });
+      spawned += 1;
+    }
+    events.push({
+      type: 'commanderSummon',
+      eliteId: e.id,
+      count: spawned,
+      marks: marks.map((m) => ({ x: m.x, z: m.z })),
+    });
   }
 
   _bossPhaseName(e) {
