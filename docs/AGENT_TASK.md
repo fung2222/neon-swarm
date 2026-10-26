@@ -30,7 +30,7 @@
 
 ### Recently completed（do not re-implement）
 
-- `PHASE3-ENEMY-BOMBER-001` → **v0.9.40** (`PENDING`)
+- `PHASE3-ENEMY-BOMBER-001` → **v0.9.40** (`2ab9dbb`)
 - `PHASE6-RESULT-SHARE-001` → **v0.9.39** (`87eb03a`)
 - `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** (`fc61ddc`)
 - `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
