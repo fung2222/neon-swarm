@@ -28,44 +28,41 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-PICKUP-POLISH-001 → **completed**（v0.9.29）
+## 狀態：PHASE6-DROP-READABILITY-001 → **complete**（v0.9.30 / pending SHA）
 
 **ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
 
-### Completed this turn
+### Active this turn
 
-**Task ID：** `PHASE6-PICKUP-POLISH-001` — live cache-bust **`?v=0.9.29`**.
+**none** — last shipped: `PHASE6-DROP-READABILITY-001` → **`?v=0.9.30`**.
 
-- **Slot-fire sync：** `_tickWeapons` only fires weapons present in `weaponSlots`; `_pruneUnslottedWeapons` clears orphan slot-weapon `taken`／combat props after apply. HUD ≡ shots.
-- **Pickup UX：** shorter zh-HK take／upgrade／swap／keep／convertHeal copy；swap highlights target `#weapon-slots` cell；convertHeal shows `+2 HP`；keep = decline crate + resume.
-- Weapon-crate ground halo punchier (weapon kind only).
-- Screenshots: `tests/screenshots/phase6-pickup-polish/`.
-- Tests: inventory＋weapon-pickup extended；regression green.
-- No balance／Phase 4／horn lock／phone GPU.
+**Shipped behavior：**
+- XP = small green crystal **shards** (not letter-board)
+- Heal = white+green **cross repair pack**
+- Magnet = rare blue **pulse disc** ground drop (`MAGNET_DROP_CHANCE=0.025`) applying existing magnet util card (×1.35, max 4) — no new formula
+- Weapon = gold-framed board landmark (v0.9.29 halo kept)
+- Size hierarchy XP < heal < weapon; per-kind floor halo/rim
+- Screenshots `tests/screenshots/phase6-drop-readability/`
 
 ### Queue（recommended next — safe, no Phase 4）
 
-1. **XP／heal／magnet pickup readability polish** — ← **recommended next**
-2. **HIT-FEEL-DEVICE**（needs Roy 真機）— skip wait；keep queued
-3. Phone GPU／WebGL — **deferred by Roy**
-4. Horn art lock — **only after** Roy later OK
-5. Continuous 360° gun turret — only if 8-dir still jumpy after play
+1. **PHASE6-LEVELUP-CARD-UX-001** — level-up card UX polish (layout／contrast／tap targets) — preferred next
+2. OR pause／zone banner timing QOL if card UX unclear
+3. **HIT-FEEL-DEVICE**（needs Roy 真機）— skip wait；keep queued
+4. Phone GPU／WebGL — **deferred by Roy**
+5. Horn art lock — **only after** Roy later OK
+
+If safe Phase6 polish queue thins after card UX — sync before Phase 4 (do not invent systems).
 
 **Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU 深入／further horn polish.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-DROP-READABILITY-001` → **v0.9.30**.
 - `PHASE6-PICKUP-POLISH-001` → **v0.9.29**.
 - `PHASE6-MULTI-SLOT-INVENTORY-001` → **v0.9.28**.
 - `GUN-8DIR-001` → **v0.9.27**.
 - `PHASE3-ELITE-COMMANDER-001` → **v0.9.26**.
-- `PHASE3-ENEMY-ARTILLERY-001` → **v0.9.25**.
-- `PHASE3-ENEMY-SHIELD-001` → **v0.9.24**.
-- `PHASE3-ENEMY-SNIPER-001` → **v0.9.23**.
-- `PHASE2-COMBAT-READABILITY-002` → **v0.9.22**.
-- `HORN-SILHOUETTE-DIRECTION` → **v0.9.21** interim（**not** final art lock）.
-- `PHONE-STABLE-FOLLOWUP` → **v0.9.20**.
-- `AIM-HIT-FAST-002` → **v0.9.19**.
 
 ---
 

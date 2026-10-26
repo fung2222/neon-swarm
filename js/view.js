@@ -1140,42 +1140,183 @@ function spawnFragments(parent, x, z, colorHex, n = 8) {
   }
 }
 
-// Drops: a solid 3D cube with an icon face — one readable object per pickup.
-//   XP  -> green cube, "X" glyph and a rocket chevron
-//   heal-> cyan cube, "H" cross glyph
-//   W   -> gold cube, weapon icon (gun / blade / orb drawn per weapon family)
+// Drops (v0.9.30): distinct silhouettes — XP shards / heal pack / magnet disc / weapon board.
+// Cheap canvas textures + simple planes/discs; billboard via userData.cube/face.
 // ---------------------------------------------------------------------------
 const DROP_TEX = Object.create(null);
-
-function iconGlyph(kind, weapon) {
-  if (kind === 'xp') return 'X';
-  if (kind === 'heal') return 'H';
-  if (kind === 'weapon') return WEAPON_SHOT[weapon] ? weapon : 'dmg';
-  return '?';
-}
 
 function dropLabel(kind, weapon) {
   if (kind === 'xp') return 'XP';
   if (kind === 'heal') return 'HP';
+  if (kind === 'magnet') return 'MAG';
   if (kind === 'shield') return 'SH';
   if (kind === 'weapon') return WEAPON_DROP_LABEL[weapon] || (weapon ? String(weapon).toUpperCase().slice(0, 5) : 'GUN');
   return (DROP[kind] && DROP[kind].letter) || '?';
 }
 
-function makeDropTexture(kind, weapon) {
+function hexOf(color) {
+  return '#' + (color >>> 0).toString(16).padStart(6, '0');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+function finishDropTex(c) {
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
+/** Small green crystal shards — not a letter-board cube. */
+function makeXpShardTexture() {
   const s = 256;
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  const color = (DROP[kind] && DROP[kind].color) || 0x00e5ff;
-  const hex = '#' + color.toString(16).padStart(6, '0');
-  // Deep-gray neon commercial frame
   ctx.clearRect(0, 0, s, s);
-  // outer glow plate
+  const shards = [
+    { x: 118, y: 70, w: 38, h: 92, rot: -0.22, fill: '#3bff8a', edge: '#b8ffe0' },
+    { x: 78, y: 110, w: 30, h: 70, rot: 0.35, fill: '#1fd96a', edge: '#7cffb0' },
+    { x: 155, y: 120, w: 26, h: 58, rot: -0.55, fill: '#7cff9a', edge: '#e0ffe8' },
+  ];
+  for (const sh of shards) {
+    ctx.save();
+    ctx.translate(sh.x, sh.y);
+    ctx.rotate(sh.rot);
+    ctx.shadowColor = '#3bff8a';
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.moveTo(0, -sh.h / 2);
+    ctx.lineTo(sh.w / 2, -sh.h * 0.1);
+    ctx.lineTo(sh.w * 0.2, sh.h / 2);
+    ctx.lineTo(-sh.w * 0.35, sh.h * 0.35);
+    ctx.lineTo(-sh.w / 2, -sh.h * 0.05);
+    ctx.closePath();
+    ctx.fillStyle = sh.fill;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = sh.edge;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // highlight facet
+    ctx.beginPath();
+    ctx.moveTo(0, -sh.h / 2);
+    ctx.lineTo(sh.w * 0.15, -sh.h * 0.05);
+    ctx.lineTo(-sh.w * 0.1, sh.h * 0.1);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.fillStyle = 'rgba(180,255,210,0.7)';
+  ctx.font = '700 22px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('XP', s / 2, s - 28);
+  return finishDropTex(c);
+}
+
+/** White + green medical cross pack. */
+function makeHealPackTexture() {
+  const s = 256;
+  const c = document.createElement('canvas');
+  c.width = s; c.height = s;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, s, s);
+  // pack body
+  ctx.shadowColor = '#7cff9a';
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = '#f2fff6';
+  roundRect(ctx, 48, 58, 160, 140, 22);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = '#3bff8a';
+  roundRect(ctx, 48, 58, 160, 140, 22);
+  ctx.stroke();
+  // green cross
+  ctx.fillStyle = '#1aa84f';
+  ctx.fillRect(112, 88, 32, 88);
+  ctx.fillRect(84, 116, 88, 32);
+  // white bevel on cross
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillRect(118, 92, 10, 78);
+  ctx.fillRect(90, 122, 76, 10);
+  // strap
+  ctx.fillStyle = '#2ecc71';
+  ctx.fillRect(48, 78, 160, 12);
+  ctx.fillStyle = 'rgba(30,80,50,0.75)';
+  ctx.font = '800 20px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('REPAIR', s / 2, s - 28);
+  return finishDropTex(c);
+}
+
+/** Blue magnet pulse disc. */
+function makeMagnetDiscTexture() {
+  const s = 256;
+  const c = document.createElement('canvas');
+  c.width = s; c.height = s;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, s, s);
+  const cx = s / 2, cy = s / 2 - 6;
+  // outer glow disc
+  const grd = ctx.createRadialGradient(cx, cy, 20, cx, cy, 110);
+  grd.addColorStop(0, 'rgba(160,220,255,0.95)');
+  grd.addColorStop(0.45, 'rgba(74,168,255,0.85)');
+  grd.addColorStop(1, 'rgba(20,60,120,0.05)');
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 108, 0, Math.PI * 2);
+  ctx.fill();
+  // pulse rings
+  ctx.strokeStyle = 'rgba(180,230,255,0.85)';
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(cx, cy, 78, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(100,180,255,0.7)';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx, cy, 98, 0, Math.PI * 2); ctx.stroke();
+  // horseshoe / magnet glyph
+  ctx.strokeStyle = '#e8f6ff';
+  ctx.lineWidth = 18;
+  ctx.lineCap = 'butt';
+  ctx.beginPath();
+  ctx.arc(cx, cy + 8, 42, Math.PI * 0.15, Math.PI * 0.85, true);
+  ctx.stroke();
+  ctx.fillStyle = '#ff5a5a';
+  ctx.fillRect(cx - 50, cy + 4, 16, 28);
+  ctx.fillStyle = '#c0d0e0';
+  ctx.fillRect(cx + 34, cy + 4, 16, 28);
+  ctx.fillStyle = 'rgba(180,220,255,0.85)';
+  ctx.font = '800 20px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('MAGNET', s / 2, s - 22);
+  return finishDropTex(c);
+}
+
+/** Gold-framed weapon board (v0.9.29 style — keep landmark readable). */
+function makeWeaponBoardTexture(kind, weapon) {
+  const s = 256;
+  const c = document.createElement('canvas');
+  c.width = s; c.height = s;
+  const ctx = c.getContext('2d');
+  const color = (DROP[kind] && DROP[kind].color) || 0xffc21a;
+  const hex = hexOf(color);
+  ctx.clearRect(0, 0, s, s);
   ctx.fillStyle = 'rgba(10, 14, 20, 0.92)';
   roundRect(ctx, 10, 10, s - 20, s - 20, 18);
   ctx.fill();
-  // bordered glow box
   ctx.lineWidth = 10;
   ctx.strokeStyle = hex;
   roundRect(ctx, 18, 18, s - 36, s - 36, 14);
@@ -1184,7 +1325,6 @@ function makeDropTexture(kind, weapon) {
   ctx.strokeStyle = 'rgba(200, 240, 255, 0.55)';
   roundRect(ctx, 28, 28, s - 56, s - 56, 10);
   ctx.stroke();
-  // corner ticks
   ctx.strokeStyle = hex;
   ctx.lineWidth = 4;
   const t = 22;
@@ -1200,70 +1340,60 @@ function makeDropTexture(kind, weapon) {
   ctx.fillStyle = hex;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // Size font so long labels (LASER/MULTI) still fill the box
   const len = label.length;
   const px = len <= 2 ? 118 : len <= 3 ? 92 : len <= 4 ? 72 : 58;
   ctx.font = '900 ' + px + 'px "Segoe UI", "Arial Black", Orbitron, sans-serif';
   ctx.shadowColor = hex;
-  ctx.shadowBlur = 26; // v0.9.22 pickup glyph punch
+  ctx.shadowBlur = 26;
   ctx.fillText(label, s / 2, s / 2 + 4);
   ctx.shadowBlur = 0;
-  // tiny caption strip
   ctx.font = '700 18px "Segoe UI", sans-serif';
   ctx.fillStyle = 'rgba(180, 220, 240, 0.75)';
-  const cap = kind === 'weapon' ? 'WEAPON' : (kind === 'heal' ? 'REPAIR' : kind === 'xp' ? 'EXP' : String(kind).toUpperCase());
+  const cap = kind === 'weapon' ? 'WEAPON' : String(kind).toUpperCase();
   ctx.fillText(cap, s / 2, s - 42);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  tex.generateMipmaps = false;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  return tex;
+  return finishDropTex(c);
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-  const rr = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + rr, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rr);
-  ctx.arcTo(x + w, y + h, x, y + h, rr);
-  ctx.arcTo(x, y + h, x, y, rr);
-  ctx.arcTo(x, y, x + w, y, rr);
-  ctx.closePath();
+function makeDropTexture(kind, weapon) {
+  if (kind === 'xp') return makeXpShardTexture();
+  if (kind === 'heal') return makeHealPackTexture();
+  if (kind === 'magnet') return makeMagnetDiscTexture();
+  // weapon / shield / fallback → framed board
+  return makeWeaponBoardTexture(kind, weapon);
 }
 
 function dropTexture(kind, weapon) {
-  const key = kind + ':' + (weapon || '') + ':v3';
+  const key = kind + ':' + (weapon || '') + ':v4';
   if (!DROP_TEX[key]) DROP_TEX[key] = makeDropTexture(kind, weapon);
   return DROP_TEX[key];
 }
 
-/** Large neon-framed letter board — always readable, faces camera in sync. */
+/** Kind-specific silhouette mesh; billboard face in userData.cube/face. */
 function dropMesh(d) {
   const g = new THREE.Group();
-  const color = (DROP[d.kind] && DROP[d.kind].color) || 0x00e5ff;
+  const meta = DROP[d.kind] || DROP.xp;
+  const color = meta.color || 0x00e5ff;
+  const faceSize = meta.scale || 1.0;
   const board = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.15, 1.15),
+    new THREE.PlaneGeometry(faceSize, faceSize),
     new THREE.MeshBasicMaterial({
       map: dropTexture(d.kind, d.weapon),
       transparent: true,
-      alphaTest: 0.15,
+      alphaTest: 0.08,
       depthWrite: false,
       fog: false,
       side: THREE.DoubleSide,
     })
   );
-  board.position.y = 0.85;
+  // Hover height: shards sit lower; weapon crate taller landmark
+  const hoverY = d.kind === 'xp' ? 0.55 : d.kind === 'heal' ? 0.7 : d.kind === 'magnet' ? 0.45 : 0.85;
+  board.position.y = hoverY;
   board.name = 'face';
-  // v0.9.22: brighter floor halo so XP/heal/weapon crates beat dark floor
-  // v0.9.29: weapon crates get a slightly punchier halo (no HUD redesign)
-  const isWeapon = d.kind === 'weapon';
-  const glowR = isWeapon ? 0.74 : 0.62;
-  const glowOp = isWeapon ? 0.58 : 0.42;
-  const rimInner = isWeapon ? 0.62 : 0.54;
-  const rimOuter = isWeapon ? 0.76 : 0.64;
-  const rimOp = isWeapon ? 0.82 : 0.62;
+  const glowR = meta.glowR != null ? meta.glowR : 0.5;
+  const glowOp = meta.glowOp != null ? meta.glowOp : 0.4;
+  const rimInner = meta.rimInner != null ? meta.rimInner : 0.42;
+  const rimOuter = meta.rimOuter != null ? meta.rimOuter : 0.55;
+  const rimOp = meta.rimOp != null ? meta.rimOp : 0.6;
   const glow = new THREE.Mesh(
     new THREE.CircleGeometry(glowR, 24),
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: glowOp, depthWrite: false, fog: false })
@@ -1277,9 +1407,11 @@ function dropMesh(d) {
   rim.rotation.x = -Math.PI / 2;
   rim.position.y = 0.04;
   g.add(board, glow, rim);
-  g.userData.cube = board; // keep sync API field name
+  g.userData.cube = board;
   g.userData.face = board;
   g.userData.bill = board;
+  g.userData.dropKind = d.kind;
+  g.userData.hoverY = hoverY;
   return g;
 }
 // ---------------------------------------------------------------------------
@@ -2560,10 +2692,13 @@ export class View {
       }
       const pop = g.pop > 0 ? 1 + g.pop * 0.9 : 1;
       slot.position.set(g.x, 0.02, g.z);
-      slot.scale.setScalar(pop * 1.05 * 0.7); // v0.8.3: pickups −30%
+      // Geometry already encodes size hierarchy; keep mild pop only
+      slot.scale.setScalar(pop * 1.05 * 0.7);
       const board = slot.userData.cube;
       if (board) {
-        board.position.y = 0.9 + Math.sin(game.t * 2.4 + g.x) * 0.06;
+        const baseY = slot.userData.hoverY != null ? slot.userData.hoverY : 0.85;
+        const bob = g.kind === 'magnet' ? 0.04 : 0.06;
+        board.position.y = baseY + Math.sin(game.t * 2.4 + g.x) * bob;
         board.quaternion.copy(this.stage.camera.quaternion);
       }
       if (face && face !== board) face.quaternion.copy(this.stage.camera.quaternion);

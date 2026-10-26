@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -1709,6 +1709,14 @@ export class Game {
       this.gems.push({ x: e.x + 0.25, z: e.z + 0.25, xp: 0, r: 0.2, life: 18, pop: 0.25, letter: 'H', kind: 'heal' });
       return;
     }
+    // Rare magnet disc — same util effect as magnet card; XP/heal amounts unchanged.
+    if (this.rng() < (MAGNET_DROP_CHANCE || 0.025)) {
+      this.gems.push({
+        x: e.x + 0.15, z: e.z - 0.15, xp: 0, r: 0.22, life: 20, pop: 0.28,
+        letter: 'M', kind: 'magnet',
+      });
+      return;
+    }
     for (const c of cratesFor(e.xp)) {
       this.gems.push({ x: e.x, z: e.z, xp: c.xp, r: 0.18, life: 18, pop: 0.25, letter: c.letter, kind: 'xp' });
     }
@@ -2556,6 +2564,20 @@ export class Game {
         if (g.kind === 'heal') {
           this.hp = Math.min(this.maxHp, this.hp + 2);
           events.push({ type: 'heal', amount: 2 });
+        } else if (g.kind === 'magnet') {
+          // Same as magnet util card (×1.35, max 4 stacks via taken) — no new formula.
+          if (!this.taken) this.taken = {};
+          const card = CARDS_BY_ID && CARDS_BY_ID.magnet;
+          const max = (card && card.max != null) ? card.max : 4;
+          const stacks = this.taken.magnet || 0;
+          if (stacks < max) {
+            if (card && typeof card.apply === 'function') card.apply(this);
+            else this.magnet *= 1.35;
+            this.taken.magnet = stacks + 1;
+            events.push({ type: 'magnet', stacks: this.taken.magnet });
+          } else {
+            events.push({ type: 'magnet', stacks, atMax: true });
+          }
         } else if (g.kind === 'weapon') {
           // Already offering cards (level-up / elite / boss / prior pickup) — leave crate.
           if (this.pausedForLevel) continue;

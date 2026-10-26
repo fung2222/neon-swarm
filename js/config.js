@@ -396,16 +396,41 @@ export const ENDLESS = {
 
 
 /**
- * Drops. Everything lands as a big letter, a weapon icon or a plain cube:
- *   X = XP crate (green cube)   H = repair (cyan cube)   S = shield (violet cube)
+ * Ground drops (v0.9.30 silhouettes).
+ *   XP = green shards · Heal = white+green cross pack · Magnet = blue pulse disc
+ *   Weapon = gold board landmark (v0.9.29 halo kept) · Shield = violet board (rare/legacy)
  * Gun emblems come from the weapon that is currently losing to the crowd.
  */
 export const DROP = {
-  xp: { letter: 'X', color: 0x3bff8a, zh: '經驗', en: 'XP' },
-  heal: { letter: 'H', color: 0x00e5ff, zh: '修復', en: 'REPAIR' },
-  shield: { letter: 'S', color: 0xb44dff, zh: '護盾', en: 'SHIELD' },
-  weapon: { letter: 'W', color: 0xffc21a, zh: '武器', en: 'WEAPON' },
+  xp: {
+    letter: 'X', color: 0x3bff8a, zh: '經驗', en: 'XP',
+    silhouette: 'shard', scale: 0.62,
+    glowR: 0.38, glowOp: 0.36, rimInner: 0.32, rimOuter: 0.42, rimOp: 0.55,
+  },
+  heal: {
+    letter: 'H', color: 0x7cff9a, zh: '修復', en: 'REPAIR',
+    silhouette: 'pack', scale: 0.88,
+    glowR: 0.52, glowOp: 0.44, rimInner: 0.44, rimOuter: 0.56, rimOp: 0.7,
+  },
+  magnet: {
+    letter: 'M', color: 0x4aa8ff, zh: '磁吸', en: 'MAGNET',
+    silhouette: 'disc', scale: 0.95,
+    glowR: 0.7, glowOp: 0.4, rimInner: 0.58, rimOuter: 0.78, rimOp: 0.75,
+  },
+  shield: {
+    letter: 'S', color: 0xb44dff, zh: '護盾', en: 'SHIELD',
+    silhouette: 'board', scale: 0.9,
+    glowR: 0.55, glowOp: 0.4, rimInner: 0.48, rimOuter: 0.58, rimOp: 0.6,
+  },
+  weapon: {
+    letter: 'W', color: 0xffc21a, zh: '武器', en: 'WEAPON',
+    silhouette: 'board', scale: 1.15,
+    glowR: 0.74, glowOp: 0.58, rimInner: 0.62, rimOuter: 0.76, rimOp: 0.82,
+  },
 };
+
+/** Rare magnet ground-drop chance after heal roll fails (XP/heal amounts unchanged). */
+export const MAGNET_DROP_CHANCE = 0.025;
 
 /** Level-up cards — weapons + armour. `shape` drives the big emblem in the pick UI. */
 export const CARDS = [
