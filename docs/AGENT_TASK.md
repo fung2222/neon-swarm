@@ -28,32 +28,35 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PERF-REBASELINE → **completed**（desktop v0.9.20；唔當玩法完成）
+## 狀態：HORN-SILHOUETTE-DIRECTION → **completed interim**（v0.9.21；**HOLD for Roy 肉眼**）
 
-**ROY continue（2026-10-26）：** phone GPU／WebGL mid-run **deferred**；**Skip** HORN（needs eyes）；**Skip** HIT-FEEL（needs play）。本輪只做桌面 rebaseline。
+**ROY direction（2026-10-26）：** 「我要機甲咁」— Japanese refined mecha + cyberpunk mil-tech；**reject** 現行塊狀／cube-stack 作為後續 mech 共用風格。本輪 = interim mecha silhouette pass for eyes only — **not** device-final-art-locked／**not** HANDOFF §9 locked。
 
 ### Completed this turn
 
-**Task ID：** `PERF-REBASELINE` — live **`?v=0.9.20`** on Roy desktop **GTX 1070 Ti** / Chrome 155 / 1280×800.
+**Task ID：** `HORN-SILHOUETTE-DIRECTION` — live cache-bust **`?v=0.9.21`**.
 
-- 3×（10s warmup + 60s capture）：avg FPS **~58.2–60.0**；WebGL `ANGLE (NVIDIA GeForce GTX 1070 Ti … D3D11)`；page/console errors none。
-- Docs：`docs/PERF-BASELINE.md` rewritten；harness tracked＋default URL `?v=0.9.20`；small `tests/performance-results/*.json` summary only（no multi-MB dumps）。
-- Headless smoke：`logic`＋`aim-hit-fast`＋`bg-pause` **PASS**；**no** gameplay code edits。
-- **誠實標：** 桌面 rebaseline only；**not** phone-verified；**not** playability／HIT-FEEL／horn lock。
+- `js/mech-builder.js` horn-only：longer limbs vs torso、narrower chest／pelvis、neck、thigh/shin wedges、sharper asymmetric pauldrons、slender arms + mid rifle；identity cues kept（single horn antenna、cyan chest core、asymmetric pauldrons、mid rifle、deep-gray／violet／cyan）。
+- Rebake 32 PNG sheets + `horn_atlas.json`／`horn_anchors.json`；`js/muzzle.js` HORN_MUZZLE_BY_DIR synced from atlas.
+- heavy／prototype stubs **unchanged**（no copy of new horn mesh）。
+- Screenshots：`tests/screenshots/horn-silhouette-mecha/`（menu desktop／rear／mobile + ingame idle + bake cells）。
+- Docs：art-bible silhouette note（Roy = mecha；blocky rejected；pending visual lock）；HANDOFF v0.9.21；本文件 HOLD。
+- **誠實標：** implemented + screenshots；**not** Roy art lock；**not** §9 locked；no balance／combat／Phase 4／phone GPU。
 
-### Queue（**do not start without Roy**）
+### Queue（**HOLD — await Roy 肉眼 on live ?v=0.9.21**）
 
-1. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。**← recommended next (needs Roy play)**
-2. **HORN-SILHOUETTE-DIRECTION**（重大／要 Roy 肉眼）— 塊狀造型唔入 lock。
+1. **Await Roy visual OK／iterate** on horn mecha silhouette — **do not polish further until he OK**。← **recommended next**
+2. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。
 3. **CONTENT** light only if safe — **no** Phase 4 Precision／Morph bulk。
 4. Phone GPU／WebGL mid-run — **deferred by Roy**。
 5. （背景）AIM-HIT-FAST-002 Kimi 獨立審。
 
-**Do NOT start：** Phase 4／horn art lock／§9 落地／phone GPU 深入／claim PERF＝玩法完成。
+**Do NOT start：** Phase 4／horn art lock／§9 落地／phone GPU 深入／further horn polish without Roy eyes。
 
 ### Recently completed（do not re-implement）
 
-- `PERF-REBASELINE` → desktop v0.9.20 GTX 1070 Ti（本輪）。
+- `HORN-SILHOUETTE-DIRECTION` → **v0.9.21** interim mecha silhouette（本輪；awaiting Roy eyes）。
+- `PERF-REBASELINE` → desktop v0.9.20 GTX 1070 Ti。
 - `PHONE-STABLE-FOLLOWUP` → **v0.9.20**。
 - `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`。
 

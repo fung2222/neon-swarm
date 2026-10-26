@@ -42,7 +42,7 @@ const SHEETS = join(ROOT, 'assets/mechs/horn/sheets');
   assert.equal(yawToCardinal(1, 0.1), 'e');
   assert.equal(new Set(Object.values(HORN_MUZZLE_BY_DIR).map((e) => e.world.join(','))).size, 4);
   const atlas = JSON.parse(readFileSync(join(SHEETS, 'horn_atlas.json'), 'utf8'));
-  assert.equal(atlas.version, '0.9.2');
+  assert.equal(atlas.version, '0.9.21');
   assert.ok(atlas.muzzleWorldByDir);
   assert.equal(new Set(Object.values(atlas.muzzleWorldByDir).map((w) => w.join(','))).size, 4);
   console.log('yawToCardinal + atlas per-dir muzzle OK');

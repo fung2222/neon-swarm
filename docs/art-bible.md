@@ -81,6 +81,12 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 4. Enemies differ by attack-role silhouette (Phase 5/6 pack) — not hue-only swaps.
 5. Foot baseline and muzzle anchors stay consistent across dirs (see Milestone B + render-pipeline).
 
+### Horn silhouette direction (Roy 2026-10-26 → v0.9.21)
+
+- **Wanted:** Japanese refined mecha + cyberpunk mil-tech (this bible’s style line) — humanoid-mecha proportions, longer limbs vs torso, sharper angular plates.
+- **Rejected:** blocky／塊狀／cube-stack body as the shared style for later mechs. Do **not** lock the old toy-block read.
+- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Pending Roy visual lock** — not device-final-art-locked；not HANDOFF §9 locked. Further polish only after Roy OK／iterate.
+
 ## 5. Dim-arena rule
 
 - Keep the playable floor and ambient **dimmer than bullets, enemies, and pickups**.

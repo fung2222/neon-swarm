@@ -402,7 +402,7 @@ export const BAKED_PLAYER_BASE = {
   horn: {
     id: 'horn',
     root: './assets/mechs/horn/sheets/',
-    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.2',
+    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.21',
     dirs: ['n', 'e', 's', 'w'],
     runFrames: 4,
     cellSize: 256,
@@ -434,8 +434,8 @@ function cellPath(spec, dir, action, frame, layer) {
   const f = String(frame).padStart(2, '0');
   const suffix = layer === 'gun' ? '_gun' : '';
   // gun files: horn_n_gun_00_gun.png ; body: horn_n_idle_00.png
-  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.2`;
-  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.2`;
+  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.21`;
+  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.21`;
 }
 
 /**

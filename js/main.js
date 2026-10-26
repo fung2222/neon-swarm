@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.20 phone stable (bg auto-pause + stronger mobile GPU cut); was v0.9.19 AIM-HIT-FAST-002
+// RAMPAGE MECH 暴走機甲 — v0.9.21 horn mecha silhouette pass (interim, awaiting Roy eyes); was v0.9.20 phone stable
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
