@@ -300,6 +300,22 @@ export const BOMBER = {
 };
 
 /**
+ * Periodic arena danger pulse (PHASE6-PERIODIC-DANGER-001): mid–late must-dodge red circles.
+ * Complementary to bomber (enemy fuse) and artillery (orange aim-zone) — this is an arena strike.
+ * No damage during telegraph; skip while paused / level-up / weaponOffer / dead.
+ */
+export const DANGER_PULSE = {
+  startAfter: 80,
+  everySec: 20,
+  telegraphSec: 1.0,
+  radius: 2.4,
+  damage: 2,
+  maxConcurrent: 2,
+  offsetMin: 1.8,
+  offsetMax: 4.0,
+};
+
+/**
  * Elite defaults (SENTINEL) + per-type overrides (BEATS-PLAN elite #2 = more segments).
  * Use eliteCfg(type) so _spawnElite / _tickElite stay shared.
  */

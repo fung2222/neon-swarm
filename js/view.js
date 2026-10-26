@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, DANGER_PULSE } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -2114,6 +2114,13 @@ export class View {
       this.group.add(ring);
       this.bomberBlastRings.push(ring);
     }
+    // Phase 6 danger pulse: up to 2 concurrent arena red rings (reuse bomber-style red helper)
+    this.dangerPulseRings = [];
+    for (let i = 0; i < 2; i++) {
+      const ring = bomberBlastRing();
+      this.group.add(ring);
+      this.dangerPulseRings.push(ring);
+    }
     // Phase 3 commander: up to 6 orange/red summon drop marks
     this.commanderSummonRings = [];
     for (let i = 0; i < 6; i++) {
@@ -2720,6 +2727,7 @@ export class View {
     this._syncShieldBash(game);
     this._syncArtilleryBlast(game);
     this._syncBomberBlast(game);
+    this._syncDangerPulses(game);
     this._syncCommanderSummon(game);
     this._syncBossHazards(game);
 
@@ -3020,6 +3028,30 @@ export class View {
       // Pulse blinker feel on charge pack via subtle scale breath
       const pulse = 1 + Math.sin((game.t || 0) * 18) * 0.03 * u;
       ln.scale.setScalar(r * pulse);
+    }
+  }
+
+  /** Arena periodic danger-pulse red rings (PHASE6-PERIODIC-DANGER-001; ≠ bomber enemy fuse). */
+  _syncDangerPulses(game) {
+    const rings = this.dangerPulseRings || [];
+    for (const ln of rings) ln.visible = false;
+    const pulses = game.dangerPulses || [];
+    let li = 0;
+    for (const p of pulses) {
+      if (!p || p.phase !== 'telegraph') continue;
+      if (li >= rings.length) break;
+      const ln = rings[li++];
+      const r = (p.radius != null ? p.radius : (DANGER_PULSE.radius || 2.4));
+      const u = Math.max(0, Math.min(1, 1 - (p.phaseT || 0) / Math.max(0.01, p.telegraphDur || 1)));
+      ln.visible = true;
+      ln.position.set(p.x, 0, p.z);
+      // Slightly slower pulse than bomber so arena strike reads as map hazard
+      const pulse = 1 + Math.sin((game.t || 0) * 12) * 0.04 * u;
+      ln.scale.setScalar(r * pulse);
+      const mat = ln.userData.mat;
+      const fillMat = ln.userData.fillMat;
+      if (mat) mat.opacity = 0.42 + u * 0.48;
+      if (fillMat) fillMat.opacity = 0.15 + u * 0.26;
     }
   }
 

@@ -1546,6 +1546,23 @@ else if (ev.type === 'xp') {
         kickFx({ trauma: 0.05, fovKick: 0.012 });
       }
     }
+    else if (ev.type === 'dangerPulse') {
+      const ix = ev.x != null ? ev.x : 0;
+      const iz = ev.z != null ? ev.z : 0;
+      const impact = new THREE.Vector3(ix, 0.22, iz);
+      particles.burst(impact, new THREE.Color(0xff1a3a), burstN(8), { speed: 3.8, up: 1.1, life: 0.32, size: 0.46, bright: 1.0 });
+      if (!MOBILE_GFX) {
+        particles.burst(impact, new THREE.Color(0xff4a6a), burstN(4), { speed: 2.0, up: 0.7, life: 0.2, size: 0.3, bright: 0.95 });
+        particles.ring(impact, new THREE.Color(0xff1a3a), 12, 6.5, 0.3);
+      }
+      try { audio.nova(); } catch (_) {}
+      if (ev.hit) {
+        if (MOBILE_GFX) kickFx({ trauma: 0.07, fovKick: 0.014 });
+        else kickFx({ trauma: 0.11, fovKick: 0.022, bloomDamp: 0.5 });
+      } else if (!MOBILE_GFX) {
+        kickFx({ trauma: 0.04, fovKick: 0.01 });
+      }
+    }
     else if (ev.type === 'eliteCharge') {
       // v0.9.20: mobile — trauma only, no bloomDamp
       if (MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });

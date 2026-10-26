@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, DANGER_PULSE, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -330,6 +330,10 @@ export class Game {
     // Phase 6 map zone (lab → assembly @195 → reactor @285)
     this.mapZone = 'lab';
     this.bossHazards = []; // volley bullets + orbit floor telegraphs
+    // Phase 6 periodic arena danger pulses (v0.9.41)
+    this.dangerPulses = [];
+    this._nextDangerPulseAt = null;
+    this._nextDangerPulseId = 1;
     for (let i = 0; i < 10; i++) this._spawn();
   }
 
@@ -2614,6 +2618,110 @@ export class Game {
     }
   }
 
+  /**
+   * Periodic arena red danger circles (PHASE6-PERIODIC-DANGER-001).
+   * Cadence after startAfter; telegraph ≥0.9s then pulse. Skip when paused/dead (caller).
+   * Max concurrent; offset from player so not always under feet.
+   */
+  _tickDangerPulses(dt, events) {
+    const cfg = DANGER_PULSE;
+    if (!this.dangerPulses) this.dangerPulses = [];
+
+    // Tick active pulses
+    for (let i = this.dangerPulses.length - 1; i >= 0; i--) {
+      const p = this.dangerPulses[i];
+      if (p.phase !== 'telegraph') {
+        this.dangerPulses.splice(i, 1);
+        continue;
+      }
+      p.phaseT -= dt;
+      if (p.phaseT > 0) continue;
+
+      const r = p.radius != null ? p.radius : cfg.radius;
+      const toPlayer = Math.hypot(this.px - p.x, this.pz - p.z);
+      let hitPlayer = false;
+      if (this.alive && toPlayer < r + PLAYER.radius) {
+        hitPlayer = true;
+        if (this.invuln <= 0) {
+          const taken = Math.max(1, (cfg.damage || 2) - (this.armor || 0));
+          this.hp -= taken;
+          this.invuln = 0.85 + (this.deflect || 0);
+          this.hitFlash = 0.35;
+          events.push({
+            type: 'hurt',
+            by: 'dangerPulse',
+            nameZh: '危險範圍',
+            nameEn: 'Danger Zone',
+            dangerPulse: true,
+            amount: taken,
+          });
+          if (this.hp <= 0) {
+            this.alive = false;
+            this.hp = 0;
+            this.killer = { kind: 'dangerPulse', zh: '危險範圍', en: 'Danger Zone' };
+            events.push({ type: 'dead' });
+          }
+        }
+      }
+      events.push({
+        type: 'dangerPulse',
+        id: p.id,
+        x: p.x,
+        z: p.z,
+        radius: r,
+        hit: hitPlayer,
+      });
+      this.dangerPulses.splice(i, 1);
+    }
+
+    if (!this.alive) return;
+    if (this.t < cfg.startAfter) return;
+
+    if (this._nextDangerPulseAt == null) {
+      this._nextDangerPulseAt = cfg.startAfter;
+    }
+
+    const maxC = cfg.maxConcurrent != null ? cfg.maxConcurrent : 2;
+    while (this.dangerPulses.length < maxC && this.t >= this._nextDangerPulseAt) {
+      this._spawnDangerPulse(events);
+      this._nextDangerPulseAt += cfg.everySec;
+    }
+  }
+
+  _spawnDangerPulse(events) {
+    const cfg = DANGER_PULSE;
+    const oMin = cfg.offsetMin != null ? cfg.offsetMin : 1.8;
+    const oMax = cfg.offsetMax != null ? cfg.offsetMax : 4.0;
+    const ang = this.rng() * Math.PI * 2;
+    const dist = oMin + this.rng() * Math.max(0.01, oMax - oMin);
+    let x = this.px + Math.cos(ang) * dist;
+    let z = this.pz + Math.sin(ang) * dist;
+    // Keep circle center in soft arena so player can escape the ring
+    const clamped = this._softClamp(x, z, (cfg.radius || 2.4) * 0.35);
+    x = clamped.x;
+    z = clamped.z;
+    const tele = cfg.telegraphSec;
+    const id = this._nextDangerPulseId++;
+    const pulse = {
+      id,
+      x, z,
+      radius: cfg.radius,
+      phase: 'telegraph',
+      phaseT: tele,
+      telegraphDur: tele,
+      telegraphAt: this.t,
+    };
+    this.dangerPulses.push(pulse);
+    events.push({
+      type: 'telegraph',
+      kind: 'dangerPulse',
+      id,
+      x, z,
+      radius: cfg.radius,
+      duration: tele,
+    });
+  }
+
   step(dt) {
     if (!this.alive || this.pausedForLevel) return { events: [] };
     const events = [];
@@ -2702,6 +2810,7 @@ export class Game {
     }
 
     this._tickBossHazards(dt, events);
+    this._tickDangerPulses(dt, events);
 
     for (let i = this.gems.length - 1; i >= 0; i--) {
       const g = this.gems[i];
