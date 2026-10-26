@@ -68,6 +68,62 @@ export function resolveGrenadeThrow(px, pz, forwardX, forwardZ, enemies, maxRang
   };
 }
 
+
+/** Max lead time (s) for straight-projectile aim prediction. */
+export const AIM_LEAD_MAX_T = 0.30;
+
+/**
+ * Segment–circle hit test (XZ). Pure helper for swept bullet collision.
+ * @returns {boolean}
+ */
+export function segmentHitsCircle(x0, z0, x1, z1, cx, cz, r) {
+  if (!(r > 0)) return false;
+  const dx = x1 - x0, dz = z1 - z0;
+  const len2 = dx * dx + dz * dz;
+  let t = 0;
+  if (len2 > 1e-12) {
+    t = ((cx - x0) * dx + (cz - z0) * dz) / len2;
+    if (t < 0) t = 0;
+    else if (t > 1) t = 1;
+  }
+  const px = x0 + t * dx;
+  const pz = z0 + t * dz;
+  const rr = r * r;
+  const ox = px - cx, oz = pz - cz;
+  return ox * ox + oz * oz < rr;
+}
+
+/**
+ * Aim direction toward a lightly predicted intercept of a moving target.
+ * Flight time ≈ currentDist / bulletSpeed, clamped to maxLeadT.
+ */
+export function leadAimDir(px, pz, ex, ez, evx, evz, bulletSpeed, maxLeadT = AIM_LEAD_MAX_T) {
+  const dx0 = ex - px, dz0 = ez - pz;
+  const dist = Math.hypot(dx0, dz0);
+  const spd = Math.max(1e-3, bulletSpeed || 1);
+  const leadT = Math.min(Math.max(0, maxLeadT), dist / spd);
+  const tx = ex + (evx || 0) * leadT;
+  const tz = ez + (evz || 0) * leadT;
+  let dx = tx - px, dz = tz - pz;
+  const len = Math.hypot(dx, dz) || 1;
+  return { dx: dx / len, dz: dz / len, leadT, dist, tx, tz };
+}
+
+/**
+ * If the target is closer than the muzzle horizontal offset (+ enemy radius),
+ * pull spawn back toward the player along aim so the bullet does not appear past the foe.
+ */
+export function closeMuzzlePos(px, pz, mwX, mwZ, aimX, aimZ, targetDist, targetR = 0.3) {
+  const muzzleHoriz = Math.hypot(mwX - px, mwZ - pz);
+  if (!(targetDist < muzzleHoriz + (targetR || 0))) {
+    return { x: mwX, z: mwZ, shortened: false, spawnDist: muzzleHoriz };
+  }
+  const len = Math.hypot(aimX, aimZ) || 1;
+  const ax = aimX / len, az = aimZ / len;
+  const spawnDist = Math.max(0.1, Math.min(muzzleHoriz, Math.max(0.1, targetDist - (targetR || 0) * 0.5)));
+  return { x: px + ax * spawnDist, z: pz + az * spawnDist, shortened: true, spawnDist };
+}
+
 function isPunchKill(e, heavyWeapon = false) {
   if (heavyWeapon) return true;
   const k = e && e.kind;
@@ -811,13 +867,21 @@ export class Game {
 
     const best = pool[0];
     const bestD = Math.hypot(best.x - this.px, best.z - this.pz);
+    // Mild closing bias: approaching foes count slightly nearer for steal (keeps sticky).
+    const closingOf = (e) => {
+      const dx = e.x - this.px, dz = e.z - this.pz;
+      const d = Math.hypot(dx, dz) || 1;
+      return -((e.vx || 0) * dx + (e.vz || 0) * dz) / d;
+    };
     if (!sticky) {
       sticky = best;
       this._stickyUntil = this.t + hold;
     } else {
       const sd = Math.hypot(sticky.x - this.px, sticky.z - this.pz);
       const holding = this.t < this._stickyUntil;
-      const clearlyCloser = best !== sticky && (bestD <= sd * (1 - stealFrac) || (sd - bestD) >= stealAbs);
+      const closeBias = (closingOf(best) > 1.2 && closingOf(sticky) < 0.6) ? 0.4 : 0;
+      const effBest = Math.max(0, bestD - closeBias);
+      const clearlyCloser = best !== sticky && (effBest <= sd * (1 - stealFrac) || (sd - bestD) >= stealAbs - closeBias);
       if (!holding || clearlyCloser) {
         sticky = best;
         this._stickyUntil = this.t + hold;
@@ -901,11 +965,21 @@ export class Game {
     // Shared pure muzzle-world (same helper as VFX flash) — per-dir recorded projections.
     const mw = muzzleWorld(this.px, this.pz, dx, dz);
     const my = opts.y != null ? opts.y : mw.y;
+    // Close-range: if foe is nearer than muzzle offset + radius, shorten spawn so bullet does not appear past them.
+    let spawnX = mw.x, spawnZ = mw.z;
+    if (opts.targetDist != null) {
+      const cm = closeMuzzlePos(
+        this.px, this.pz, mw.x, mw.z, dx, dz,
+        opts.targetDist, opts.targetR != null ? opts.targetR : 0.3
+      );
+      spawnX = cm.x;
+      spawnZ = cm.z;
+    }
     const b = {
       weapon,
       tier: shotTier((this.taken && this.taken[weapon]) || opts.tierStacks || 0),
-      x: mw.x + (opts.ox || 0),
-      z: mw.z + (opts.oz || 0),
+      x: spawnX + (opts.ox || 0),
+      z: spawnZ + (opts.oz || 0),
       y: my,
       vx: dx * speed,
       vz: dz * speed,
@@ -923,9 +997,9 @@ export class Game {
       kind: opts.kind || weapon,
       ...opts,
     };
-    // Aim + shared muzzle win over any opts spread (ox/oz already applied above).
-    b.x = mw.x + (opts.ox || 0);
-    b.z = mw.z + (opts.oz || 0);
+    // Aim + (possibly shortened) muzzle win over any opts spread.
+    b.x = spawnX + (opts.ox || 0);
+    b.z = spawnZ + (opts.oz || 0);
     b.y = my;
     b.vx = dx * speed;
     b.vz = dz * speed;
@@ -943,9 +1017,14 @@ export class Game {
     let primary = null;
     let primaryDx = 0, primaryDz = 1;
     for (const best of targets) {
-      const base = Math.atan2(best.z - this.pz, best.x - this.px);
+      const lead = leadAimDir(
+        this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+        this.bulletSpeed, AIM_LEAD_MAX_T
+      );
+      const base = Math.atan2(lead.dz, lead.dx);
       const jitter = (this.rng() - 0.5) * 0.08;
       const dx = Math.cos(base + jitter), dz = Math.sin(base + jitter);
+      const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
       const b = this._emitBullet(dx, dz, {
         weapon: 'mg',
         dmg: this.bulletDmg,
@@ -953,6 +1032,8 @@ export class Game {
         life: this.bulletLife,
         speed: this.bulletSpeed,
         r: 0.1,
+        targetDist: tDist,
+        targetR: best.r || 0.3,
       });
       if (!primary) { primary = { b, best, dx, dz }; primaryDx = dx; primaryDz = dz; }
     }
@@ -964,17 +1045,24 @@ export class Game {
     const targets = this._targetsForWeapon(1, this.fireRange + 4);
     if (!targets.length) return false;
     const best = targets[0];
-    const base = Math.atan2(best.z - this.pz, best.x - this.px);
     const stacks = this.laser;
-    const dx = Math.cos(base), dz = Math.sin(base);
+    const speed = 38;
+    const lead = leadAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, AIM_LEAD_MAX_T
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
     const b = this._emitBullet(dx, dz, {
       weapon: 'laser',
       dmg: 1.1 + stacks * 0.55,
       pierce: 3 + stacks,
       life: 0.28,
-      speed: 38,
+      speed,
       r: 0.16,
       tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
     });
     this._pushFire(events, 'laser', dx, dz, b, best);
     return true;
@@ -984,10 +1072,16 @@ export class Game {
     const targets = this._targetsForWeapon(1, 6.5);
     if (!targets.length) return false;
     const best = targets[0];
-    const base = Math.atan2(best.z - this.pz, best.x - this.px);
     const stacks = this.shotgun;
+    const speed = 16 + stacks;
+    const lead = leadAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, AIM_LEAD_MAX_T
+    );
+    const base = Math.atan2(lead.dz, lead.dx);
     const n = 5 + stacks;
     const spread = 0.55 + stacks * 0.08;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
     let primary = null;
     for (let i = 0; i < n; i++) {
       const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
@@ -997,10 +1091,12 @@ export class Game {
         weapon: 'shotgun',
         dmg: 0.55 + stacks * 0.2,
         life: 0.22,
-        speed: 16 + stacks,
+        speed,
         r: 0.14,
         pierce: 0,
         tierStacks: stacks,
+        targetDist: tDist,
+        targetR: best.r || 0.3,
       });
       if (!primary) primary = { b, dx, dz };
     }
@@ -1012,19 +1108,26 @@ export class Game {
     const targets = this._targetsForWeapon(1, this.fireRange + 2);
     if (!targets.length) return false;
     const best = targets[0];
-    const base = Math.atan2(best.z - this.pz, best.x - this.px);
     const stacks = this.rocket;
-    const dx = Math.cos(base), dz = Math.sin(base);
+    const speed = 7.5 + stacks * 0.8;
+    const lead = leadAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, AIM_LEAD_MAX_T
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
     const b = this._emitBullet(dx, dz, {
       weapon: 'rocket',
       dmg: 2.2 + stacks * 1.4,
       life: 1.6,
-      speed: 7.5 + stacks * 0.8,
+      speed,
       r: 0.28,
       pierce: 0,
       aoe: 1.6 + stacks * 0.35,
       aoeDmg: 2.5 + stacks * 1.2,
       tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
     });
     this._pushFire(events, 'rocket', dx, dz, b, best);
     return true;
@@ -1067,19 +1170,26 @@ export class Game {
     const targets = this._targetsForWeapon(1, this.fireRange);
     if (!targets.length) return false;
     const best = targets[0];
-    const base = Math.atan2(best.z - this.pz, best.x - this.px);
     const stacks = this.plasma;
-    const dx = Math.cos(base), dz = Math.sin(base);
+    const speed = 9;
+    const lead = leadAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, AIM_LEAD_MAX_T
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
     const b = this._emitBullet(dx, dz, {
       weapon: 'plasma',
       dmg: 1.2 + stacks * 0.6,
       life: 0.9,
-      speed: 9,
+      speed,
       r: 0.26,
       pierce: 0,
       puddle: 1.4 + stacks * 0.35,
       aoeDmg: 0.9 + stacks * 0.35,
       tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
     });
     this._pushFire(events, 'plasma', dx, dz, b, best);
     return true;
@@ -1269,6 +1379,7 @@ export class Game {
         b.y += b.vy * dt;
         if (b.y < 0.05) { b.y = 0.05; b.vy = 0; }
       }
+      const prevX = b.x, prevZ = b.z;
       b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
       if (b.fuse > 0) {
         b.fuse -= dt;
@@ -1299,7 +1410,8 @@ export class Game {
         const e = this.enemies[j];
         if (b.hitIds.has(e)) continue;
         const er = b.r + e.r;
-        if (Math.hypot(b.x - e.x, b.z - e.z) < er) {
+        // Swept: previous → new position vs enemy circle (catches tunneling at large dt).
+        if (segmentHitsCircle(prevX, prevZ, b.x, b.z, e.x, e.z, er)) {
           e.hp -= b.dmg * (1 - (e.shield || 0));
           e.hit = 0.12;
           b.hitIds.add(e);

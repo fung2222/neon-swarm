@@ -10,37 +10,38 @@
 
 ## Active task
 
-**Task ID:** `PHASE6-WEAPON-PICKUP-001`  
-**名稱：** Phase 6 — 武器地面拾取選擇（不可靜靜覆蓋）  
-**性質：** 玩法／UI；不改 horn、唔開 Precision／Morph、唔做手機 GPU、唔做 elite #2／五區地圖。
+**Task ID:** `AIM-HIT-FAST-001`  
+**名稱：** 高速衝刺怪命中感 — 掃掠碰撞＋輕量超前瞄準  
+**性質：** 手感／命中修復；不改平衡數值表、唔開新內容、唔改 horn 形狀。
 
 ### 背景
 
-- Phase 3 lab＋SENTINEL＋SWARM CORE（v0.9.10）Roy OK，叫繼續流程。
-- HANDOFF Phase 6：**武器拾取遇到已有裝備時要提供替換／保留／槽位選擇；不可靜靜覆蓋裝備。**
-- 現況：`kind: 'weapon'` gem 只 emit `{ type: 'weapon' }` → main 只播特效，**實際唔 grant 武器**；真正武器來自 level-up cards。
+- Roy（2026-10-26）回報：精準度感覺下降，**高速怪衝向自己時子彈好像永遠打唔中**。
+- 現況：
+  1. 瞄準用敵人**當前位置**，無 lead（drone `speed` 3.2×chase×`speedMul` 對 MG 28 速易偏）。
+  2. 子彈碰撞係點圓檢測；大 `dt`／細 hitbox 會 **tunnel** 穿過去。
+  3. 槍口 `muzzleWorld` 約 ~0.9 單位前；怪貼近時子彈可能喺目標**前方**生成再飛走。
+- 唔係 Phase 6 pickup 直接改壞；係既有自動瞄＋碰撞缺口，lab 多 drone 後更明顯。
 
-### 授權（收窄到可完成）
+### 授權（收窄）
 
 允許：
 
-1. **拾取決策：** 撿到武器 crate／gem 時：
-   - 未擁有該武器 → 獲得（或開選擇卡確認，擇一寫清）
-   - 已擁有／已滿級 → **必須**暫停並給可點選選項（例如：升級疊層／保留現狀／若設計有槽則換槽）；**禁止**無 UI 直接改 `taken`
-2. **UI：** 重用／微調現有 `level-cards` 風格；zh-HK 先行；手機＋桌面可點；唔遮死虛擬搖桿到無法選。
-3. **邏輯：** `pausedForLevel`（或等價）擋戰鬥至玩家選完；事件可測；primary visual aim 規則不變。
-4. 測試（未擁有／已擁有／max／取消保留）；回歸 logic／levelup／beats；截圖；cache-bust **0.9.11**；更新 HANDOFF 狀態段。
+1. **掃掠碰撞：** 子彈每幀用上一幀→本幀線段 vs 敵人圓（`b.r + e.r`）；取代／補強純點檢測。純函式可單測。
+2. **輕量 lead：** MG／laser（可含其他 hitscan-ish 直射）用敵人 `vx/vz`（或 chase 方向×speed）估飛行時間，瞄預測點；clamp 勿過度超前（例如 lead 時間 cap ~0.25–0.35s）。sticky 規則保留，但可對「明顯更近／急閉合」略優先（唔好拆晒 sticky）。
+3. **近距槍口：** 目標距離 < 槍口水平距＋敵半徑時，縮短 spawn 或由玩家中心偏向目標，避免子彈喺怪後方／側邊生成漏打。
+4. 測試（tunnel 高速橫切、lead 命中、近距貼臉）；回歸 logic／beats／grenade／muzzle；可選簡單截圖；cache-bust **0.9.12**；HANDOFF 記一筆。
 
-不允許：新武器數值大改、elite #2、boss 重做、地圖分區、horn bake、Precision／Morph、手機 GPU。
+不允許：改 `PLAYER.bulletDmg`／敵人 HP 表「靠加傷害扮命中」、精英／boss 重做、地圖、horn bake、Precision／Morph、手機 GPU 專案。
 
 ### 目標
 
-- 地面武器拾取變成真實選擇，唔再只係金光特效。
-- 誠實標：仍係現有武器 ID 池；唔係完整庫存／多槽裝備系統（除非現有架構已有槽位）。
+- 高速衝刺／drone 貼近時，連續 MG 明顯較易打中（唔係 100% 鎖定，但唔再「永遠打唔中」）。
+- 誠實標：仍係自動瞄 bullet-heaven，唔係手動準星。
 
 ### 完成條件
 
-- Push＋報告＋截圖；停下。Recommended next：elite #2／下一地圖區（do not start）。
+- Push＋報告；停下。Recommended next：elite #2／下一地圖區（do not start），除非 Roy 再報命中。
 
 ### 回報格式
 

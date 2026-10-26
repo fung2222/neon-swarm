@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.11 Phase 6 weapon pickup choice
+// RAMPAGE MECH 暴走機甲 — v0.9.12 aim/hit — swept collision + lead for fast rushers
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
