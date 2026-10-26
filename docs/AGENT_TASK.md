@@ -3,31 +3,27 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE6-ZONE-PRESSURE-001 → **Complete**（`?v=0.9.42`）
+## 狀態：PHASE6-ZONE-PRESSURE-001 → **Complete**（`?v=0.9.42`）· **HOLD**
 
-**ROY（2026-10-26 ~23:16 HKT）ROY_OVERRIDE／continue：** 「暫時都ok繼續去」— still on。Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish。
+**ROY（2026-10-26 ~23:16 HKT）continue** 用完一輪定位壓力（bomber → danger pulse → zone pressure）。Active **none** — sync／HIT-FEEL 或 Roy 點名下一項。
 
-### Complete — PHASE6-ZONE-PRESSURE-001
+Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish；do NOT invent next combat systems until Roy continues or names Active.
 
-**PHASE6-ZONE-PRESSURE-001** → live cache-bust **`?v=0.9.42`**（code `ddf39c4`）.
+### Just shipped（positioning-pressure trio）
 
-- `ZONE_PRESSURE` shrinking／pollution safe zone：after `startAfter`(~110s) `safeR` lerps `startR`(~30／ARENA.soft)→`endR`(~16) over `shrinkSec`(~200s)
-- Outside safeR：pollution DoT on `tickSec`(~0.5)；respect invuln；skip pause／levelup／offer／over／menu
-- View：cyan／acid safe-edge ring＋mild outer wash；**no** new toast／coach／banner
-- One-shot event `zonePressure phase:start`；logic exposes `safeR`／`zonePressureActive`
-- Distinct from DANGER_PULSE（periodic red）／bomber／artillery；ARENA.half／soft **unchanged** for early game
-- Player weapon／DPS／XP／heal／economy／enemy tables **unchanged**
-- Tests `tests/zone-pressure.test.mjs`＋shots `tests/screenshots/phase6-zone-pressure/`（1280+390 edge）
+- **v0.9.42** `PHASE6-ZONE-PRESSURE-001` (`ddf39c4`) — shrinking safe zone 30→16 + pollution DoT
+- **v0.9.41** `PHASE6-PERIODIC-DANGER-001` (`3040b5e`) — periodic red arena pulses
+- **v0.9.40** `PHASE3-ENEMY-BOMBER-001` (`2ab9dbb`) — suicide bomber red-circle fuse
 
-**Out of scope kept：** Phase 4；horn lock；phone GPU；soft-juice invent；balance overhaul；new elite／boss.
+### Soft-juice usability queue → still **DONE**
 
-### Soft-juice → still **DONE**
+### Next
 
-### Recently completed
+1. **HIT-FEEL-DEVICE** — when Roy can play on phone（SwiftShader ≠ device）
+2. OR Roy-named Active／「繼續」only
+3. Phone GPU／horn art lock — deferred／only after Roy OK
 
-- `PHASE6-ZONE-PRESSURE-001` → **v0.9.42** (`ddf39c4`)
-- `PHASE6-PERIODIC-DANGER-001` → **v0.9.41** (`3040b5e`)
-- `PHASE3-ENEMY-BOMBER-001` → **v0.9.40** (`2ab9dbb`)
+**Do NOT start：** Phase 4／horn art lock／§9／phone GPU／balance economy overhaul／more soft-juice invention／auto next elite／boss without Active.
 
 ---
 
