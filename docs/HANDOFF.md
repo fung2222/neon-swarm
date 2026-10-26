@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.37 Phase 6 early feedback（first-kill／first-level juice；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.38 Phase 6 kill-streak lite（連殺 toast feedback-only；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -463,7 +463,7 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.37（PHASE6-EARLY-FEEDBACK-001；HEAD 以 `main`／live `?v=0.9.37` 為準）。** Roy continue（「未用得」）still on — safe UX only。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
+**目前基準 v0.9.38（PHASE6-KILL-STREAK-LITE-001；HEAD 以 `main`／live `?v=0.9.38` 為準）。** Roy continue（「未用得」）still on — safe UX only。**Honesty：** streak is feedback-only — **no** DPS／XP／score multiplier。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
 - `PHASE6-SAFE-AREA-001` **已完成**（v0.9.36 / `eee063e`）：safe-area tokens＋HUD／stick／slots／panels／xp L/R；截圖 `tests/screenshots/phase6-safe-area/`。
 - `PHASE6-MUTE-PERSIST-001` **已完成**（v0.9.35 / `a026e1e`）：mute persist harden＋menu chrome＋cold-load；截圖 `tests/screenshots/phase6-mute-persist/`。
@@ -485,13 +485,14 @@ Rollback baseline:
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
 - `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；HIT-FEEL-DEVICE needs Roy phone。Usability polish queue thinning。**下一項：** **PHASE6-KILL-STREAK-LITE-001**（soft streak toast）— or result share copy；HIT-FEEL when Roy can device-play。still **ban Phase 4**／horn art lock／phone GPU。
+- Roy deferred phone GPU／mid-run WebGL；HIT-FEEL-DEVICE needs Roy phone。Usability queue **very thin** after streak。**下一項：** **PHASE6-RESULT-SHARE-001**（over-screen share／copy）— then stop auto-inventing soft juice；HIT-FEEL when Roy can device-play。still **ban Phase 4**／horn art lock／phone GPU。
 - AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
 - Queue：真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish。
 - SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
 
 ## 版本歷史（增量）
 
+- **v0.9.38** / `PENDING` (`PHASE6-KILL-STREAK-LITE-001`) — Soft kill-streak toast「連殺 ×N」at 5/10/15 (2.2s window; reset on hurt/timeout); **feedback only — no DPS/XP economy**; skips while early toast busy; kickFx at 10+. Screenshots `tests/screenshots/phase6-kill-streak/`. Next: RESULT-SHARE then pause invention / HIT-FEEL on phone (still ban Phase 4).
 - **v0.9.37** / `ea04be7` (`PHASE6-EARLY-FEEDBACK-001`) — Once-per-run first-kill toast「首殺」／FIRST BLOOD + first level-up chime/XP pulse/glow + soft first-heal micro-toast; coach-defer; `#early-toast` non-blocking. Screenshots `tests/screenshots/phase6-early-feedback/`. Next: KILL-STREAK-LITE or RESULT-SHARE; HIT-FEEL when Roy phones (still ban Phase 4).
 - **v0.9.36** / `eee063e` (`PHASE6-SAFE-AREA-001`) — Notch/home-bar safe-area: `--sa-*` tokens, HUD L/R, mute/pause, stick, weapon-slots, xp L/R, beat/coach width, pause/over/level/gfx panel padding, cheap landscape. Screenshots `tests/screenshots/phase6-safe-area/` (simulated insets). Next: PHASE6-EARLY-FEEDBACK-001 or HIT-FEEL-DEVICE (still ban Phase 4).
 - **v0.9.35** / `a026e1e` (`PHASE6-MUTE-PERSIST-001`) — Mute preference survives reload/next visit; early-paint + menu mute chrome + zh-HK aria; kit store already had persist — harden only. Screenshots `tests/screenshots/phase6-mute-persist/`.

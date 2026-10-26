@@ -911,7 +911,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 
 
-/* ---- v0.9.37 early-feedback: first-kill / first-level / first-heal toast ---- */
+/* ---- v0.9.37 early-feedback + v0.9.38 kill-streak toast ---- */
 .early-toast {
   position: fixed;
   left: 50%;
@@ -968,6 +968,15 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .early-toast.kind-heal .early-toast-zh {
   color: #c8ffe0;
   text-shadow: 0 0 10px rgba(60, 255, 160, 0.55);
+}
+
+.early-toast.kind-streak {
+  border-color: rgba(255, 120, 40, 0.6);
+  box-shadow: 0 0 18px rgba(255, 100, 40, 0.3);
+}
+.early-toast.kind-streak .early-toast-zh {
+  color: #ffe0c0;
+  text-shadow: 0 0 12px rgba(255, 120, 40, 0.65);
 }
 @keyframes early-toast-in {
   from { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.96); }

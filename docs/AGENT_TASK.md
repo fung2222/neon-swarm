@@ -3,39 +3,39 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE6-EARLY-FEEDBACK-001 → **Complete**（`?v=0.9.37`）
+## 狀態：PHASE6-KILL-STREAK-LITE-001 → **Complete**（`?v=0.9.38`）
 
 **ROY（2026-10-26）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Just shipped
 
-**PHASE6-EARLY-FEEDBACK-001** → live cache-bust **`?v=0.9.37`**.
+**PHASE6-KILL-STREAK-LITE-001** → live cache-bust **`?v=0.9.38`**.
 
-- Once-per-run **first kill** zh-HK toast「首殺」／FIRST BLOOD (~1.2s) via dedicated `#early-toast`（pointer-events:none；z below coach／beat）；light `kickFx`；deferred while run-coach visible
-- Once-per-run **first level-up**（`from==='level'` only）：stronger `levelChime` + XP bar pulse（`.xp-first-level`）+ brief first-level glow；no card-pool change
-- Soft **first heal** green micro-toast — skipped if coach／toast／pending kill toast（avoid stacking）
-- Mobile：no heavy particles；MOBILE_GFX cuts respected
-- Shots `tests/screenshots/phase6-early-feedback/`（1280+390 first-kill／first-level）；test `tests/early-feedback.test.mjs`
+- Soft consecutive-kill streak（window **2.2s**）；reset on timeout／hurt／death
+- Milestone toasts only（**5／10／15**）via `#early-toast`「連殺 ×N」／STREAK ×N ~1.0s；`pointer-events:none`
+- **Feedback only — no DPS／XP／score multiplier from streak**（documented）
+- Skip／catch-up if first-kill／early toast busy；tiny `kickFx` at **10+** only
+- Mobile-light；no heavy particles
+- Shots `tests/screenshots/phase6-kill-streak/`（1280+390 streak-5／10）；test `tests/kill-streak.test.mjs`
 
-### Queue（usability thinning — next concrete）
+### Queue（usability very thin）
 
-1. **PHASE6-KILL-STREAK-LITE-001**（recommended）— soft streak toast／chime；still「未用得」without inventing Phase 4
-2. OR **PHASE6-RESULT-SHARE-COPY-001** — over-screen share／copy juice
-3. HIT-FEEL-DEVICE — preferred **when Roy can play on phone**（SwiftShader ≠ device）
-4. Phone GPU／horn art lock — deferred／only after Roy OK
+1. **PHASE6-RESULT-SHARE-001**（recommended if quick）— over-screen share／copy line
+2. HIT-FEEL-DEVICE — when Roy can play on phone（SwiftShader ≠ device）
+3. Stop auto-inventing soft juice；phone GPU／horn art lock — deferred／only after Roy OK
 
-**Honest note：** Phase 6 usability queue thinning — remaining soft juice is thin; HIT-FEEL needs real phone.
+**Honest note：** Phase 6 usability queue nearly empty after streak；prefer result-share once more then pause invention until phone HIT-FEEL.
 
-**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance rewrite／break mute／safe-area／damage numbers／run-loop coach.
+**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance／economy／break early-feedback／safe-area／mute／damage numbers.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** （HEAD stamp on push）
 - `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
 - `PHASE6-SAFE-AREA-001` → **v0.9.36** (`eee063e`)
 - `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`)
 - `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`)
 - `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`)
-- `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`)
 
 ---
 

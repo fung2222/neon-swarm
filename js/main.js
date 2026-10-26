@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.37 early-feedback; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.38 kill-streak lite; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -21,6 +21,10 @@ import {
   noteFirstKill, noteFirstLevel, noteFirstHeal, takePendingEarly,
   FIRST_KILL_MS, EARLY_COPY,
 } from './early-feedback.js';
+import {
+  createStreakState, resetStreak, noteStreakKill, noteStreakBreak,
+  STREAK_TOAST_MS, STREAK_WINDOW_MS,
+} from './kill-streak.js';
 import {
   createDamageFloatPool, ndcToCss,
   DMG_FLOAT_MAX_DESKTOP, DMG_FLOAT_MAX_MOBILE,
@@ -355,6 +359,7 @@ S._coachSessionShown = false;
 S._coachTimer = 0;
 S._early = createEarlyFeedbackState();
 S._earlyToastTimer = 0;
+S._streak = createStreakState();
 S._stickHintTimer = 0;
 
 
@@ -790,7 +795,7 @@ function hideEarlyToast() {
   const el = $('early-toast');
   if (el) {
     el.classList.add('hidden');
-    el.classList.remove('kind-kill', 'kind-level', 'kind-heal');
+    el.classList.remove('kind-kill', 'kind-level', 'kind-heal', 'kind-streak');
   }
   if (S._earlyToastTimer) { clearTimeout(S._earlyToastTimer); S._earlyToastTimer = 0; }
 }
@@ -802,10 +807,11 @@ function showEarlyToast(zh, en, ms, kind) {
   if (!el) return false;
   if (zhEl) zhEl.textContent = zh || '';
   if (enEl) enEl.textContent = en || '';
-  el.classList.remove('kind-kill', 'kind-level', 'kind-heal');
+  el.classList.remove('kind-kill', 'kind-level', 'kind-heal', 'kind-streak');
   if (kind === 'firstKill') el.classList.add('kind-kill');
   else if (kind === 'firstLevel') el.classList.add('kind-level');
   else if (kind === 'firstHeal') el.classList.add('kind-heal');
+  else if (kind === 'streak') el.classList.add('kind-streak');
   el.classList.remove('hidden');
   if (S._earlyToastTimer) clearTimeout(S._earlyToastTimer);
   S._earlyToastTimer = setTimeout(() => hideEarlyToast(), Math.max(400, ms || FIRST_KILL_MS));
@@ -851,6 +857,9 @@ S.showEarlyToast = showEarlyToast;
 S.hideEarlyToast = hideEarlyToast;
 S.flushPendingEarlyToast = flushPendingEarlyToast;
 S.isCoachVisible = isCoachVisible;
+S.createStreakState = createStreakState;
+S.noteStreakKill = noteStreakKill;
+S.resetStreak = resetStreak;
 
 
 /** v0.9.33 first-run coach — pointer-events none; dismiss on timeout or first stick. */
@@ -957,6 +966,8 @@ function startRun() {
   audio.click();
   // v0.9.37: once-per-run early feedback flags
   S._early = resetEarlyFeedback(S._early || createEarlyFeedbackState());
+  // v0.9.38: kill-streak soft feedback (no economy)
+  S._streak = resetStreak(S._streak || createStreakState());
   hideEarlyToast();
   // First-run coach OR light stick pulse (not both noisy)
   const showedCoach = maybeShowRunCoach(touch);
@@ -1256,6 +1267,20 @@ function tick(dt) {
           // defer path: pending set inside noteFirstKill; flush on hideRunCoach
         }
       } catch (_) {}
+      // v0.9.38: soft kill-streak (feedback only — no DPS/XP); skip if toast busy
+      try {
+        if (!S._streak) S._streak = createStreakState();
+        const sk = noteStreakKill(S._streak, performance.now(), {
+          toastBusy: isEarlyToastBusy(),
+        });
+        if (sk && sk.show) {
+          showEarlyToast(sk.zh, sk.en, sk.ms, 'streak');
+          if (sk.kick) {
+            if (!MOBILE_GFX) kickFx({ trauma: 0.04, fovKick: 0.01 });
+            else kickFx({ trauma: 0.025 });
+          }
+        }
+      } catch (_) {}
     }
     else if (ev.type === 'explode') {
       audio.nova();
@@ -1305,6 +1330,7 @@ else if (ev.type === 'xp') {
     }
     else if (ev.type === 'hurt') {
       // Hurt feedback only — applyMoveFromInput / setMove still run during hitFlash/invuln.
+      try { noteStreakBreak(S._streak || (S._streak = createStreakState())); } catch (_) {}
       audio.hurt();
       kickFx({ trauma: 0.14, aberr: 0.12, bloomDamp: 0.7 });
       // v0.9.33: keep light burst; add red edge vignette (no heavy FX)
@@ -1324,7 +1350,7 @@ else if (ev.type === 'xp') {
         });
       }
     }
-    else if (ev.type === 'dead') endRun(false);
+    else if (ev.type === 'dead') { try { noteStreakBreak(S._streak); } catch (_) {} endRun(false); }
     else if (ev.type === 'levelup') {
       const from = ev.from || 'level';
       try {

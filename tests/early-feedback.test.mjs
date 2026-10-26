@@ -90,7 +90,7 @@ assert.ok(FIRST_HEAL_MS >= 800 && FIRST_HEAL_MS <= 1400);
   assert.ok(main.includes('applyFirstLevelJuice'), 'level juice');
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('id="early-toast"'));
-  assert.ok(html.includes('?v=0.9.37'));
+  assert.ok(/\?v=0\.9\.\d+/.test(html));
   const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
   assert.ok(css.includes('.early-toast'));
   assert.ok(css.includes('xp-first-level'));

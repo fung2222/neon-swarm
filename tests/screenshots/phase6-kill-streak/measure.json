@@ -1,0 +1,50 @@
+{
+  "shots": [
+    "1280-streak-5.png",
+    "1280-streak-10.png",
+    "390-streak-5.png",
+    "390-streak-10.png"
+  ],
+  "checks": [
+    {
+      "view": "1280-streak-5",
+      "ok": {
+        "pe": "none",
+        "zh": "連殺 ×5",
+        "en": "STREAK ×5",
+        "kind": true,
+        "w": 160
+      }
+    },
+    {
+      "view": "1280-streak-10",
+      "ok": {
+        "pe": "none",
+        "zh": "連殺 ×10",
+        "en": "STREAK ×10",
+        "kind": true,
+        "w": 160
+      }
+    },
+    {
+      "view": "390-streak-5",
+      "ok": {
+        "pe": "none",
+        "zh": "連殺 ×5",
+        "en": "STREAK ×5",
+        "kind": true,
+        "w": 160
+      }
+    },
+    {
+      "view": "390-streak-10",
+      "ok": {
+        "pe": "none",
+        "zh": "連殺 ×10",
+        "en": "STREAK ×10",
+        "kind": true,
+        "w": 160
+      }
+    }
+  ]
+}
