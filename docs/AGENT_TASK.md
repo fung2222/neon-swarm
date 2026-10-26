@@ -3,33 +3,27 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：Active = **Complete** · **HOLD for Roy try**（目標 `?v=0.9.47` shipped）
+## 狀態：PHASE3-ENEMY-JAMMER-001 → **Complete**（`?v=0.9.47`）· **HOLD**
 
-**ROY（2026-10-27）ROY_OVERRIDE／continue：** 「好繼續去」— jammer slice done. Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent toast／streak／coach polish.
+**ROY continue** 用完一輪優先目標拍子（flanker → medic → jammer）。Active **none** — sync／HIT-FEEL 或 Roy 點名／「繼續」。
 
-### Active → **Complete**
+Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish；do NOT invent next systems until Roy continues or names Active.
 
-**PHASE3-ENEMY-JAMMER-001** — ordinary **干擾單位／Signal Jammer** → **v0.9.47**（live `?v=0.9.47`）.
+### Just shipped（priority-enemy beat）
 
-Shipped:
-- `ENEMIES.jammer` + `JAMMER`：dish／mast／emitter pods；dark steel＋magenta／violet（**no red hull**）；≠ drone／medic／artillery／flanker recolor
-- AI：mid-range → **violet** jam telegraph ≥0.85s → fireCd mul ×1.35 ~2.5s（stack cap 1；refresh OK）→ recover／reposition
-- Events `telegraph kind:jammer` + `jammerPulse`；kill mid-telegraph = no apply；debuff ends cleanly
-- Visual：reuse `#fx-flash` magenta／particles — **no** new toast／coach／streak
-- `waveMix`：no early lab；light mid-late＋reactor／blockade／rooftop；assembly rare
-- Tests `tests/jammer.test.mjs` + screenshots `tests/screenshots/phase3-jammer/`
+- **v0.9.47** `PHASE3-ENEMY-JAMMER-001` (`859d970`) — violet jam → brief fireCd×1.35
+- **v0.9.46** `PHASE3-ENEMY-MEDIC-001` (`132e236`) — lime heal pulse ordinary-only
+- **v0.9.45** `PHASE3-ENEMY-FLANKER-001` (`b409cf3`) — cyan dash flank
 
-### Soft-juice → **DONE** · Flanker 0.9.45 · Medic 0.9.46 · Jammer 0.9.47
+### Soft-juice → still **DONE** · Prior product beat 0.9.40–44 still on live
 
-### Recently completed
+### Next
 
-- `PHASE3-ENEMY-JAMMER-001` → **v0.9.47**
-- `PHASE3-ENEMY-MEDIC-001` → **v0.9.46** (`132e236`)
-- `PHASE3-ENEMY-FLANKER-001` → **v0.9.45** (`b409cf3`)
+1. **HIT-FEEL-DEVICE** — when Roy can play on phone
+2. OR Roy-named Active／「繼續」only
+3. Phone GPU／horn art lock — deferred
 
-### Next = **HOLD for Roy try**
-
-3-enemy priority beat（flanker→medic→jammer）complete. **HOLD for Roy try**（same as after 0.9.40–44 beat）. Do **not** invent a 4th enemy；do **not** auto-start Phase 4／horn／phone GPU／soft-juice.
+**Do NOT start：** Phase 4／horn／§9／phone GPU／balance overhaul／soft-juice invent／auto next elite without Active.
 
 ---
 
