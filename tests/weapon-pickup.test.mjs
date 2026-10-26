@@ -171,6 +171,22 @@ assert.ok(laser && laser.max === 4, 'laser card');
   assert.ok(Math.abs(g.bulletDmg - (before + 0.35)) < 1e-9);
 }
 
+
+// ---- v0.9.29 copy polish: take / upgrade / keep phrasing ----
+{
+  const take = buildWeaponPickupOffer('laser', {}, ['mg', null, null, null]);
+  assert.equal(take.mode, 'take');
+  const t = take.choices.find((c) => c.pickupAction === 'take');
+  assert.ok(t.zh.startsWith('裝上'), t.zh);
+  const k = take.choices.find((c) => c.pickupAction === 'keep');
+  assert.ok(k.descZh.includes('恢復戰鬥'), k.descZh);
+
+  const up = buildWeaponPickupOffer('laser', { laser: 1 }, ['mg', 'laser', null, null]);
+  assert.equal(up.mode, 'upgrade');
+  const u = up.choices.find((c) => c.pickupAction === 'upgrade');
+  assert.ok(u.zh.includes('升級') && u.zh.includes('Lv1→2'), u.zh);
+}
+
 console.log('weapon-pickup OK', {
   cards: CARDS.filter((c) => c.kind === 'weapon').length,
   modes: ['take', 'upgrade', 'max', 'keep'],

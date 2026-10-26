@@ -1257,15 +1257,22 @@ function dropMesh(d) {
   board.position.y = 0.85;
   board.name = 'face';
   // v0.9.22: brighter floor halo so XP/heal/weapon crates beat dark floor
+  // v0.9.29: weapon crates get a slightly punchier halo (no HUD redesign)
+  const isWeapon = d.kind === 'weapon';
+  const glowR = isWeapon ? 0.74 : 0.62;
+  const glowOp = isWeapon ? 0.58 : 0.42;
+  const rimInner = isWeapon ? 0.62 : 0.54;
+  const rimOuter = isWeapon ? 0.76 : 0.64;
+  const rimOp = isWeapon ? 0.82 : 0.62;
   const glow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.62, 24),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.42, depthWrite: false, fog: false })
+    new THREE.CircleGeometry(glowR, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: glowOp, depthWrite: false, fog: false })
   );
   glow.rotation.x = -Math.PI / 2;
   glow.position.y = 0.03;
   const rim = new THREE.Mesh(
-    new THREE.RingGeometry(0.54, 0.64, 28),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.62, side: THREE.DoubleSide, depthWrite: false, fog: false })
+    new THREE.RingGeometry(rimInner, rimOuter, 28),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: rimOp, side: THREE.DoubleSide, depthWrite: false, fog: false })
   );
   rim.rotation.x = -Math.PI / 2;
   rim.position.y = 0.04;

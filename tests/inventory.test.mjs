@@ -154,6 +154,41 @@ assert.equal(weaponSlotLevel('laser', { laser: 3 }), 3);
   assert.ok(!g.weaponSlots.includes('rocket'));
 }
 
+
+// ---- v0.9.29: only slotted weapons fire (orphan stacks pruned / gated) ----
+{
+  const g = new Game({ seed: 21 });
+  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.shotgun);
+  g.applyCard(CARDS_BY_ID.rocket);
+  // Simulate pre-slot orphan: plasma combat prop + taken without a slot
+  g.plasma = 2;
+  g.taken.plasma = 2;
+  assert.ok(!g.weaponSlots.includes('plasma'));
+  g._pruneUnslottedWeapons();
+  assert.equal(g.plasma, 0, 'orphan plasma combat cleared');
+  assert.equal(g.taken.plasma, undefined, 'orphan plasma taken cleared');
+
+  // Gate: even if combat prop sneaks back, unslotted must not arm
+  g.plasma = 3;
+  assert.equal(g._slotArmed('plasma'), false);
+  assert.equal(g._slotArmed('laser'), true);
+  assert.equal(g._slotArmed('mg'), true);
+}
+
+// ---- convertHeal copy exposes heal amount ----
+{
+  const offer = buildWeaponPickupOffer('laser', { laser: 4 }, ['mg', 'laser', null, null]);
+  assert.equal(offer.mode, 'max');
+  const heal = offer.choices.find((c) => c.pickupAction === 'convertHeal');
+  assert.ok(heal);
+  assert.equal(heal.healAmount, 2);
+  assert.ok(heal.zh.includes('+2'));
+  assert.ok(heal.descZh.includes('2'));
+  const keep = offer.choices.find((c) => c.pickupAction === 'keep');
+  assert.ok(keep.zh.includes('繼續跑') || keep.zh.includes('唔要'));
+}
+
 console.log('inventory OK', {
   max: WEAPON_SLOT_MAX,
   start: emptyWeaponSlots(),

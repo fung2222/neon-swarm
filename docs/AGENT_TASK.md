@@ -28,26 +28,24 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-MULTI-SLOT-INVENTORY-001 → **completed**（v0.9.28）
+## 狀態：PHASE6-PICKUP-POLISH-001 → **completed**（v0.9.29）
 
 **ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Completed this turn
 
-**Task ID：** `PHASE6-MULTI-SLOT-INVENTORY-001` — live cache-bust **`?v=0.9.28`**.
+**Task ID：** `PHASE6-PICKUP-POLISH-001` — live cache-bust **`?v=0.9.29`**.
 
-- `weaponSlots` length **4**; start `['mg', null, null, null]`.
-- Slot weapons: `mg|laser|shotgun|rocket|grenade|plasma`. Modifiers (`dmg`/`rate`/…) do **not** take slots.
-- Take → fill next empty; upgrade → bump `taken` stacks; full + new type → **swap** (non-mg slots) OR keep — never silent.
-- Level-up new slot weapon when full → deferred swap offer (same UI).
-- HUD `#weapon-slots` bar (icon + name + Lv); all owned still auto-fire.
-- Screenshots: `tests/screenshots/phase6-inventory/`.
-- Tests: `inventory.test.mjs` + weapon-pickup／levelup／regression green.
-- No balance／Phase 4／horn lock／phone GPU. 8-dir gun untouched.
+- **Slot-fire sync：** `_tickWeapons` only fires weapons present in `weaponSlots`; `_pruneUnslottedWeapons` clears orphan slot-weapon `taken`／combat props after apply. HUD ≡ shots.
+- **Pickup UX：** shorter zh-HK take／upgrade／swap／keep／convertHeal copy；swap highlights target `#weapon-slots` cell；convertHeal shows `+2 HP`；keep = decline crate + resume.
+- Weapon-crate ground halo punchier (weapon kind only).
+- Screenshots: `tests/screenshots/phase6-pickup-polish/`.
+- Tests: inventory＋weapon-pickup extended；regression green.
+- No balance／Phase 4／horn lock／phone GPU.
 
 ### Queue（recommended next — safe, no Phase 4）
 
-1. **Pickup polish** — ← **recommended next**（parent will chain）
+1. **XP／heal／magnet pickup readability polish** — ← **recommended next**
 2. **HIT-FEEL-DEVICE**（needs Roy 真機）— skip wait；keep queued
 3. Phone GPU／WebGL — **deferred by Roy**
 4. Horn art lock — **only after** Roy later OK
@@ -57,6 +55,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-PICKUP-POLISH-001` → **v0.9.29**.
 - `PHASE6-MULTI-SLOT-INVENTORY-001` → **v0.9.28**.
 - `GUN-8DIR-001` → **v0.9.27**.
 - `PHASE3-ELITE-COMMANDER-001` → **v0.9.26**.

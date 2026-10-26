@@ -368,11 +368,28 @@ export class Game {
       }
     }
 
+    this._pruneUnslottedWeapons();
     this.pendingCards = null;
     this.pausedForLevel = false;
     this.pendingFrom = null;
     // XP may have banked past threshold while a pickup offer was open — open level-up now.
     if (this.xp >= this.xpNeed) this._levelUp();
+  }
+
+  /** v0.9.29: HUD slots are the only fireable set — drop orphan slot-weapon stacks. */
+  _pruneUnslottedWeapons() {
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    for (const id of SLOT_WEAPONS) {
+      if (id === 'mg') continue; // starter always reserved / never fully stripped here
+      if (!this.weaponSlots.includes(id)) this._clearSlotWeaponState(id);
+    }
+  }
+
+  /** True if this slot weapon is on the bar (and therefore allowed to fire). */
+  _slotArmed(weaponId) {
+    if (!weaponId) return false;
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    return this.weaponSlots.includes(weaponId);
   }
 
   _fillWeaponSlot(weaponId) {
@@ -1759,10 +1776,11 @@ export class Game {
 
   _tickWeapons(dt, events) {
     let fired = false;
-    // Base continuous MG — only when a foe is in range
+    // v0.9.29: only weapons present in weaponSlots fire (HUD ≡ shots).
+    // Base continuous MG — only when slotted and a foe is in range
     this.fireT -= dt;
     if (this.fireT <= 0) {
-      if (this._fireMg(events)) {
+      if (this._slotArmed('mg') && this._fireMg(events)) {
         this.fireT = this.fireCd;
         this.muzzle = 0.08; this.aimHold = 0.42;
         fired = true;
@@ -1771,7 +1789,7 @@ export class Game {
       }
     }
 
-    if (this.laser > 0) {
+    if (this.laser > 0 && this._slotArmed('laser')) {
       this.laserT -= dt;
       if (this.laserT <= 0 && this._fireLaser(events)) {
         this.laserT = Math.max(0.18, 0.42 - this.laser * 0.05);
@@ -1779,7 +1797,7 @@ export class Game {
         fired = true;
       }
     }
-    if (this.shotgun > 0) {
+    if (this.shotgun > 0 && this._slotArmed('shotgun')) {
       this.shotgunT -= dt;
       if (this.shotgunT <= 0 && this._fireShotgun(events)) {
         this.shotgunT = Math.max(0.35, 0.85 - this.shotgun * 0.1);
@@ -1787,7 +1805,7 @@ export class Game {
         fired = true;
       }
     }
-    if (this.rocket > 0) {
+    if (this.rocket > 0 && this._slotArmed('rocket')) {
       this.rocketT -= dt;
       if (this.rocketT <= 0 && this._fireRocket(events)) {
         this.rocketT = Math.max(0.9, 2.1 - this.rocket * 0.25);
@@ -1795,7 +1813,7 @@ export class Game {
         fired = true;
       }
     }
-    if (this.grenade > 0) {
+    if (this.grenade > 0 && this._slotArmed('grenade')) {
       this.grenadeT -= dt;
       if (this.grenadeT <= 0 && this._fireGrenade(events)) {
         this.grenadeT = Math.max(0.85, 1.9 - this.grenade * 0.2);
@@ -1803,7 +1821,7 @@ export class Game {
         fired = true;
       }
     }
-    if (this.plasma > 0) {
+    if (this.plasma > 0 && this._slotArmed('plasma')) {
       this.plasmaT -= dt;
       if (this.plasmaT <= 0 && this._firePlasma(events)) {
         this.plasmaT = Math.max(0.55, 1.35 - this.plasma * 0.15);

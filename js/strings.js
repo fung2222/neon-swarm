@@ -20,7 +20,7 @@ i18n.add({
   levelUp: ['升級！揀一張', 'LEVEL UP — PICK ONE'],
   'pickup.title': ['武器箱 · 揀一項', 'WEAPON CRATE — CHOOSE'],
   'pickup.titleEn': ['WEAPON CRATE', 'WEAPON CRATE'],
-  'pickup.swap': ['武器欄已滿 · 揀一格替換', 'SLOTS FULL — SWAP ONE'],
+  'pickup.swap': ['欄位已滿 · 撳一格換走', 'SLOTS FULL — TAP A SLOT TO SWAP'],
   paused: ['已暫停', 'PAUSED'],
   pausedS: ['PAUSED', 'PAUSED'],
   resume: ['繼續', 'RESUME'],

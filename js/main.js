@@ -511,6 +511,20 @@ function resumeAfterCardPick() {
   $('stick').classList.remove('active', 'following');
 }
 
+function clearSwapSlotHighlights() {
+  const bar = $('weapon-slots');
+  if (!bar) return;
+  for (const el of bar.children) el.classList.remove('swap-target', 'swap-hint');
+}
+
+function highlightSwapSlot(index) {
+  clearSwapSlotHighlights();
+  const bar = $('weapon-slots');
+  if (!bar || index == null) return;
+  const el = bar.children[index];
+  if (el) el.classList.add('swap-target');
+}
+
 function showLevelCards(cards, opts = {}) {
   if (!cards || !cards.length) {
     // Safety net: a level-up must never silently swallow the pick (v0.3.3 left the run running with no card).
@@ -519,38 +533,93 @@ function showLevelCards(cards, opts = {}) {
   S.state = 'level';
   const from = opts.from || (S.game && S.game.pendingFrom) || 'level';
   const title = $('level-title');
+  const isSwap = from === 'pickup' && cards.some((c) => c.pickupAction === 'swap');
+  const isPickup = from === 'pickup';
   if (title) {
-    const isSwap = from === 'pickup' && cards.some((c) => c.pickupAction === 'swap');
     title.textContent = isSwap
       ? t('pickup.swap')
-      : (from === 'pickup' ? t('pickup.title') : t('levelUp'));
+      : (isPickup ? t('pickup.title') : t('levelUp'));
   }
   const box = $('level-cards');
   box.innerHTML = '';
-  let prevTaken = S.game.taken || {};
+  box.classList.toggle('pickup-offer', isPickup);
+  box.classList.toggle('pickup-swap', isSwap);
+  clearSwapSlotHighlights();
+  if (isSwap && S.game) {
+    // Soft hint on every swappable (non-mg) filled slot while choosing.
+    const slots = S.game.weaponSlots || [];
+    const bar = $('weapon-slots');
+    if (bar) {
+      slots.forEach((sid, i) => {
+        if (!sid || sid === 'mg') return;
+        const el = bar.children[i];
+        if (el) el.classList.add('swap-hint');
+      });
+    }
+  }
+  let prevTaken = (S.game && S.game.taken) || {};
   cards.forEach((c) => {
     const b = document.createElement('button');
-    b.className = 'level-card ' + cardKindClass(c);
+    const action = c.pickupAction || '';
+    b.className = 'level-card ' + cardKindClass(c)
+      + (action ? ' action-' + action : '')
+      + (action === 'swap' ? ' has-swap' : '');
     b.type = 'button';
+    if (action === 'swap' && c.swapIndex != null) b.dataset.swapIndex = String(c.swapIndex);
     const kind = c.kind === 'armor'
       ? (i18n.isZh() ? '裝甲' : 'ARMOR')
       : c.kind === 'weapon'
         ? (i18n.isZh() ? '武器' : 'WEAPON')
-        : (i18n.isZh() ? '輔助' : 'UTIL');
-    const showCount = c.max != null && !String(c.id || '').startsWith('_pickup_');
+        : (action === 'convertHeal'
+          ? (i18n.isZh() ? '修復' : 'REPAIR')
+          : action === 'keep'
+            ? (i18n.isZh() ? '略過' : 'SKIP')
+            : (i18n.isZh() ? '輔助' : 'UTIL'));
+    const showCount = c.max != null && !String(c.id || '').startsWith('_pickup_') && action !== 'swap';
     const times = showCount ? `<em class="card-count">${prevTaken[c.id] || 0}/${c.max}</em>` : '';
+    const healBadge = action === 'convertHeal' && c.healAmount
+      ? `<em class="card-count heal">+${c.healAmount} HP</em>` : '';
     b.innerHTML =
       `<span class="card-icon" aria-hidden="true">${cardEmblem(c)}</span>` +
       `<span class="card-body"><b>${i18n.isZh() ? c.zh : c.en}</b>` +
-      `<em class="card-kind">${kind}</em>${times}` +
+      `<em class="card-kind">${kind}</em>${times}${healBadge}` +
       `<small>${i18n.isZh() ? c.descZh : c.descEn}</small></span>`;
+    if (action === 'swap') {
+      const idx = c.swapIndex;
+      b.addEventListener('pointerenter', () => highlightSwapSlot(idx));
+      b.addEventListener('pointerleave', () => {
+        clearSwapSlotHighlights();
+        // restore soft hints
+        if (S.game) {
+          (S.game.weaponSlots || []).forEach((sid, i) => {
+            if (!sid || sid === 'mg') return;
+            const el = $('weapon-slots') && $('weapon-slots').children[i];
+            if (el) el.classList.add('swap-hint');
+          });
+        }
+      });
+      b.addEventListener('focus', () => highlightSwapSlot(idx));
+    }
     b.addEventListener('click', () => {
       audio.pick();
+      clearSwapSlotHighlights();
       S.game.applyCard(c);
       resumeAfterCardPick();
     });
     box.appendChild(b);
   });
+  // Keep slot bar visible under pickup/swap so players see which cell is replaced.
+  if (isPickup && S.game) {
+    $('hud') && $('hud').classList.remove('hidden');
+    updateWeaponSlotsHUD(S.game);
+    if (isSwap) {
+      (S.game.weaponSlots || []).forEach((sid, i) => {
+        if (!sid || sid === 'mg') return;
+        const el = $('weapon-slots') && $('weapon-slots').children[i];
+        if (el) el.classList.add('swap-hint');
+      });
+    }
+  }
   ui.show('level');
   audio.levelChime();
 }
@@ -571,17 +640,19 @@ function startRun() {
     endless: true,
     mech: S.mechId,
   });
-  // QA / screenshot: ?arsenal=1 unlocks every special weapon at stack 1
+  // QA / screenshot: ?arsenal=1 fills all 4 slots at stack 1 (HUD ≡ fire; no orphan extras).
   if (flags.get('arsenal') === '1') {
     const g = S.game;
+    g.weaponSlots = ['mg', 'laser', 'shotgun', 'rocket'];
     g.laser = Math.max(g.laser, 1);
     g.shotgun = Math.max(g.shotgun, 1);
     g.rocket = Math.max(g.rocket, 1);
-    g.grenade = Math.max(g.grenade, 1);
-    g.plasma = Math.max(g.plasma, 1);
-    g.taken = { ...(g.taken || {}), laser: 1, shotgun: 1, rocket: 1, grenade: 1, plasma: 1 };
-    // HUD shows max 4 slots; extras still fire via stacks (QA cheat).
-    g.weaponSlots = ['mg', 'laser', 'shotgun', 'rocket'];
+    g.grenade = 0;
+    g.plasma = 0;
+    g.taken = { ...(g.taken || {}), laser: 1, shotgun: 1, rocket: 1 };
+    delete g.taken.grenade;
+    delete g.taken.plasma;
+    g._pruneUnslottedWeapons();
   }
   view.setMech(S.mechId);
   S.state = 'play';

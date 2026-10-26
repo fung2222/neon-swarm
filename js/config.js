@@ -614,10 +614,11 @@ export function weaponSlotLevel(id, taken = {}) {
 }
 
 /**
- * Phase 6 weapon-crate offer (v0.9.11 + v0.9.28 slots).
+ * Phase 6 weapon-crate offer (v0.9.11 + v0.9.28 slots + v0.9.29 polish).
  * Always returns a pickable choice list — never silently mutates `taken` / slots.
  * Modes: take | upgrade | max | swap (new type, inventory full).
- * Stacks live in `taken`; ownership visibility in `weaponSlots`.
+ * Rule: fireable ownership = presence in `weaponSlots`; `taken` holds stack levels only.
+ * For slot weapons, "owned" means currently slotted (orphan stacks are pruned by Game).
  */
 export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
   const base = CARDS_BY_ID[weaponId];
@@ -626,11 +627,17 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
   const stacks = (taken && taken[weaponId]) || 0;
   const slotWeapon = isSlotWeapon(weaponId);
   const inSlots = !!(slots && slotWeapon && slots.includes(weaponId));
-  const owned = stacks > 0 || inSlots;
-  const atMax = base.max != null && stacks >= base.max;
+  // Slot weapons: when slots provided, owned = on the bar. slots=null → legacy stacks.
+  // Non-slot cards (dmg/rate/…) always use stacks.
+  const owned = slotWeapon
+    ? (slots == null ? stacks > 0 : inSlots)
+    : stacks > 0;
+  const atMax = base.max != null && stacks >= base.max
+    && (slotWeapon && slots != null ? inSlots : true);
   const slotsFull = slotWeapon && slots && !owned && !hasEmptyWeaponSlot(slots);
   let mode = atMax ? 'max' : (owned ? 'upgrade' : (slotsFull ? 'swap' : 'take'));
   const choices = [];
+  const PICKUP_HEAL = 2;
 
   if (mode === 'swap') {
     // One swap choice per filled non-mg slot (mg stays as the always-on starter).
@@ -649,10 +656,10 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
         pickupAction: 'swap',
         swapIndex: i,
         swapOut: sid,
-        zh: `替換 · ${outZh} → ${base.zh}`,
-        en: `SWAP · ${outEn} → ${base.en}`,
-        descZh: `卸下 ${outZh}，裝備 ${base.zh} · ${base.descZh}`,
-        descEn: `Unequip ${outEn}, equip ${base.en} · ${base.descEn}`,
+        zh: `換下 ${outZh}`,
+        en: `SWAP OUT ${outEn}`,
+        descZh: `第${i + 1}格 → ${base.zh} · 卸走 ${outZh}`,
+        descEn: `Slot ${i + 1} → ${base.en} · drop ${outEn}`,
       });
     });
     // Fallback: if somehow only mg is filled but count says full, allow swapping any non-null.
@@ -672,14 +679,15 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
           pickupAction: 'swap',
           swapIndex: i,
           swapOut: sid,
-          zh: `替換 · ${outZh} → ${base.zh}`,
-          en: `SWAP · ${outEn} → ${base.en}`,
-          descZh: `卸下 ${outZh}，裝備 ${base.zh}`,
-          descEn: `Unequip ${outEn}, equip ${base.en}`,
+          zh: `換下 ${outZh}`,
+          en: `SWAP OUT ${outEn}`,
+          descZh: `第${i + 1}格 → ${base.zh}`,
+          descEn: `Slot ${i + 1} → ${base.en}`,
         });
       });
     }
   } else if (!atMax) {
+    const nextLv = stacks + 1;
     choices.push({
       id: base.id,
       kind: base.kind,
@@ -688,14 +696,18 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
       max: base.max,
       apply: base.apply,
       pickupAction: owned ? 'upgrade' : 'take',
-      zh: owned ? `${base.zh} · 升級疊層` : `${base.zh} · 獲得`,
-      en: owned ? `${base.en} · UPGRADE` : `${base.en} · TAKE`,
+      zh: owned
+        ? `升級 · Lv${stacks}→${nextLv}`
+        : `裝上 · ${base.zh}`,
+      en: owned
+        ? `UPGRADE · Lv${stacks}→${nextLv}`
+        : `TAKE · ${base.en}`,
       descZh: owned
-        ? `疊層 ${stacks}→${stacks + 1}${base.max != null ? `／${base.max}` : ''} · ${base.descZh}`
-        : `裝備此武器 · ${base.descZh}`,
+        ? `疊層${base.max != null ? ` ${nextLv}／${base.max}` : ''} · ${base.descZh}`
+        : `加進武器欄 · ${base.descZh}`,
       descEn: owned
-        ? `Stack ${stacks}→${stacks + 1}${base.max != null ? `/${base.max}` : ''} · ${base.descEn}`
-        : `Equip · ${base.descEn}`,
+        ? `Stack${base.max != null ? ` ${nextLv}/${base.max}` : ''} · ${base.descEn}`
+        : `Add to weapon bar · ${base.descEn}`,
     });
   } else {
     // At max: optional consolation — small heal (cheap, no XP cascade into another pause).
@@ -706,11 +718,12 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
       shape: 'heart',
       max: null,
       pickupAction: 'convertHeal',
-      zh: '兌換修復',
-      en: 'CONVERT TO REPAIR',
-      descZh: `已滿級（${stacks}${base.max != null ? `／${base.max}` : ''}）· 回復 2 護盾`,
-      descEn: `At max (${stacks}${base.max != null ? `/${base.max}` : ''}) · restore 2 HP`,
-      apply: (s) => { s.hp = Math.min(s.maxHp, s.hp + 2); },
+      healAmount: PICKUP_HEAL,
+      zh: `兌成修復 +${PICKUP_HEAL}`,
+      en: `CONVERT · +${PICKUP_HEAL} HP`,
+      descZh: `已滿級（${stacks}${base.max != null ? `／${base.max}` : ''}）· 回復 ${PICKUP_HEAL} 點生命`,
+      descEn: `At max (${stacks}${base.max != null ? `/${base.max}` : ''}) · restore ${PICKUP_HEAL} HP`,
+      apply: (s) => { s.hp = Math.min(s.maxHp, s.hp + PICKUP_HEAL); },
     });
   }
 
@@ -721,14 +734,14 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
     shape: 'deflect',
     max: null,
     pickupAction: 'keep',
-    zh: '保留現狀',
-    en: 'KEEP CURRENT',
+    zh: '唔要 · 繼續跑',
+    en: 'SKIP · KEEP RUNNING',
     descZh: mode === 'swap'
-      ? '唔換 · 繼續用現有四格武器'
-      : (atMax ? '已滿級 · 唔改裝備' : '唔攞呢件 · 繼續用現有裝備'),
+      ? '唔換欄 · 箱子唔攞 · 恢復戰鬥'
+      : (atMax ? '唔兌修復 · 箱子唔攞 · 恢復戰鬥' : '箱子唔攞 · 恢復戰鬥'),
     descEn: mode === 'swap'
-      ? 'Decline · keep current loadout'
-      : (atMax ? 'At max · leave gear unchanged' : 'Decline · keep current gear'),
+      ? 'No swap · decline crate · resume'
+      : (atMax ? 'No heal · decline crate · resume' : 'Decline crate · resume fight'),
     apply: () => {},
   });
 

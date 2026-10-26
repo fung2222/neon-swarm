@@ -542,6 +542,45 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   letter-spacing: 0.04em;
 }
 .wslot.empty .wslot-lv { display: none; }
+.wslot.swap-hint {
+  border-color: rgba(255, 230, 0, 0.7);
+  box-shadow: 0 0 14px rgba(255, 230, 0, 0.28), inset 0 0 10px rgba(0, 0, 0, 0.35);
+}
+.wslot.swap-target {
+  border-color: #ff2bd6;
+  box-shadow: 0 0 18px rgba(255, 43, 214, 0.55), inset 0 0 12px rgba(255, 43, 214, 0.18);
+  transform: translateY(-2px);
+}
+.level-cards.pickup-offer .level-card {
+  min-height: 72px;
+  padding: 14px 16px;
+}
+.level-cards.pickup-offer .level-card.action-keep {
+  border-color: #8a93a888;
+  opacity: 0.92;
+}
+.level-cards.pickup-offer .level-card.action-convertHeal b { color: #ff6b9a; }
+.level-cards.pickup-offer .level-card .card-count.heal {
+  background: #ff6b9a;
+  color: #12020a;
+}
+.level-cards.pickup-swap .level-card.has-swap:hover,
+.level-cards.pickup-swap .level-card.has-swap:focus {
+  border-color: #ffe600;
+  box-shadow: 0 0 16px rgba(255, 230, 0, 0.35);
+}
+@media (max-width: 480px) {
+  .level-cards.pickup-offer { gap: 12px; }
+  .level-cards.pickup-offer .level-card {
+    min-height: 76px;
+    padding: 14px 14px;
+    gap: 10px;
+  }
+  .level-cards.pickup-offer .level-card .card-icon {
+    flex-basis: 64px; width: 64px; height: 64px;
+  }
+}
+
 @media (max-width: 480px) {
   .weapon-slots {
     bottom: calc(96px + env(safe-area-inset-bottom)); /* above virtual stick */
