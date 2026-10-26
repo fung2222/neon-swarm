@@ -201,6 +201,12 @@ export const ENEMIES = {
     hp: 4, speed: 2.45, radius: 0.33, xp: 3, score: 28, chase: 0.85, damage: 1,
     color: 0xb8fff0, coat: 0xe8f4f2, medic: true,
   },
+  // ---- Phase 3 jammer (dish / mast / emitter pods; dark steel + magenta/violet) — not a recolor ----
+  jammer: {
+    zh: '干擾單位', en: 'Signal Jammer', family: 'support', kind: 'jammer', tier: 2,
+    hp: 4, speed: 2.2, radius: 0.34, xp: 3, score: 32, chase: 0.75, damage: 1,
+    color: 0xc44dff, coat: 0x1e222a, jammer: true,
+  },
   walker: {
     zh: '重裝機甲', en: 'Heavy Walker', family: 'support', kind: 'walker', tier: 3,
     hp: 16, speed: 1.2, radius: 0.52, xp: 5, score: 55, chase: 0.85, damage: 2,
@@ -351,6 +357,25 @@ export const MEDIC = {
   telegraphSpeedMul: 0.12,
   fleeSpeedMul: 1.3,
   recoverSpeedMul: 0.7,
+};
+
+/**
+ * Signal Jammer (PHASE3-ENEMY-JAMMER-001): mid-range → violet jam telegraph ≥0.85s →
+ * short fireCd mul debuff on player (×1.35 ~2.5s; stack cap 1, refresh OK) → recover/reposition.
+ * Dark steel + magenta/violet emitters (no red hull). Kill mid-telegraph = no apply.
+ * Visual: reuse hurt/overlay magenta flash — no new toast.
+ */
+export const JAMMER = {
+  telegraphSec: 0.9,
+  jamMul: 1.35,
+  jamDuration: 2.5,
+  jamRange: 9.0,
+  recoverSec: 1.4,
+  idealMin: 5.0,
+  idealMax: 8.5,
+  approachSpeedMul: 0.95,
+  telegraphSpeedMul: 0.1,
+  recoverSpeedMul: 0.65,
 };
 
 /**
@@ -695,27 +720,27 @@ export function waveMix(t, zone = null) {
             : 'lab'
   );
   if (z === 'rooftop') {
-    // Rooftop: sky pressure — more drone/mech/chief; light sniper/shield/artillery/bomber/flanker; medic rare.
-    return [['drone', 0.23], ['mech', 0.19], ['chief', 0.14], ['officer', 0.08], ['soldier', 0.07], ['walker', 0.02], ['sniper', 0.07], ['shield', 0.04], ['artillery', 0.07], ['bomber', 0.04], ['flanker', 0.03], ['medic', 0.02]];
+    // Rooftop: sky pressure — light sniper/shield/artillery/bomber/flanker/jammer; medic rare.
+    return [['drone', 0.22], ['mech', 0.18], ['chief', 0.14], ['officer', 0.08], ['soldier', 0.07], ['walker', 0.02], ['sniper', 0.07], ['shield', 0.04], ['artillery', 0.07], ['bomber', 0.04], ['flanker', 0.03], ['medic', 0.02], ['jammer', 0.02]];
   }
   if (z === 'blockade') {
-    // Blockade: military pressure — mid artillery + shield; light bomber/flanker/medic.
-    return [['soldier', 0.22], ['officer', 0.18], ['chief', 0.14], ['mech', 0.13], ['sniper', 0.05], ['shield', 0.11], ['artillery', 0.05], ['bomber', 0.03], ['flanker', 0.05], ['medic', 0.04]];
+    // Blockade: military pressure — mid artillery + shield; light bomber/flanker/medic/jammer.
+    return [['soldier', 0.21], ['officer', 0.17], ['chief', 0.14], ['mech', 0.13], ['sniper', 0.05], ['shield', 0.10], ['artillery', 0.05], ['bomber', 0.03], ['flanker', 0.05], ['medic', 0.04], ['jammer', 0.03]];
   }
   if (z === 'reactor') {
-    // Reactor: energy facility — light sniper/shield/artillery/bomber/medic; flanker rare.
-    return [['drone', 0.20], ['mech', 0.17], ['officer', 0.15], ['walker', 0.09], ['soldier', 0.07], ['chief', 0.04], ['sniper', 0.07], ['shield', 0.06], ['artillery', 0.06], ['bomber', 0.04], ['flanker', 0.02], ['medic', 0.03]];
+    // Reactor: energy facility — light sniper/shield/artillery/bomber/medic/jammer; flanker rare.
+    return [['drone', 0.19], ['mech', 0.16], ['officer', 0.15], ['walker', 0.09], ['soldier', 0.07], ['chief', 0.04], ['sniper', 0.07], ['shield', 0.06], ['artillery', 0.06], ['bomber', 0.04], ['flanker', 0.02], ['medic', 0.03], ['jammer', 0.02]];
   }
   if (z === 'assembly') {
-    // Assembly bay: industrial — shield mid, artillery rare, light bomber/flanker/medic.
-    return [['soldier', 0.25], ['walker', 0.21], ['officer', 0.10], ['drone', 0.08], ['chief', 0.03], ['staffer', 0.03], ['sniper', 0.04], ['shield', 0.10], ['artillery', 0.04], ['bomber', 0.03], ['flanker', 0.05], ['medic', 0.04]];
+    // Assembly bay: industrial — shield mid; jammer rare; light bomber/flanker/medic.
+    return [['soldier', 0.24], ['walker', 0.21], ['officer', 0.10], ['drone', 0.08], ['chief', 0.03], ['staffer', 0.03], ['sniper', 0.04], ['shield', 0.10], ['artillery', 0.04], ['bomber', 0.03], ['flanker', 0.05], ['medic', 0.04], ['jammer', 0.01]];
   }
   if (t < 18) return [['staffer', 0.6], ['guard', 0.25], ['drone', 0.15]];
   if (t < 40) return [['staffer', 0.32], ['guard', 0.2], ['soldier', 0.3], ['drone', 0.18]];
-  // Mid-late lab: sniper/bomber/flanker/medic after ~40s; shield after ~65s; artillery only late (≥100s).
-  if (t < 65) return [['staffer', 0.17], ['soldier', 0.27], ['drone', 0.18], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08], ['bomber', 0.05], ['flanker', 0.04], ['medic', 0.03]];
-  if (t < 100) return [['soldier', 0.20], ['drone', 0.13], ['walker', 0.12], ['officer', 0.15], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08], ['bomber', 0.05], ['flanker', 0.05], ['medic', 0.04]];
-  return [['soldier', 0.13], ['walker', 0.15], ['officer', 0.14], ['chief', 0.12], ['mech', 0.10], ['sniper', 0.09], ['shield', 0.09], ['artillery', 0.05], ['bomber', 0.05], ['flanker', 0.04], ['medic', 0.04]];
+  // Mid-late lab: sniper/bomber/flanker/medic/jammer after ~40s; shield after ~65s; artillery late.
+  if (t < 65) return [['staffer', 0.16], ['soldier', 0.26], ['drone', 0.18], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08], ['bomber', 0.05], ['flanker', 0.04], ['medic', 0.03], ['jammer', 0.02]];
+  if (t < 100) return [['soldier', 0.19], ['drone', 0.13], ['walker', 0.12], ['officer', 0.14], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08], ['bomber', 0.05], ['flanker', 0.04], ['medic', 0.04], ['jammer', 0.03]];
+  return [['soldier', 0.12], ['walker', 0.15], ['officer', 0.14], ['chief', 0.12], ['mech', 0.10], ['sniper', 0.09], ['shield', 0.08], ['artillery', 0.05], ['bomber', 0.05], ['flanker', 0.04], ['medic', 0.03], ['jammer', 0.03]];
 }
 
 export function pickEnemyType(rng, t, zone = null) {

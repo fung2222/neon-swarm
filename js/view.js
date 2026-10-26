@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, MEDIC, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -1107,6 +1107,119 @@ function medicHealAura() {
 }
 
 /** Cyan/danger dash wedge for flanker telegraph (cyan = dash lane; ≠ red AoE / orange blast). */
+/**
+ * Phase 3 signal jammer: dark steel hull + dish / mast / magenta-violet emitter pods.
+ * Distinct from drone / medic / artillery / flanker (no red hull).
+ */
+function jammerMesh() {
+  const g = new THREE.Group();
+  const steel = 0x1e222a;
+  const steelHi = 0x3a4050;
+  const mag = 0xc44dff;
+  const violet = 0x9b4dff;
+  const matHull = new THREE.MeshStandardMaterial({ color: steel, metalness: 0.65, roughness: 0.38, emissive: violet, emissiveIntensity: 0.12 });
+  const matHi = new THREE.MeshStandardMaterial({ color: steelHi, metalness: 0.55, roughness: 0.4, emissive: mag, emissiveIntensity: 0.18 });
+  const matEmit = new THREE.MeshStandardMaterial({ color: mag, metalness: 0.25, roughness: 0.35, emissive: mag, emissiveIntensity: 0.7 });
+  const matDish = new THREE.MeshStandardMaterial({ color: 0x2a3040, metalness: 0.7, roughness: 0.32, emissive: violet, emissiveIntensity: 0.25 });
+
+  // Compact chassis
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.36, 0.36), matHull);
+  body.position.y = 0.42;
+  g.add(body);
+
+  // Mast
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.55, 6), matHi);
+  mast.position.y = 0.85;
+  g.add(mast);
+
+  // Dish (asymmetric tilt)
+  const dish = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8, 0, Math.PI), matDish);
+  dish.position.set(0.08, 1.12, 0.02);
+  dish.rotation.x = -0.55;
+  dish.rotation.y = 0.35;
+  g.add(dish);
+  const dishCore = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), matEmit);
+  dishCore.position.set(0.08, 1.12, 0.08);
+  g.add(dishCore);
+
+  // Emitter pods (left + right, asymmetric heights)
+  const podL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.18, 0.1), matHi);
+  podL.position.set(-0.26, 0.48, 0.05);
+  g.add(podL);
+  const tipL = new THREE.Mesh(new THREE.SphereGeometry(0.045, 6, 6), matEmit);
+  tipL.position.set(-0.26, 0.6, 0.05);
+  g.add(tipL);
+  const podR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.26, 0.1), matHi);
+  podR.position.set(0.28, 0.52, -0.04);
+  g.add(podR);
+  const tipR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), matEmit);
+  tipR.position.set(0.28, 0.68, -0.04);
+  g.add(tipR);
+
+  // Legs / skids
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.2, 0.14), matHull);
+  legL.position.set(-0.12, 0.12, 0);
+  g.add(legL);
+  const legR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.2, 0.14), matHull);
+  legR.position.set(0.12, 0.12, 0);
+  g.add(legR);
+
+  g.userData.type = 'jammer';
+  g.userData.jammer = true;
+  g.userData.baseY = 0;
+  return g;
+}
+
+/** Violet jam ring for jammer telegraph (violet = jam; ≠ red AoE / cyan dash / lime heal). */
+function jammerJamAura() {
+  const group = new THREE.Group();
+  const r = (typeof JAMMER !== 'undefined' && JAMMER.jamRange) ? Math.min(4.8, JAMMER.jamRange * 0.45) : 4.0;
+  const ringGeo = new THREE.RingGeometry(r * 0.88, r, 48);
+  ringGeo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xc44dff,
+    transparent: true,
+    opacity: 0.55,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const ring = new THREE.Mesh(ringGeo, mat);
+  ring.position.y = 0.04;
+  group.add(ring);
+  const fillGeo = new THREE.CircleGeometry(r * 0.86, 48);
+  fillGeo.rotateX(-Math.PI / 2);
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: 0x9b4dff,
+    transparent: true,
+    opacity: 0.16,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const fill = new THREE.Mesh(fillGeo, fillMat);
+  fill.position.y = 0.02;
+  group.add(fill);
+  // Inner dashed pulse ring
+  const innerGeo = new THREE.RingGeometry(r * 0.35, r * 0.42, 32);
+  innerGeo.rotateX(-Math.PI / 2);
+  const innerMat = new THREE.MeshBasicMaterial({
+    color: 0xe0a0ff,
+    transparent: true,
+    opacity: 0.5,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const inner = new THREE.Mesh(innerGeo, innerMat);
+  inner.position.y = 0.05;
+  group.add(inner);
+  group.visible = false;
+  group.userData.mat = mat;
+  group.userData.fillMat = fillMat;
+  group.userData.innerMat = innerMat;
+  group.userData.baseR = r;
+  return group;
+}
+
+
 function flankerDashLane() {
   const g = new THREE.Group();
   const mat = new THREE.MeshBasicMaterial({
@@ -1326,6 +1439,7 @@ function enemyMeshFor(type) {
   if (type === 'bomber') return bomberMesh();
   if (type === 'flanker') return flankerMesh();
   if (type === 'medic') return medicMesh();
+  if (type === 'jammer') return jammerMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -2385,6 +2499,13 @@ export class View {
       this.group.add(aura);
       this.medicHealAuras.push(aura);
     }
+    // Phase 3 jammer: up to 3 concurrent violet jam rings
+    this.jammerJamAuras = [];
+    for (let i = 0; i < 3; i++) {
+      const aura = jammerJamAura();
+      this.group.add(aura);
+      this.jammerJamAuras.push(aura);
+    }
     // Phase 6 danger pulse: up to 2 concurrent arena red rings (reuse bomber-style red helper)
     this.dangerPulseRings = [];
     for (let i = 0; i < 2; i++) {
@@ -2911,7 +3032,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'flanker' || e.type === 'medic' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'flanker' || e.type === 'medic' || e.type === 'jammer' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2926,7 +3047,7 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber' || e.flanker || e.type === 'flanker' || e.medic || e.type === 'medic'))
+      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber' || e.flanker || e.type === 'flanker' || e.medic || e.type === 'medic' || e.jammer || e.type === 'jammer'))
         ? Math.atan2(e.faceDx, e.faceDz)
         : ((e.sniperPhase === 'aim' && (e.aimDx != null))
           ? Math.atan2(e.aimDx, e.aimDz)
@@ -3003,6 +3124,7 @@ export class View {
     this._syncBomberBlast(game);
     this._syncFlankerDash(game);
     this._syncMedicHeal(game);
+    this._syncJammerJam(game);
     this._syncDangerPulses(game);
     this._syncZonePressure(game);
     this._syncCommanderSummon(game);
@@ -3387,6 +3509,31 @@ export class View {
     }
   }
 
+  /** Violet jam rings for jammers in telegraph (violet = fire-rate jam). */
+  _syncJammerJam(game) {
+    const auras = this.jammerJamAuras || [];
+    for (const a of auras) a.visible = false;
+    let ai = 0;
+    for (const e of game.enemies) {
+      if (!(e.jammer || e.kind === 'jammer' || e.type === 'jammer')) continue;
+      if (e.jammerPhase !== 'telegraph' && e.jammerPhase !== 'pulse') continue;
+      if (ai >= auras.length) break;
+      const aura = auras[ai++];
+      const u = Math.max(0, Math.min(1, 1 - (e.jammerPhaseT || 0) / Math.max(0.01, e.telegraphDur || 0.9)));
+      aura.visible = true;
+      aura.position.set(e.x, 0, e.z);
+      const pulse = 1 + Math.sin((game.t || 0) * 16) * 0.06 * (0.35 + u * 0.65);
+      aura.scale.setScalar(pulse);
+      const mat = aura.userData.mat;
+      const fillMat = aura.userData.fillMat;
+      const innerMat = aura.userData.innerMat;
+      if (mat) mat.opacity = 0.38 + u * 0.45;
+      if (fillMat) fillMat.opacity = 0.1 + u * 0.2;
+      if (innerMat) innerMat.opacity = 0.35 + u * 0.4;
+    }
+  }
+
+
   /** Cyan/acid shrinking safe-edge (PHASE6-ZONE-PRESSURE-001; persistent boundary ≠ red pulse). */
   _syncZonePressure(game) {
     const edge = this.zonePressureEdge;
@@ -3666,6 +3813,8 @@ if (typeof window !== 'undefined') {
     flankerDashLane,
     medicMesh,
     medicHealAura,
+    jammerMesh,
+    jammerJamAura,
     zonePressureRing,
     supportMesh,
     eliteMesh,

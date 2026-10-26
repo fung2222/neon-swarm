@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -306,6 +306,8 @@ export class Game {
     this.gems = [];
     this.spawnAcc = 0;
     this.hitFlash = 0;
+    this.jamT = 0;
+    this.jamFireMul = 1;
     this.muzzle = 0;
     this.aimHold = 0;
     // Aim facing (unit xz) — independent of move velocity (Milestone A)
@@ -552,6 +554,9 @@ export class Game {
       medicPhase: (!!def.medic || type === 'medic') ? 'seek' : undefined,
       medicPhaseT: (!!def.medic || type === 'medic') ? (0.3 + this.rng() * 0.5) : undefined,
       healTargetId: undefined,
+      jammer: !!def.jammer || type === 'jammer',
+      jammerPhase: (!!def.jammer || type === 'jammer') ? 'reposition' : undefined,
+      jammerPhaseT: (!!def.jammer || type === 'jammer') ? (0.35 + this.rng() * 0.55) : undefined,
       aimX: 0,
       aimZ: 0,
       faceDx: 0,
@@ -1860,11 +1865,13 @@ export class Game {
   _tickWeapons(dt, events) {
     let fired = false;
     // v0.9.29: only weapons present in weaponSlots fire (HUD ≡ shots).
+    // Phase 3 jammer: temporary fireCd mul (stack cap 1) — slows RoF without changing base tables.
+    const jamMul = (this.jamT > 0 && this.jamFireMul > 1) ? this.jamFireMul : 1;
     // Base continuous MG — only when slotted and a foe is in range
     this.fireT -= dt;
     if (this.fireT <= 0) {
       if (this._slotArmed('mg') && this._fireMg(events)) {
-        this.fireT = this.fireCd;
+        this.fireT = this.fireCd * jamMul;
         this.muzzle = 0.08; this.aimHold = 0.42;
         fired = true;
       } else {
@@ -1875,7 +1882,7 @@ export class Game {
     if (this.laser > 0 && this._slotArmed('laser')) {
       this.laserT -= dt;
       if (this.laserT <= 0 && this._fireLaser(events)) {
-        this.laserT = Math.max(0.18, 0.42 - this.laser * 0.05);
+        this.laserT = Math.max(0.18, 0.42 - this.laser * 0.05) * jamMul;
         this.muzzle = 0.12; this.aimHold = 0.48;
         fired = true;
       }
@@ -1883,7 +1890,7 @@ export class Game {
     if (this.shotgun > 0 && this._slotArmed('shotgun')) {
       this.shotgunT -= dt;
       if (this.shotgunT <= 0 && this._fireShotgun(events)) {
-        this.shotgunT = Math.max(0.35, 0.85 - this.shotgun * 0.1);
+        this.shotgunT = Math.max(0.35, 0.85 - this.shotgun * 0.1) * jamMul;
         this.muzzle = 0.14; this.aimHold = 0.48;
         fired = true;
       }
@@ -1891,7 +1898,7 @@ export class Game {
     if (this.rocket > 0 && this._slotArmed('rocket')) {
       this.rocketT -= dt;
       if (this.rocketT <= 0 && this._fireRocket(events)) {
-        this.rocketT = Math.max(0.9, 2.1 - this.rocket * 0.25);
+        this.rocketT = Math.max(0.9, 2.1 - this.rocket * 0.25) * jamMul;
         this.muzzle = 0.16; this.aimHold = 0.48;
         fired = true;
       }
@@ -1899,7 +1906,7 @@ export class Game {
     if (this.grenade > 0 && this._slotArmed('grenade')) {
       this.grenadeT -= dt;
       if (this.grenadeT <= 0 && this._fireGrenade(events)) {
-        this.grenadeT = Math.max(0.85, 1.9 - this.grenade * 0.2);
+        this.grenadeT = Math.max(0.85, 1.9 - this.grenade * 0.2) * jamMul;
         this.muzzle = 0.14; this.aimHold = 0.48;
         fired = true;
       }
@@ -1907,7 +1914,7 @@ export class Game {
     if (this.plasma > 0 && this._slotArmed('plasma')) {
       this.plasmaT -= dt;
       if (this.plasmaT <= 0 && this._firePlasma(events)) {
-        this.plasmaT = Math.max(0.55, 1.35 - this.plasma * 0.15);
+        this.plasmaT = Math.max(0.55, 1.35 - this.plasma * 0.15) * jamMul;
         this.muzzle = 0.12; this.aimHold = 0.48;
         fired = true;
       }
@@ -2972,6 +2979,142 @@ export class Game {
     }
   }
 
+  _applyJammerDebuff(cfg, events, enemy) {
+    const mul = cfg.jamMul != null ? cfg.jamMul : 1.35;
+    const dur = cfg.jamDuration != null ? cfg.jamDuration : 2.5;
+    // Stack cap 1: refresh duration; do not multiply mul further.
+    this.jamFireMul = mul;
+    this.jamT = Math.max(this.jamT || 0, dur);
+    events.push({
+      type: 'jammerPulse',
+      enemyId: enemy ? enemy.id : undefined,
+      x: enemy ? enemy.x : this.px,
+      z: enemy ? enemy.z : this.pz,
+      mul,
+      duration: dur,
+      jamT: this.jamT,
+    });
+  }
+
+  _tickJammer(e, dt, events) {
+    const cfg = JAMMER;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    if (e.shotFlash > 0) e.shotFlash -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const dx = this.px - e.x, dz = this.pz - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+
+    if (!e.jammerPhase) e.jammerPhase = 'reposition';
+    if (e.jammerPhaseT == null) e.jammerPhaseT = 0.4;
+
+    // ---- telegraph: nearly stop; violet ring; no apply yet ----
+    if (e.jammerPhase === 'telegraph') {
+      const tMul = cfg.telegraphSpeedMul != null ? cfg.telegraphSpeedMul : 0.1;
+      const spd = e.speed * e.chase * slowMul * tMul;
+      e.x += ndx * spd * dt;
+      e.z += ndz * spd * dt;
+      e.vx = ndx * spd; e.vz = ndz * spd;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.faceDx = ndx; e.faceDz = ndz;
+      e.aimDx = ndx; e.aimDz = ndz;
+      e.jammerPhaseT -= dt;
+      e.animPhase = (e.animPhase || 0) + 11 * dt;
+      if (e.jammerPhaseT <= 0) {
+        e.jammerPhase = 'pulse';
+        e.jammerPhaseT = 0.1;
+        e.shotFlash = 0.22;
+      }
+      return;
+    }
+
+    // ---- pulse: apply fireCd mul if player in jamRange ----
+    if (e.jammerPhase === 'pulse') {
+      const range = cfg.jamRange != null ? cfg.jamRange : 9.0;
+      const applied = dist <= range;
+      if (applied) {
+        this._applyJammerDebuff(cfg, events, e);
+      } else {
+        events.push({
+          type: 'jammerPulse',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          mul: cfg.jamMul != null ? cfg.jamMul : 1.35,
+          duration: 0,
+          jamT: this.jamT || 0,
+          miss: true,
+        });
+      }
+      e.jammerPhase = 'recover';
+      e.jammerPhaseT = cfg.recoverSec != null ? cfg.recoverSec : 1.4;
+      return;
+    }
+
+    // ---- reposition / recover: keep mid-range orbit ----
+    e.jammerPhaseT -= dt;
+    const idealMin = cfg.idealMin != null ? cfg.idealMin : 5.0;
+    const idealMax = cfg.idealMax != null ? cfg.idealMax : 8.5;
+    let toward = 1;
+    if (dist < idealMin) toward = -0.55;
+    else if (dist > idealMax) toward = 1;
+    else toward = 0.1;
+    const moveMul = e.jammerPhase === 'recover'
+      ? (cfg.recoverSpeedMul != null ? cfg.recoverSpeedMul : 0.65)
+      : (cfg.approachSpeedMul != null ? cfg.approachSpeedMul : 0.95);
+    const spd = e.speed * e.chase * slowMul * moveMul;
+    const sdx = -ndz, sdz = ndx;
+    const side = (e.id % 2 === 0) ? 1 : -1;
+    e.x += (ndx * toward + sdx * side * 0.85) * spd * dt;
+    e.z += (ndz * toward + sdz * side * 0.85) * spd * dt;
+    e.vx = ndx * toward * spd; e.vz = ndz * toward * spd;
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+    e.faceDx = ndx; e.faceDz = ndz;
+    e.aimDx = ndx; e.aimDz = ndz;
+    e.animPhase = (e.animPhase || 0) + 10 * dt;
+
+    if (e.jammerPhase === 'recover') {
+      if (e.jammerPhaseT <= 0) {
+        e.jammerPhase = 'reposition';
+        e.jammerPhaseT = 0.35 + this.rng() * 0.55;
+      }
+    } else if (e.jammerPhase === 'reposition' && e.jammerPhaseT <= 0) {
+      if (dist <= idealMax + 1.5 && dist >= idealMin * 0.55) {
+        e.jammerPhase = 'telegraph';
+        e.jammerPhaseT = cfg.telegraphSec;
+        e.telegraphDur = cfg.telegraphSec;
+        e.telegraphAt = this.t;
+        events.push({
+          type: 'telegraph',
+          kind: 'jammer',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          aimDx: ndx, aimDz: ndz,
+          duration: cfg.telegraphSec,
+        });
+      } else {
+        e.jammerPhaseT = 0.2 + this.rng() * 0.3;
+      }
+    }
+
+    // Light body contact
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.22;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
+      e.x -= ndx * 0.5; e.z -= ndz * 0.5;
+      if (this.hp <= 0) {
+        this.alive = false; this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
+
   /**
    * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
    * Contact damage / elite / boss AI stay here (same as pre-reorder).
@@ -3019,6 +3162,10 @@ export class Game {
       }
       if (e.medic || e.kind === 'medic' || e.type === 'medic') {
         this._tickMedic(e, dt, events);
+        continue;
+      }
+      if (e.jammer || e.kind === 'jammer' || e.type === 'jammer') {
+        this._tickJammer(e, dt, events);
         continue;
       }
       if (e.hit > 0) e.hit -= dt;
@@ -3334,6 +3481,10 @@ export class Game {
     }
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
+    if (this.jamT > 0) {
+      this.jamT -= dt;
+      if (this.jamT <= 0) { this.jamT = 0; this.jamFireMul = 1; }
+    }
     if (this.muzzle > 0) this.muzzle -= dt;
     if (this.aimHold > 0) this.aimHold -= dt;
 

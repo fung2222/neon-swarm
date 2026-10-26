@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.46 medic; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.47 jammer; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1600,6 +1600,21 @@ else if (ev.type === 'xp') {
       }
       try { audio.wave(); } catch (_) {}
       if (!MOBILE_GFX) kickFx({ trauma: 0.04, fovKick: 0.008 });
+    }
+    else if (ev.type === 'jammerPulse') {
+      // Visual only: reuse existing magenta fx-flash / particles — no new toast/coach/streak copy.
+      if (!ev.miss) {
+        const impact = new THREE.Vector3(S.game.px, 0.7, S.game.pz);
+        particles.burst(impact, new THREE.Color(0xc44dff), burstN(6), { speed: 2.6, up: 1.1, life: 0.28, size: 0.32, bright: 1.0 });
+        if (!MOBILE_GFX) {
+          particles.burst(impact, new THREE.Color(0x9b4dff), burstN(3), { speed: 1.6, up: 0.5, life: 0.18, size: 0.22, bright: 0.9 });
+        }
+        const flash = $('fx-flash');
+        if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 70); }
+        try { audio.wave(); } catch (_) {}
+        if (MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });
+        else kickFx({ trauma: 0.07, fovKick: 0.014, bloomDamp: 0.6 });
+      }
     }
     else if (ev.type === 'dangerPulse') {
       const ix = ev.x != null ? ev.x : 0;
