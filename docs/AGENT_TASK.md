@@ -3,27 +3,29 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE3-ENEMY-JAMMER-001 → **Complete**（`?v=0.9.47`）· **HOLD**
+## 狀態：Active → **PHASE6-ZONE-HUD-CHIP-001**（clarity beat 1/3）· cleared HOLD
 
-**ROY continue** 用完一輪優先目標拍子（flanker → medic → jammer）。Active **none** — sync／HIT-FEEL 或 Roy 點名／「繼續」。
+**ROY continue**（2026-10-27 ~07:55 HKT「請繼續去多幾項」）— short **arena／loadout clarity** beat（~3 ships），然後 HOLD。Active 自動推進至 beat 完。
 
-Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish；do NOT invent next systems until Roy continues or names Active.
+### Clarity beat（safe content · ~3）
 
-### Just shipped（priority-enemy beat）
+| # | Task | Why |
+|---|---|---|
+| 1 | **PHASE6-ZONE-HUD-CHIP-001** → `?v=0.9.48` | Persistent in-run zone chip（banner 淡出後仍知身處邊區） |
+| 2 | **PHASE6-SLOT-FIRE-PULSE-001** → `?v=0.9.49` | Weapon slot brief pulse on fire（多欄開火可讀） |
+| 3 | **PHASE6-ELITE-LANE-READ-001** → `?v=0.9.50` | Elite charge warning lanes thicker／brighter（手機可讀；唔係新 elite） |
 
-- **v0.9.47** `PHASE3-ENEMY-JAMMER-001` (`859d970`) — violet jam → brief fireCd×1.35
-- **v0.9.46** `PHASE3-ENEMY-MEDIC-001` (`132e236`) — lime heal pulse ordinary-only
-- **v0.9.45** `PHASE3-ENEMY-FLANKER-001` (`b409cf3`) — cyan dash flank
+**Do NOT：** Phase 4／horn art lock／phone GPU／soft-juice toast・streak・coach invent／4th priority enemy／balance overhaul。
 
-### Soft-juice → still **DONE** · Prior product beat 0.9.40–44 still on live
+### Prior still live
 
-### Next
+- Soft-juice **DONE** @0.9.39；positioning 0.9.40–44；priority enemies 0.9.45–47（flanker／medic／jammer）。
 
-1. **HIT-FEEL-DEVICE** — when Roy can play on phone
-2. OR Roy-named Active／「繼續」only
-3. Phone GPU／horn art lock — deferred
+### Next after this beat
 
-**Do NOT start：** Phase 4／horn／§9／phone GPU／balance overhaul／soft-juice invent／auto next elite without Active.
+1. **HOLD for Roy try**
+2. OR HIT-FEEL-DEVICE when Roy phones
+3. OR Roy-named Active／「繼續」only
 
 ---
 
