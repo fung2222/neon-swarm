@@ -3,30 +3,29 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE6-SCORE-POSITION-001 → **Complete**（`?v=0.9.44`）· **HOLD for Roy try**
+## 狀態：PHASE6-SCORE-POSITION-001 → **Complete**（`?v=0.9.44`）· **HOLD**
 
-**ROY（2026-10-26）ROY_OVERRIDE／continue：** 「繼續去」authorized this run. Positioning trio + tradeoffs + score = full product beat → **recommend HOLD** until Roy tries phone／desktop. Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish.
+**ROY continue** 用完一輪產品拍子（positioning pressure → tradeoffs → score）。Active **none** — sync／HIT-FEEL 或 Roy 點名／「繼續」。
 
-### Complete — PHASE6-SCORE-POSITION-001
+Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish；do NOT invent next systems until Roy continues or names Active.
 
-**PHASE6-SCORE-POSITION-001** → live cache-bust **`?v=0.9.44`**（code `f52e205`）.
+### Just shipped（product beat）
 
-- `SCORE_POS`：moveBonus／safeBonus／paceBonus additive on ordinary kill path；base `e.score + floor(t)` **unchanged**
-- Track `scoreMove`／`scoreSafe`／`scorePace`；over-screen one-line「走位／安全區／清場 +N」（**no** mid-run toast）
-- Tests `tests/score-position.test.mjs`
-- Weapon DPS／XP／heal／CARDS／enemy HP／danger-pulse／zone shrink **unchanged**
+- **v0.9.44** `PHASE6-SCORE-POSITION-001` (`f52e205`) — move／safe／pace kill score bonuses
+- **v0.9.43** `PHASE6-TRADEOFF-CARDS-001` (`d44af7a`) — overclock／glass／heavy_frame
+- **v0.9.42** `PHASE6-ZONE-PRESSURE-001` (`ddf39c4`) — shrinking safe zone
+- **v0.9.41** `PHASE6-PERIODIC-DANGER-001` (`3040b5e`) — periodic red pulses
+- **v0.9.40** `PHASE3-ENEMY-BOMBER-001` (`2ab9dbb`) — suicide bomber
 
-### Soft-juice → **DONE** · Positioning 0.9.40–42 · Tradeoffs 0.9.43 · Score-pos 0.9.44
+### Soft-juice → still **DONE**
 
-### Recently completed
+### Next
 
-- `PHASE6-SCORE-POSITION-001` → **v0.9.44** (`f52e205`)
-- `PHASE6-TRADEOFF-CARDS-001` → **v0.9.43** (`d44af7a`)
-- `PHASE6-ZONE-PRESSURE-001` → **v0.9.42** (`ddf39c4`)
+1. **HIT-FEEL-DEVICE** — when Roy can play on phone
+2. OR Roy-named Active／「繼續」only
+3. Phone GPU／horn art lock — deferred
 
-### Next（HOLD）
-
-**HOLD for Roy try** — HIT-FEEL-DEVICE when Roy phones, or Roy-named Active only. Still ban Phase 4／horn／phone GPU／soft-juice invent.
+**Do NOT start：** Phase 4／horn／§9／phone GPU／balance overhaul／soft-juice invent／auto next elite without Active.
 
 ---
 
