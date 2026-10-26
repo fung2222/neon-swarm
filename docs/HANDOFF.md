@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.9 Phase 3 lab slice（sentinel telegraph；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.10 Phase 3 SWARM CORE boss（elite = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -16,7 +16,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.9`**（Phase 3 lab slice）；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.10`**（Phase 3 SWARM CORE boss）；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -24,6 +24,7 @@
   - v0.9.7 — horn bake quality pass：甲片層次／材質／bake 燈光＋rebake 32 sheets（仍非最終驗收）。
   - v0.9.8 — Phase 2 floor readability：playable floor／grid／dust／edge decor ambient 減亮（不改 horn bake／平衡）。
   - v0.9.9 — Phase 3 lab slice：staffer／guard／drone 程序化剪影區分；SENTINEL PRIME 精英 telegraph→charge→recover；zh-HK 橫幅；實驗室邊緣色溫；截圖 `tests/screenshots/phase3-lab/`。
+  - v0.9.10 — Phase 3 boss beat：洪流核心 SWARM CORE @t=360；Orbit／Volley／Frenzy HP 三分相位；volley lanes ≥0.8s telegraph；頂部細血條＋雙語橫幅；擊殺＝3 卡選擇＋分數加成 `5000×(1+t/60)`；截圖 `tests/screenshots/phase3-boss/`。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -42,7 +43,7 @@
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab vertical slice 已落地（v0.9.9）；完整五區地圖、武器拾取選擇器、boss SWARM CORE 仍未完成。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss beat（v0.9.10）已落地；完整五區地圖、elite #2、武器拾取選擇器仍未完成。Boss 仍係 lab 地圖上的 landmark beat，唔係 endless 五區節奏。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**

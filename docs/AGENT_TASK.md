@@ -1,6 +1,6 @@
 # RAMPAGE MECH — Active Agent Task
 
-> 開始前必讀 `docs/HANDOFF.md`、`docs/BEATS-PLAN.md`（精英節奏參考）。本文件只定義目前授權範圍。
+> 開始前必讀 `docs/HANDOFF.md`、`docs/BEATS-PLAN.md`（精英／boss 節奏參考）。本文件只定義目前授權範圍。
 
 ## 固定工作規則
 
@@ -10,35 +10,40 @@
 
 ## Active task
 
-**Task ID:** `PHASE3-LAB-SLICE-001`  
-**名稱：** Phase 3 — 收容實驗室小片（剪影敵人＋一個精英 telegraph）  
-**性質：** 內容 vertical slice；不改 horn 形狀、唔開 Precision／Morph、唔做手機 GPU 專案。
+**Task ID:** `PHASE3-BOSS-SWARM-CORE-001`  
+**名稱：** Phase 3 — 洪流核心 SWARM CORE（約 6:00 boss beat）  
+**性質：** 內容 vertical slice；不改 horn 形狀、唔開 Precision／Morph、唔做手機 GPU、唔鋪五區地圖。
 
 ### 背景
 
-- Phase 2 光圈＋地板可讀性已推；Roy 延後機體形狀與手機 context loss。
-- HANDOFF Phase 3：實驗室 — 研究員、保安、drone＋一個有清晰剪影／telegraph 的精英；唔係只換色。
-- 現況：`staffer`／`guard` 共用 `enemy_lime`；BEATS-PLAN 有 SENTINEL 提案未實作。
+- Phase 3 lab slice（v0.9.9）已落地：三種雜兵剪影＋ SENTINEL PRIME；Roy 手感 OK，叫繼續流程。
+- BEATS-PLAN：約 **6:00** boss「洪流核心 · SWARM CORE」；trial 窗口內要能感受到。
+- 現況：`BEATS` 只有 elite #1 at 120；無 boss 實體／血條／相位。
 
 ### 授權（本輪範圍要收窄到可完成）
 
 允許：
 
-1. **剪影區分：** 為 lab 三類（staffer／scientist 白袍退後感、guard／security 手槍追擊感、drone 小型飛行）做可辨剪影——可用程序化 mesh／新 sprite key／明顯比例差；**禁止只 recolor**。
-2. **一個精英 beat：** 參考 BEATS-PLAN「哨戒長」簡化版——可讀 telegraph（地面 warning 或 ring collapse）→ 衝刺／壓力 → 恢復；zh-HK 橫幅；單場同時最多一隻精英。
-3. **輕量實驗室敘事：** 邊緣裝飾／區域色溫微調（收容實驗室感），保持低對比可玩地面；唔開五張地圖。
-4. 字串 zh-HK／en；測試（spawn／telegraph 時序／回歸）；截圖；cache-bust **0.9.9**。
+1. **Boss 定義：** `config` 加 `BOSS`／`BEATS` entry `{ at: 360, kind: 'boss', id: 'swarm_core' }`（或等價）；單場同時最多一隻 boss。
+2. **剪影：** 程序化可辨「六角核心＋環繞小 drone pod」感；**禁止只 recolor** 現有敵人；色板跟 BEATS-PLAN（暗板＋酸綠縫；**唔用紅機殼**）。
+3. **三相位（HP 三分）：**
+   - Orbit — 週期召喚 runner／drone 類小怪；地面 telegraph 可讀
+   - Volley — 多向直線彈道；**lanes 至少提早 ~0.8s 畫出** 再傷
+   - Frenzy — 短時 spawn 加壓後回復
+4. **UI：** 頂部細血條＋ zh-HK 先行橫幅（`beat.boss*`）；擊殺有明確 reward（卡片選擇／分數加成擇一，寫清）。
+5. **邏輯事件：** `beat`／`bossIn`／phase／telegraph 等；spawn pause 讓剪影可讀；trial 仍於 `TRIAL.surviveSec` 結束（boss 存活唔擋 trial end）。
+6. 字串 zh-HK／en；`beats.test.mjs`（時序、相位、telegraph 先於傷害、trial）；相關回歸；截圖桌面＋手機；cache-bust **0.9.10**；更新 HANDOFF 狀態段。
 
-不允許：重做 horn bake、Precision／Morph playable、武器數值大改、全套 boss SWARM CORE（留下一輪）、無關 AI 美術包塞滿。
+不允許：第二精英大改、五區地圖、武器數值大改、horn bake／Precision／Morph playable、手機 GPU 專案、無關 AI 美術包。
 
 ### 目標
 
-- 實驗室前段：三種雜兵剪影可辨；至少一次精英出現有 telegraph 先傷。
-- 誠實標：仍係 vertical slice，唔係完整五區地圖。
+- 非 trial／trial 跑到 ~6:00 會出現可讀 SWARM CORE；相位與 telegraph 先於傷害。
+- 誠實標：仍係 lab 地圖上的 boss beat，唔係完整五區或 endless elite 節奏。
 
 ### 完成條件
 
-- Push＋報告＋截圖；停下。Recommended next：精英打磨／boss 或地圖下一區（do not start）。
+- Push＋報告＋截圖；停下。Recommended next：elite #2／地圖下一區／拾取選擇器（do not start）。
 
 ### 回報格式
 

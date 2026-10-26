@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.9 Phase 3 lab slice (distinct grunts + SENTINEL elite telegraph)
+// RAMPAGE MECH 暴走機甲 — v0.9.10 Phase 3 SWARM CORE boss beat
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -322,6 +322,7 @@ function showMenu() {
   view.setPlayerVisible(false);
   S.menuMech = true;
   $('hud').classList.add('hidden');
+  const _bhp = $('boss-hp'); if (_bhp) _bhp.classList.add('hidden');
   $('stick').classList.add('hidden');
   Object.assign(pView, defaultView());
   Object.assign(pViewC, defaultView());
@@ -386,16 +387,38 @@ function cardEmblem(c) {
 }
 
 let _beatBannerT = 0;
-function showBeatBanner(zh, en, ms = 1600) {
+function showBeatBanner(zh, en, ms = 1600, opts = {}) {
   const el = $('beat-banner');
   const zhEl = $('beat-zh');
   const enEl = $('beat-en');
   if (!el) return;
   if (zhEl) zhEl.textContent = zh || t('beat.eliteIn');
   if (enEl) enEl.textContent = en || t('beat.eliteInEn');
+  el.classList.toggle('boss', !!opts.boss);
   el.classList.remove('hidden');
   clearTimeout(_beatBannerT);
   _beatBannerT = setTimeout(() => el.classList.add('hidden'), ms);
+}
+
+function updateBossHp() {
+  const bar = $('boss-hp');
+  if (!bar) return;
+  const g = S.game;
+  const boss = g && g.enemies ? g.enemies.find((e) => e.boss) : null;
+  if (!boss || !g.alive) {
+    bar.classList.add('hidden');
+    return;
+  }
+  bar.classList.remove('hidden');
+  const zh = $('boss-hp-zh');
+  const en = $('boss-hp-en');
+  if (zh) zh.textContent = boss.nameZh || t('boss.hp');
+  if (en) en.textContent = boss.nameEn || 'SWARM CORE';
+  const fill = $('boss-hp-fill');
+  if (fill) {
+    const pct = Math.max(0, Math.min(1, boss.hp / Math.max(1, boss.maxHp)));
+    fill.style.width = (pct * 100) + '%';
+  }
 }
 
 function showLevelCards(cards) {
@@ -801,12 +824,41 @@ else if (ev.type === 'xp') {
       audio.wave();
       kickFx({ trauma: 0.08, bloomDamp: 0.5 });
     }
+    else if (ev.type === 'bossIn' || (ev.type === 'beat' && ev.kind === 'boss')) {
+      const zh = ev.nameZh
+        ? (`Boss 出現 · ${ev.nameZh}`)
+        : t('beat.bossIn');
+      const en = ev.nameEn
+        ? (`BOSS INBOUND · ${ev.nameEn}`)
+        : t('beat.bossInEn');
+      showBeatBanner(zh, en, 2200, { boss: true });
+      audio.wave();
+      kickFx({ trauma: 0.12, bloomDamp: 0.7 });
+      updateBossHp();
+    }
+    else if (ev.type === 'phase' && ev.phase) {
+      const key = 'boss.phase.' + ev.phase;
+      try {
+        const zh = t(key);
+        // Only flash phase banner for volley/frenzy (orbit is inbound)
+        if (ev.phase === 'volley' || ev.phase === 'frenzy') {
+          showBeatBanner(zh, ev.phase.toUpperCase() + ' PHASE', 1200, { boss: true });
+        }
+      } catch (_) {}
+    }
     else if (ev.type === 'telegraph') {
-      // View syncs warning lane from enemy.phase; light audio cue
+      // View syncs warning lane / boss lanes from hazards; light audio cue
       try { audio.wave(); } catch (_) {}
     }
     else if (ev.type === 'eliteCharge') {
       kickFx({ trauma: 0.1, fovKick: 0.02, bloomDamp: 0.6 });
+    }
+    else if (ev.type === 'bossVolley') {
+      kickFx({ trauma: 0.08, fovKick: 0.015, bloomDamp: 0.5 });
+    }
+    else if (ev.type === 'bossKill') {
+      kickFx({ trauma: 0.16, bloomDamp: 1.0 });
+      audio.nova();
     }
   }
 
@@ -824,7 +876,7 @@ else if (ev.type === 'xp') {
       fx.applyPost(stage, performance.now() * 0.001);
       checkTrialEnd();
       _hudAcc += dt;
-      if (_hudAcc >= 0.1) { _hudAcc = 0; updateHUD(); }
+      if (_hudAcc >= 0.1) { _hudAcc = 0; updateHUD(); updateBossHp(); }
       if (S.demo && S.game.t > 50) endRun(false);
     } else if (S.game) {
       view.sync(S.game, dt);

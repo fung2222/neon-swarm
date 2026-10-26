@@ -393,6 +393,81 @@ function warningLane() {
   return g;
 }
 
+/**
+ * SWARM CORE boss: hexagonal dark plate core + acid-green seams + rotating drone pod ring.
+ * No red hull (Roy rule).
+ */
+function bossMesh() {
+  const acid = 0xb8ff3a;
+  const g = new THREE.Group();
+  const plate = new THREE.MeshStandardMaterial({
+    color: 0x1a1e24, emissive: 0x0c1016, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.75,
+  });
+  const dark = new THREE.MeshStandardMaterial({
+    color: 0x0e1218, emissive: 0x080a0e, emissiveIntensity: 0.4, roughness: 0.5, metalness: 0.8,
+  });
+  const seam = new THREE.MeshStandardMaterial({
+    color: acid, emissive: acid, emissiveIntensity: 1.1, roughness: 0.25, metalness: 0.4,
+  });
+  const acidM = new THREE.MeshBasicMaterial({ color: acid, transparent: true, opacity: 0.9 });
+
+  // Hex core (6-sided cylinder)
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.85, 6), plate);
+  core.position.y = 1.15;
+  core.rotation.y = Math.PI / 6;
+  const coreTop = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.95, 0.28, 6), dark);
+  coreTop.position.y = 1.7;
+  coreTop.rotation.y = Math.PI / 6;
+  const coreGlow = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.12, 6), acidM);
+  coreGlow.position.y = 1.88;
+  coreGlow.rotation.y = Math.PI / 6;
+  g.add(core, coreTop, coreGlow);
+
+  // Acid seams along hex edges (thin vertical bars)
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+    const sx = Math.cos(a) * 0.92;
+    const sz = Math.sin(a) * 0.92;
+    const bar = box(0.06, 0.7, 0.08, seam, sx, 1.15, sz, 0.02);
+    g.add(bar);
+  }
+
+  // Slow-rotating ring of small drone pods
+  const podRing = new THREE.Group();
+  podRing.position.y = 0.95;
+  const pods = [];
+  const podN = 8;
+  for (let i = 0; i < podN; i++) {
+    const pod = new THREE.Group();
+    const a = (i / podN) * Math.PI * 2;
+    pod.position.set(Math.cos(a) * 1.55, 0, Math.sin(a) * 1.55);
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), dark);
+    const eye = box(0.12, 0.06, 0.04, seam, 0, 0.02, 0.14, 0.05);
+    const fin = box(0.04, 0.08, 0.16, plate, 0, 0.08, -0.06, 0.05);
+    pod.add(body, eye, fin);
+    pod.userData.podIndex = i;
+    podRing.add(pod);
+    pods.push(pod);
+  }
+  g.add(podRing);
+
+  // Ground ring
+  g.add(unitRing(acid, 1.35, 0.4));
+  const orbitRing = new THREE.Mesh(new THREE.TorusGeometry(1.55, 0.03, 6, 40), acidM);
+  orbitRing.rotation.x = -Math.PI / 2;
+  orbitRing.position.y = 0.12;
+  g.add(orbitRing);
+
+  g.userData.type = 'swarm_core';
+  g.userData.boss = true;
+  g.userData.podRing = podRing;
+  g.userData.pods = pods;
+  g.userData.coreGlow = coreGlow;
+  g.userData.baseY = 0.15;
+  g.userData.flyer = true;
+  return g;
+}
+
 function enemyMeshFor(type) {
   // Phase 3 lab slice: distinct procedural silhouettes (not recolor-only PNGs).
   if (type === 'staffer' || type === 'guard') {
@@ -404,6 +479,7 @@ function enemyMeshFor(type) {
     return supportMesh('drone', def.color || 0x00e5ff);
   }
   if (type === 'sentinel') return eliteMesh();
+  if (type === 'swarm_core') return bossMesh();
   // Remaining types keep approved colour-coded PNG billboards.
   return buildEnemySprite(type);
 }
@@ -862,6 +938,28 @@ export class View {
     // Phase 3: elite charge telegraph lane (synced from enemy.phase === 'telegraph')
     this.warnLane = warningLane();
     this.group.add(this.warnLane);
+    // Boss volley lanes (up to 6) + orbit floor ring
+    this.bossLanes = [];
+    for (let i = 0; i < 6; i++) {
+      const lane = warningLane();
+      if (lane.userData.mat) lane.userData.mat.color.setHex(0xb8ff3a);
+      this.group.add(lane);
+      this.bossLanes.push(lane);
+    }
+    this.bossOrbitRing = new THREE.Mesh(
+      new THREE.RingGeometry(1.6, 2.5, 40),
+      new THREE.MeshBasicMaterial({
+        color: 0xb8ff3a, transparent: true, opacity: 0.35, side: THREE.DoubleSide,
+        depthWrite: false,
+      })
+    );
+    this.bossOrbitRing.rotation.x = -Math.PI / 2;
+    this.bossOrbitRing.position.y = 0.05;
+    this.bossOrbitRing.visible = false;
+    this.group.add(this.bossOrbitRing);
+    this._bossHazG = new THREE.Group();
+    this.group.add(this._bossHazG);
+    this._bossHazPool = [];
     this.novaAge = -1;
 
     this.enemyG = new THREE.Group();
@@ -1313,7 +1411,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'drone' || e.type === 'sentinel');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -1375,11 +1473,27 @@ export class View {
             if (ring.material) ring.material.opacity = 0.85;
           }
         }
+        // Boss: rotate pod ring; detach pods as HP drops
+        if (m.userData.boss && m.userData.podRing) {
+          m.userData.podRing.rotation.y = e.ringAng || game.t * 0.55;
+          const pods = m.userData.pods || [];
+          const alive = e.podsAlive != null ? e.podsAlive : pods.length;
+          for (let pi = 0; pi < pods.length; pi++) {
+            pods[pi].visible = pi < alive;
+          }
+          if (m.userData.coreGlow && m.userData.coreGlow.material) {
+            const pulse = e.bossSub === 'telegraph' ? 1.0 : 0.7;
+            m.userData.coreGlow.material.opacity = pulse;
+          }
+          // Hover bob
+          m.position.y = (m.userData.baseY || 0.15) + 0.2 + Math.sin(game.t * 2.2 + e.wob) * 0.08;
+        }
       }
     }
 
     // Phase 3 telegraph lane: one elite max
     this._syncWarnLane(game);
+    this._syncBossHazards(game);
 
     // Doctor NPC prop: face camera, idle sway
     if (this.doctor && this.doctor.userData.isSprite) {
@@ -1598,6 +1712,64 @@ export class View {
     }
   }
 
+  /** Boss orbit floor ring + volley telegraph lanes + acid volley bullets. */
+  _syncBossHazards(game) {
+    const hazards = game.bossHazards || [];
+    // Orbit floor ring
+    let ringH = null;
+    for (const h of hazards) {
+      if (h.kind === 'orbitRing') { ringH = h; break; }
+    }
+    if (this.bossOrbitRing) {
+      if (ringH) {
+        this.bossOrbitRing.visible = true;
+        this.bossOrbitRing.position.set(ringH.x, 0.05, ringH.z);
+        const u = 1 - Math.max(0, ringH.life) / Math.max(0.01, ringH.maxLife || 1);
+        this.bossOrbitRing.material.opacity = 0.2 + u * 0.45;
+        const sc = 0.85 + u * 0.25;
+        this.bossOrbitRing.scale.set(sc, sc, sc);
+      } else {
+        this.bossOrbitRing.visible = false;
+      }
+    }
+    // Volley lanes (telegraph only)
+    const lanes = hazards.filter((h) => h.kind === 'volleyLane');
+    const pool = this.bossLanes || [];
+    for (let i = 0; i < pool.length; i++) {
+      const lane = pool[i];
+      const h = lanes[i];
+      if (!h) { lane.visible = false; continue; }
+      const dist = 12;
+      const mx = h.x + h.dx * dist * 0.5;
+      const mz = h.z + h.dz * dist * 0.5;
+      lane.visible = true;
+      lane.position.set(mx, 0, mz);
+      lane.rotation.y = Math.atan2(h.dx, h.dz);
+      const quad = lane.userData.quad;
+      const mat = lane.userData.mat;
+      if (quad) quad.scale.set(0.85, dist, 1);
+      if (mat) {
+        const u = 1 - Math.max(0, h.life) / Math.max(0.01, h.maxLife || 1);
+        mat.opacity = 0.3 + u * 0.5;
+      }
+    }
+    // Volley bullets (acid dots)
+    this._recycle(this._bossHazPool, this._bossHazG);
+    for (const h of hazards) {
+      if (h.kind !== 'volleyBullet') continue;
+      const m = this._take(this._bossHazPool, this._bossHazG, () => {
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.18, 8, 6),
+          new THREE.MeshBasicMaterial({ color: 0xb8ff3a, transparent: true, opacity: 0.95 })
+        );
+        mesh.userData.isBossHaz = true;
+        return mesh;
+      });
+      m.position.set(h.x, 0.45, h.z);
+      m.visible = true;
+    }
+  }
+
   frameCamera(cam, game, dt) {
     const z = this._zoom || 1;
     const k = Math.min(1, Math.max(0, dt) * 7);
@@ -1719,6 +1891,7 @@ if (typeof window !== 'undefined') {
     humanMesh,
     supportMesh,
     eliteMesh,
+    bossMesh,
     warningLane,
     enemyMeshFor,
     THREE,

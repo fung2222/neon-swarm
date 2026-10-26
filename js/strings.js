@@ -80,9 +80,16 @@ i18n.add({
   ],
   'gfx.reload': ['重新載入', 'RELOAD'],
   'gfx.reloadEn': ['RELOAD', 'RELOAD'],
-  // Phase 3 elite beat banners (zh-HK first)
+  // Phase 3 elite / boss beat banners (zh-HK first)
   'beat.elite': ['精英出現', 'ELITE'],
   'beat.eliteIn': ['精英出現 · 哨戒長', 'ELITE INBOUND · SENTINEL PRIME'],
   'beat.eliteInEn': ['ELITE INBOUND', 'ELITE INBOUND'],
   'beat.telegraph': ['衝刺預警', 'CHARGE INCOMING'],
+  'beat.boss': ['Boss 出現', 'BOSS'],
+  'beat.bossIn': ['Boss 出現 · 洪流核心', 'BOSS INBOUND · SWARM CORE'],
+  'beat.bossInEn': ['BOSS INBOUND', 'BOSS INBOUND'],
+  'boss.hp': ['洪流核心', 'SWARM CORE'],
+  'boss.phase.orbit': ['軌道相位', 'ORBIT PHASE'],
+  'boss.phase.volley': ['齊射相位', 'VOLLEY PHASE'],
+  'boss.phase.frenzy': ['狂潮相位', 'FRENZY PHASE'],
 });

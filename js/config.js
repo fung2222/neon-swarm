@@ -187,6 +187,12 @@ export const ENEMIES = {
     hp: 90, speed: 1.15, radius: 0.72, xp: 18, score: 400, chase: 0.85, damage: 3,
     color: 0xb44dff, elite: true,
   },
+  // ---- Phase 3 boss beat (SWARM CORE) ----
+  swarm_core: {
+    zh: '洪流核心', en: 'SWARM CORE', family: 'support', kind: 'swarm_core', tier: 6,
+    hp: 200, speed: 0.55, radius: 1.15, xp: 40, score: 2000, chase: 0.4, damage: 4,
+    color: 0xb8ff3a, boss: true,
+  },
 };
 
 export const ENEMY_BY_ID = ENEMIES;
@@ -205,9 +211,41 @@ export const ELITE = {
   chargeDamage: 3,
 };
 
-/** Named run beats. Phase 3 ships elite #1 only (no boss). */
+/**
+ * SWARM CORE boss (BEATS-PLAN §3) — HP-third phases: Orbit → Volley → Frenzy.
+ * Kill reward: choice of 3 cards + score bonus 5000×(1+t/60).
+ */
+export const BOSS = {
+  type: 'swarm_core',
+  spawnPauseSec: 2.0,
+  hoverSpeedMul: 0.55,
+  contactDamage: 4,
+  // Orbit (HP > 2/3)
+  orbitCycleSec: 3.0,
+  orbitTelegraphSec: 0.9,
+  orbitSpawnCount: 3,
+  // Volley (HP 1/3..2/3)
+  volleyWays: 6,
+  volleyCycleSec: 4.0,
+  volleyTelegraphSec: 0.85,
+  volleyBulletSpeed: 7.2,
+  volleyBulletDamage: 2,
+  volleyBulletLife: 2.4,
+  volleyBulletRadius: 0.22,
+  // Frenzy (HP ≤ 1/3): spawn spike then recover toward Orbit timing
+  frenzyDurationSec: 8.0,
+  frenzySpawnMul: 2.0,
+  frenzyCycleSec: 1.5,
+  // Reward
+  cardChoices: 3,
+  scoreBonusBase: 5000,
+  podCount: 8,
+};
+
+/** Named run beats: elite #1 @2:00, boss @6:00 (inside trial window). */
 export const BEATS = [
   { at: 120, kind: 'elite', id: 'sentinel' },
+  { at: 360, kind: 'boss', id: 'swarm_core' },
 ];
 
 

@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BEATS } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -71,7 +71,7 @@ export function resolveGrenadeThrow(px, pz, forwardX, forwardZ, enemies, maxRang
 function isPunchKill(e, heavyWeapon = false) {
   if (heavyWeapon) return true;
   const k = e && e.kind;
-  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || !!(e && e.elite);
+  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || k === 'swarm_core' || !!(e && (e.elite || e.boss));
 }
 
 function mulberry32(a) {
@@ -169,9 +169,10 @@ export class Game {
     this.killer = null;
     this.goalKills = 40;
     this.goalsCleared = 0;
-    // Phase 3 elite beat
+    // Phase 3 elite / boss beats
     this._beatsFired = Object.create(null);
     this._spawnPauseUntil = 0;
+    this.bossHazards = []; // volley bullets + orbit floor telegraphs
     for (let i = 0; i < 10; i++) this._spawn();
   }
 
@@ -239,26 +240,33 @@ export class Game {
       animPhase: this.rng() * Math.PI * 2,
       panic: !!def.panic,
       elite: !!def.elite,
+      boss: !!def.boss,
     });
   }
 
-  /** Fire named beats (Phase 3: elite #1 at 120s). Spawns pause briefly before arrival. */
+  /** Fire named beats (elite @120, boss @360). Spawns pause briefly before arrival. */
   _beatCheck(events) {
     for (const beat of BEATS) {
       const key = String(beat.at) + ':' + (beat.id || beat.kind);
       if (this._beatsFired[key]) continue;
-      // Pause normal spawns 1.5s before elite so the silhouette reads clean
-      if (beat.kind === 'elite' && this.t >= beat.at - ELITE.spawnPauseSec && this.t < beat.at) {
+      const pauseSec = beat.kind === 'boss' ? BOSS.spawnPauseSec : (beat.kind === 'elite' ? ELITE.spawnPauseSec : 0);
+      if (pauseSec > 0 && this.t >= beat.at - pauseSec && this.t < beat.at) {
         this._spawnPauseUntil = Math.max(this._spawnPauseUntil, beat.at);
       }
       if (this.t < beat.at) continue;
       if (beat.kind === 'elite') {
-        // Max one elite alive
-        if (this.enemies.some((e) => e.elite)) {
+        if (this.enemies.some((e) => e.elite && !e.boss)) {
           this._beatsFired[key] = true;
           continue;
         }
         this._spawnElite(beat, events);
+        this._beatsFired[key] = true;
+      } else if (beat.kind === 'boss') {
+        if (this.enemies.some((e) => e.boss)) {
+          this._beatsFired[key] = true;
+          continue;
+        }
+        this._spawnBoss(beat, events);
         this._beatsFired[key] = true;
       }
     }
@@ -394,6 +402,300 @@ export class Game {
     } else {
       e.phase = 'walk';
       e.phaseT = 1.5;
+    }
+  }
+
+  _bossPhaseName(e) {
+    const r = e.maxHp > 0 ? e.hp / e.maxHp : 0;
+    if (r > 2 / 3) return 'orbit';
+    if (r > 1 / 3) return 'volley';
+    return 'frenzy';
+  }
+
+  _spawnBoss(beat, events) {
+    const type = beat.id || BOSS.type || 'swarm_core';
+    const def = ENEMIES[type];
+    if (!def) return null;
+    const ang = this.rng() * Math.PI * 2;
+    const dist = ARENA.spawnNear + 3 + this.rng() * 2;
+    const c = this._softClamp(this.px + Math.cos(ang) * dist, this.pz + Math.sin(ang) * dist, def.radius);
+    const { hpMul, speedMul } = swarmPressure(this.t);
+    const e = {
+      id: this._nextEid++,
+      type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
+      x: c.x, z: c.z, vx: 0, vz: 0,
+      hp: def.hp * hpMul, maxHp: def.hp * hpMul,
+      speed: def.speed * speedMul, r: def.radius,
+      xp: def.xp, score: def.score, color: def.color, chase: def.chase,
+      damage: def.damage || 4, shield: def.shield || 0,
+      hit: 0, slow: 0, wob: this.rng() * Math.PI * 2,
+      animPhase: this.rng() * Math.PI * 2,
+      panic: false,
+      elite: false,
+      boss: true,
+      phase: 'orbit',
+      phaseT: BOSS.orbitCycleSec,
+      telegraphDur: BOSS.orbitTelegraphSec,
+      telegraphAt: 0,
+      damageAt: 0,
+      bossSub: 'idle', // idle | telegraph | fire
+      frenzyLeft: 0,
+      frenzyStarted: false,
+      podsAlive: BOSS.podCount,
+      ringAng: this.rng() * Math.PI * 2,
+      volleyAng: 0,
+    };
+    this.enemies.push(e);
+    events.push({
+      type: 'beat', kind: 'boss', id: type,
+      nameZh: def.zh, nameEn: def.en,
+    });
+    events.push({
+      type: 'bossIn', nameZh: def.zh, nameEn: def.en,
+    });
+    events.push({ type: 'phase', bossId: e.id, phase: 'orbit' });
+    return e;
+  }
+
+  /**
+   * Boss state machine by HP thirds:
+   * Orbit — floor telegraph then runner/drone spawns (~3s)
+   * Volley — 6-way bullet lanes drawn ≥0.8s before damage
+   * Frenzy — spawn spike ~8s then recover toward Orbit timing
+   */
+  _tickBoss(e, dt, events) {
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? 0.55 : 1;
+
+    // Pods detach visually as HP drops (logic count for view)
+    const wantPods = Math.max(0, Math.ceil(BOSS.podCount * (e.hp / Math.max(1, e.maxHp))));
+    e.podsAlive = wantPods;
+
+    const nextPhase = this._bossPhaseName(e);
+    if (nextPhase !== e.phase) {
+      const prev = e.phase;
+      e.phase = nextPhase;
+      e.bossSub = 'idle';
+      e.phaseT = nextPhase === 'orbit' ? BOSS.orbitCycleSec
+        : nextPhase === 'volley' ? BOSS.volleyCycleSec
+        : BOSS.frenzyCycleSec;
+      if (nextPhase === 'frenzy' && !e.frenzyStarted) {
+        e.frenzyStarted = true;
+        e.frenzyLeft = BOSS.frenzyDurationSec;
+      }
+      events.push({ type: 'phase', bossId: e.id, phase: nextPhase, from: prev });
+    }
+
+    // Slow hover toward player
+    {
+      const dx = this.px - e.x, dz = this.pz - e.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const spd = e.speed * e.chase * BOSS.hoverSpeedMul * slowMul;
+      e.vx = (dx / len) * spd;
+      e.vz = (dz / len) * spd;
+      e.x += e.vx * dt;
+      e.z += e.vz * dt;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.ringAng = (e.ringAng || 0) + dt * 0.55;
+      e.animPhase = (e.animPhase || 0) + 4 * dt;
+    }
+
+    // Contact damage (always on, readable large hitbox)
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const dmg = BOSS.contactDamage != null ? BOSS.contactDamage : (e.damage || 4);
+      const taken = Math.max(1, dmg - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.9 + (this.deflect || 0);
+      this.hitFlash = 0.28;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      const pdx = this.px - e.x, pdz = this.pz - e.z;
+      const pl = Math.hypot(pdx, pdz) || 1;
+      e.x -= (pdx / pl) * 0.6;
+      e.z -= (pdz / pl) * 0.6;
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+
+    if (e.phase === 'orbit') {
+      this._tickBossOrbit(e, dt, events);
+    } else if (e.phase === 'volley') {
+      this._tickBossVolley(e, dt, events);
+    } else {
+      this._tickBossFrenzy(e, dt, events);
+    }
+  }
+
+  _tickBossOrbit(e, dt, events) {
+    e.phaseT -= dt;
+    if (e.bossSub === 'idle' && e.phaseT <= BOSS.orbitTelegraphSec) {
+      e.bossSub = 'telegraph';
+      e.telegraphDur = BOSS.orbitTelegraphSec;
+      e.telegraphAt = this.t;
+      e.damageAt = this.t + BOSS.orbitTelegraphSec;
+      // Floor ring telegraph around boss
+      this.bossHazards.push({
+        kind: 'orbitRing',
+        x: e.x, z: e.z,
+        r: 2.4,
+        life: BOSS.orbitTelegraphSec,
+        maxLife: BOSS.orbitTelegraphSec,
+        damageAt: e.damageAt,
+        bossId: e.id,
+      });
+      events.push({
+        type: 'telegraph', kind: 'orbit', bossId: e.id,
+        x: e.x, z: e.z, duration: BOSS.orbitTelegraphSec, damageAt: e.damageAt,
+      });
+    }
+    if (e.bossSub === 'telegraph' && e.phaseT <= 0) {
+      e.bossSub = 'idle';
+      e.phaseT = BOSS.orbitCycleSec;
+      const n = BOSS.orbitSpawnCount;
+      for (let i = 0; i < n; i++) {
+        const typ = this.rng() < 0.55 ? 'drone' : 'soldier';
+        this._spawn(typ);
+        const spawned = this.enemies[this.enemies.length - 1];
+        if (spawned && !spawned.boss && !spawned.elite) {
+          const a = e.ringAng + (i / n) * Math.PI * 2;
+          spawned.x = e.x + Math.cos(a) * 2.6;
+          spawned.z = e.z + Math.sin(a) * 2.6;
+          const sc = this._softClamp(spawned.x, spawned.z, spawned.r);
+          spawned.x = sc.x; spawned.z = sc.z;
+        }
+      }
+      events.push({ type: 'bossSpawn', bossId: e.id, count: n, phase: 'orbit' });
+    }
+  }
+
+  _tickBossVolley(e, dt, events) {
+    e.phaseT -= dt;
+    if (e.bossSub === 'idle' && e.phaseT <= BOSS.volleyTelegraphSec) {
+      e.bossSub = 'telegraph';
+      e.telegraphDur = BOSS.volleyTelegraphSec;
+      e.telegraphAt = this.t;
+      e.damageAt = this.t + BOSS.volleyTelegraphSec;
+      e.volleyAng = Math.atan2(this.pz - e.z, this.px - e.x);
+      const ways = BOSS.volleyWays;
+      for (let i = 0; i < ways; i++) {
+        const ang = e.volleyAng + (i / ways) * Math.PI * 2;
+        const dx = Math.cos(ang), dz = Math.sin(ang);
+        this.bossHazards.push({
+          kind: 'volleyLane',
+          x: e.x, z: e.z,
+          dx, dz,
+          life: BOSS.volleyTelegraphSec,
+          maxLife: BOSS.volleyTelegraphSec,
+          damageAt: e.damageAt,
+          bossId: e.id,
+          fired: false,
+        });
+      }
+      events.push({
+        type: 'telegraph', kind: 'volley', bossId: e.id,
+        x: e.x, z: e.z, ways, duration: BOSS.volleyTelegraphSec, damageAt: e.damageAt,
+      });
+    }
+    if (e.bossSub === 'telegraph' && e.phaseT <= 0) {
+      e.bossSub = 'idle';
+      e.phaseT = BOSS.volleyCycleSec;
+      // Convert lanes → damaging bullets (damage only after telegraph)
+      for (const h of this.bossHazards) {
+        if (h.kind === 'volleyLane' && h.bossId === e.id && !h.fired) {
+          h.fired = true;
+          h.kind = 'volleyBullet';
+          h.life = BOSS.volleyBulletLife;
+          h.maxLife = BOSS.volleyBulletLife;
+          h.speed = BOSS.volleyBulletSpeed;
+          h.r = BOSS.volleyBulletRadius;
+          h.dmg = BOSS.volleyBulletDamage;
+        }
+      }
+      events.push({ type: 'bossVolley', bossId: e.id, ways: BOSS.volleyWays });
+    }
+  }
+
+  _tickBossFrenzy(e, dt, events) {
+    if (e.frenzyLeft > 0) e.frenzyLeft -= dt;
+    const spike = e.frenzyLeft > 0;
+    const cycle = spike ? (BOSS.frenzyCycleSec / BOSS.frenzySpawnMul) : BOSS.orbitCycleSec;
+    // Reuse orbit telegraph/spawn but with faster cycle during spike
+    e.phaseT -= dt;
+    const tele = BOSS.orbitTelegraphSec;
+    if (e.bossSub === 'idle' && e.phaseT <= tele) {
+      e.bossSub = 'telegraph';
+      e.telegraphDur = tele;
+      e.telegraphAt = this.t;
+      e.damageAt = this.t + tele;
+      this.bossHazards.push({
+        kind: 'orbitRing',
+        x: e.x, z: e.z,
+        r: 2.8,
+        life: tele,
+        maxLife: tele,
+        damageAt: e.damageAt,
+        bossId: e.id,
+      });
+      events.push({
+        type: 'telegraph', kind: 'frenzy', bossId: e.id,
+        x: e.x, z: e.z, duration: tele, damageAt: e.damageAt, spike,
+      });
+    }
+    if (e.bossSub === 'telegraph' && e.phaseT <= 0) {
+      e.bossSub = 'idle';
+      e.phaseT = cycle;
+      const n = spike ? BOSS.orbitSpawnCount + 2 : BOSS.orbitSpawnCount;
+      for (let i = 0; i < n; i++) {
+        const typ = this.rng() < 0.6 ? 'drone' : 'soldier';
+        this._spawn(typ);
+        const spawned = this.enemies[this.enemies.length - 1];
+        if (spawned && !spawned.boss && !spawned.elite) {
+          const a = e.ringAng + (i / n) * Math.PI * 2;
+          spawned.x = e.x + Math.cos(a) * 2.8;
+          spawned.z = e.z + Math.sin(a) * 2.8;
+          const sc = this._softClamp(spawned.x, spawned.z, spawned.r);
+          spawned.x = sc.x; spawned.z = sc.z;
+        }
+      }
+      events.push({ type: 'bossSpawn', bossId: e.id, count: n, phase: 'frenzy', spike });
+    }
+  }
+
+  /** Tick boss hazards: orbit rings (visual only) + volley bullets (damage after telegraph). */
+  _tickBossHazards(dt, events) {
+    for (let i = this.bossHazards.length - 1; i >= 0; i--) {
+      const h = this.bossHazards[i];
+      h.life -= dt;
+      if (h.kind === 'volleyBullet') {
+        h.x += h.dx * h.speed * dt;
+        h.z += h.dz * h.speed * dt;
+        if (this.alive && this.invuln <= 0 &&
+            Math.hypot(h.x - this.px, h.z - this.pz) < (h.r || 0.22) + PLAYER.radius) {
+          const taken = Math.max(1, (h.dmg || 2) - (this.armor || 0));
+          this.hp -= taken;
+          this.invuln = 0.7 + (this.deflect || 0);
+          this.hitFlash = 0.22;
+          events.push({ type: 'hurt', by: 'swarm_core', nameZh: '洪流核心', nameEn: 'SWARM CORE' });
+          this.bossHazards.splice(i, 1);
+          if (this.hp <= 0) {
+            this.alive = false;
+            this.hp = 0;
+            this.killer = { kind: 'swarm_core', zh: '洪流核心', en: 'SWARM CORE' };
+            events.push({ type: 'dead' });
+          }
+          continue;
+        }
+      }
+      // Keep unfired volley lanes until boss converts them (telegraph must outlive clock jitter)
+      if (h.life <= 0) {
+        if (h.kind === 'volleyLane' && !h.fired) continue;
+        this.bossHazards.splice(i, 1);
+      }
     }
   }
 
@@ -812,7 +1114,7 @@ export class Game {
     }
     this.score += e.score + Math.floor(this.t);
     this._dropGem(e);
-    if ((e.kind === 'chief' || e.kind === 'mech' || e.elite) && this.rng() < (e.elite ? 1 : 0.35)) {
+    if ((e.kind === 'chief' || e.kind === 'mech' || e.elite || e.boss) && this.rng() < ((e.elite || e.boss) ? 1 : 0.35)) {
       const w = this.weaponIcon();
       this.gems.push({
         x: e.x, z: e.z, xp: 0, r: 0.22, life: 22, pop: 0.3, letter: 'W', kind: 'weapon',
@@ -820,7 +1122,7 @@ export class Game {
       });
     }
     // Elite payoff: bonus XP crates + choice of 2 cards (BEATS-PLAN simplified)
-    if (e.elite) {
+    if (e.elite && !e.boss) {
       for (let k = 0; k < 3; k++) {
         const ang = this.rng() * Math.PI * 2;
         const d = 0.4 + this.rng() * 0.6;
@@ -833,6 +1135,26 @@ export class Game {
       this.pendingCards = pickCards(this.rng, 2, this.taken);
       this.pausedForLevel = true;
       if (events) events.push({ type: 'levelup', cards: this.pendingCards, from: 'elite' });
+    }
+    // Boss payoff: score bonus 5000×(1+t/60) + choice of 3 cards (BEATS-PLAN §3)
+    if (e.boss) {
+      const bonus = Math.floor(BOSS.scoreBonusBase * (1 + this.t / 60));
+      this.score += bonus;
+      for (let k = 0; k < 5; k++) {
+        const ang = this.rng() * Math.PI * 2;
+        const d = 0.5 + this.rng() * 0.8;
+        this.gems.push({
+          x: e.x + Math.cos(ang) * d, z: e.z + Math.sin(ang) * d,
+          xp: 6, r: 0.26, life: 26, pop: 0.4, letter: 'X', kind: 'xp',
+        });
+      }
+      if (!this.taken) this.taken = {};
+      this.pendingCards = pickCards(this.rng, BOSS.cardChoices, this.taken);
+      this.pausedForLevel = true;
+      if (events) {
+        events.push({ type: 'bossKill', bonus, cards: this.pendingCards });
+        events.push({ type: 'levelup', cards: this.pendingCards, from: 'boss', bonus });
+      }
     }
   }
 
@@ -1026,6 +1348,10 @@ export class Game {
     }
 
     for (const e of this.enemies) {
+      if (e.boss) {
+        this._tickBoss(e, dt, events);
+        continue;
+      }
       if (e.elite) {
         this._tickElite(e, dt, events);
         continue;
@@ -1064,6 +1390,8 @@ export class Game {
         }
       }
     }
+
+    this._tickBossHazards(dt, events);
 
     for (let i = this.gems.length - 1; i >= 0; i--) {
       const g = this.gems[i];
