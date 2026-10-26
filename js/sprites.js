@@ -48,6 +48,24 @@ export const ENEMY_SPRITE_SIZE = {
   mech: { w: 1.95, h: 2.12 },
 };
 
+/**
+ * Ground-ring presence by enemy role (readability under swarm density).
+ * Grunts: nearly invisible / tiny. Elite / heavy: keep a clear identity ring.
+ * Danger telegraphs stay separate (projectiles / AOE) — do not steal warn colors here.
+ */
+export const ENEMY_RING_STYLE = {
+  // common
+  staffer: { radiusScale: 0.55, opacity: 0.08, visible: true },
+  guard:   { radiusScale: 0.55, opacity: 0.08, visible: true },
+  soldier: { radiusScale: 0.58, opacity: 0.10, visible: true },
+  drone:   { radiusScale: 0.50, opacity: 0.07, visible: true },
+  // elite / heavy — keep readable rings
+  officer: { radiusScale: 0.85, opacity: 0.28, visible: true },
+  chief:   { radiusScale: 0.95, opacity: 0.36, visible: true },
+  walker:  { radiusScale: 0.90, opacity: 0.30, visible: true },
+  mech:    { radiusScale: 1.00, opacity: 0.34, visible: true },
+};
+
 const RING_BY_KEY = {
   enemy_lime: 0xb8ff3a,
   enemy_magenta: 0xff2bd6,
@@ -171,6 +189,7 @@ export function buildPlayerSprite(cfg) {
   });
   // Hot-swap maps without reallocating materials each frame.
   // Keys match View.sync states; fire aliases attack for older call sites.
+  root.userData.ringBaseOpacity = 0.32;
   root.userData.playerMaps = {
     idle,
     move,       // fallback single frame
@@ -198,11 +217,18 @@ export function enemySpriteKey(type) {
 export function buildEnemySprite(type) {
   const key = enemySpriteKey(type);
   const size = ENEMY_SPRITE_SIZE[type] || { w: 1.12, h: 1.40 };
+  const style = ENEMY_RING_STYLE[type] || { radiusScale: 0.55, opacity: 0.08, visible: true };
+  const baseR = Math.max(0.26, size.w * 0.26);
   const root = makeBillboard(key, size.w, size.h, {
     ringColor: RING_BY_KEY[key],
-    ringRadius: Math.max(0.26, size.w * 0.26),
+    ringRadius: baseR * (style.radiusScale != null ? style.radiusScale : 1),
+    ringOpacity: style.opacity != null ? style.opacity : 0.1,
     float: !!size.float,
   });
+  if (root.userData.halo) {
+    root.userData.halo.visible = style.visible !== false;
+    root.userData.ringBaseOpacity = style.opacity != null ? style.opacity : 0.1;
+  }
   root.userData.type = type;
   root.userData.spriteKey = key;
   root.userData.flyer = !!(size.flyer || size.float);
@@ -232,7 +258,17 @@ export function retargetEnemySprite(root, type) {
   root.userData.flyer = !!(size.flyer || size.float);
   root.userData.baseY = size.float ? 0.55 : 0;
   if (root.userData.halo && root.userData.halo.material) {
-    root.userData.halo.material.color.setHex(RING_BY_KEY[key] || 0x00e5ff);
+    const style = ENEMY_RING_STYLE[type] || { radiusScale: 0.55, opacity: 0.08, visible: true };
+    const baseR = Math.max(0.26, size.w * 0.26);
+    const r = baseR * (style.radiusScale != null ? style.radiusScale : 1);
+    const halo = root.userData.halo;
+    halo.material.color.setHex(RING_BY_KEY[key] || 0x00e5ff);
+    halo.material.opacity = style.opacity != null ? style.opacity : 0.1;
+    halo.visible = style.visible !== false;
+    root.userData.ringBaseOpacity = halo.material.opacity;
+    // Rebuild ring geometry to new radius (pool reuse).
+    if (halo.geometry) halo.geometry.dispose();
+    halo.geometry = new THREE.RingGeometry(r * 0.72, r, 28);
   }
   return root;
 }
@@ -278,7 +314,12 @@ export function applySpriteFlash(root, { blink = false, hit = false, move = 0 } 
   if (hit) mat.color.setRGB(1.12, 1.05, 1.05);
   else mat.color.setRGB(1, 1, 1);
   const halo = root.userData.halo;
-  if (halo && halo.material) halo.material.opacity = 0.28 + move * 0.12;
+  if (halo && halo.material) {
+    // Respect per-enemy ringBaseOpacity (grunt dimming). Player fallback ~0.28.
+    const base = root.userData.ringBaseOpacity != null ? root.userData.ringBaseOpacity : 0.28;
+    const amp = root.userData.ringBaseOpacity != null ? Math.min(0.06, base * 0.5) : 0.12;
+    halo.material.opacity = base + move * amp;
+  }
 }
 
 

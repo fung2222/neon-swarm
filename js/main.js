@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.3 hotfix (responsive menu framing)
+// RAMPAGE MECH 暴走機甲 — v0.9.4 glow-ring readability (dim grunt rings)
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,

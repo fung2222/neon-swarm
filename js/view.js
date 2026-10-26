@@ -200,7 +200,10 @@ function humanMesh(kind, color, coat) {
     aura.position.y = 0.05;
     g.add(aura);
   }
-  g.add(unitRing(color, kind === 'chief' ? 0.42 : 0.34, kind === 'chief' ? 0.5 : 0.34));
+  // Ring presence: chief keeps identity; other humans stay subtle (PNG path is primary).
+  if (kind === 'chief') g.add(unitRing(color, 0.42, 0.5));
+  else if (kind === 'officer') g.add(unitRing(color, 0.36, 0.28));
+  else g.add(unitRing(color, 0.28, 0.10));
 
   g.scale.setScalar(scale);
   g.userData.legs = legs;
@@ -238,7 +241,7 @@ function supportMesh(kind, color) {
       thr.position.set(side * 0.36, -0.02, -0.04);
       g.add(thr);
     }
-    g.add(unitRing(color, 0.3, 0.3));
+    g.add(unitRing(color, 0.22, 0.08)); // drone grunt — dim
     g.position.y = 0.5;
     g.userData.bob = true;
   } else if (kind === 'walker') {
@@ -265,7 +268,7 @@ function supportMesh(kind, color) {
       gun.position.set(side * 0.36, 0.62, 0.2);
       g.add(pad, gun);
     }
-    g.add(unitRing(color, 0.44, 0.32));
+    g.add(unitRing(color, 0.42, 0.30)); // walker elite keep
     g.userData.legs = legs;
   } else {
     // escort mech — heaviest support frame, angular anime-style mass
@@ -293,7 +296,7 @@ function supportMesh(kind, color) {
       barrel.position.set(side * 0.46, 0.82, 0.22);
       g.add(pad, barrel);
     }
-    g.add(unitRing(color, 0.52, 0.34));
+    g.add(unitRing(color, 0.52, 0.34)); // escort mech keep
     g.userData.legs = legs;
   }
   g.userData.type = kind;
