@@ -28,27 +28,26 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE2-COMBAT-READABILITY-002 → **completed**（v0.9.22）
+## 狀態：PHASE3-ENEMY-SNIPER-001 → **completed**（v0.9.23）
 
-**ROY（2026-10-26）：** 「繼續出去啦繼續流程」— horn in-game interim 4-dir bake **accepted as interim silhouette direction for pipeline**（仍非 final art lock）。**Cleared** prior horn visual HOLD for pipeline；**do not** further polish horn／art lock／Phase 4／phone GPU。
+**ROY（2026-10-26）：** 「繼續出去啦繼續流程」— Phase 2 readability shipped；next safe CONTENT = sniper（非 Phase 4／horn／phone GPU）。
 
 ### Completed this turn
 
-**Task ID：** `PHASE2-COMBAT-READABILITY-002` — live cache-bust **`?v=0.9.22`**.
+**Task ID：** `PHASE3-ENEMY-SNIPER-001` — live cache-bust **`?v=0.9.23`**.
 
-- Ordinary enemy ground rings **off**（sprites `ENEMY_RING_STYLE` + procedural staffer／guard／drone）；elite／officer／chief／walker／mech／boss **keep／slightly stronger**.
-- Floor／ambient darker again；arena soft／hard／pad rings quieter.
-- Elite charge telegraph → **danger orange**（vs player cyan／décor teal）；boss acid lanes／orbit ring punchier.
-- Pickup XP／heal／weapon floor halo＋rim brighter（texture cache `:v3`）.
-- Ordinary kill：local burst only（no ring／wave／slowmo clutter）；desktop can still punch elite／gore／explode；mobile v0.9.20 cuts **not** undone.
-- Target query：nearest／sticky confirmed； mild sticky hold／steal tweak only（no balance table）.
-- Screenshots：`tests/screenshots/phase2-readability/`（combat-dense／danger-telegraph／pickups）.
-- Docs：本文件 Active done；HANDOFF Phase 2＋§0／§11；horn HOLD cleared for pipeline（silhouette interim OK-to-continue）.
+- `ENEMIES.sniper`：狙擊單位 / Sniper Unit；olive＋crimson trim；long-rifle procedural mesh（≠ soldier／officer recolor）。
+- Behavior：`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan shot；events `telegraph kind:sniper` + `sniperShot`；no silent instant snipe.
+- Wave mix：mid-late lab（after ~40s）＋ reactor／blockade／rooftop／assembly lightly；early lab untouched.
+- View：red aim lines（danger red）；main muzzle burst on shot.
+- Screenshots：`tests/screenshots/phase3-sniper/`（silhouette／telegraph／fire／mobile）.
+- Tests：`tests/sniper.test.mjs`＋map-zone pick lists；full regression.
+- Elite／boss／player weapon balance tables **unchanged**.
 
 ### Queue（recommended next）
 
 1. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。← **recommended next（needs Roy play）**
-2. **CONTENT** light only if safe — **no** Phase 4 Precision／Morph bulk。
+2. CONTENT light only if safe — **no** Phase 4 Precision／Morph bulk。
 3. Phone GPU／WebGL mid-run — **deferred by Roy**。
 4. （背景）AIM-HIT-FAST-002 Kimi 獨立審。
 5. Horn art lock／further silhouette polish — **only after** Roy later OK；interim direction accepted for pipeline.
@@ -57,10 +56,11 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
+- `PHASE3-ENEMY-SNIPER-001` → **v0.9.23**.
 - `PHASE2-COMBAT-READABILITY-002` → **v0.9.22**.
 - `HORN-SILHOUETTE-DIRECTION` → **v0.9.21** interim mecha silhouette（pipeline OK-to-continue；**not** final art lock）.
 - `PERF-REBASELINE` → desktop v0.9.20 GTX 1070 Ti。
-- `PHONE-STABLE-FOLLOWUP` → **v0.9.20**。
+- `PHONE-STABLE-FOLLOWUP` → **v0.9.20**.
 - `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`。
 
 ---

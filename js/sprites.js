@@ -33,6 +33,7 @@ export const ENEMY_SPRITE_KEY = {
   drone: 'enemy_orange',
   walker: 'enemy_magenta',
   mech: 'enemy_magenta',
+  sniper: 'enemy_magenta',
 };
 
 /** World-space billboard size (width, height) + optional float. */
@@ -46,6 +47,7 @@ export const ENEMY_SPRITE_SIZE = {
   drone: { w: 0.96, h: 0.96, float: true, flyer: true },
   walker: { w: 1.74, h: 1.87 },
   mech: { w: 1.95, h: 2.12 },
+  sniper: { w: 1.45, h: 1.72 },
 };
 
 /**
@@ -64,6 +66,8 @@ export const ENEMY_RING_STYLE = {
   chief:   { radiusScale: 1.00, opacity: 0.42, visible: true },
   walker:  { radiusScale: 0.95, opacity: 0.36, visible: true },
   mech:    { radiusScale: 1.05, opacity: 0.40, visible: true },
+  // sniper: thin identity ring (procedural mesh also draws one)
+  sniper:  { radiusScale: 0.70, opacity: 0.28, visible: true },
 };
 
 const RING_BY_KEY = {

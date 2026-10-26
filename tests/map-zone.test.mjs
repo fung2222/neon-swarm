@@ -88,13 +88,13 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
 {
   const rng = (() => { let i = 0; const seq = [0.01, 0.4, 0.7, 0.9]; return () => seq[i++ % seq.length]; })();
   const a = pickEnemyType(rng, 200, 'assembly');
-  assert.ok(['soldier', 'walker', 'officer', 'drone', 'chief', 'staffer'].includes(a));
+  assert.ok(['soldier', 'walker', 'officer', 'drone', 'chief', 'staffer', 'sniper'].includes(a));
   const r = pickEnemyType(rng, 300, 'reactor');
-  assert.ok(['drone', 'mech', 'officer', 'walker', 'soldier', 'chief'].includes(r));
+  assert.ok(['drone', 'mech', 'officer', 'walker', 'soldier', 'chief', 'sniper'].includes(r));
   const b = pickEnemyType(rng, 430, 'blockade');
-  assert.ok(['soldier', 'officer', 'chief', 'mech', 'walker', 'drone'].includes(b));
+  assert.ok(['soldier', 'officer', 'chief', 'mech', 'walker', 'drone', 'sniper'].includes(b));
   const t = pickEnemyType(rng, 520, 'rooftop');
-  assert.ok(['drone', 'mech', 'chief', 'officer', 'soldier', 'walker'].includes(t));
+  assert.ok(['drone', 'mech', 'chief', 'officer', 'soldier', 'walker', 'sniper'].includes(t));
 }
 
 function drive(g, until, onEvents) {

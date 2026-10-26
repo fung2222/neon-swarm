@@ -236,6 +236,87 @@ function clothColor(kind, coat) {
   return coat || 0x2b3350;
 }
 
+/**
+ * Phase 3 sniper: lean marksman + long rifle + scope (silhouette ≠ soldier/officer).
+ * Dark olive cloth, crimson trim — red reserved for aim telegraph line.
+ */
+function sniperMesh() {
+  const g = new THREE.Group();
+  const color = 0xc93a4a;
+  const clothC = 0x2f3a2c;
+  const cloth = new THREE.MeshStandardMaterial({ color: clothC, emissive: clothC, emissiveIntensity: 0.45, roughness: 0.75, metalness: 0.15 });
+  const skin = new THREE.MeshStandardMaterial({ color: 0xf1cfa8, emissive: 0x6a4a30, emissiveIntensity: 0.15, roughness: 0.9 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1c2218, emissive: 0x10140e, emissiveIntensity: 0.4, roughness: 0.6, metalness: 0.5 });
+  const accent = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.9, roughness: 0.35 });
+  const legs = [];
+  const arms = [];
+
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.065, -0.2, 0);
+    leg.add(box(0.08, 0.22, 0.09, dark, 0, -0.06, 0));
+    leg.add(box(0.09, 0.11, 0.14, dark, 0, -0.22, 0.02));
+    g.add(leg);
+    legs.push(leg);
+  }
+
+  // Lean torso + cloak cape (reads longer than soldier vest)
+  const torso = slab(0.18, 0.22, 0.28, 0.14, cloth);
+  torso.position.set(0, 0.12, 0);
+  const stripe = box(0.16, 0.02, 0.02, accent, 0, 0.2, 0.08);
+  const belt = box(0.2, 0.04, 0.14, dark, 0, -0.02, 0);
+  const cape = slab(0.2, 0.24, 0.28, 0.04, dark);
+  cape.position.set(0, 0.02, -0.1);
+  cape.rotation.x = -0.22;
+  g.add(torso, stripe, belt, cape);
+
+  // Hooded head + optic
+  const head = new THREE.Group();
+  head.position.set(0, 0.4, 0);
+  head.add(box(0.13, 0.14, 0.13, skin, 0, 0, 0, 0.2));
+  const hood = box(0.16, 0.08, 0.16, dark, 0, 0.06, -0.01, 0.15);
+  const optic = box(0.12, 0.03, 0.04, accent, 0, 0.01, 0.08, 0.2);
+  head.add(hood, optic);
+  g.add(head);
+
+  // Arms — right carries LONG rifle (≈2× soldier gun)
+  for (const side of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(side * 0.14, 0.2, 0);
+    arm.add(box(0.06, 0.22, 0.06, cloth, 0, -0.1, 0, 0.2));
+    arm.add(box(0.055, 0.055, 0.055, skin, 0, -0.22, 0.02, 0.3));
+    if (side === 1) {
+      const rifle = new THREE.Group();
+      rifle.position.set(0, -0.22, 0.08);
+      // barrel + receiver + stock + scope + bipod — readable long-gun silhouette
+      rifle.add(box(0.04, 0.04, 0.62, dark, 0, 0, 0.22, 0.15)); // long barrel
+      rifle.add(box(0.055, 0.06, 0.18, dark, 0, 0.01, -0.02, 0.15)); // receiver
+      rifle.add(box(0.045, 0.05, 0.14, dark, 0, -0.01, -0.16, 0.15)); // stock
+      rifle.add(box(0.035, 0.05, 0.08, accent, 0, 0.06, 0.02, 0.2)); // scope
+      rifle.add(box(0.02, 0.08, 0.02, dark, -0.04, -0.05, 0.28, 0.15)); // bipod L
+      rifle.add(box(0.02, 0.08, 0.02, dark, 0.04, -0.05, 0.28, 0.15)); // bipod R
+      rifle.add(box(0.03, 0.03, 0.03, accent, 0, 0, 0.54, 0.2)); // muzzle tip
+      arm.add(rifle);
+      arm.rotation.x = -0.85;
+      arm.userData.rifle = rifle;
+    } else {
+      // support hand forward
+      arm.rotation.x = -0.55;
+    }
+    g.add(arm);
+    arms.push(arm);
+  }
+
+  // Thin identity ring (danger-adjacent crimson, low opacity — not grunt-off)
+  g.add(unitRing(color, 0.34, 0.28));
+  g.scale.setScalar(1.95);
+  g.userData.legs = legs;
+  g.userData.arms = arms;
+  g.userData.type = 'sniper';
+  g.userData.sniper = true;
+  return g;
+}
+
 /** Drone / walker / escort mech support frames. */
 function supportMesh(kind, color) {
   const g = new THREE.Group();
@@ -470,6 +551,22 @@ function warningLane() {
   return g;
 }
 
+/** Thin red aim line for sniper telegraph (danger red = imminent damage). */
+function sniperAimLine() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff2a4a, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+  quad.rotation.x = -Math.PI / 2;
+  quad.position.y = 0.09;
+  g.add(quad);
+  g.userData.quad = quad;
+  g.userData.mat = mat;
+  g.visible = false;
+  return g;
+}
+
 /**
  * SWARM CORE boss: hexagonal dark plate core + acid-green seams + rotating drone pod ring.
  * No red hull (Roy rule).
@@ -551,6 +648,7 @@ function enemyMeshFor(type) {
     const def = ENEMIES[type] || {};
     return humanMesh(type, def.color || 0xff3b6e, def.coat);
   }
+  if (type === 'sniper') return sniperMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -1428,6 +1526,13 @@ export class View {
     this.warnLane2 = warningLane();
     if (this.warnLane2.userData.mat) this.warnLane2.userData.mat.color.setHex(0xff8a1a);
     this.group.add(this.warnLane2);
+    // Phase 3 sniper: up to 4 concurrent red aim lines
+    this.sniperAimLines = [];
+    for (let i = 0; i < 4; i++) {
+      const line = sniperAimLine();
+      this.group.add(line);
+      this.sniperAimLines.push(line);
+    }
     // Boss volley lanes (up to 6) + orbit floor ring
     this.bossLanes = [];
     for (let i = 0; i < 6; i++) {
@@ -1937,7 +2042,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -1952,7 +2057,9 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = Math.atan2(game.px - e.x, game.pz - e.z);
+      const faceYaw = (e.sniperPhase === 'aim' && (e.aimDx != null))
+        ? Math.atan2(e.aimDx, e.aimDz)
+        : Math.atan2(game.px - e.x, game.pz - e.z);
       const spd = Math.hypot(e.vx || 0, e.vz || 0);
       const moving = spd > 0.12;
       const isFlyer = !!(m.userData.flyer || m.userData.bob || e.type === 'drone');
@@ -2019,6 +2126,7 @@ export class View {
 
     // Phase 3 telegraph lane: one elite max
     this._syncWarnLane(game);
+    this._syncSniperAim(game);
     this._syncBossHazards(game);
 
     // Doctor NPC prop: face camera, idle sway
@@ -2203,6 +2311,35 @@ export class View {
         m.position.set(d.x, 0.05, d.z);
         this._dustG.add(m);
       }
+    }
+  }
+
+  /** Draw thin red aim lines for snipers in telegraph (danger red). */
+  _syncSniperAim(game) {
+    const lines = this.sniperAimLines || [];
+    for (const ln of lines) ln.visible = false;
+    let li = 0;
+    for (const e of game.enemies) {
+      if (!(e.sniper || e.kind === 'sniper' || e.type === 'sniper')) continue;
+      if (e.sniperPhase !== 'aim') continue;
+      if (li >= lines.length) break;
+      const ln = lines[li++];
+      const ax = e.aimDx != null ? e.aimDx : (game.px - e.x);
+      const az = e.aimDz != null ? e.aimDz : (game.pz - e.z);
+      const len = Math.hypot(ax, az) || 1;
+      const ndx = ax / len, ndz = az / len;
+      const dist = Math.min(16, Math.max(4, Math.hypot(game.px - e.x, game.pz - e.z) + 1.5));
+      const u = Math.max(0, Math.min(1, 1 - (e.sniperPhaseT || 0) / Math.max(0.01, e.telegraphDur || 1)));
+      const yaw = Math.atan2(ndx, ndz);
+      const mx = e.x + ndx * dist * 0.5;
+      const mz = e.z + ndz * dist * 0.5;
+      ln.visible = true;
+      ln.position.set(mx, 0, mz);
+      ln.rotation.y = yaw;
+      const quad = ln.userData.quad;
+      const mat = ln.userData.mat;
+      if (quad) quad.scale.set(0.12 + u * 0.1, dist, 1); // thin red beam
+      if (mat) mat.opacity = 0.45 + u * 0.5;
     }
   }
 
@@ -2428,6 +2565,7 @@ if (typeof window !== 'undefined') {
     buildEnemySprite,
     buildDoctorNpc,
     humanMesh,
+    sniperMesh,
     supportMesh,
     eliteMesh,
     hunterMesh,

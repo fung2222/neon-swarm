@@ -165,6 +165,12 @@ export const ENEMIES = {
     hp: 12, speed: 1.75, radius: 0.4, xp: 4, score: 45, chase: 0.95, damage: 2,
     color: 0xff7ae6, coat: 0x3a1446, gun: true, shield: 0.35,
   },
+  // ---- Phase 3 sniper (long rifle + red aim telegraph) — not a recolor ----
+  sniper: {
+    zh: '狙擊單位', en: 'Sniper Unit', family: 'human', kind: 'sniper', tier: 3,
+    hp: 8, speed: 1.55, radius: 0.36, xp: 4, score: 48, chase: 0.7, damage: 1,
+    color: 0xc93a4a, coat: 0x2a3328, gun: true, sniper: true,
+  },
   walker: {
     zh: '重裝機甲', en: 'Heavy Walker', family: 'support', kind: 'walker', tier: 3,
     hp: 16, speed: 1.2, radius: 0.52, xp: 5, score: 55, chase: 0.85, damage: 2,
@@ -202,6 +208,24 @@ export const ENEMIES = {
 };
 
 export const ENEMY_BY_ID = ENEMIES;
+
+/**
+ * Sniper unit (PHASE3-ENEMY-SNIPER-001): keep distance, red aim telegraph, then shot.
+ * Telegraph ≥0.8–1.2s — never silent instant snipe. Red = imminent damage.
+ */
+export const SNIPER = {
+  telegraphSec: 1.0,
+  cooldownSec: 3.0,
+  idealMin: 7.5,
+  idealMax: 12.5,
+  retreatBelow: 6.0,
+  approachAbove: 14.0,
+  shotDamage: 2,
+  shotRange: 18,
+  beamHalfWidth: 0.45,
+  repositionSpeedMul: 0.9,
+};
+
 
 /**
  * Elite defaults (SENTINEL) + per-type overrides (BEATS-PLAN elite #2 = more segments).
@@ -430,26 +454,27 @@ export function waveMix(t, zone = null) {
             : 'lab'
   );
   if (z === 'rooftop') {
-    // Rooftop: sky pressure — more drone/mech/chief, fewer staffer.
-    return [['drone', 0.32], ['mech', 0.24], ['chief', 0.18], ['officer', 0.14], ['soldier', 0.1], ['walker', 0.02]];
+    // Rooftop: sky pressure — more drone/mech/chief, fewer staffer; light sniper.
+    return [['drone', 0.30], ['mech', 0.22], ['chief', 0.16], ['officer', 0.12], ['soldier', 0.08], ['walker', 0.02], ['sniper', 0.10]];
   }
   if (z === 'blockade') {
-    // Blockade: military pressure — more soldier/officer/chief/mech, fewer staffer/drone.
-    return [['soldier', 0.30], ['officer', 0.24], ['chief', 0.18], ['mech', 0.18], ['walker', 0.08], ['drone', 0.02]];
+    // Blockade: military pressure — more soldier/officer/chief/mech; light sniper.
+    return [['soldier', 0.28], ['officer', 0.22], ['chief', 0.16], ['mech', 0.16], ['walker', 0.06], ['drone', 0.02], ['sniper', 0.10]];
   }
   if (z === 'reactor') {
-    // Reactor: energy facility pressure — more drone/mech/officer, fewer staffer/guard.
-    return [['drone', 0.28], ['mech', 0.22], ['officer', 0.22], ['walker', 0.14], ['soldier', 0.1], ['chief', 0.04]];
+    // Reactor: energy facility pressure — more drone/mech/officer; light sniper.
+    return [['drone', 0.26], ['mech', 0.20], ['officer', 0.20], ['walker', 0.12], ['soldier', 0.08], ['chief', 0.04], ['sniper', 0.10]];
   }
   if (z === 'assembly') {
-    // Assembly bay: industrial pressure — more soldier/walker, fewer panic staffers.
-    return [['soldier', 0.32], ['walker', 0.28], ['officer', 0.18], ['drone', 0.12], ['chief', 0.06], ['staffer', 0.04]];
+    // Assembly bay: industrial pressure — more soldier/walker; rare sniper.
+    return [['soldier', 0.30], ['walker', 0.26], ['officer', 0.16], ['drone', 0.12], ['chief', 0.06], ['staffer', 0.04], ['sniper', 0.06]];
   }
   if (t < 18) return [['staffer', 0.6], ['guard', 0.25], ['drone', 0.15]];
   if (t < 40) return [['staffer', 0.32], ['guard', 0.2], ['soldier', 0.3], ['drone', 0.18]];
-  if (t < 65) return [['staffer', 0.2], ['soldier', 0.35], ['drone', 0.25], ['officer', 0.1], ['walker', 0.1]];
-  if (t < 100) return [['soldier', 0.3], ['drone', 0.2], ['walker', 0.18], ['officer', 0.22], ['chief', 0.1]];
-  return [['soldier', 0.25], ['walker', 0.25], ['officer', 0.2], ['chief', 0.15], ['mech', 0.15]];
+  // Mid-late lab: introduce sniper lightly (after ~40s) — do not dominate early.
+  if (t < 65) return [['staffer', 0.18], ['soldier', 0.33], ['drone', 0.23], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08]];
+  if (t < 100) return [['soldier', 0.28], ['drone', 0.18], ['walker', 0.16], ['officer', 0.20], ['chief', 0.08], ['sniper', 0.10]];
+  return [['soldier', 0.22], ['walker', 0.22], ['officer', 0.18], ['chief', 0.14], ['mech', 0.14], ['sniper', 0.10]];
 }
 
 export function pickEnemyType(rng, t, zone = null) {

@@ -920,8 +920,20 @@ else if (ev.type === 'xp') {
       } catch (_) {}
     }
     else if (ev.type === 'telegraph') {
-      // View syncs warning lane / boss lanes from hazards; light audio cue
+      // View syncs warning lane / sniper red aim / boss lanes; light audio cue
       try { audio.wave(); } catch (_) {}
+    }
+    else if (ev.type === 'sniperShot') {
+      const mx = ev.muzzleX != null ? ev.muzzleX : ev.x;
+      const my = ev.muzzleY != null ? ev.muzzleY : 1.05;
+      const mz = ev.muzzleZ != null ? ev.muzzleZ : ev.z;
+      const muzzle = new THREE.Vector3(mx, my, mz);
+      particles.burst(muzzle, new THREE.Color(0xff2a4a), burstN(4), { speed: 3.2, up: 0.4, life: 0.22, size: 0.36, bright: 1.0 });
+      if (!MOBILE_GFX) {
+        particles.burst(muzzle, new THREE.Color(0xff6a7a), burstN(2), { speed: 1.6, up: 0.6, life: 0.14, size: 0.28, bright: 0.95 });
+      }
+      try { audio.wave(); } catch (_) {}
+      if (ev.hit) kickFx({ trauma: 0.06, fovKick: 0.01 });
     }
     else if (ev.type === 'eliteCharge') {
       // v0.9.20: mobile — trauma only, no bloomDamp

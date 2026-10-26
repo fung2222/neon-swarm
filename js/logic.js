@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -418,6 +418,13 @@ export class Game {
       panic: !!def.panic,
       elite: !!def.elite,
       boss: !!def.boss,
+      sniper: !!def.sniper || type === 'sniper',
+      sniperPhase: (!!def.sniper || type === 'sniper') ? 'reposition' : undefined,
+      sniperPhaseT: (!!def.sniper || type === 'sniper') ? (0.4 + this.rng() * 0.8) : undefined,
+      telegraphDur: 0,
+      telegraphAt: 0,
+      aimDx: 0,
+      aimDz: 1,
     });
   }
 
@@ -1523,6 +1530,155 @@ export class Game {
 
 
   /**
+   * Sniper AI: prefer keep distance → red aim telegraph (≥~1s) → hitscan shot.
+   * Never silent instant snipe. Damage only after telegraph completes.
+   */
+  _tickSniper(e, dt, events) {
+    const cfg = SNIPER;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const dx = this.px - e.x, dz = this.pz - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+
+    if (!e.sniperPhase) e.sniperPhase = 'reposition';
+    if (e.sniperPhaseT == null) e.sniperPhaseT = 0.5;
+
+    if (e.sniperPhase === 'aim') {
+      e.vx = 0; e.vz = 0;
+      e.sniperPhaseT -= dt;
+      // Mild tracking so dodge still works but the red line reads clearly
+      const track = Math.min(1, dt * 1.4);
+      const curLen = Math.hypot(e.aimDx || 0, e.aimDz || 0) || 1;
+      let adx = (e.aimDx || ndx) / curLen;
+      let adz = (e.aimDz || ndz) / curLen;
+      adx = adx * (1 - track) + ndx * track;
+      adz = adz * (1 - track) + ndz * track;
+      const al = Math.hypot(adx, adz) || 1;
+      e.aimDx = adx / al;
+      e.aimDz = adz / al;
+      if (e.sniperPhaseT <= 0) {
+        const ax = e.aimDx, az = e.aimDz;
+        const range = cfg.shotRange;
+        const halfW = cfg.beamHalfWidth;
+        const along = (this.px - e.x) * ax + (this.pz - e.z) * az;
+        const closestX = e.x + ax * Math.max(0, Math.min(range, along));
+        const closestZ = e.z + az * Math.max(0, Math.min(range, along));
+        const perp = Math.hypot(this.px - closestX, this.pz - closestZ);
+        let hitPlayer = false;
+        if (along > 0.2 && along < range && perp < PLAYER.radius + halfW) {
+          hitPlayer = true;
+          if (this.invuln <= 0) {
+            const taken = Math.max(1, (cfg.shotDamage || 2) - (this.armor || 0));
+            this.hp -= taken;
+            this.invuln = 0.85 + (this.deflect || 0);
+            this.hitFlash = 0.32;
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, sniper: true });
+            if (this.hp <= 0) {
+              this.alive = false;
+              this.hp = 0;
+              this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+              events.push({ type: 'dead' });
+            }
+          }
+        }
+        events.push({
+          type: 'sniperShot',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          aimDx: ax, aimDz: az,
+          hit: hitPlayer,
+          muzzleX: e.x + ax * 0.55,
+          muzzleY: 1.05,
+          muzzleZ: e.z + az * 0.55,
+        });
+        e.sniperPhase = 'cooldown';
+        e.sniperPhaseT = cfg.cooldownSec;
+        e.shotFlash = 0.18;
+      }
+      if (this.invuln <= 0 && dist < e.r + PLAYER.radius) {
+        const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
+        this.hitFlash = 0.28;
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        e.x -= ndx * 0.9;
+        e.z -= ndz * 0.9;
+        if (this.hp <= 0) {
+          this.alive = false;
+          this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+          events.push({ type: 'dead' });
+        }
+      }
+      return;
+    }
+
+    e.sniperPhaseT -= dt;
+    if (e.shotFlash > 0) e.shotFlash -= dt;
+    let toward = 0;
+    if (dist < cfg.retreatBelow) toward = -1;
+    else if (dist > cfg.approachAbove) toward = 1;
+    else if (dist < cfg.idealMin) toward = -0.55;
+    else if (dist > cfg.idealMax) toward = 0.55;
+    else toward = 0;
+    const strafe = (toward === 0) ? 0.35 : 0;
+    const pdx = -ndz, pdz = ndx;
+    const side = (Math.sin(e.wob + this.t * 0.7) >= 0) ? 1 : -1;
+    const spd = e.speed * e.chase * slowMul * (cfg.repositionSpeedMul || 0.9);
+    const stepX = (ndx * toward + pdx * side * strafe) * spd * dt;
+    const stepZ = (ndz * toward + pdz * side * strafe) * spd * dt;
+    e.vx = stepX / Math.max(dt, 1e-6);
+    e.vz = stepZ / Math.max(dt, 1e-6);
+    e.x += stepX;
+    e.z += stepZ;
+    const moving = Math.hypot(e.vx, e.vz) > 0.05;
+    e.animPhase = (e.animPhase || 0) + (moving ? Math.max(8, Math.hypot(e.vx, e.vz) * 6.5) * dt : 0);
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+
+    const inBand = dist >= cfg.idealMin * 0.85 && dist <= cfg.idealMax * 1.15;
+    if (e.sniperPhase === 'cooldown') {
+      if (e.sniperPhaseT <= 0) {
+        e.sniperPhase = 'reposition';
+        e.sniperPhaseT = 0.25 + this.rng() * 0.4;
+      }
+    } else if (e.sniperPhase === 'reposition' && e.sniperPhaseT <= 0 && (inBand || dist < cfg.approachAbove)) {
+      e.sniperPhase = 'aim';
+      e.sniperPhaseT = cfg.telegraphSec;
+      e.telegraphDur = cfg.telegraphSec;
+      e.telegraphAt = this.t;
+      e.aimDx = ndx;
+      e.aimDz = ndz;
+      events.push({
+        type: 'telegraph',
+        kind: 'sniper',
+        enemyId: e.id,
+        x: e.x, z: e.z,
+        aimDx: ndx, aimDz: ndz,
+        duration: cfg.telegraphSec,
+      });
+    }
+
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.28;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      e.x -= ndx * 0.9;
+      e.z -= ndz * 0.9;
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
+
+  /**
    * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
    * Contact damage / elite / boss AI stay here (same as pre-reorder).
    */
@@ -1536,6 +1692,10 @@ export class Game {
       }
       if (e.elite) {
         this._tickElite(e, dt, events);
+        continue;
+      }
+      if (e.sniper || e.kind === 'sniper' || e.type === 'sniper') {
+        this._tickSniper(e, dt, events);
         continue;
       }
       if (e.hit > 0) e.hit -= dt;

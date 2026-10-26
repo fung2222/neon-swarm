@@ -50,7 +50,7 @@ const dt = 1 / 30;
     for (const ev of events) {
       if (ev.type === 'beat' && ev.kind === 'elite') sawBeat = true;
       if (ev.type === 'eliteIn') sawBeat = true;
-      if (ev.type === 'telegraph' && !telegraphEv) telegraphEv = ev;
+      if (ev.type === 'telegraph' && ev.eliteId && !telegraphEv) telegraphEv = ev;
       if (ev.type === 'eliteCharge') chargeEv = ev;
     }
     if (!elite) elite = g.enemies.find((e) => e.elite) || null;
@@ -69,7 +69,7 @@ const dt = 1 / 30;
     if (e) e.hp = Math.max(e.hp, 40);
     const { events } = g.step(dt);
     for (const ev of events) {
-      if (ev.type === 'telegraph' && !telegraphEv) telegraphEv = ev;
+      if (ev.type === 'telegraph' && ev.eliteId && !telegraphEv) telegraphEv = ev;
       if (ev.type === 'eliteCharge' && !chargeEv) chargeEv = ev;
     }
   }
@@ -370,7 +370,7 @@ const dt = 1 / 30;
     }
     const { events } = g.step(dt);
     for (const ev of events) {
-      if (ev.type === 'telegraph') teleDurations.push(ev.duration);
+      if (ev.type === 'telegraph' && ev.eliteId) teleDurations.push(ev.duration);
       if (ev.type === 'eliteCharge') chargeSegs.push(ev.segment);
       if (ev.type === 'hurt' && el.phase === 'telegraph') hurtInTele = true;
     }
