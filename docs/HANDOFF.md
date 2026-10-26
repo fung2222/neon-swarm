@@ -463,7 +463,7 @@ Rollback baseline:
 
 **目前基準 v0.9.34（PHASE6-DAMAGE-NUMBERS-LITE-001；HEAD 以 `main`／live `?v=0.9.34` 為準）。** Roy continue（「未用得」）still on — safe UX only。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` **已完成**（v0.9.34）：hit／heal／hurt floats；截圖 `tests/screenshots/phase6-damage-numbers/`。
+- `PHASE6-DAMAGE-NUMBERS-LITE-001` **已完成**（v0.9.34 / `3da3007`）：hit／heal／hurt floats；截圖 `tests/screenshots/phase6-damage-numbers/`。
 - `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33 / `7db11c0`）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
 - `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `e578bae`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
 - `PHASE6-LEVELUP-CARD-UX-001` **已完成**（v0.9.31）：升級卡 UX／tap／stack／slot hint；截圖 `tests/screenshots/phase6-levelup-ux/`。

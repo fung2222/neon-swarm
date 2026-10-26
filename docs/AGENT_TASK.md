@@ -28,7 +28,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-DAMAGE-NUMBERS-LITE-001 → **complete**（v0.9.34）
+## 狀態：PHASE6-DAMAGE-NUMBERS-LITE-001 → **complete**（v0.9.34 / `3da3007`）
 
 **ROY（2026-10-26 ~22:22 HKT）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
 
@@ -53,7 +53,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34**.
+- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`).
 - `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`).
 - `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`).
 - `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
