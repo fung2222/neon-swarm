@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.47 · **狀態 Status:** v0.9.47 Phase 3 jammer
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.48 · **狀態 Status:** v0.9.48 zone HUD chip
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  

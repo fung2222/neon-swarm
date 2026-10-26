@@ -36,8 +36,36 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 .hud-goal b { color: #ffe600; font-size: 13px; }
 .hud-goal.done { border-color: #7cff3a; color: #bfffb0; }
+/* v0.9.48 zone HUD chip — persistent after zoneEnter banner fades */
+.hud-zone {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  top: calc(42px + var(--sa-top));
+  z-index: 5; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 3px 12px 4px; border-radius: 99px;
+  font-size: 10px; letter-spacing: 1px; color: #d8f6ff;
+  background: #0a0520cc;
+  border: 1px solid color-mix(in srgb, var(--zone-accent, #2ad4c8) 55%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--zone-accent, #2ad4c8) 28%, transparent);
+  --zone-accent: #2ad4c8;
+}
+.hud-zone-zh { font-weight: 700; line-height: 1.15; color: #e8fbff; }
+.hud-zone-en {
+  font-style: normal; font-size: 8px; letter-spacing: 0.14em;
+  text-transform: uppercase; opacity: 0.78; color: var(--zone-accent, #2ad4c8);
+  line-height: 1;
+}
+@media (max-width: 560px) {
+  .hud-zone {
+    left: calc(8px + var(--sa-left)); transform: none;
+    top: calc(84px + var(--sa-top));
+    padding: 2px 10px 3px; font-size: 9px;
+    align-items: flex-start;
+  }
+  .hud-zone-en { font-size: 7px; }
+}
 /* Decorative HUD chrome never steals playfield presses; only real controls do. */
-#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps, #hud .hud-goal { pointer-events: none; }
+#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps, #hud .hud-goal, #hud .hud-zone { pointer-events: none; }
 /* ---- phone HUD: two rows that never fight for the same pixels ----
    row 1: [HP | LV] ..... [TIME | SCORE] [mute][pause]
    row 2: goal chip under the left panel (centred between the panels) */

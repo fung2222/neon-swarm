@@ -88,3 +88,27 @@ export function formatLoadoutFromGame(g, cardsById = {}, isZh = true) {
     return `${name} Lv${lv}`;
   }).join(' · ');
 }
+
+/** Zone accent colors matching edge-trim identity (not danger telegraph reds). */
+export const ZONE_CHIP_ACCENT = Object.freeze({
+  lab: '#2ad4c8',
+  assembly: '#e8a040',
+  reactor: '#b44dff',
+  blockade: '#9aaa6e',
+  rooftop: '#6aa8ff',
+});
+
+/**
+ * @param {string} zoneId
+ * @returns {{ id: string, zh: string, en: string, accent: string }}
+ */
+export function zoneChipInfo(zoneId) {
+  const id = ZONE_SHORT[zoneId] ? zoneId : 'lab';
+  const z = ZONE_SHORT[id];
+  return {
+    id,
+    zh: z.zh,
+    en: z.en,
+    accent: ZONE_CHIP_ACCENT[id] || ZONE_CHIP_ACCENT.lab,
+  };
+}

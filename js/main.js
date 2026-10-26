@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.47 jammer; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.48 zone HUD chip; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -14,6 +14,7 @@ import { shouldAutoPauseOnHidden } from './bg-pause.js';
 import { createBannerController, BANNER_MS } from './banner-queue.js';
 import {
   shouldShowCoach, markCoachSeen, zoneShortLabel, formatLoadoutFromGame,
+  zoneChipInfo,
   COACH_MS, HURT_VIGNETTE_MS, STICK_HINT_MS,
 } from './run-loop-ux.js';
 import {
@@ -423,6 +424,20 @@ function checkTrialEnd() {
   const left = TRIAL.surviveSec - g.t;
   if (left <= 0 && g.alive) endRun(true);
 }
+
+/** v0.9.48: persistent map-zone chip (zh + EN small; accent by zone). */
+function updateZoneHudChip(g) {
+  const el = $('hud-zone');
+  if (!el) return;
+  const info = zoneChipInfo((g && g.mapZone) || 'lab');
+  if (el.dataset.zone !== info.id) el.dataset.zone = info.id;
+  el.style.setProperty('--zone-accent', info.accent);
+  const zh = $('hud-zone-zh');
+  const en = $('hud-zone-en');
+  if (zh) zh.textContent = info.zh;
+  if (en) en.textContent = info.en;
+}
+
 function updateHUD(force = false) {
   const g = S.game; if (!g) return;
   const score = Math.floor(g.score);
@@ -433,7 +448,8 @@ function updateHUD(force = false) {
   const goalLeft = Math.max(0, (g.goalKills || 0) - g.kills);
   const slotsKey = (g.weaponSlots || []).map((id) => id || '-').join(',')
     + ':' + (g.weaponSlots || []).map((id) => id ? ((g.taken && g.taken[id]) || (id === 'mg' ? 1 : 0)) : 0).join(',');
-  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '|' + xpPct.toFixed(2) + '|' + goalLeft + '|' + slotsKey;
+  const zoneKey = g.mapZone || 'lab';
+  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '|' + xpPct.toFixed(2) + '|' + goalLeft + '|' + slotsKey + '|' + zoneKey;
   if (!force && snap === _hudSnap) return;
   _hudSnap = snap;
   $('hud-score').textContent = String(score);
@@ -448,6 +464,7 @@ function updateHUD(force = false) {
     const lab = goalEl.querySelector('span');
     if (lab) lab.textContent = goalLeft === 0 ? t('goal.ready') : t('goal.kills');
   }
+  updateZoneHudChip(g);
   updateWeaponSlotsHUD(g);
 }
 
@@ -1490,6 +1507,8 @@ else if (ev.type === 'xp') {
       const en = t(zoneKeyEn);
       showBeatBanner(zh, en, BANNER_MS.zone, { kind: 'zone' });
       try { audio.wave(); } catch (_) {}
+      // v0.9.48: chip stays after banner fades
+      updateZoneHudChip(S.game);
     }
     else if (ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite')) {
       const zh = ev.nameZh

@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.9.47">
+<link rel="stylesheet" href="./css/game.css?v=0.9.48">
 <script type="importmap">
 {
   "imports": {
@@ -51,6 +51,10 @@
     <div class="stat"><div class="label" data-i18n="hud.score"></div><div class="value" id="hud-score">0</div></div>
   </div>
   <div id="hud-goal" class="hud-goal"><span data-i18n="goal.kills"></span> <b id="goal-left">0</b></div>
+  <div id="hud-zone" class="hud-zone" data-zone="lab" aria-live="polite">
+    <span class="hud-zone-zh" id="hud-zone-zh">實驗室</span>
+    <em class="hud-zone-en" id="hud-zone-en">LAB</em>
+  </div>
   <div id="boss-hp" class="boss-hp hidden" aria-live="polite">
     <div class="boss-hp-label"><span id="boss-hp-zh">洪流核心</span><em id="boss-hp-en">SWARM CORE</em></div>
     <div class="boss-hp-track"><i id="boss-hp-fill"></i></div>
@@ -186,6 +190,6 @@
   } catch (e) { /* private mode */ }
 })();
 </script>
-<script type="module" src="./js/main.js?v=0.9.47"></script>
+<script type="module" src="./js/main.js?v=0.9.48"></script>
 </body>
 </html>
