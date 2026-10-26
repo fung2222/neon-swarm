@@ -30,7 +30,7 @@
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`2c6b6df`)
+- `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
 - `PHASE6-SAFE-AREA-001` → **v0.9.36** (`eee063e`)
 - `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`)
 - `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`)

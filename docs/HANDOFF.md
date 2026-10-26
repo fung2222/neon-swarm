@@ -492,7 +492,7 @@ Rollback baseline:
 
 ## 版本歷史（增量）
 
-- **v0.9.37** / `2c6b6df` (`PHASE6-EARLY-FEEDBACK-001`) — Once-per-run first-kill toast「首殺」／FIRST BLOOD + first level-up chime/XP pulse/glow + soft first-heal micro-toast; coach-defer; `#early-toast` non-blocking. Screenshots `tests/screenshots/phase6-early-feedback/`. Next: KILL-STREAK-LITE or RESULT-SHARE; HIT-FEEL when Roy phones (still ban Phase 4).
+- **v0.9.37** / `ea04be7` (`PHASE6-EARLY-FEEDBACK-001`) — Once-per-run first-kill toast「首殺」／FIRST BLOOD + first level-up chime/XP pulse/glow + soft first-heal micro-toast; coach-defer; `#early-toast` non-blocking. Screenshots `tests/screenshots/phase6-early-feedback/`. Next: KILL-STREAK-LITE or RESULT-SHARE; HIT-FEEL when Roy phones (still ban Phase 4).
 - **v0.9.36** / `eee063e` (`PHASE6-SAFE-AREA-001`) — Notch/home-bar safe-area: `--sa-*` tokens, HUD L/R, mute/pause, stick, weapon-slots, xp L/R, beat/coach width, pause/over/level/gfx panel padding, cheap landscape. Screenshots `tests/screenshots/phase6-safe-area/` (simulated insets). Next: PHASE6-EARLY-FEEDBACK-001 or HIT-FEEL-DEVICE (still ban Phase 4).
 - **v0.9.35** / `a026e1e` (`PHASE6-MUTE-PERSIST-001`) — Mute preference survives reload/next visit; early-paint + menu mute chrome + zh-HK aria; kit store already had persist — harden only. Screenshots `tests/screenshots/phase6-mute-persist/`.
 - **v0.9.34** (`PHASE6-DAMAGE-NUMBERS-LITE-001`) — Floating hit/heal/hurt digits (DOM pool, throttle, mobile-light). Screenshots `tests/screenshots/phase6-damage-numbers/`.
