@@ -28,24 +28,30 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：HOLD — awaiting Kimi independent review of AIM-HIT-FAST-002
+## 狀態：PHONE-STABLE-FOLLOWUP → **completed**（v0.9.20）
 
-**Completed（do not re-implement）：** `AIM-HIT-FAST-002` → **v0.9.19** / `3e3d20e`（之後 docs／協作 commit 在 `main`；以 live `?v=0.9.19` 為準）
+**ROY continue（2026-10-26）：** Kimi rate-limited → advance past AIM-HIT HOLD；**只做**本項，**唔**開 horn。
 
-- Precise quadratic intercept + muzzle two-stage；relative continuous collision；MG logic jitter removed。
-- Evidence：`tests/aim-hit-fast.test.mjs`、`tests/aim-hit-002-shots.mjs`、`tests/screenshots/aim-hit-002/`。
-- 屬**重大改動**（碰撞 update order／瞄準管線）→ 等 Kimi 審完先自動接 queue。
-- **Whole-game audit（常規／唔改玩法）：** `docs/AUDIT-v0.9.19.md`（2026-10-26）— MD vs code／headless 全綠；裝置／WebGL／horn lock／Play **未**驗收。唔當審核通過。
+### Completed this turn
 
-**Do NOT start until review clears：** Phase 4 Precision／Morph、horn 最終 art lock、§9 系列規則落地、PERF rebaseline 當「已驗收」。
+**Task ID：** `PHONE-STABLE-FOLLOWUP` → **v0.9.20**（cache-bust `?v=0.9.20`）
 
-### Queue（審核通過後 Grok 自動按序；常規項可連做）
+- **A）** `visibilitychange` / `pagehide` → 活躍 `play` 時走同一 `pauseRun()`（等同 Esc／btn-pause）；**唔** auto-resume on visible。助手：`js/bg-pause.js`＋`tests/bg-pause.test.mjs`。
+- **B）** 更強 `MOBILE_GFX` 減壓（desktop 不變）：`PARTICLE_POOL` 1200→800；永久較低 bloom；kickFx bloomDamp cap 0.25→0.18；跳過 muzzle 次要 burst、heal／wave／puddle／nova／explode rings（mobile）、elite inbound bloom kick；eliteCharge／bossVolley 無 bloomDamp。`webglcontextlost` 路徑保留「繪圖暫時中斷」＋ reload。
+- **未改：** bulletDmg／HP／平衡表；AIM-HIT-FAST-002；Phase 4；horn lock；PERF「已驗收」。
+- **誠實標：** Box＝SwiftShader ≠ 真機；**未**宣稱 mid-run WebGL 已在裝置修好。
 
-1. **PHONE-STABLE-FOLLOWUP**（常規／可重大視範圍）— 跟進 mid-run WebGL「繪圖暫時中斷」；以更穩為先，唔為省電假砍可玩性。未開新 task 前只準備證據／方案，審完再寫 Active。
-2. **HORN-SILHOUETTE-DIRECTION**（重大／要 Roy 肉眼）— 塊狀造型唔入 lock；等 Roy 剪影方向＋視覺 OK 先 polish。
-3. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。
-4. **PERF-REBASELINE**（常規量測）— 桌面／（有機則）手機 rebaseline；唔當玩法完成。
-5. **CONTENT-AFTER-PILLARS** — 先命中＋穩定＋主角好看，再 Phase 4／新地圖／新武器 bulk。
+**先前完成（do not re-implement）：** `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`（仍待 Kimi 獨立審，但不阻擋本常規穩定項）。
+
+**Do NOT start：** Phase 4 Precision／Morph、horn 最終 art lock、§9 系列規則落地、PERF rebaseline 當「已驗收」。
+
+### Queue（下一項 — **stop after PHONE-STABLE；唔自動開做**）
+
+1. **HORN-SILHOUETTE-DIRECTION**（重大／要 Roy 肉眼）— 塊狀造型唔入 lock；等 Roy 剪影方向＋視覺 OK 先 polish。**← recommended next；needs Roy eyes — do not start**
+2. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。
+3. **PERF-REBASELINE**（常規量測）— 桌面／（有機則）手機 rebaseline；唔當玩法完成。
+4. **CONTENT-AFTER-PILLARS** — 先命中＋穩定＋主角好看，再 Phase 4／新地圖／新武器 bulk。
+5. （背景）AIM-HIT-FAST-002 Kimi 獨立審 — 有空再補；唔阻擋常規 queue。
 
 ---
 

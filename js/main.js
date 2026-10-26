@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.19 AIM-HIT-FAST-002 (precise intercept + relative sweep); was v0.9.18 Phase 6 endless elites after boss
+// RAMPAGE MECH 暴走機甲 — v0.9.20 phone stable (bg auto-pause + stronger mobile GPU cut); was v0.9.19 AIM-HIT-FAST-002
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -10,6 +10,7 @@ import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
+import { shouldAutoPauseOnHidden } from './bg-pause.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -19,7 +20,7 @@ const AD_FLAGS = { adsim: flags.adsim || HUB.ads === true || HUB.ads === '1', de
 const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
 
-// v0.9.6: stronger mobile / coarse-pointer GPU pressure cut (stability only — no balance changes)
+// v0.9.6 + v0.9.20: mobile / coarse-pointer GPU pressure cut (stability only — no balance changes)
 const MOBILE_GFX = (() => {
   try {
     const coarse = matchMedia('(pointer: coarse)').matches;
@@ -29,7 +30,8 @@ const MOBILE_GFX = (() => {
     return !!(coarse || (touch && narrow) || ua);
   } catch (_) { return false; }
 })();
-const PARTICLE_POOL = MOBILE_GFX ? 1200 : 5200;
+// v0.9.20: pool 1200→800 on mobile (further mid-run GPU pressure cut; desktop unchanged)
+const PARTICLE_POOL = MOBILE_GFX ? 800 : 5200;
 const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
 const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.4)) : n;
@@ -56,14 +58,25 @@ function showGfxRecover(kind = 'lost') {
 }
 
 const stage = createStage({
-  canvas: $('scene'), bloom: 0.22, bloomRadius: 0.28, bloomThreshold: 0.94, fov: 42, exposure: 0.88,
-  glow: 'low', glowLevels: { low: { strength: 0.22, radius: 0.35, threshold: 0.25 } },
+  canvas: $('scene'),
+  // v0.9.20: permanently lower bloom on MOBILE_GFX (desktop keeps 0.22)
+  bloom: MOBILE_GFX ? 0.10 : 0.22, bloomRadius: 0.28, bloomThreshold: MOBILE_GFX ? 0.96 : 0.94,
+  fov: 42, exposure: 0.88,
+  glow: 'low',
+  glowLevels: { low: { strength: MOBILE_GFX ? 0.10 : 0.22, radius: 0.35, threshold: 0.25 } },
   maxPixelRatio: MAX_PR,
   // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
   onFatal: () => showGfxRecover('boot'),
 });
 ui.glowToggle(stage);
 stage.setGlow('low'); // v0.8.5: force low glow (ignore shared high from other games)
+// v0.9.20: clamp bloom base after setGlow so mobile stays low even if prefs flip
+if (MOBILE_GFX) {
+  try {
+    stage.bloomBase = Math.min(stage.bloomBase ?? 0.10, 0.10);
+    if (stage.bloomPass) stage.bloomPass.strength = stage.bloomBase;
+  } catch (_) {}
+}
 $('btn-gfx-reload')?.addEventListener('click', () => { location.reload(); });
 
 const theme = new ThemeController(); theme.set(1, true);
@@ -89,11 +102,12 @@ stage.onResize((w, h, pr) => {
 });
 const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 10 : 24);
 const fx = new FxState();
-/** Mobile: clamp bloomDamp and roughly half trauma/slowmo so late-run AoE cannot white-out GPU. Desktop unchanged. */
+/** Mobile: clamp bloomDamp and roughly half trauma/slowmo so late-run AoE cannot white-out GPU. Desktop unchanged.
+ *  v0.9.20: bloomDamp cap 0.25→0.18 (stronger mid-run GPU cut). */
 function kickFx(o) {
   if (!MOBILE_GFX) { fx.kick(o); return; }
   const m = { ...o };
-  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.25);
+  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.18);
   if (m.trauma != null) m.trauma *= 0.5;
   if (m.slowmo != null) m.slowmo *= 0.5;
   fx.kick(m);
@@ -128,6 +142,24 @@ S.mech = MECH_BY_ID[S.mechId];
     location.reload();
   }, false);
 }
+
+/** Same path as Esc / btn-pause / Platform.onBack — show pause UI; never auto-resume on visible. */
+function pauseRun() {
+  if (!shouldAutoPauseOnHidden(S.state)) return false;
+  S.state = 'pause';
+  try { ui.show('pause'); } catch (_) {}
+  return true;
+}
+
+// v0.9.20 AUDIT gap: commute auto-pause when app/tab backgrounds (no auto-resume).
+function onDocumentHidden() {
+  if (typeof document !== 'undefined' && document.visibilityState === 'visible') return;
+  pauseRun();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' || document.hidden) onDocumentHidden();
+});
+window.addEventListener('pagehide', onDocumentHidden);
 
 /** Compact bars derived from resolveMechCombat — never a second fake table. */
 function mechStatBars(m) {
@@ -649,7 +681,7 @@ window.addEventListener('keydown', (e) => {
   S.keys[e.code] = true;
   audio.init();
   if (e.code === 'KeyP' || e.code === 'Escape') {
-    if (S.state === 'play') { S.state = 'pause'; ui.show('pause'); }
+    if (S.state === 'play') pauseRun();
     else if (S.state === 'pause') { S.state = 'play'; ui.show(null); }
   }
   if (e.code === 'KeyM') { audio.toggleMute(); ui.setMuted(audio.muted); }
@@ -665,7 +697,7 @@ window.addEventListener('keyup', (e) => { S.keys[e.code] = false; });
 
 $('btn-play')?.addEventListener('click', () => startRun());
 $('btn-endless')?.addEventListener('click', () => startRun());
-$('btn-pause')?.addEventListener('click', () => { if (S.state === 'play') { S.state = 'pause'; ui.show('pause'); } });
+$('btn-pause')?.addEventListener('click', () => { pauseRun(); });
 $('btn-resume')?.addEventListener('click', () => { S.state = 'play'; ui.show(null); });
 $('btn-restart')?.addEventListener('click', () => startRun());
 $('btn-quit')?.addEventListener('click', () => showMenu());
@@ -704,7 +736,7 @@ Platform.onBack(() => {
   if (S.state === 'level') return true;
   if (S.state === 'pause') { S.state = 'play'; ui.show(null); return true; }
   if (S.state === 'over') { showMenu(); return true; }
-  if (S.state === 'play') { S.state = 'pause'; ui.show('pause'); return true; }
+  if (S.state === 'play') { pauseRun(); return true; }
   return false;
 });
 
@@ -744,7 +776,10 @@ function tick(dt) {
       const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
       const muzzle = new THREE.Vector3(mx, my, mz);
       particles.burst(muzzle, new THREE.Color(0x00e5ff), burstN(3), { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
-      particles.burst(muzzle, new THREE.Color(0x7ad7ff), burstN(2), { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });
+      // v0.9.20: skip muzzle secondary burst on mobile (pool pressure)
+      if (!MOBILE_GFX) {
+        particles.burst(muzzle, new THREE.Color(0x7ad7ff), burstN(2), { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });
+      }
     }
         else if (ev.type === 'hit') {
       audio.hit();
@@ -784,24 +819,28 @@ function tick(dt) {
       const pos = new THREE.Vector3(ev.x, 0.2, ev.z);
       const col = new THREE.Color(ev.tag === 'plasma' ? 0xb8ff3a : 0x00e5ff);
       particles.burst(pos, col, burstN(12), { speed: 4.5, up: 1.8, life: 0.4, size: 0.55, bright: 1.0 });
-      // boss color merged
-      particles.ring(pos, col, 12, 7, 0.28);
+      // boss color merged; v0.9.20: skip explode ring on mobile
+      if (!MOBILE_GFX) particles.ring(pos, col, 12, 7, 0.28);
       waves.spawn(pos, col, { r0: 0.35, r1: (ev.r || 1.6) * 1.1, dur: 0.4, a: 0.8 });
       if (view.burstGore) view.burstGore(ev.x, ev.z, 0x8a93a8);
       kickFx({ trauma: 0.1, slowmo: 0.04, fovKick: 0.03, bloomDamp: 0.9 });
     }
     else if (ev.type === 'puddle') {
-      particles.ring(new THREE.Vector3(ev.x, 0.08, ev.z), new THREE.Color(0xb8ff3a), 8, 4, 0.18);
+      if (!MOBILE_GFX) particles.ring(new THREE.Vector3(ev.x, 0.08, ev.z), new THREE.Color(0xb8ff3a), 8, 4, 0.18);
     }
 else if (ev.type === 'xp') {
       audio.xp();
       particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), burstN(8), { speed: 2.4, up: 1.8, size: 0.55, bright: 1.0 });
-      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), burstN(4), { speed: 1.4, up: 2.2, life: 0.4, size: 0.4, bright: 0.9 });
+      // v0.9.20: skip xp secondary burst on mobile
+      if (!MOBILE_GFX) {
+        particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), burstN(4), { speed: 1.4, up: 2.2, life: 0.4, size: 0.4, bright: 0.9 });
+      }
     }
     else if (ev.type === 'heal') {
       audio.xp();
       particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0x00e5ff), burstN(10), { speed: 2.5, up: 2, size: 0.5, bright: 1.0 });
-      particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0x00e5ff), 10, 5, 0.2);
+      // v0.9.20: skip heal ring on mobile (pickup-adjacent non-essential)
+      if (!MOBILE_GFX) particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0x00e5ff), 10, 5, 0.2);
     }
     else if (ev.type === 'weapon') {
       audio.nova();
@@ -822,13 +861,13 @@ else if (ev.type === 'xp') {
       view.pulseNova(ev.r);
       const npos = new THREE.Vector3(S.game.px, 0.05, S.game.pz);
       particles.burst(npos.clone().setY(0.4), new THREE.Color(0xffe600), burstN(14), { speed: 5, up: 1.4, life: 0.4, size: 0.6, bright: 1.0 });
-      particles.ring(npos, new THREE.Color(0xffe600), 12, 6, 0.22);
+      if (!MOBILE_GFX) particles.ring(npos, new THREE.Color(0xffe600), 12, 6, 0.22);
       waves.spawn(npos, new THREE.Color(0xffe600), { r0: 0.4, r1: ev.r * 1.1, dur: 0.4, a: 0.85 });
       kickFx({ trauma: 0.12, bloomDamp: 1.0 });
     }
     else if (ev.type === 'wave') {
       audio.wave();
-      particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0xff2bd6), 10, 5, 0.18);
+      if (!MOBILE_GFX) particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0xff2bd6), 10, 5, 0.18);
     }
     else if (ev.type === 'zoneEnter') {
       const zoneKey = {
@@ -857,7 +896,8 @@ else if (ev.type === 'xp') {
         : t('beat.eliteInEn');
       showBeatBanner(zh, en, 1800);
       audio.wave();
-      kickFx({ trauma: 0.08, bloomDamp: 0.5 });
+      // v0.9.20: skip elite inbound bloom kick on mobile
+      if (!MOBILE_GFX) kickFx({ trauma: 0.08, bloomDamp: 0.5 });
     }
     else if (ev.type === 'bossIn' || (ev.type === 'beat' && ev.kind === 'boss')) {
       const zh = ev.nameZh
@@ -886,10 +926,13 @@ else if (ev.type === 'xp') {
       try { audio.wave(); } catch (_) {}
     }
     else if (ev.type === 'eliteCharge') {
-      kickFx({ trauma: 0.1, fovKick: 0.02, bloomDamp: 0.6 });
+      // v0.9.20: mobile — trauma only, no bloomDamp
+      if (MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });
+      else kickFx({ trauma: 0.1, fovKick: 0.02, bloomDamp: 0.6 });
     }
     else if (ev.type === 'bossVolley') {
-      kickFx({ trauma: 0.08, fovKick: 0.015, bloomDamp: 0.5 });
+      if (MOBILE_GFX) kickFx({ trauma: 0.04, fovKick: 0.01 });
+      else kickFx({ trauma: 0.08, fovKick: 0.015, bloomDamp: 0.5 });
     }
     else if (ev.type === 'bossKill') {
       kickFx({ trauma: 0.16, bloomDamp: 1.0 });

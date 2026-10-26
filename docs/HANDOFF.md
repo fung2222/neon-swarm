@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.19 AIM-HIT-FAST-002（precise intercept + relative sweep；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.20 phone stable（bg auto-pause + stronger mobile GPU cut；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.19`**（AIM-HIT-FAST-002 precise intercept + relative sweep；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.20`**（phone stable：bg auto-pause + stronger MOBILE_GFX GPU cut；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -50,6 +50,7 @@
   - v0.9.17 — Phase 6 rooftop map zone slice（**五區齊**）：`mapZone` lab→assembly→reactor→blockade→rooftop @`MAP_ZONE.rooftopAt=510`（8:30，blockade@420 後）；天台邊緣裝飾（天線／通風／停機坪剪影／矮欄杆／遠城燈光點，非只 recolor）；夜藍／冷白 trim vs blockade 橄欖／reactor 紫青／assembly 琥珀／lab teal；可玩地板暗瀝青灰、低對比；rooftop `waveMix` 多 drone／mech／chief、少 staffer；`zoneEnter` 橫幅「進入 · 天台逃出區」／ROOFTOP；測試 `tests/map-zone.test.mjs` 五區時間序；截圖 `tests/screenshots/phase6-rooftop/`。誠實標：同一 arena 換邊飾／色溫／mix，唔係無縫大地圖。未做：endless ~90s elites。Box＝SwiftShader，非真機驗收。
   - v0.9.18 — Phase 6 endless elites after boss：`ENDLESS = { startAfter:360, eliteEvery:90, bossEvery:300, eliteRotate:['sentinel','hunter'], bossId:'swarm_core' }`＋`Game._endlessBeatCheck`（固定 `BEATS` 之後；**唔係**動態塞 BEATS 列）；交替重用現有 elite／boss；max one elite、存活時延後排程；`endless:false` 跳過 cadence；trial `TRIAL.surviveSec=480` 不變（main.checkTrialEnd）；測試 `tests/beats.test.mjs`。可選截圖 `tests/screenshots/phase6-endless/`。未做：新 elite／boss 剪影、Phase 4 Precision。Box＝SwiftShader，非真機驗收。
   - v0.9.19 — AIM-HIT-FAST-002：高速橫向命中。`interceptAimDir`（quadratic closed-form）＋`muzzleInterceptAimDir`（兩階段 muzzle）；`relativeSegmentHitsCircle`＋enemy `prevX/prevZ`；`_moveEnemies` 先於 `_stepProjectiles`（同 dt）；MG 邏輯彈取消 0.08rad jitter（`AIM_LEAD_MAX_T` 仍 0.30，唔係靠加大 lead cap）。測試 `tests/aim-hit-fast.test.mjs`（002 cases）＋`tests/aim-hit-002-shots.mjs`；證據 `tests/screenshots/aim-hit-002/`。未改 bulletDmg／HP／radius／elite speed。Box＝SwiftShader，**非** Roy 真機驗收。角色：Kimi＝設計／審核／除錯；Grok bot＝實作；Roy＝產品／最終。
+  - v0.9.20 — PHONE-STABLE-FOLLOWUP（Roy continue past AIM-HIT HOLD；Kimi rate-limited）：`visibilitychange`／`pagehide` → `pauseRun()`（等同手動暫停；**唔** auto-resume）；`MOBILE_GFX` 再減壓 — pool 800、永久較低 bloom、kickFx bloomDamp≤0.18、跳過 muzzle 次要／非必要 rings、elite inbound bloom kick 減／跳；desktop 路徑不變。測試 `tests/bg-pause.test.mjs`＋既有 headless。未改平衡表。Box＝SwiftShader，**未**宣稱真機 mid-run WebGL 已修好。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -63,12 +64,12 @@
 ### Open gaps／仍未完成
 
 - `horn` 已做 **v0.9.7 bake quality pass**（甲片層次／材質／bake 燈光；仍 interim→improved，**非** Roy 最終驗收美術）。
-- **手機 mid-run WebGL context loss 仍會發生**（Roy 實機回報「繪圖暫時中斷」）；v0.9.5 overlay 已捕捉、v0.9.6 已再減壓，但 **Roy deferred 進一步 GPU cuts**——稍後另開任務，本 Phase 0 不處理。
+- **手機 mid-run WebGL context loss 仍可能發生**（Roy 實機曾回報「繪圖暫時中斷」）；v0.9.5 overlay、v0.9.6＋**v0.9.20** 再減壓＋commute bg auto-pause 已落地，但 **真機 mid-run 穩定性仍未驗收**（Box＝SwiftShader ≠ device）。
 - 槍層仍是 **N/E/S/W 四方向切圖**，不是平滑 360° 炮塔。
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ **AIM-HIT-FAST-002 precise intercept／relative sweep（v0.9.19）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：等 Kimi 審核 AIM-HIT-FAST-002 後按 `AGENT_TASK` queue 自動推進（手機穩定／horn 剪影方向／真機 hit／PERF）；Phase 4 Precision — **do not start** until pillars＋審核。文案直寫 GitHub。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → **HORN-SILHOUETTE-DIRECTION（要 Roy 肉眼；唔自動開做）** → 真機 hit／PERF；Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -446,10 +447,10 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.19（AIM-HIT-FAST-002；HEAD 以 `main`／live `?v=0.9.19` 為準）。** 整局對照見 `docs/AUDIT-v0.9.19.md`。
+**目前基準 v0.9.20（PHONE-STABLE-FOLLOWUP；HEAD 以 `main`／live `?v=0.9.20` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `AIM-HIT-FAST-002` **已由 Grok bot 實作並 headless／SwiftShader 驗證**（重大：碰撞／瞄準）→ `docs/AGENT_TASK.md` **HOLD 等 Kimi 審**。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.19。
-- 2026-10-26 whole-game audit：所列 headless＋`aim-hit-002-shots` 全 PASS；MD 與 code 大致一致。**唔**等於 Kimi 審核通過或 Roy 真機驗收。
-- 協作已改：**常規 queue 項審完後 Grok 自動推進**；唔使 Roy 每輪轉發 MD。審核／任務回覆請直接改 repo 文件並 push。
-- 審核通過後按 `AGENT_TASK` queue：手機穩定 follow-up → horn 剪影方向（要 Roy 肉眼）→ 真機 hit feel → PERF rebaseline → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地。
-- SwiftShader ≠ 真機；高速橫向仍待 Roy 實玩。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
+- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.20。
+- Roy 因 Kimi rate-limit 指示 continue past AIM-HIT HOLD；**下一項 HORN-SILHOUETTE-DIRECTION 要 Roy 剪影方向 — do not start**。
+- AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規／要眼睛嘅美術項排隊。
+- Queue：horn 剪影方向（Roy 肉眼）→ 真機 hit feel → PERF rebaseline → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地。
+- SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
