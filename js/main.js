@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.10 Phase 3 SWARM CORE boss beat
+// RAMPAGE MECH 暴走機甲 — v0.9.11 Phase 6 weapon pickup choice
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -421,12 +421,33 @@ function updateBossHp() {
   }
 }
 
-function showLevelCards(cards) {
+function resumeAfterCardPick() {
+  // applyCard may have opened a deferred level-up (XP banked during pickup pause).
+  if (S.game && S.game.pausedForLevel && S.game.pendingCards && S.game.pendingCards.length) {
+    showLevelCards(S.game.pendingCards, { from: S.game.pendingFrom || 'level' });
+    return;
+  }
+  ui.show(null);
+  S.state = 'play';
+  // Stick stays hidden until press — drag-anywhere reveals it under the finger.
+  const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
+  $('stick').classList.toggle('hidden', !touch);
+  $('stick').classList.remove('active', 'following');
+}
+
+function showLevelCards(cards, opts = {}) {
   if (!cards || !cards.length) {
     // Safety net: a level-up must never silently swallow the pick (v0.3.3 left the run running with no card).
     return;
   }
   S.state = 'level';
+  const from = opts.from || (S.game && S.game.pendingFrom) || 'level';
+  const title = $('level-title');
+  if (title) {
+    title.textContent = from === 'pickup'
+      ? t('pickup.title')
+      : t('levelUp');
+  }
   const box = $('level-cards');
   box.innerHTML = '';
   let prevTaken = S.game.taken || {};
@@ -439,7 +460,8 @@ function showLevelCards(cards) {
       : c.kind === 'weapon'
         ? (i18n.isZh() ? '武器' : 'WEAPON')
         : (i18n.isZh() ? '輔助' : 'UTIL');
-    const times = c.max != null ? `<em class="card-count">${prevTaken[c.id] || 0}/${c.max}</em>` : '';
+    const showCount = c.max != null && !String(c.id || '').startsWith('_pickup_');
+    const times = showCount ? `<em class="card-count">${prevTaken[c.id] || 0}/${c.max}</em>` : '';
     b.innerHTML =
       `<span class="card-icon" aria-hidden="true">${cardEmblem(c)}</span>` +
       `<span class="card-body"><b>${i18n.isZh() ? c.zh : c.en}</b>` +
@@ -448,18 +470,14 @@ function showLevelCards(cards) {
     b.addEventListener('click', () => {
       audio.pick();
       S.game.applyCard(c);
-      ui.show(null);
-      S.state = 'play';
-      // Stick stays hidden until press — drag-anywhere reveals it under the finger.
-      const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
-      $('stick').classList.toggle('hidden', !touch);
-      $('stick').classList.remove('active', 'following');
+      resumeAfterCardPick();
     });
     box.appendChild(b);
   });
   ui.show('level');
   audio.levelChime();
 }
+S.showLevelCards = showLevelCards;
 
 function startRun() {
   if (!isMechPlayable(S.mechId)) {
@@ -698,8 +716,7 @@ function tick(dt) {
       const c = S.game.pendingCards[0];
       audio.pick();
       S.game.applyCard(c);
-      ui.show(null);
-      S.state = 'play';
+      resumeAfterCardPick();
     }
   }
   if (S.state === 'menu') {
@@ -799,7 +816,7 @@ else if (ev.type === 'xp') {
       if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 50); }
     }
     else if (ev.type === 'dead') endRun(false);
-    else if (ev.type === 'levelup') showLevelCards(ev.cards);
+    else if (ev.type === 'levelup') showLevelCards(ev.cards, { from: ev.from || 'level' });
     else if (ev.type === 'nova') {
       audio.nova();
       view.pulseNova(ev.r);

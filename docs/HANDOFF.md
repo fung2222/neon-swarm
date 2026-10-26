@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.10 Phase 3 SWARM CORE boss（elite = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.11 Phase 6 weapon pickup choice（boss = v0.9.10；elite = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -16,7 +16,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.10`**（Phase 3 SWARM CORE boss）；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.11`**（Phase 6 weapon pickup choice）；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -25,6 +25,7 @@
   - v0.9.8 — Phase 2 floor readability：playable floor／grid／dust／edge decor ambient 減亮（不改 horn bake／平衡）。
   - v0.9.9 — Phase 3 lab slice：staffer／guard／drone 程序化剪影區分；SENTINEL PRIME 精英 telegraph→charge→recover；zh-HK 橫幅；實驗室邊緣色溫；截圖 `tests/screenshots/phase3-lab/`。
   - v0.9.10 — Phase 3 boss beat：洪流核心 SWARM CORE @t=360；Orbit／Volley／Frenzy HP 三分相位；volley lanes ≥0.8s telegraph；頂部細血條＋雙語橫幅；擊殺＝3 卡選擇＋分數加成 `5000×(1+t/60)`；截圖 `tests/screenshots/phase3-boss/`。
+  - v0.9.11 — Phase 6 weapon pickup：地面 `kind:'weapon'` crate 暫停並開 level-cards 風格選擇（未擁有＝獲得／保留；已擁有＝升級疊層／保留；滿級＝兌換修復／保留）；`weaponOffer` + `levelup from:'pickup'`；經同一 `taken`／`applyCard` 路徑；禁止靜靜覆蓋；截圖 `tests/screenshots/phase6-pickup/`。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -43,7 +44,7 @@
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss beat（v0.9.10）已落地；完整五區地圖、elite #2、武器拾取選擇器仍未完成。Boss 仍係 lab 地圖上的 landmark beat，唔係 endless 五區節奏。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss beat（v0.9.10）＋ Phase 6 武器拾取選擇（v0.9.11）已落地；完整五區地圖、elite #2 仍未完成。Boss 仍係 lab 地圖上的 landmark beat，唔係 endless 五區節奏。武器模型仍係 `taken` 疊層（無多槽庫存）。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -340,7 +341,9 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 6 — 武器、拾取、地圖分區與內容擴展
 
-- 武器拾取遇到已有裝備時，要提供替換／保留／槽位選擇；**不可靜靜覆蓋裝備**。
+> **部分完成（v0.9.11）：** 武器地面拾取選擇器 — 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。未做：多槽庫存、新武器數值大改、地圖分區、elite #2。
+
+- 武器拾取遇到已有裝備時，要提供替換／保留／槽位選擇；**不可靜靜覆蓋裝備**。（v0.9.11：以疊層升級／保留實作；現有架構無多槽。）
 - 新武器必須遵守 primary visual aim 與 per-fire-event aim 分工。
 - 新地圖可逐步加入 assembly、reactor、blockade、rooftop 等分區，但每區先有玩法或敵人組合理由。
 - 最後才大規模增加敵人包、掉落、boss beats、hub 素材與商業化接線。

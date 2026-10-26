@@ -390,6 +390,75 @@ export function pickCards(rng, n = 3, taken = null) {
   return out;
 }
 
+
+/**
+ * Phase 6 weapon-crate offer (v0.9.11).
+ * Always returns a pickable choice list — never silently mutates `taken`.
+ * Modes: take (not owned) | upgrade (owned, below max) | max (at cap).
+ * Architecture is stack counts in `taken` — no multi-slot inventory.
+ */
+export function buildWeaponPickupOffer(weaponId, taken = {}) {
+  const base = CARDS_BY_ID[weaponId];
+  if (!base || base.kind !== 'weapon') return null;
+  const stacks = (taken && taken[weaponId]) || 0;
+  const owned = stacks > 0;
+  const atMax = base.max != null && stacks >= base.max;
+  const mode = atMax ? 'max' : (owned ? 'upgrade' : 'take');
+  const choices = [];
+
+  if (!atMax) {
+    choices.push({
+      id: base.id,
+      kind: base.kind,
+      icon: base.icon,
+      shape: base.shape,
+      max: base.max,
+      apply: base.apply,
+      pickupAction: owned ? 'upgrade' : 'take',
+      zh: owned ? `${base.zh} · 升級疊層` : `${base.zh} · 獲得`,
+      en: owned ? `${base.en} · UPGRADE` : `${base.en} · TAKE`,
+      descZh: owned
+        ? `疊層 ${stacks}→${stacks + 1}${base.max != null ? `／${base.max}` : ''} · ${base.descZh}`
+        : `裝備此武器 · ${base.descZh}`,
+      descEn: owned
+        ? `Stack ${stacks}→${stacks + 1}${base.max != null ? `/${base.max}` : ''} · ${base.descEn}`
+        : `Equip · ${base.descEn}`,
+    });
+  } else {
+    // At max: optional consolation — small heal (cheap, no XP cascade into another pause).
+    choices.push({
+      id: '_pickup_heal',
+      kind: 'util',
+      icon: '♥',
+      shape: 'heart',
+      max: null,
+      pickupAction: 'convertHeal',
+      zh: '兌換修復',
+      en: 'CONVERT TO REPAIR',
+      descZh: `已滿級（${stacks}${base.max != null ? `／${base.max}` : ''}）· 回復 2 護盾`,
+      descEn: `At max (${stacks}${base.max != null ? `/${base.max}` : ''}) · restore 2 HP`,
+      apply: (s) => { s.hp = Math.min(s.maxHp, s.hp + 2); },
+    });
+  }
+
+  choices.push({
+    id: '_pickup_keep',
+    kind: 'util',
+    icon: '↩',
+    shape: 'deflect',
+    max: null,
+    pickupAction: 'keep',
+    zh: '保留現狀',
+    en: 'KEEP CURRENT',
+    descZh: atMax ? '已滿級 · 唔改裝備' : '唔攞呢件 · 繼續用現有裝備',
+    descEn: atMax ? 'At max · leave gear unchanged' : 'Decline · keep current gear',
+    apply: () => {},
+  });
+
+  return { weaponId, mode, stacks, owned, atMax, choices, base };
+}
+
+
 export { CARDS_BY_ID };
 
 /**

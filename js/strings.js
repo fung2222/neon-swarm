@@ -18,6 +18,8 @@ i18n.add({
   'hud.lv': ['等級', 'LV'],
   'hud.hp': ['護盾', 'HP'],
   levelUp: ['升級！揀一張', 'LEVEL UP — PICK ONE'],
+  'pickup.title': ['武器箱 · 揀一項', 'WEAPON CRATE — CHOOSE'],
+  'pickup.titleEn': ['WEAPON CRATE', 'WEAPON CRATE'],
   paused: ['已暫停', 'PAUSED'],
   pausedS: ['PAUSED', 'PAUSED'],
   resume: ['繼續', 'RESUME'],

@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, buildWeaponPickupOffer } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -184,11 +184,33 @@ export class Game {
   stopMove() { this.vx = 0; this.vz = 0; }
 
   applyCard(card) {
-    card.apply(this);
+    if (!card) return;
+    const action = card.pickupAction;
+    const synthetic = action === 'keep' || action === 'convertHeal';
+    if (action !== 'keep') card.apply(this);
     if (!this.taken) this.taken = {};
-    this.taken[card.id] = (this.taken[card.id] || 0) + 1;
+    // Real take/upgrade (and normal level-up cards) go through `taken` stacks.
+    // Synthetic keep / heal consolation must not pollute the card pool.
+    if (!synthetic) this.taken[card.id] = (this.taken[card.id] || 0) + 1;
     this.pendingCards = null;
     this.pausedForLevel = false;
+    this.pendingFrom = null;
+    // XP may have banked past threshold while a pickup offer was open — open level-up now.
+    if (this.xp >= this.xpNeed) this._levelUp();
+  }
+
+  /**
+   * Phase 6: pause and offer take / upgrade / keep (never silent overwrite).
+   * Returns offer meta or null if weapon id is unknown.
+   */
+  _offerWeaponPickup(weaponId) {
+    if (!this.taken) this.taken = {};
+    const offer = buildWeaponPickupOffer(weaponId, this.taken);
+    if (!offer) return null;
+    this.pendingCards = offer.choices;
+    this.pausedForLevel = true;
+    this.pendingFrom = 'pickup';
+    return offer;
   }
 
   _levelUp() {
@@ -1408,14 +1430,34 @@ export class Game {
           this.hp = Math.min(this.maxHp, this.hp + 2);
           events.push({ type: 'heal', amount: 2 });
         } else if (g.kind === 'weapon') {
+          // Already offering cards (level-up / elite / boss / prior pickup) — leave crate.
+          if (this.pausedForLevel) continue;
+          const offer = this._offerWeaponPickup(g.weapon);
           events.push({ type: 'weapon', id: g.weapon });
+          if (offer) {
+            events.push({
+              type: 'weaponOffer',
+              id: g.weapon,
+              mode: offer.mode,
+              stacks: offer.stacks,
+              cards: offer.choices,
+            });
+            events.push({
+              type: 'levelup',
+              cards: offer.choices,
+              from: 'pickup',
+              weaponId: g.weapon,
+              mode: offer.mode,
+            });
+          }
         } else {
           this.xp += g.xp;
         }
         this.score += 2;
         this.gems.splice(i, 1);
         if (g.kind === 'xp') events.push({ type: 'xp', x: this.px, z: this.pz });
-        if (this.xp >= this.xpNeed) {
+        // Do not open a level-up over an active pickup / elite / boss card offer.
+        if (this.xp >= this.xpNeed && !this.pausedForLevel) {
           this._levelUp();
           events.push({ type: 'levelup', cards: this.pendingCards });
         }
