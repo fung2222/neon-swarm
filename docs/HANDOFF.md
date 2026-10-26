@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.14 Phase 6 assembly bay map zone（elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.15 Phase 6 reactor map zone（assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -16,7 +16,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.14`**（assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.15`**（reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -29,6 +29,7 @@
   - v0.9.12 — aim/hit fast rushers：子彈掃掠碰撞（segment→circle）；MG／laser 等直射輕量 lead（clamp ~0.30s）；近距縮短 muzzle spawn；測試 `tests/aim-hit-fast.test.mjs`。未改 bulletDmg／HP 表。Box＝SwiftShader，非真機驗收。
   - v0.9.13 — Phase 3 elite #2：獵殺機甲 HUNTER RAID @t≈240；cyan/steel 四足／低剪影＋雙刃；walk→telegraph≥1.2s→charge→短 recover→第二段 telegraph≥1.2s→charge→recover；雙 warning lane；max one elite；擊殺同 elite#1（XP＋2 卡）；截圖 `tests/screenshots/phase3-elite2/`。Box＝SwiftShader，非真機驗收。
   - v0.9.14 — Phase 6 assembly bay map zone slice：`mapZone` lab→assembly @`MAP_ZONE.assemblyAt=195`（3:15，hunter@240 前）；組裝邊緣裝飾（半完成機甲骨架／龍門吊臂／零件托盤／警示條紋，非只 recolor）；暖琥珀 trim vs lab 冷 teal；可玩地板維持暗底；assembly `waveMix` 少 staffer、多 soldier／walker；`zoneEnter` 橫幅「進入 · 機甲組裝區」／ASSEMBLY BAY；測試 `tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-assembly/`。誠實標：同一 arena 換邊飾／色溫／mix，唔係無縫大地圖。未做：reactor／blockade／rooftop。Box＝SwiftShader，非真機驗收。
+  - v0.9.15 — Phase 6 reactor map zone slice：`mapZone` lab→assembly→reactor @`MAP_ZONE.reactorAt=285`（4:45，hunter@240 後、boss@360 前）；反應爐邊緣裝飾（冷卻塔／電漿管／能量柱／警示欄／輻射條紋，非只 recolor）；冷紫／電青 trim vs assembly 暖琥珀／lab 冷 teal；可玩地板維持暗底；reactor `waveMix` 多 drone／mech／officer、少 staffer／guard；`zoneEnter` 橫幅「進入 · 能源反應爐」／REACTOR；測試 `tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-reactor/`。誠實標：同一 arena 換邊飾／色溫／mix。未做：blockade／rooftop／endless elites。Box＝SwiftShader，非真機驗收。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -47,7 +48,7 @@
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）已落地；逃亡線其餘區（reactor／blockade／rooftop）、endless 90s elites 仍未完成。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）已落地；逃亡線其餘區（blockade／rooftop）、endless 90s elites 仍未完成。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -69,7 +70,7 @@
 地下軍工企業進行機甲人格同步實驗。主角在實驗中覺醒、逃離收容設施，企業先派研究員、保安、無人機與獵殺機甲追捕，之後升級至軍隊單位。美術與內容應服務這條「實驗體逃亡→企業追捕→軍事封鎖」線，而不是無關的怪獸大雜燴。
 
 **逃亡線分區（逐步）：** 收容實驗室 → 機甲組裝 → 能源反應爐 → 軍事封鎖 → 天台逃出。  
-目前實作：lab（v0.9.9）＋ **assembly bay 小片（v0.9.14，@195s）**；reactor／blockade／rooftop 未做。
+目前實作：lab（v0.9.9）＋ assembly bay（v0.9.14，@195s）＋ **reactor 小片（v0.9.15，@285s）**；blockade／rooftop 未做。
 
 ### 三部機體的長期定位
 
@@ -347,7 +348,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 6 — 武器、拾取、地圖分區與內容擴展
 
-> **部分完成（v0.9.11＋v0.9.14）：** 武器地面拾取選擇器（v0.9.11）— 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。**地圖分區小片（v0.9.14）** — `mapZone` lab→assembly @195s；組裝邊緣 props＋琥珀 trim；waveMix 微調；`zoneEnter` 橫幅；`tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-assembly/`。未做：多槽庫存、新武器數值大改、reactor／blockade／rooftop、endless elites。elite #2 已於 v0.9.13。
+> **部分完成（v0.9.11＋v0.9.14＋v0.9.15）：** 武器地面拾取選擇器（v0.9.11）— 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。**地圖分區小片（v0.9.14＋v0.9.15）** — `mapZone` lab→assembly @195s→reactor @285s；組裝／反應爐邊緣 props＋琥珀／紫青 trim；waveMix 微調；`zoneEnter` 橫幅；`tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-assembly/`、`phase6-reactor/`。未做：多槽庫存、新武器數值大改、blockade／rooftop、endless elites。elite #2 已於 v0.9.13。
 
 - 武器拾取遇到已有裝備時，要提供替換／保留／槽位選擇；**不可靜靜覆蓋裝備**。（v0.9.11：以疊層升級／保留實作；現有架構無多槽。）
 - 新武器必須遵守 primary visual aim 與 per-fire-event aim 分工。

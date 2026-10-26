@@ -98,4 +98,6 @@ i18n.add({
   // Phase 6 map zone banners (zh-HK first)
   'zone.assembly': ['進入 · 機甲組裝區', 'ENTER · ASSEMBLY BAY'],
   'zone.assemblyEn': ['ASSEMBLY BAY', 'ASSEMBLY BAY'],
+  'zone.reactor': ['進入 · 能源反應爐', 'ENTER · REACTOR'],
+  'zone.reactorEn': ['REACTOR', 'REACTOR'],
 });

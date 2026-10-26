@@ -389,18 +389,28 @@ export function swarmPressure(t) {
 }
 
 /**
- * Phase 6 map zones (v0.9.14) — same arena; edge décor + wave mix shift.
+ * Phase 6 map zones (v0.9.15) — same arena; edge décor + wave mix shift.
  * Escape path (HANDOFF): lab → assembly → reactor → blockade → rooftop.
- * Only lab + assembly are implemented. assemblyAt = 195s (3:15), after
- * sentinel@120 and before hunter@240 so the bay reads before elite #2.
+ * Implemented: lab + assembly + reactor.
+ * assemblyAt = 195s (3:15), after sentinel@120 and before hunter@240.
+ * reactorAt  = 285s (4:45), after hunter@240 and before boss@360.
  */
 export const MAP_ZONE = {
   assemblyAt: 195,
+  reactorAt: 285,
 };
 
-/** Weighted wave table. Optional zone overrides lab table (assembly: fewer staffers). */
+/** Weighted wave table. Optional zone overrides lab table. */
 export function waveMix(t, zone = null) {
-  const z = zone || (t >= MAP_ZONE.assemblyAt ? 'assembly' : 'lab');
+  const z = zone || (
+    t >= MAP_ZONE.reactorAt ? 'reactor'
+      : t >= MAP_ZONE.assemblyAt ? 'assembly'
+        : 'lab'
+  );
+  if (z === 'reactor') {
+    // Reactor: energy facility pressure — more drone/mech/officer, fewer staffer/guard.
+    return [['drone', 0.28], ['mech', 0.22], ['officer', 0.22], ['walker', 0.14], ['soldier', 0.1], ['chief', 0.04]];
+  }
   if (z === 'assembly') {
     // Assembly bay: industrial pressure — more soldier/walker, fewer panic staffers.
     return [['soldier', 0.32], ['walker', 0.28], ['officer', 0.18], ['drone', 0.12], ['chief', 0.06], ['staffer', 0.04]];

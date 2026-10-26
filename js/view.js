@@ -871,7 +871,7 @@ function dropMesh(d) {
 }
 // ---------------------------------------------------------------------------
 // Map props: low, readable, no tall buildings (never block the view).
-// Phase 6: lab (cool teal crates/fence) vs assembly (mech frames/gantry/pallets).
+// Phase 6: lab (cool teal) / assembly (warm amber frames) / reactor (violet-cyan energy).
 // Same arena size/floor; only edge décor + trim color temperature change.
 // ---------------------------------------------------------------------------
 const EDGE_SPOTS = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
@@ -1040,8 +1040,113 @@ function buildAssemblyEdgeDecor() {
   return group;
 }
 
+
+/**
+ * Reactor edge décor — distinct shapes (not a recolor of lab/assembly):
+ * cooling towers, plasma pipes, energy pillars, hazard rails, radiation stripes.
+ * Trim: cool violet / electric-cyan (contrast assembly amber + lab teal).
+ * Hull stays graphite — never red mech hulls. Danger telegraph colors stay free.
+ */
+function buildReactorEdgeDecor() {
+  const group = new THREE.Group();
+  group.name = 'edgeDecor';
+  const steel = new THREE.MeshStandardMaterial({ color: 0x1e2430, emissive: 0x141820, emissiveIntensity: 0.14, roughness: 0.58, metalness: 0.5 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x12161e, emissive: 0x0c1018, emissiveIntensity: 0.1, roughness: 0.72, metalness: 0.38 });
+  const violet = mat(0x7a3cff, 0.3);       // cool violet trim
+  const cyan = mat(0x28e8ff, 0.32);        // electric-cyan energy
+  const stripeA = mat(0x6a38e0, 0.22);
+  const stripeB = new THREE.MeshStandardMaterial({ color: 0x10141c, emissive: 0x080a10, emissiveIntensity: 0.06, roughness: 0.82, metalness: 0.2 });
+
+  let i = 0;
+  for (const [zx, zz] of EDGE_SPOTS) {
+    const kind = i % 4;
+    if (kind === 0) {
+      // Cooling tower: tapered cylinder + rim ring + cyan vent glow
+      const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.85, 1.35, 10), dark);
+      tower.position.set(zx, 0.68, zz);
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.08, 10), steel);
+      rim.position.set(zx, 1.38, zz);
+      const vent = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 8), cyan);
+      vent.position.set(zx, 1.44, zz);
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.1, 10), steel);
+      base.position.set(zx, 0.05, zz);
+      const trim = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 0.06), violet);
+      trim.position.set(zx + 0.7, 0.55, zz);
+      group.add(tower, rim, vent, base, trim);
+    } else if (kind === 1) {
+      // Plasma pipes: bent conduit runs with cyan joints
+      for (let k = 0; k < 3; k++) {
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.1, 8), steel);
+        pipe.rotation.z = Math.PI / 2;
+        pipe.position.set(zx + (k - 1) * 0.05, 0.35 + k * 0.28, zz + k * 0.15);
+        group.add(pipe);
+        const joint = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), cyan);
+        joint.position.set(zx + 0.55, 0.35 + k * 0.28, zz + k * 0.15);
+        group.add(joint);
+      }
+      const riser = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), dark);
+      riser.position.set(zx - 0.55, 0.5, zz);
+      const cap = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.22), violet);
+      cap.position.set(zx - 0.55, 0.96, zz);
+      group.add(riser, cap);
+    } else if (kind === 2) {
+      // Energy pillar: tall thin column + violet tip + cyan rings
+      const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 1.7, 8), steel);
+      pillar.position.set(zx, 0.85, zz);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.35, 8), violet);
+      tip.position.set(zx, 1.85, zz);
+      for (let k = 0; k < 3; k++) {
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.03, 6, 12), cyan);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.set(zx, 0.4 + k * 0.4, zz);
+        group.add(ring);
+      }
+      const plinth = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.12, 0.55), dark);
+      plinth.position.set(zx, 0.06, zz);
+      group.add(pillar, tip, plinth);
+    } else {
+      // Hazard rail + radiation stripe chevrons (violet/dark — décor, not danger telegraph)
+      const railPostL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.08), steel);
+      railPostL.position.set(zx - 0.85, 0.28, zz);
+      const railPostR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.08), steel);
+      railPostR.position.set(zx + 0.85, 0.28, zz);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.05, 0.06), violet);
+      rail.position.set(zx, 0.55, zz);
+      group.add(railPostL, railPostR, rail);
+      for (let k = 0; k < 5; k++) {
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.03, 0.18), k % 2 ? stripeA : stripeB);
+        s.position.set(zx - 0.7 + k * 0.35, 0.03, zz + 0.35);
+        s.rotation.y = 0.4;
+        group.add(s);
+      }
+      // low containment block
+      const block = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 0.4), dark);
+      block.position.set(zx, 0.22, zz - 0.35);
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.04, 0.42), cyan);
+      strip.position.set(zx, 0.44, zz - 0.35);
+      group.add(block, strip);
+    }
+    i++;
+  }
+
+  // Perimeter violet-cyan panel strips
+  for (let k = 0; k < 6; k++) {
+    const ang = (k / 6) * Math.PI * 2;
+    const r = ARENA.soft - 1.2;
+    const px = Math.cos(ang) * r;
+    const pz = Math.sin(ang) * r;
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.35), k % 2 ? violet : cyan);
+    panel.position.set(px, 0.12, pz);
+    panel.rotation.y = -ang + Math.PI / 2;
+    group.add(panel);
+  }
+  return group;
+}
+
 function buildEdgeDecor(zone) {
-  return zone === 'assembly' ? buildAssemblyEdgeDecor() : buildLabEdgeDecor();
+  if (zone === 'reactor') return buildReactorEdgeDecor();
+  if (zone === 'assembly') return buildAssemblyEdgeDecor();
+  return buildLabEdgeDecor();
 }
 
 export class View {
@@ -1066,7 +1171,7 @@ export class View {
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
 
-    // Soft playable ring + outer hard edge (lab = cool teal; assembly swaps amber)
+    // Soft playable ring + outer hard edge (lab teal / assembly amber / reactor violet)
     this.softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
       new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.055, side: THREE.DoubleSide })
@@ -1437,11 +1542,13 @@ export class View {
   _setEmissive(mats, flash) { for (const m of mats) m.emissiveIntensity = flash; }
 
   /**
-   * Swap edge décor when mapZone changes (lab ↔ assembly).
+   * Swap edge décor when mapZone changes (lab ↔ assembly ↔ reactor).
    * Floor / arena size unchanged; only edge props + quiet ring tint.
    */
   setMapZone(zone) {
-    const z = zone === 'assembly' ? 'assembly' : 'lab';
+    const z = zone === 'reactor' ? 'reactor'
+      : zone === 'assembly' ? 'assembly'
+        : 'lab';
     if (this.mapZone === z && this.edgeDecor) return;
     this.mapZone = z;
     if (this.edgeDecor) {
@@ -1451,9 +1558,13 @@ export class View {
     }
     this.edgeDecor = buildEdgeDecor(z);
     this.group.add(this.edgeDecor);
-    // Quiet ring tint: teal (lab) vs warm amber (assembly). Low opacity — no danger steal.
-    const soft = z === 'assembly' ? 0xb86a28 : 0x1a6a78;
-    const hard = z === 'assembly' ? 0x8a6040 : 0x3a6068;
+    // Quiet ring tint: teal (lab) / amber (assembly) / violet (reactor). Low opacity — no danger steal.
+    const soft = z === 'reactor' ? 0x6a38c8
+      : z === 'assembly' ? 0xb86a28
+        : 0x1a6a78;
+    const hard = z === 'reactor' ? 0x3a5080
+      : z === 'assembly' ? 0x8a6040
+        : 0x3a6068;
     if (this.softRing && this.softRing.material) this.softRing.material.color.setHex(soft);
     if (this.hardRing && this.hardRing.material) this.hardRing.material.color.setHex(hard);
     if (this.padRing && this.padRing.material) this.padRing.material.color.setHex(soft);

@@ -228,7 +228,7 @@ export class Game {
     // Phase 3 elite / boss beats
     this._beatsFired = Object.create(null);
     this._spawnPauseUntil = 0;
-    // Phase 6 map zone (lab → assembly @ MAP_ZONE.assemblyAt)
+    // Phase 6 map zone (lab → assembly @195 → reactor @285)
     this.mapZone = 'lab';
     this.bossHazards = []; // volley bullets + orbit floor telegraphs
     for (let i = 0; i < 10; i++) this._spawn();
@@ -1379,10 +1379,14 @@ export class Game {
     if (!this.alive || this.pausedForLevel) return { events: [] };
     const events = [];
     this.t += dt;
-    // Phase 6: lab → assembly time gate (before hunter@240)
+    // Phase 6: lab → assembly @195 (before hunter@240) → reactor @285 (before boss@360)
     if (this.mapZone === 'lab' && this.t >= MAP_ZONE.assemblyAt) {
       this.mapZone = 'assembly';
       events.push({ type: 'zoneEnter', zone: 'assembly', at: MAP_ZONE.assemblyAt });
+    }
+    if (this.mapZone === 'assembly' && this.t >= MAP_ZONE.reactorAt) {
+      this.mapZone = 'reactor';
+      events.push({ type: 'zoneEnter', zone: 'reactor', at: MAP_ZONE.reactorAt });
     }
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
