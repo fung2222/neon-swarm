@@ -1,0 +1,41 @@
+{
+  "runIndex": 2,
+  "summary": {
+    "frames": 3587,
+    "avgFps": 59.778650672364016,
+    "avgFrameMs": 16.728380262057424,
+    "p95FrameMs": 16.80000000000291,
+    "p99FrameMs": 16.89999999999418,
+    "worstFrameMs": 66.69999999998254,
+    "over33_3": 7,
+    "over50": 1
+  },
+  "enemyStats": {
+    "enemyMin": 200,
+    "enemyMax": 201,
+    "samples": 1431
+  },
+  "enemyCountEnd": 201,
+  "ctrl": {
+    "invulnerability": true,
+    "levelUpSuppressed": true,
+    "enemyHpInflated": true,
+    "weaponsActive": true,
+    "targetEnemies": 200,
+    "seedUsed": 200001,
+    "reseeded": true,
+    "enemyMix": {
+      "soldier": 80,
+      "drone": 60,
+      "staffer": 40,
+      "walker": 20
+    },
+    "mech": "horn",
+    "note": "Test-only runtime injection. Formal js/*.js untouched."
+  },
+  "dpr": 1,
+  "inner": {
+    "w": 1280,
+    "h": 800
+  }
+}

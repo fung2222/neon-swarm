@@ -9,3 +9,11 @@ shots/
 
 # bake stub manifests
 tools/.cache/
+
+# perf harness local dumps (keep small JSON if committed; skip CSV/PNG)
+tests/performance-results/*.csv
+tests/performance-results/*.png
+
+# accidental local menu screenshots
+tests/screenshots/menu-desktop-*.png
+tests/screenshots/menu-mobile-*.png

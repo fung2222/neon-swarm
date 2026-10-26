@@ -1,0 +1,134 @@
+{
+  "taskId": "PERF-REBASELINE (v0.9.20)",
+  "result": "completed",
+  "startedAt": "2026-10-26T12:28:11.536Z",
+  "finishedAt": "2026-10-26T12:31:50.220Z",
+  "chromePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "gameUrl": "https://fung2222.github.io/neon-swarm/?v=0.9.20&lang=en&fps=1&mute=1",
+  "viewport": {
+    "width": 1280,
+    "height": 800,
+    "deviceScaleFactor": 1
+  },
+  "webgl": {
+    "ok": true,
+    "vendor": "Google Inc. (NVIDIA)",
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 Ti (0x00001B82) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "gameVendor": "Google Inc. (NVIDIA)",
+    "gameRenderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 Ti (0x00001B82) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "maxTextureSize": 16384,
+    "dpr": 1,
+    "inner": {
+      "w": 1280,
+      "h": 800
+    }
+  },
+  "harnessControls": {
+    "invulnerability": true,
+    "levelUpSuppressed": true,
+    "enemyHpInflated": true,
+    "weaponsActive": true,
+    "targetEnemies": 200,
+    "seedUsed": 200001,
+    "reseeded": true,
+    "enemyMix": {
+      "soldier": 80,
+      "drone": 60,
+      "staffer": 40,
+      "walker": 20
+    },
+    "mech": "horn",
+    "note": "Test-only runtime injection. Formal js/*.js untouched."
+  },
+  "setupEnemyCount": 200,
+  "warmupMs": 10000,
+  "captureMs": 60000,
+  "runCount": 3,
+  "runs": [
+    {
+      "runIndex": 1,
+      "summary": {
+        "frames": 3600,
+        "avgFps": 59.99510040013399,
+        "avgFrameMs": 16.668027777777777,
+        "p95FrameMs": 16.80000000000291,
+        "p99FrameMs": 16.80000000000291,
+        "worstFrameMs": 16.90000000000873,
+        "over33_3": 0,
+        "over50": 0
+      },
+      "enemyMin": 200,
+      "enemyMax": 200,
+      "enemyCountEnd": 200
+    },
+    {
+      "runIndex": 2,
+      "summary": {
+        "frames": 3587,
+        "avgFps": 59.778650672364016,
+        "avgFrameMs": 16.728380262057424,
+        "p95FrameMs": 16.80000000000291,
+        "p99FrameMs": 16.89999999999418,
+        "worstFrameMs": 66.69999999998254,
+        "over33_3": 7,
+        "over50": 1
+      },
+      "enemyMin": 200,
+      "enemyMax": 201,
+      "enemyCountEnd": 201
+    },
+    {
+      "runIndex": 3,
+      "summary": {
+        "frames": 3494,
+        "avgFps": 58.23168343563598,
+        "avgFrameMs": 17.172781911848887,
+        "p95FrameMs": 18,
+        "p99FrameMs": 18.20000000001164,
+        "worstFrameMs": 66.70000000001164,
+        "over33_3": 8,
+        "over50": 4
+      },
+      "enemyMin": 200,
+      "enemyMax": 201,
+      "enemyCountEnd": 201
+    }
+  ],
+  "inputObservation": {
+    "before": {
+      "px": 0,
+      "pz": 0,
+      "state": "play"
+    },
+    "mid": {
+      "px": 3.0742461596641237,
+      "pz": 1.024748769889492,
+      "stick": {
+        "active": true,
+        "dx": 0.9486832980505138,
+        "dy": 0.3162277660168379
+      }
+    },
+    "after": {
+      "px": 3.0742461596641237,
+      "pz": 1.024748769889492,
+      "stickActive": false
+    },
+    "displacement": {
+      "dx": 3.0742461596641237,
+      "dz": 1.024748769889492,
+      "dist": 3.2405399999999447
+    },
+    "reactive": true,
+    "qualitative": "Player position moved during pointer drag; stick responded in real time."
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "screenshot": "C:\\Users\\fung2\\perf-neon\\results-v0920\\stress-200-enemies.png",
+  "reproduce": [
+    "CHROME_PATH=\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" node tests/performance-200-enemies.mjs",
+    "GAME_URL=https://fung2222.github.io/neon-swarm/?v=0.9.20&lang=en&fps=1&mute=1",
+    "Requires hardware GPU Chrome (not SwiftShader).",
+    "Test-only injection: invuln + level-up suppress + HP inflate + maintain 200 enemies."
+  ]
+}

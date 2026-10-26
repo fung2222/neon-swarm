@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-26T12:28:11.536Z",
+  "webgl": {
+    "ok": true,
+    "vendor": "Google Inc. (NVIDIA)",
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 Ti (0x00001B82) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "gameVendor": "Google Inc. (NVIDIA)",
+    "gameRenderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 Ti (0x00001B82) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "maxTextureSize": 16384,
+    "dpr": 1,
+    "inner": {
+      "w": 1280,
+      "h": 800
+    }
+  },
+  "software": false,
+  "chrome": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "url": "https://fung2222.github.io/neon-swarm/?v=0.9.20&lang=en&fps=1&mute=1"
+}

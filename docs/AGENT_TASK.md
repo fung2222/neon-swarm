@@ -28,30 +28,34 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHONE-STABLE-FOLLOWUP → **completed**（v0.9.20）
+## 狀態：PERF-REBASELINE → **completed**（desktop v0.9.20；唔當玩法完成）
 
-**ROY continue（2026-10-26）：** Kimi rate-limited → advance past AIM-HIT HOLD；**只做**本項，**唔**開 horn。
+**ROY continue（2026-10-26）：** phone GPU／WebGL mid-run **deferred**；**Skip** HORN（needs eyes）；**Skip** HIT-FEEL（needs play）。本輪只做桌面 rebaseline。
 
 ### Completed this turn
 
-**Task ID：** `PHONE-STABLE-FOLLOWUP` → **v0.9.20**（cache-bust `?v=0.9.20`）
+**Task ID：** `PERF-REBASELINE` — live **`?v=0.9.20`** on Roy desktop **GTX 1070 Ti** / Chrome 155 / 1280×800.
 
-- **A）** `visibilitychange` / `pagehide` → 活躍 `play` 時走同一 `pauseRun()`（等同 Esc／btn-pause）；**唔** auto-resume on visible。助手：`js/bg-pause.js`＋`tests/bg-pause.test.mjs`。
-- **B）** 更強 `MOBILE_GFX` 減壓（desktop 不變）：`PARTICLE_POOL` 1200→800；永久較低 bloom；kickFx bloomDamp cap 0.25→0.18；跳過 muzzle 次要 burst、heal／wave／puddle／nova／explode rings（mobile）、elite inbound bloom kick；eliteCharge／bossVolley 無 bloomDamp。`webglcontextlost` 路徑保留「繪圖暫時中斷」＋ reload。
-- **未改：** bulletDmg／HP／平衡表；AIM-HIT-FAST-002；Phase 4；horn lock；PERF「已驗收」。
-- **誠實標：** Box＝SwiftShader ≠ 真機；**未**宣稱 mid-run WebGL 已在裝置修好。
+- 3×（10s warmup + 60s capture）：avg FPS **~58.2–60.0**；WebGL `ANGLE (NVIDIA GeForce GTX 1070 Ti … D3D11)`；page/console errors none。
+- Docs：`docs/PERF-BASELINE.md` rewritten；harness tracked＋default URL `?v=0.9.20`；small `tests/performance-results/*.json` summary only（no multi-MB dumps）。
+- Headless smoke：`logic`＋`aim-hit-fast`＋`bg-pause` **PASS**；**no** gameplay code edits。
+- **誠實標：** 桌面 rebaseline only；**not** phone-verified；**not** playability／HIT-FEEL／horn lock。
 
-**先前完成（do not re-implement）：** `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`（仍待 Kimi 獨立審，但不阻擋本常規穩定項）。
+### Queue（**do not start without Roy**）
 
-**Do NOT start：** Phase 4 Precision／Morph、horn 最終 art lock、§9 系列規則落地、PERF rebaseline 當「已驗收」。
+1. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。**← recommended next (needs Roy play)**
+2. **HORN-SILHOUETTE-DIRECTION**（重大／要 Roy 肉眼）— 塊狀造型唔入 lock。
+3. **CONTENT** light only if safe — **no** Phase 4 Precision／Morph bulk。
+4. Phone GPU／WebGL mid-run — **deferred by Roy**。
+5. （背景）AIM-HIT-FAST-002 Kimi 獨立審。
 
-### Queue（下一項 — **stop after PHONE-STABLE；唔自動開做**）
+**Do NOT start：** Phase 4／horn art lock／§9 落地／phone GPU 深入／claim PERF＝玩法完成。
 
-1. **HORN-SILHOUETTE-DIRECTION**（重大／要 Roy 肉眼）— 塊狀造型唔入 lock；等 Roy 剪影方向＋視覺 OK 先 polish。**← recommended next；needs Roy eyes — do not start**
-2. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。
-3. **PERF-REBASELINE**（常規量測）— 桌面／（有機則）手機 rebaseline；唔當玩法完成。
-4. **CONTENT-AFTER-PILLARS** — 先命中＋穩定＋主角好看，再 Phase 4／新地圖／新武器 bulk。
-5. （背景）AIM-HIT-FAST-002 Kimi 獨立審 — 有空再補；唔阻擋常規 queue。
+### Recently completed（do not re-implement）
+
+- `PERF-REBASELINE` → desktop v0.9.20 GTX 1070 Ti（本輪）。
+- `PHONE-STABLE-FOLLOWUP` → **v0.9.20**。
+- `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`。
 
 ---
 
