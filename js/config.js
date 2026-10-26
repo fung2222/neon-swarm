@@ -330,6 +330,21 @@ export const ZONE_PRESSURE = {
 };
 
 /**
+ * Kill score bonuses for positioning + clear efficiency (PHASE6-SCORE-POSITION-001).
+ * Additive only — base e.score + floor(t) path unchanged. No mid-run toast.
+ */
+export const SCORE_POS = {
+  moveWindowSec: 0.5,
+  moveBonus: 2,
+  safeBonus: 3,
+  paceWindowSec: 2.5,
+  paceMinKills: 4,
+  paceBonus: 1,
+  /** Hard cap: max paceBonus points awarded from one kill (prevents runaway). */
+  paceCapPerKill: 1,
+};
+
+/**
  * Elite defaults (SENTINEL) + per-type overrides (BEATS-PLAN elite #2 = more segments).
  * Use eliteCfg(type) so _spawnElite / _tickElite stay shared.
  */

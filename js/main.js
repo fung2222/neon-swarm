@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.39 result share; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.44 score positioning; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1012,6 +1012,24 @@ function endRun(trial = false) {
   if ($('over-best-time')) $('over-best-time').textContent = fmtTime(store.getNum('bestTime', 0));
   $('over-kills').textContent = String(g.kills);
   if ($('over-goals')) $('over-goals').textContent = String(g.goalsCleared || 0);
+  // v0.9.44: positioning score breakdown (over only — no mid-run toast)
+  {
+    const el = $('over-pos');
+    if (el) {
+      const sm = g.scoreMove | 0;
+      const ss = g.scoreSafe | 0;
+      const sp = g.scorePace | 0;
+      if (sm + ss + sp > 0) {
+        el.classList.remove('hidden');
+        el.textContent = i18n.isZh()
+          ? `走位 +${sm} · 安全區 +${ss} · 清場 +${sp}`
+          : `Move +${sm} · Safe +${ss} · Pace +${sp}`;
+      } else {
+        el.classList.add('hidden');
+        el.textContent = '';
+      }
+    }
+  }
   $('over-record').classList.toggle('hidden', !S.newRecord);
   const who = g.killer ? (i18n.isZh() ? g.killer.zh : g.killer.en) : null;
   $('over-note').textContent = trial

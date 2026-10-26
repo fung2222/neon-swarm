@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, DANGER_PULSE, ZONE_PRESSURE, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -339,6 +339,12 @@ export class Game {
     this.safeR = ZONE_PRESSURE.startR != null ? ZONE_PRESSURE.startR : 30;
     this._zonePressureTickAcc = 0;
     this._zonePressureStarted = false;
+    // Phase 6 score positioning (v0.9.44) — move / safe-zone / pace bonuses
+    this.scoreMove = 0;
+    this.scoreSafe = 0;
+    this.scorePace = 0;
+    this._lastMovedAt = -999;
+    this._recentKillTs = [];
     for (let i = 0; i < 10; i++) this._spawn();
   }
 
@@ -1740,6 +1746,54 @@ export class Game {
     return owned[Math.floor(this.rng() * owned.length)];
   }
 
+
+  /**
+   * Additive positioning / clear-efficiency bonuses (SCORE_POS).
+   * Base score path above is unchanged. Totals feed over-screen only — no mid-run toast.
+   */
+  _awardScorePos(_e) {
+    const cfg = typeof SCORE_POS !== 'undefined' && SCORE_POS ? SCORE_POS : null;
+    if (!cfg) return;
+    const moveWin = cfg.moveWindowSec != null ? cfg.moveWindowSec : 0.5;
+    const moveBonus = Math.max(0, cfg.moveBonus | 0);
+    const safeBonus = Math.max(0, cfg.safeBonus | 0);
+    const paceWin = cfg.paceWindowSec != null ? cfg.paceWindowSec : 2.5;
+    const paceMin = Math.max(1, cfg.paceMinKills | 0);
+    const paceBonus = Math.max(0, cfg.paceBonus | 0);
+    const paceCap = Math.max(0, cfg.paceCapPerKill != null ? (cfg.paceCapPerKill | 0) : paceBonus);
+
+    // 1) Move: killed while recently moving
+    if (moveBonus > 0 && (this.t - (this._lastMovedAt || -999)) <= moveWin) {
+      this.score += moveBonus;
+      this.scoreMove = (this.scoreMove || 0) + moveBonus;
+    }
+
+    // 2) Safe-zone: pressure active and player inside safeR
+    if (safeBonus > 0 && this.zonePressureActive) {
+      const dist = Math.hypot(this.px || 0, this.pz || 0);
+      const r = this.safeR != null ? this.safeR : 0;
+      if (dist <= r) {
+        this.score += safeBonus;
+        this.scoreSafe = (this.scoreSafe || 0) + safeBonus;
+      }
+    }
+
+    // 3) Pace: ≥N kills in rolling window → small flat (hard-capped per kill)
+    if (paceBonus > 0 && paceWin > 0) {
+      if (!this._recentKillTs) this._recentKillTs = [];
+      this._recentKillTs.push(this.t);
+      const cutoff = this.t - paceWin;
+      while (this._recentKillTs.length && this._recentKillTs[0] < cutoff) this._recentKillTs.shift();
+      if (this._recentKillTs.length >= paceMin) {
+        const add = Math.min(paceBonus, paceCap);
+        if (add > 0) {
+          this.score += add;
+          this.scorePace = (this.scorePace || 0) + add;
+        }
+      }
+    }
+  }
+
   _kill(e, i, events) {
     this.enemies.splice(i, 1);
     this.kills++;
@@ -1749,6 +1803,7 @@ export class Game {
       this.goalKills += 40 + this.goalsCleared * 10;
     }
     this.score += e.score + Math.floor(this.t);
+    this._awardScorePos(e);
     this._dropGem(e);
     if ((e.kind === 'chief' || e.kind === 'mech' || e.elite || e.boss) && this.rng() < ((e.elite || e.boss) ? 1 : 0.35)) {
       const w = this.weaponIcon();
@@ -2829,6 +2884,8 @@ export class Game {
     this.pz += this.vz * this.speed * dt;
     const clamped = this._softClamp(this.px, this.pz, PLAYER.radius);
     this.px = clamped.x; this.pz = clamped.z;
+    // Score-pos: mark recent movement (stick input / non-trivial velocity)
+    if (Math.hypot(this.vx || 0, this.vz || 0) > 0.12) this._lastMovedAt = this.t;
 
     this._tickWeapons(dt, events);
 

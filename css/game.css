@@ -1057,3 +1057,14 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 520px) {
   #screen-over .over-share { min-height: 44px; }
 }
+
+/* v0.9.44 score-position breakdown on over screen (no mid-run toast) */
+#screen-over .over-pos {
+  margin: 2px 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #9ad4c8;
+  text-shadow: 0 0 8px rgba(0, 229, 180, 0.25);
+  font-variant-numeric: tabular-nums;
+}
+#screen-over .over-pos.hidden { display: none; }
