@@ -9,7 +9,7 @@
 
 ### Complete — PHASE6-ZONE-PRESSURE-001
 
-**PHASE6-ZONE-PRESSURE-001** → live cache-bust **`?v=0.9.42`**（code `PENDING`）.
+**PHASE6-ZONE-PRESSURE-001** → live cache-bust **`?v=0.9.42`**（code `ddf39c4`）.
 
 - `ZONE_PRESSURE` shrinking／pollution safe zone：after `startAfter`(~110s) `safeR` lerps `startR`(~30／ARENA.soft)→`endR`(~16) over `shrinkSec`(~200s)
 - Outside safeR：pollution DoT on `tickSec`(~0.5)；respect invuln；skip pause／levelup／offer／over／menu
@@ -25,7 +25,7 @@
 
 ### Recently completed
 
-- `PHASE6-ZONE-PRESSURE-001` → **v0.9.42** (`PENDING`)
+- `PHASE6-ZONE-PRESSURE-001` → **v0.9.42** (`ddf39c4`)
 - `PHASE6-PERIODIC-DANGER-001` → **v0.9.41** (`3040b5e`)
 - `PHASE3-ENEMY-BOMBER-001` → **v0.9.40** (`2ab9dbb`)
 

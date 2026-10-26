@@ -468,7 +468,7 @@ Rollback baseline:
 
 **目前基準 v0.9.42（PHASE6-ZONE-PRESSURE-001；HEAD 以 `main`／live `?v=0.9.42` 為準）。** Roy continue（「暫時都ok繼續去」）still on — safe content only。**Soft-juice usability queue DONE** — do not invent more toast／streak／coach polish。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-ZONE-PRESSURE-001` **已完成**（v0.9.42 / `PENDING`）：shrinking／pollution safe zone；cyan／acid edge；截圖 `tests/screenshots/phase6-zone-pressure/`。
+- `PHASE6-ZONE-PRESSURE-001` **已完成**（v0.9.42 / `ddf39c4`）：shrinking／pollution safe zone；cyan／acid edge；截圖 `tests/screenshots/phase6-zone-pressure/`。
 - `PHASE6-PERIODIC-DANGER-001` **已完成**（v0.9.41 / `3040b5e`）：periodic arena red danger circles telegraph≥0.9s＋AoE；截圖 `tests/screenshots/phase6-danger-pulse/`。
 - `PHASE3-ENEMY-BOMBER-001` **已完成**（v0.9.40 / `2ab9dbb`）：suicide bomber red self-circle telegraph≥0.9s＋AoE detonate；截圖 `tests/screenshots/phase3-bomber/`。
 - `PHASE6-RESULT-SHARE-001` **已完成**（v0.9.39 / `87eb03a`）：over-screen copy／share run；soft-juice queue **done**。
@@ -499,7 +499,7 @@ Rollback baseline:
 
 ## 版本歷史（增量）
 
-- **v0.9.42** / `PENDING` (`PHASE6-ZONE-PRESSURE-001`) — Shrinking/pollution safe zone after ~110s; safeR lerps ~30→~16 over ~200s; outside tick DoT; cyan/acid edge ring; event `zonePressure start`; exposes safeR/zonePressureActive; no new toast; ARENA/weapons/danger-pulse/bomber/artillery unchanged. Screenshots `tests/screenshots/phase6-zone-pressure/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
+- **v0.9.42** / `ddf39c4` (`PHASE6-ZONE-PRESSURE-001`) — Shrinking/pollution safe zone after ~110s; safeR lerps ~30→~16 over ~200s; outside tick DoT; cyan/acid edge ring; event `zonePressure start`; exposes safeR/zonePressureActive; no new toast; ARENA/weapons/danger-pulse/bomber/artillery unchanged. Screenshots `tests/screenshots/phase6-zone-pressure/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
 - **v0.9.41** / `3040b5e` (`PHASE6-PERIODIC-DANGER-001`) — Periodic arena red danger circles after ~80s every ~20s; telegraph≥0.9s then AoE; events `telegraph kind:dangerPulse` + `dangerPulse`; max 2 concurrent; skip pause/levelup; no new toast. Screenshots `tests/screenshots/phase6-danger-pulse/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
 - **v0.9.40** / `2ab9dbb` (`PHASE3-ENEMY-BOMBER-001`) — Suicide bomber ordinary enemy: chase → red self ground-circle telegraph≥0.9s → AoE detonate; events `telegraph kind:bomber` + `bomberDetonate`; no mid-kill explode; waveMix light mid-late/zones, no early lab. Screenshots `tests/screenshots/phase3-bomber/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
 - **v0.9.39** / `87eb03a` (`PHASE6-RESULT-SHARE-001`) — Over-screen 複製戰績／SHARE RUN (clipboard or navigator.share); zh-HK run line + live URL; confirm toast; no SDK. Soft-juice queue **done**. Screenshots `tests/screenshots/phase6-result-share/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
