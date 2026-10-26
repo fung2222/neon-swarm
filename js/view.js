@@ -871,7 +871,7 @@ function dropMesh(d) {
 }
 // ---------------------------------------------------------------------------
 // Map props: low, readable, no tall buildings (never block the view).
-// Phase 6: lab teal / assembly amber / reactor violet-cyan / blockade steel-olive.
+// Phase 6: lab teal / assembly amber / reactor violet-cyan / blockade steel-olive / rooftop night-blue.
 // Same arena size/floor; only edge décor + trim color temperature change.
 // ---------------------------------------------------------------------------
 const EDGE_SPOTS = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
@@ -1244,7 +1244,112 @@ function buildBlockadeEdgeDecor() {
   return group;
 }
 
+
+/**
+ * Rooftop edge décor — distinct night-escape shapes (not a recolor of prior zones):
+ * antennas, vents, helipad silhouette, low rails, distant city light dots.
+ * Trim: night-blue / cold-white (contrast blockade olive, reactor violet, assembly amber, lab teal).
+ * Keep props low — never block the top-down view. No red mech hulls.
+ */
+function buildRooftopEdgeDecor() {
+  const group = new THREE.Group();
+  group.name = 'edgeDecor';
+  const asphalt = new THREE.MeshStandardMaterial({ color: 0x1a1e28, emissive: 0x0c1018, emissiveIntensity: 0.1, roughness: 0.88, metalness: 0.15 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0x2a3240, emissive: 0x141820, emissiveIntensity: 0.12, roughness: 0.55, metalness: 0.5 });
+  const nightBlue = mat(0x3a6ad8, 0.26);   // night-blue trim
+  const coldWhite = mat(0xc8d8f0, 0.28);   // cold-white accent
+  const cityDot = mat(0xa8c0ff, 0.4);
+
+  let i = 0;
+  for (const [zx, zz] of EDGE_SPOTS) {
+    const kind = i % 4;
+    if (kind === 0) {
+      // Antenna mast (low): base + thin mast + dish stub — keep under ~1.4 tall
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.35, 0.18, 8), asphalt);
+      base.position.set(zx, 0.09, zz);
+      const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.15, 6), steel);
+      mast.position.set(zx, 0.7, zz);
+      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 6), coldWhite);
+      tip.position.set(zx, 1.3, zz);
+      const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.04, 10), nightBlue);
+      dish.rotation.x = Math.PI / 2.4;
+      dish.position.set(zx + 0.12, 0.95, zz);
+      group.add(base, mast, tip, dish);
+    } else if (kind === 1) {
+      // HVAC vents: low box + grille + blue trim strip
+      const box = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.45, 0.8), asphalt);
+      box.position.set(zx, 0.25, zz);
+      const grille = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.7), steel);
+      grille.position.set(zx, 0.5, zz);
+      for (let k = 0; k < 3; k++) {
+        const slot = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.02, 0.08), nightBlue);
+        slot.position.set(zx, 0.52, zz - 0.2 + k * 0.2);
+        group.add(slot);
+      }
+      const trim = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.04, 0.82), coldWhite);
+      trim.position.set(zx, 0.48, zz);
+      group.add(box, grille, trim);
+    } else if (kind === 2) {
+      // Helipad corner / H-mark fragment (flat, asphalt-gray pad + cold-white H)
+      const pad = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.06, 16), asphalt);
+      pad.position.set(zx, 0.03, zz);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.035, 6, 24), nightBlue);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(zx, 0.07, zz);
+      // H bars
+      const hL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.7), coldWhite);
+      hL.position.set(zx - 0.22, 0.07, zz);
+      const hR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.7), coldWhite);
+      hR.position.set(zx + 0.22, 0.07, zz);
+      const hMid = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.03, 0.12), coldWhite);
+      hMid.position.set(zx, 0.07, zz);
+      group.add(pad, ring, hL, hR, hMid);
+    } else {
+      // Low perimeter rail + distant city light dots along edge
+      const postL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.4, 0.06), steel);
+      postL.position.set(zx - 0.85, 0.2, zz);
+      const postR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.4, 0.06), steel);
+      postR.position.set(zx + 0.85, 0.2, zz);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.04, 0.05), nightBlue);
+      rail.position.set(zx, 0.4, zz);
+      group.add(postL, postR, rail);
+      for (let k = 0; k < 5; k++) {
+        const dot = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.08), k % 2 ? coldWhite : cityDot);
+        dot.position.set(zx - 0.7 + k * 0.35, 0.08, zz + 0.45);
+        group.add(dot);
+      }
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.25), asphalt);
+      curb.position.set(zx, 0.05, zz - 0.35);
+      group.add(curb);
+    }
+    i++;
+  }
+
+  // Perimeter night-blue / cold-white panel strips + sparse city dots farther out
+  for (let k = 0; k < 6; k++) {
+    const ang = (k / 6) * Math.PI * 2;
+    const r = ARENA.soft - 1.2;
+    const px = Math.cos(ang) * r;
+    const pz = Math.sin(ang) * r;
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.35), k % 2 ? nightBlue : coldWhite);
+    panel.position.set(px, 0.12, pz);
+    panel.rotation.y = -ang + Math.PI / 2;
+    group.add(panel);
+  }
+  for (let k = 0; k < 10; k++) {
+    const ang = (k / 10) * Math.PI * 2 + 0.2;
+    const r = ARENA.soft + 0.6;
+    const px = Math.cos(ang) * r;
+    const pz = Math.sin(ang) * r;
+    const dot = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), k % 3 ? cityDot : coldWhite);
+    dot.position.set(px, 0.2 + (k % 3) * 0.08, pz);
+    group.add(dot);
+  }
+  return group;
+}
+
 function buildEdgeDecor(zone) {
+  if (zone === 'rooftop') return buildRooftopEdgeDecor();
   if (zone === 'blockade') return buildBlockadeEdgeDecor();
   if (zone === 'reactor') return buildReactorEdgeDecor();
   if (zone === 'assembly') return buildAssemblyEdgeDecor();
@@ -1273,7 +1378,7 @@ export class View {
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
 
-    // Soft playable ring + outer hard edge (lab teal / assembly amber / reactor violet / blockade olive)
+    // Soft playable ring + outer hard edge (five-zone trim: teal/amber/violet/olive/night-blue)
     this.softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
       new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.055, side: THREE.DoubleSide })
@@ -1644,14 +1749,15 @@ export class View {
   _setEmissive(mats, flash) { for (const m of mats) m.emissiveIntensity = flash; }
 
   /**
-   * Swap edge décor when mapZone changes (lab ↔ assembly ↔ reactor ↔ blockade).
+   * Swap edge décor when mapZone changes across five escape zones.
    * Floor / arena size unchanged; only edge props + quiet ring tint.
    */
   setMapZone(zone) {
-    const z = zone === 'blockade' ? 'blockade'
-      : zone === 'reactor' ? 'reactor'
-        : zone === 'assembly' ? 'assembly'
-          : 'lab';
+    const z = zone === 'rooftop' ? 'rooftop'
+      : zone === 'blockade' ? 'blockade'
+        : zone === 'reactor' ? 'reactor'
+          : zone === 'assembly' ? 'assembly'
+            : 'lab';
     if (this.mapZone === z && this.edgeDecor) return;
     this.mapZone = z;
     if (this.edgeDecor) {
@@ -1661,15 +1767,17 @@ export class View {
     }
     this.edgeDecor = buildEdgeDecor(z);
     this.group.add(this.edgeDecor);
-    // Quiet ring tint: teal / amber / violet / olive-steel. Low opacity — no danger steal.
-    const soft = z === 'blockade' ? 0x5a6a40
-      : z === 'reactor' ? 0x6a38c8
-        : z === 'assembly' ? 0xb86a28
-          : 0x1a6a78;
-    const hard = z === 'blockade' ? 0x4a5558
-      : z === 'reactor' ? 0x3a5080
-        : z === 'assembly' ? 0x8a6040
-          : 0x3a6068;
+    // Quiet ring tint: teal / amber / violet / olive / night-blue. Low opacity — no danger steal.
+    const soft = z === 'rooftop' ? 0x3a6ad8
+      : z === 'blockade' ? 0x5a6a40
+        : z === 'reactor' ? 0x6a38c8
+          : z === 'assembly' ? 0xb86a28
+            : 0x1a6a78;
+    const hard = z === 'rooftop' ? 0x4a5a78
+      : z === 'blockade' ? 0x4a5558
+        : z === 'reactor' ? 0x3a5080
+          : z === 'assembly' ? 0x8a6040
+            : 0x3a6068;
     if (this.softRing && this.softRing.material) this.softRing.material.color.setHex(soft);
     if (this.hardRing && this.hardRing.material) this.hardRing.material.color.setHex(hard);
     if (this.padRing && this.padRing.material) this.padRing.material.color.setHex(soft);

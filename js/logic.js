@@ -1379,7 +1379,7 @@ export class Game {
     if (!this.alive || this.pausedForLevel) return { events: [] };
     const events = [];
     this.t += dt;
-    // Phase 6: lab → assembly @195 → reactor @285 → blockade @420 (after boss@360)
+    // Phase 6: lab → assembly @195 → reactor @285 → blockade @420 → rooftop @510
     if (this.mapZone === 'lab' && this.t >= MAP_ZONE.assemblyAt) {
       this.mapZone = 'assembly';
       events.push({ type: 'zoneEnter', zone: 'assembly', at: MAP_ZONE.assemblyAt });
@@ -1391,6 +1391,10 @@ export class Game {
     if (this.mapZone === 'reactor' && this.t >= MAP_ZONE.blockadeAt) {
       this.mapZone = 'blockade';
       events.push({ type: 'zoneEnter', zone: 'blockade', at: MAP_ZONE.blockadeAt });
+    }
+    if (this.mapZone === 'blockade' && this.t >= MAP_ZONE.rooftopAt) {
+      this.mapZone = 'rooftop';
+      events.push({ type: 'zoneEnter', zone: 'rooftop', at: MAP_ZONE.rooftopAt });
     }
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;

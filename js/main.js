@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.16 Phase 6 blockade map zone slice
+// RAMPAGE MECH 暴走機甲 — v0.9.17 Phase 6 rooftop map zone slice
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -832,11 +832,13 @@ else if (ev.type === 'xp') {
     }
     else if (ev.type === 'zoneEnter') {
       const zoneKey = {
+        rooftop: 'zone.rooftop',
         blockade: 'zone.blockade',
         reactor: 'zone.reactor',
         assembly: 'zone.assembly',
       }[ev.zone] || 'zone.assembly';
       const zoneKeyEn = {
+        rooftop: 'zone.rooftopEn',
         blockade: 'zone.blockadeEn',
         reactor: 'zone.reactorEn',
         assembly: 'zone.assemblyEn',

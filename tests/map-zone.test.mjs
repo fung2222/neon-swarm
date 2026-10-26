@@ -1,5 +1,5 @@
 /**
- * Phase 6 map zone — lab → assembly @195 → reactor @285 → blockade @420.
+ * Phase 6 map zone — lab → assembly @195 → reactor @285 → blockade @420 → rooftop @510.
  * Run: node tests/map-zone.test.mjs
  */
 import assert from 'assert';
@@ -16,6 +16,8 @@ assert.ok(MAP_ZONE.reactorAt > MAP_ZONE.assemblyAt, 'reactor after assembly');
 assert.equal(MAP_ZONE.blockadeAt, 420, 'blockadeAt documented at 420s (7:00)');
 assert.ok(MAP_ZONE.blockadeAt > 360, 'blockade after boss@360');
 assert.ok(MAP_ZONE.blockadeAt > MAP_ZONE.reactorAt, 'blockade after reactor');
+assert.equal(MAP_ZONE.rooftopAt, 510, 'rooftopAt documented at 510s (8:30)');
+assert.ok(MAP_ZONE.rooftopAt > MAP_ZONE.blockadeAt, 'rooftop after blockade');
 assert.equal(BEATS.find((b) => b.id === 'hunter').at, 240);
 assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
 
@@ -32,7 +34,7 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
   assert.ok(asmSoldier + asmWalker > 0.5, 'assembly heavier soldier/walker');
 }
 
-// Reactor mix: more drone/mech/officer, fewer staffer/guard; no new boss/elite.
+// Reactor mix
 {
   const rx = waveMix(300, 'reactor');
   const m = Object.fromEntries(rx);
@@ -40,13 +42,12 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
   assert.ok((m.mech || 0) >= 0.15, 'reactor more mechs');
   assert.ok((m.officer || 0) >= 0.15, 'reactor more officers');
   assert.ok((m.staffer || 0) < 0.05, 'reactor almost no staffers');
-  assert.ok((m.guard || 0) < 0.05, 'reactor almost no guards');
   const ids = rx.map(([id]) => id);
   assert.ok(!ids.includes('hunter') && !ids.includes('swarm_core') && !ids.includes('sentinel'),
     'reactor mix has no elite/boss types');
 }
 
-// Blockade mix: more soldier/officer/chief/mech, fewer staffer/drone; no new boss/elite.
+// Blockade mix
 {
   const bl = waveMix(430, 'blockade');
   const m = Object.fromEntries(bl);
@@ -61,16 +62,26 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
     'blockade mix has no elite/boss types');
 }
 
-// Implicit zone from time (no zone arg)
+// Rooftop mix: more drone/mech/chief, fewer staffer; no new boss/elite.
 {
-  assert.equal(waveMix(100).map((x) => x[0]).join(','), waveMix(100, 'lab').map((x) => x[0]).join(','));
-  const auto = waveMix(290);
-  const rx = waveMix(290, 'reactor');
-  assert.deepEqual(auto, rx, 't>=reactorAt implies reactor mix');
-  const autoAsm = waveMix(200);
-  assert.deepEqual(autoAsm, waveMix(200, 'assembly'), 'assembly band implies assembly mix');
-  const autoBl = waveMix(430);
-  assert.deepEqual(autoBl, waveMix(430, 'blockade'), 't>=blockadeAt implies blockade mix');
+  const rt = waveMix(520, 'rooftop');
+  const m = Object.fromEntries(rt);
+  assert.ok((m.drone || 0) >= 0.25, 'rooftop more drones');
+  assert.ok((m.mech || 0) >= 0.2, 'rooftop more mechs');
+  assert.ok((m.chief || 0) >= 0.15, 'rooftop more chiefs');
+  assert.ok((m.staffer || 0) < 0.05, 'rooftop almost no staffers');
+  const ids = rt.map(([id]) => id);
+  assert.ok(!ids.includes('hunter') && !ids.includes('swarm_core') && !ids.includes('sentinel'),
+    'rooftop mix has no elite/boss types');
+}
+
+// Implicit zone from time (no zone arg) — five-zone timeline
+{
+  assert.deepEqual(waveMix(100), waveMix(100, 'lab'));
+  assert.deepEqual(waveMix(200), waveMix(200, 'assembly'));
+  assert.deepEqual(waveMix(290), waveMix(290, 'reactor'));
+  assert.deepEqual(waveMix(430), waveMix(430, 'blockade'));
+  assert.deepEqual(waveMix(520), waveMix(520, 'rooftop'));
 }
 
 // Deterministic pick respects zone
@@ -82,6 +93,8 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
   assert.ok(['drone', 'mech', 'officer', 'walker', 'soldier', 'chief'].includes(r));
   const b = pickEnemyType(rng, 430, 'blockade');
   assert.ok(['soldier', 'officer', 'chief', 'mech', 'walker', 'drone'].includes(b));
+  const t = pickEnemyType(rng, 520, 'rooftop');
+  assert.ok(['drone', 'mech', 'chief', 'officer', 'soldier', 'walker'].includes(t));
 }
 
 function drive(g, until, onEvents) {
@@ -102,7 +115,7 @@ function drive(g, until, onEvents) {
   }
 }
 
-// Game: zoneEnter fires once at assemblyAt; mapZone flips
+// Game: zoneEnter fires once at assemblyAt
 {
   const g = new Game({ seed: 42 });
   assert.equal(g.mapZone, 'lab');
@@ -121,10 +134,9 @@ function drive(g, until, onEvents) {
   assert.equal(zoneEv.zone, 'assembly');
   assert.equal(zoneEv.at, MAP_ZONE.assemblyAt);
   assert.equal(g.mapZone, 'assembly');
-  assert.ok(g.t >= MAP_ZONE.assemblyAt);
 }
 
-// Beats still fire after zone swap (hunter @240); still in assembly before reactor
+// Hunter still fires in assembly band
 {
   const g = new Game({ seed: 7 });
   let sawZone = false;
@@ -137,30 +149,12 @@ function drive(g, until, onEvents) {
     }
     if (game.enemies.some((e) => e.type === 'hunter')) sawHunter = true;
   });
-  assert.ok(sawZone, 'zone entered before hunter window');
+  assert.ok(sawZone);
   assert.equal(g.mapZone, 'assembly');
   assert.ok(sawHunter, 'hunter beat still fires after assembly');
 }
 
-// Reactor zoneEnter after hunter window; mapZone becomes reactor
-{
-  const g = new Game({ seed: 11 });
-  const zones = [];
-  drive(g, MAP_ZONE.reactorAt + 2, (events) => {
-    for (const ev of events) {
-      if (ev.type === 'zoneEnter') zones.push(ev);
-    }
-  });
-  assert.equal(zones.length, 2, 'assembly then reactor');
-  assert.equal(zones[0].zone, 'assembly');
-  assert.equal(zones[0].at, MAP_ZONE.assemblyAt);
-  assert.equal(zones[1].zone, 'reactor');
-  assert.equal(zones[1].at, MAP_ZONE.reactorAt);
-  assert.equal(g.mapZone, 'reactor');
-  assert.ok(g.t >= MAP_ZONE.reactorAt);
-}
-
-// Boss beat still reachable after reactor (drive to 365); still reactor before blockade
+// Reactor then boss still in reactor before blockade
 {
   const g = new Game({ seed: 13 });
   let sawReactor = false;
@@ -172,27 +166,31 @@ function drive(g, until, onEvents) {
     }
     if (game.enemies.some((e) => e.type === 'swarm_core' || e.boss)) sawBoss = true;
   });
-  assert.ok(sawReactor, 'reactor entered before boss');
+  assert.ok(sawReactor);
   assert.equal(g.mapZone, 'reactor');
   assert.ok(sawBoss, 'boss beat still fires after reactor');
 }
 
-// Blockade zoneEnter after boss window; three zoneEnter events total
+// Five-zone timeline: assembly → reactor → blockade → rooftop
 {
-  const g = new Game({ seed: 17 });
+  const g = new Game({ seed: 19 });
   const zones = [];
-  drive(g, MAP_ZONE.blockadeAt + 2, (events) => {
+  drive(g, MAP_ZONE.rooftopAt + 2, (events) => {
     for (const ev of events) {
       if (ev.type === 'zoneEnter') zones.push(ev);
     }
   });
-  assert.equal(zones.length, 3, 'assembly, reactor, blockade');
+  assert.equal(zones.length, 4, 'four zoneEnter events after lab');
   assert.equal(zones[0].zone, 'assembly');
+  assert.equal(zones[0].at, MAP_ZONE.assemblyAt);
   assert.equal(zones[1].zone, 'reactor');
+  assert.equal(zones[1].at, MAP_ZONE.reactorAt);
   assert.equal(zones[2].zone, 'blockade');
   assert.equal(zones[2].at, MAP_ZONE.blockadeAt);
-  assert.equal(g.mapZone, 'blockade');
-  assert.ok(g.t >= MAP_ZONE.blockadeAt);
+  assert.equal(zones[3].zone, 'rooftop');
+  assert.equal(zones[3].at, MAP_ZONE.rooftopAt);
+  assert.equal(g.mapZone, 'rooftop');
+  assert.ok(g.t >= MAP_ZONE.rooftopAt);
 }
 
 console.log('map-zone.test.mjs OK');

@@ -102,4 +102,6 @@ i18n.add({
   'zone.reactorEn': ['REACTOR', 'REACTOR'],
   'zone.blockade': ['進入 · 軍事封鎖區', 'ENTER · BLOCKADE'],
   'zone.blockadeEn': ['BLOCKADE', 'BLOCKADE'],
+  'zone.rooftop': ['進入 · 天台逃出區', 'ENTER · ROOFTOP'],
+  'zone.rooftopEn': ['ROOFTOP', 'ROOFTOP'],
 });
