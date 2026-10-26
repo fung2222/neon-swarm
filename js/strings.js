@@ -59,4 +59,25 @@ i18n.add({
     '手機：拖動畫面任意位置移動（搖桿跟住手指）；雙指捏合輕微縮放。鍵盤：WASD／方向鍵 · +/- 縮放 · P／Esc 暫停 · M 靜音。主頁可揀三款機體。',
     'Mobile: drag anywhere to move (stick follows your finger); pinch for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. Pick one of three frames on the home screen.'
   ],
+  // v0.9.5 WebGL context loss / recoverable boot fail (not permanent "unsupported")
+  'gfx.title': ['繪圖暫時中斷', 'GRAPHICS RESET'],
+  'gfx.titleEn': ['GRAPHICS RESET', 'GRAPHICS RESET'],
+  'gfx.lost': [
+    '顯示卡／繪圖暫失，畫面停咗。撳重新載入通常可以恢復；若仍然唔得，請完全關閉瀏覽器再開。',
+    'GPU / graphics reset — the canvas stopped. Reload usually recovers; if not, fully close the browser and reopen.'
+  ],
+  'gfx.lostEn': [
+    'GPU / graphics reset — reload to recover.',
+    'GPU / graphics reset — reload to recover.'
+  ],
+  'gfx.boot': [
+    '暫時無法啟動繪圖。可能係顯示卡進程掛咗，唔一定係瀏覽器永遠唔支援。請撳重新載入；若仍然唔得，請完全關閉瀏覽器後再開。',
+    'Drawing could not start — often a temporary GPU reset, not permanent lack of WebGL. Tap reload; if it still fails, fully close the browser and reopen.'
+  ],
+  'gfx.bootEn': [
+    'Temporary graphics failure — reload, or fully close the browser.',
+    'Temporary graphics failure — reload, or fully close the browser.'
+  ],
+  'gfx.reload': ['重新載入', 'RELOAD'],
+  'gfx.reloadEn': ['RELOAD', 'RELOAD'],
 });

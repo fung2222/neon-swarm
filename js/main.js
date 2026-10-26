@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.4 glow-ring readability (dim grunt rings)
+// RAMPAGE MECH 暴走機甲 — v0.9.5 WebGL context-loss recover + mobile particle/PR cut
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -18,31 +18,56 @@ const AD_FLAGS = { adsim: flags.adsim || HUB.ads === true || HUB.ads === '1', de
 
 const store = createStore(GAME_ID);
 if (flags.reset) store.clear();
-const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level'] });
+
+// v0.9.5: mobile / coarse-pointer GPU pressure cut (stability only — no balance changes)
+const MOBILE_GFX = (() => {
+  try {
+    const coarse = matchMedia('(pointer: coarse)').matches;
+    const touch = (navigator.maxTouchPoints || 0) > 0;
+    const narrow = Math.min(screen.width || 9999, screen.height || 9999) <= 820;
+    const ua = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+    return !!(coarse || (touch && narrow) || ua);
+  } catch (_) { return false; }
+})();
+const PARTICLE_POOL = MOBILE_GFX ? 2200 : 5200;
+const MAX_PR = MOBILE_GFX
+  ? (Math.min(screen.width || 9999, screen.height || 9999) < 400 ? 1 : 1.5)
+  : 2;
+/** Scale burst counts on mobile (already small caps; further cut for GPU stability). */
+const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.6)) : n;
+
+const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
+
+/** Show recoverable graphics overlay (context loss or boot WebGL fail). Prefer reload over soft restore. */
+function showGfxRecover(kind = 'lost') {
+  const body = $('gfx-body');
+  const bodyEn = $('gfx-body-en');
+  const zh = kind === 'boot' ? t('gfx.boot') : t('gfx.lost');
+  const en = kind === 'boot' ? t('gfx.bootEn') : t('gfx.lostEn');
+  if (body) body.textContent = zh;
+  if (bodyEn) bodyEn.textContent = en;
+  // Hide kit permanent-fatal strip if present
+  const err = document.getElementById('err');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  try { ui.hud(false); } catch (_) {}
+  try { ui.show('gfx'); } catch (_) {
+    const el = $('screen-gfx');
+    if (el) { el.classList.remove('hidden'); el.style.removeProperty('display'); }
+  }
+  ui.loaded?.(0);
+}
+
 const stage = createStage({
   canvas: $('scene'), bloom: 0.22, bloomRadius: 0.28, bloomThreshold: 0.94, fov: 42, exposure: 0.88,
   glow: 'low', glowLevels: { low: { strength: 0.22, radius: 0.35, threshold: 0.25 } },
-  onFatal: (m) => ui.fatal(m),
+  maxPixelRatio: MAX_PR,
+  // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
+  onFatal: () => showGfxRecover('boot'),
 });
 ui.glowToggle(stage);
 stage.setGlow('low'); // v0.8.5: force low glow (ignore shared high from other games)
-// v0.8.4: recover from WebGL context loss (white viewport while HUD still works)
-{
-  const canvas = $('scene');
-  canvas.addEventListener('webglcontextlost', (e) => {
-    e.preventDefault();
-    console.warn('[neon-swarm] WebGL context lost');
-  }, false);
-  canvas.addEventListener('webglcontextrestored', () => {
-    console.warn('[neon-swarm] WebGL context restored');
-    try {
-      stage.resize();
-      if (stage.bloomPass) stage.bloomPass.strength = stage.bloomBase || 0.2;
-      if (stage.renderer) stage.renderer.toneMappingExposure = stage._exposureBase || 0.92;
-      fx.bloomDamp = 1;
-    } catch (err) { console.error(err); }
-  }, false);
-}
+$('btn-gfx-reload')?.addEventListener('click', () => { location.reload(); });
+
 const theme = new ThemeController(); theme.set(1, true);
 
 // Wilderness-style open map: NO tall buildings in play space
@@ -54,7 +79,7 @@ const city = new NeonCity(stage, {
 
 const view = new View(stage);
 view.setVisible(false);
-const particles = new Particles(stage.scene, 5200, { floorY: 0.02 });
+const particles = new Particles(stage.scene, PARTICLE_POOL, { floorY: 0.02 });
 stage.onResize((w, h, pr) => {
   particles.resize(h, pr);
   // Keep menu mech framing in sync on resize / orientation change (not only first setMenuMech).
@@ -69,10 +94,29 @@ const ads = createAds({ gameId: GAME_ID, ...ADS, flags: AD_FLAGS, onAdOpen: (on)
 const S = {
   state: 'menu', demo: !!flags.demo, game: null, mode: 'endless',
   hub: HUB, keys: Object.create(null), stick: { active: false, dx: 0, dy: 0 },
-  demoT: 0, newRecord: false,
+  demoT: 0, newRecord: false, gfxLost: false,
   mechId: MECH_BY_ID[store.get('mech', 'horn')] ? store.get('mech', 'horn') : 'horn',
 };
 S.mech = MECH_BY_ID[S.mechId];
+
+// v0.9.5: WebGL context lost — freeze run + recoverable overlay (no silent white canvas + live HUD).
+// Restored → hard reload: Three.js textures/RT are often invalid after GPU death; soft bloom reset is inadequate.
+{
+  const canvas = $('scene');
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    if (S.gfxLost) return;
+    S.gfxLost = true;
+    console.warn('[neon-swarm] WebGL context lost');
+    try { if (S.state === 'play' || S.state === 'level') S.state = 'pause'; } catch (_) {}
+    try { audio.duckAll?.(true); } catch (_) {}
+    showGfxRecover('lost');
+  }, false);
+  canvas.addEventListener('webglcontextrestored', () => {
+    console.warn('[neon-swarm] WebGL context restored — reloading for clean Three.js recovery');
+    location.reload();
+  }, false);
+}
 
 /** Compact bars derived from resolveMechCombat — never a second fake table. */
 function mechStatBars(m) {
@@ -591,6 +635,7 @@ ui.mountSettings({
 
 i18n.onChange(() => refreshMenu());
 Platform.onBack(() => {
+  if (S.gfxLost) return true;
   if (S.state === 'level') return true;
   if (S.state === 'pause') { S.state = 'play'; ui.show(null); return true; }
   if (S.state === 'over') { showMenu(); return true; }
@@ -634,15 +679,15 @@ function tick(dt) {
       const my = ev.muzzleY != null ? ev.muzzleY : 0.95;
       const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
       const muzzle = new THREE.Vector3(mx, my, mz);
-      particles.burst(muzzle, new THREE.Color(0x00e5ff), 3, { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
-      particles.burst(muzzle, new THREE.Color(0x7ad7ff), 2, { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });
+      particles.burst(muzzle, new THREE.Color(0x00e5ff), burstN(3), { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
+      particles.burst(muzzle, new THREE.Color(0x7ad7ff), burstN(2), { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });
     }
         else if (ev.type === 'hit') {
       audio.hit();
       if (ev.x != null) {
         const c = new THREE.Color(ev.color || 0x00e5ff);
         const n = ev.heavy ? 22 : 12;
-        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, Math.min(n, 8), { speed: ev.heavy ? 4 : 3, up: 1.2, life: 0.55, bright: 1.0 });
+        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, burstN(Math.min(n, 8)), { speed: ev.heavy ? 4 : 3, up: 1.2, life: 0.55, bright: 1.0 });
         // v0.8.5: no white hit particles
         if (ev.heavy) fx.kick({ trauma: 0.08, slowmo: 0.04, bloomDamp: 0.35 });
       }
@@ -655,9 +700,9 @@ function tick(dt) {
       const punch = !!(ev.gore || ev.elite);
       // Ordinary kills: local particles/ring only — no chain slowmo at high kill rate.
       // Elite / gore / heavy: keep noticeable trauma + hit-stop.
-      particles.burst(pos, c, punch ? (human ? 6 : 10) : (human ? 4 : 6), { speed: punch ? 4 : 2.6, up: punch ? 1.8 : 1.1, life: punch ? 0.45 : 0.28, bright: 1.0 });
+      particles.burst(pos, c, burstN(punch ? (human ? 6 : 10) : (human ? 4 : 6)), { speed: punch ? 4 : 2.6, up: punch ? 1.8 : 1.1, life: punch ? 0.45 : 0.28, bright: 1.0 });
       if (punch) {
-        particles.burst(pos, new THREE.Color(0x00e5ff), 4, { speed: 2.2, up: 2.5, life: 0.35, size: 0.45, bright: 0.95 });
+        particles.burst(pos, new THREE.Color(0x00e5ff), burstN(4), { speed: 2.2, up: 2.5, life: 0.35, size: 0.45, bright: 0.95 });
         particles.ring(pos, c, 10, 6, 0.3);
         waves.spawn(pos, c, { r0: 0.3, r1: 2.0, dur: 0.4, a: 0.75 });
         if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8);
@@ -673,7 +718,7 @@ function tick(dt) {
       audio.nova();
       const pos = new THREE.Vector3(ev.x, 0.2, ev.z);
       const col = new THREE.Color(ev.tag === 'plasma' ? 0xb8ff3a : 0x00e5ff);
-      particles.burst(pos, col, 12, { speed: 4.5, up: 1.8, life: 0.4, size: 0.55, bright: 1.0 });
+      particles.burst(pos, col, burstN(12), { speed: 4.5, up: 1.8, life: 0.4, size: 0.55, bright: 1.0 });
       // boss color merged
       particles.ring(pos, col, 12, 7, 0.28);
       waves.spawn(pos, col, { r0: 0.35, r1: (ev.r || 1.6) * 1.1, dur: 0.4, a: 0.8 });
@@ -685,23 +730,23 @@ function tick(dt) {
     }
 else if (ev.type === 'xp') {
       audio.xp();
-      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), 8, { speed: 2.4, up: 1.8, size: 0.55, bright: 1.0 });
-      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), 4, { speed: 1.4, up: 2.2, life: 0.4, size: 0.4, bright: 0.9 });
+      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.6, ev.z || S.game.pz), new THREE.Color(0x3bff8a), burstN(8), { speed: 2.4, up: 1.8, size: 0.55, bright: 1.0 });
+      particles.burst(new THREE.Vector3(ev.x || S.game.px, 0.8, ev.z || S.game.pz), new THREE.Color(0x7affc0), burstN(4), { speed: 1.4, up: 2.2, life: 0.4, size: 0.4, bright: 0.9 });
     }
     else if (ev.type === 'heal') {
       audio.xp();
-      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0x00e5ff), 10, { speed: 2.5, up: 2, size: 0.5, bright: 1.0 });
+      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0x00e5ff), burstN(10), { speed: 2.5, up: 2, size: 0.5, bright: 1.0 });
       particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0x00e5ff), 10, 5, 0.2);
     }
     else if (ev.type === 'weapon') {
       audio.nova();
-      particles.burst(new THREE.Vector3(S.game.px, 0.8, S.game.pz), new THREE.Color(0xffe600), 10, { speed: 2.8, up: 2.2, size: 0.5, bright: 1.0 });
+      particles.burst(new THREE.Vector3(S.game.px, 0.8, S.game.pz), new THREE.Color(0xffe600), burstN(10), { speed: 2.8, up: 2.2, size: 0.5, bright: 1.0 });
     }
     else if (ev.type === 'hurt') {
       // Hurt feedback only — applyMoveFromInput / setMove still run during hitFlash/invuln.
       audio.hurt();
       fx.kick({ trauma: 0.14, aberr: 0.12, bloomDamp: 0.7 });
-      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), 8, { speed: 3.2, up: 1.4, size: 0.45, bright: 1.0 });
+      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), burstN(8), { speed: 3.2, up: 1.4, size: 0.45, bright: 1.0 });
       const flash = $('fx-flash');
       if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 50); }
     }
@@ -711,7 +756,7 @@ else if (ev.type === 'xp') {
       audio.nova();
       view.pulseNova(ev.r);
       const npos = new THREE.Vector3(S.game.px, 0.05, S.game.pz);
-      particles.burst(npos.clone().setY(0.4), new THREE.Color(0xffe600), 14, { speed: 5, up: 1.4, life: 0.4, size: 0.6, bright: 1.0 });
+      particles.burst(npos.clone().setY(0.4), new THREE.Color(0xffe600), burstN(14), { speed: 5, up: 1.4, life: 0.4, size: 0.6, bright: 1.0 });
       particles.ring(npos, new THREE.Color(0xffe600), 12, 6, 0.22);
       waves.spawn(npos, new THREE.Color(0xffe600), { r0: 0.4, r1: ev.r * 1.1, dur: 0.4, a: 0.85 });
       fx.kick({ trauma: 0.12, bloomDamp: 1.0 });
@@ -757,6 +802,7 @@ async function boot() {
   const PERF = flags.get('perf') === '1';
   let _perfAcc = 0, _perfFrames = 0, _perfNearestMs = 0;
   stage.loop((dt, time, rawDt) => {
+    if (S.gfxLost) return; // freeze game + render after context loss (overlay owns the screen)
     const capped = Math.min(0.05, dt);
     if (PERF && S.game && S.state === 'play') {
       const t0 = performance.now();
@@ -777,4 +823,4 @@ async function boot() {
   if (flags.fps) $('fps').classList.remove('hidden');
   ads.init().catch(() => {});
 }
-boot().catch((e) => { console.error(e); ui.fatal('載入失敗 Failed to start: ' + e.message); });
+boot().catch((e) => { console.error(e); showGfxRecover('boot'); });

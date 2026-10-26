@@ -364,3 +364,29 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   #screen-start .mech-card small { display: none; }
   #screen-start .mech-pick { margin-bottom: 6px; }
 }
+
+
+/* ---- v0.9.5: WebGL context-loss / recoverable boot fail overlay ---- */
+#screen-gfx {
+  z-index: 32;
+  background: rgba(5, 1, 15, 0.88);
+  pointer-events: auto;
+}
+#screen-gfx .gfx-panel {
+  max-width: min(420px, 92vw);
+  text-align: center;
+}
+#screen-gfx .gfx-body {
+  margin: 12px 0 6px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #ffd0da;
+  font-family: var(--font-zh, inherit);
+}
+#screen-gfx .gfx-body-en {
+  margin: 0 0 16px;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  line-height: 1.4;
+  color: #9a93bf;
+}
