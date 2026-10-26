@@ -559,6 +559,17 @@ function cardEmblem(c) {
     orb: sv(`<circle cx="32" cy="28" r="14" fill="none" stroke="${stroke}" stroke-width="4"/>
       <circle cx="32" cy="28" r="6" fill="${stroke}"/>
       <path d="M24 44 H40 M28 50 H36" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round"/>`),
+    // PHASE6-TRADEOFF-CARDS-001 emblems
+    overclock: sv(`<circle cx="32" cy="32" r="20" fill="none" stroke="${stroke}" stroke-width="3.5"/>
+      <circle cx="32" cy="32" r="8" fill="none" stroke="${stroke}" stroke-width="3"/>
+      <path d="M32 8 V14 M32 50 V56 M8 32 H14 M50 32 H56 M14 14 L18 18 M46 46 L50 50 M50 14 L46 18 M14 50 L18 46"
+        fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round"/>`),
+    glass: sv(`<path d="M22 10 H42 L38 54 H26 Z" fill="none" stroke="${stroke}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M26 28 H38" stroke="${stroke}" stroke-width="3" stroke-linecap="round"/>
+      <path d="M18 14 L46 50" stroke="${stroke}" stroke-width="2.5" opacity=".7"/>`),
+    heavy: sv(`<rect x="12" y="18" width="40" height="30" rx="3" fill="none" stroke="${stroke}" stroke-width="4"/>
+      <rect x="20" y="26" width="24" height="14" rx="2" fill="${stroke}" opacity=".8"/>
+      <path d="M18 48 H46" stroke="${stroke}" stroke-width="3.5" stroke-linecap="round"/>`),
   };
   if (c.shape && shapes[c.shape]) return shapes[c.shape];
   return `<span class="emblem-glyph">${c.icon || '◆'}</span>`;

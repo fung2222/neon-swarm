@@ -535,6 +535,32 @@ export const CARDS = [
   { id: 'hp', kind: 'armor', icon: '♥', shape: 'heart',
     zh: '護盾芯', en: 'SHIELD CORE', descZh: '最大 HP +1 並回滿', descEn: 'Max HP +1 & heal',
     apply: (s) => { s.maxHp += 1; s.hp = s.maxHp; } },
+  // PHASE6-TRADEOFF-CARDS-001 — build depth via trade-offs (existing card numbers unchanged)
+  { id: 'overclock', kind: 'weapon', icon: '⚙', shape: 'overclock', max: 3,
+    zh: '超頻過載', en: 'OVERCLOCK',
+    descZh: '機槍射速↑（CD×0.85）· 裝甲 −1（最少 0）',
+    descEn: 'MG rate↑ (CD×0.85) · armor −1 (min 0)',
+    apply: (s) => {
+      s.fireCd = Math.max(0.045, (s.fireCd || 0.1) * 0.85);
+      s.armor = Math.max(0, (s.armor || 0) - 1);
+    } },
+  { id: 'glass', kind: 'weapon', icon: '◇', shape: 'glass', max: 2,
+    zh: '玻璃大炮', en: 'GLASS CANNON',
+    descZh: '機槍傷害 +0.45 · 最大 HP −1（最少 3；當前 HP 同步上限）',
+    descEn: 'MG dmg +0.45 · max HP −1 (floor 3; clamp HP)',
+    apply: (s) => {
+      s.bulletDmg = (s.bulletDmg || 0) + 0.45;
+      s.maxHp = Math.max(3, (s.maxHp || 3) - 1);
+      s.hp = Math.min(s.hp, s.maxHp);
+    } },
+  { id: 'heavy_frame', kind: 'armor', icon: '▰', shape: 'heavy', max: 3,
+    zh: '重裝機架', en: 'HEAVY FRAME',
+    descZh: '裝甲 +1（最多 3）· 移動速度 ×0.88',
+    descEn: 'Armor +1 (cap 3) · move speed ×0.88',
+    apply: (s) => {
+      s.armor = Math.min(3, (s.armor || 0) + 1);
+      s.speed = Math.max(2.8, (s.speed || 5.4) * 0.88);
+    } },
 ];
 
 /** Icon shown on drops for the weapon that is "carrying" the run (see Game.weaponIcon). */
