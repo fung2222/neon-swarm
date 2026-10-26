@@ -5,22 +5,23 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.6，commit `ec12087`（main／live cache-bust `?v=0.9.6`）  
+> **建議承接基準：** v0.9.7 horn bake quality（Phase 0 baseline was v0.9.6 / `ec12087`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
 
 ## 0. 先讀這一段：目前狀態與證據等級
 
-本文件狀態段已對齊 **v0.9.6 / `ec12087`**（2026-10-26 Phase 0 baseline）。產品方向與架構說明仍以本文件後段為準；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
+本文件狀態段：Phase 0 = **v0.9.6 / `ec12087`**；本輪 Phase 1 horn bake = **v0.9.7**（見下）。產品方向與架構說明仍以本文件後段為準；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main` HEAD：`ec12087`（v0.9.6）；live `index.html`／`main.js` cache-bust **`?v=0.9.6`**。
+- 目前 `main`／live cache-bust：**`?v=0.9.7`**（horn bake quality）；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
   - v0.9.6 — 更強手機 GPU 減壓（pools／PR／bloom kick／ordinary-kill FX 等；不改平衡）。
+  - v0.9.7 — horn bake quality pass：甲片層次／材質／bake 燈光＋rebake 32 sheets（仍非最終驗收）。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -33,7 +34,7 @@
 
 ### Open gaps／仍未完成
 
-- `horn` 的模型、材質、燈光與烘焙品質仍是**臨時／interim 美術**，並非最終主角品質（Phase 1）。
+- `horn` 已做 **v0.9.7 bake quality pass**（甲片層次／材質／bake 燈光；仍 interim→improved，**非** Roy 最終驗收美術）。
 - **手機 mid-run WebGL context loss 仍會發生**（Roy 實機回報「繪圖暫時中斷」）；v0.9.5 overlay 已捕捉、v0.9.6 已再減壓，但 **Roy deferred 進一步 GPU cuts**——稍後另開任務，本 Phase 0 不處理。
 - 槍層仍是 **N/E/S/W 四方向切圖**，不是平滑 360° 炮塔。
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。

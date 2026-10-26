@@ -10,36 +10,36 @@
 
 ## Active task
 
-**Task ID:** `PHASE0-BASELINE-001`  
-**名稱：** Phase 0 — 對齊目前 main／重跑 baseline  
-**性質：** 確認可運行基準；不改玩法、美術、平衡。
+**Task ID:** `HORN-BAKE-QUALITY-001`  
+**Status note:** implemented 2026-10-26 — horn materials/layering + rebake v0.9.7; awaiting Roy visual accept (not final art).  
+**名稱：** Phase 1 — horn 模型／材質／燈光改善＋重新 bake  
+**性質：** 主角視覺品質；不改平衡、敵人、Precision／Morph、GPU 減壓。
 
 ### 背景
 
-- Live／main 已至 v0.9.6（`ec12087`）：光圈減噪、WebGL 恢復 overlay、手機 GPU 減壓。
-- Roy：手機中途仍會「繪圖暫時中斷」——**本輪不處理**，記入 Not verified／HANDOFF gap，稍後再開任務。
-- HANDOFF 建議承接仍寫 v0.9.3／`6ddc483`；需對齊現況後再進 Phase 1 horn 畫質。
+- Phase 0 baseline 已對齊 v0.9.6；下一步 HANDOFF Phase 1：horn 仍是臨時 blocky 美術。
+- `buildPlayerMech` 是 selection＋bake 唯一來源；改模型後必須 `node tools/bake-mech-sprites.mjs --id horn --dirs 4 --frames 4 --size 256` 並檢查 anchors／muzzle。
+- 手機 context loss **本輪不處理**（Roy 延後）。
 
 ### 授權
 
 允許：
 
-- 更新 `docs/HANDOFF.md` 狀態段：目前 HEAD／版本、已做項目（glow、perf 初測、webgl recover）、未完成（手機 context loss、horn 臨時美術）。
-- 重跑 headless 全套相關測試；若環境允許重跑 `tests/browser-hotfix-0.9.3.mjs`（或記明 skip 原因）。
-- 截圖：桌面 1280×800、手機直向 390×844 選擇畫面（必要時 gameplay 一幀）；人工看有無出界／遮擋。
-- 輕量 commit／push 文件＋截圖路徑說明。
+- 改善 `js/mech-builder.js` 中 **horn** 外觀：甲片層次、材質、邊緣光／自發光（人格核心青）、單角、不對稱肩、中型步槍剪影；保持身份線索。
+- 必要時微調 bake 燈光／capture（`tools/bake-capture.html` 或 bake CLI）令 sheets 更清晰，唔洗白。
+- 重新 bake `assets/mechs/horn/sheets/`；更新 atlas／anchors；跑 bake-player／muzzle／相關測試。
+- 截圖：selection 3D + 遊戲內 idle／run／gun 對照（桌面）；cache-bust **0.9.7**。
 
-不允許：改 `js/` 玩法／美術／減壓邏輯（除非測試明顯壞掉且屬回歸修復）、開始 horn bake 畫質、再開 GPU 減壓、Precision／Morph。
+不允許：開 Precision／Morph playable、改武器數值／刷怪、大改 GPU／bloom 政策、無關 AI 貼圖取代 buildPlayerMech、宣稱最終美術已驗收（需 Roy 肉眼）。
 
 ### 目標
 
-- 有可重現的目前基準：SHA、測試結果、截圖、未驗證清單（含 deferred GPU）。
-- HANDOFF 不再誤導下一位 agent 以為仍停在 v0.9.3-only。
+- Selection 與 in-game baked sprites 同一身份，剪影／材質比現況明顯進步但仍誠實標 interim→improved pass。
+- Foot baseline、muzzle anchors 正確；反向跑射回歸仍過。
 
 ### 完成條件
 
-- 報告含測試表、截圖、HANDOFF 更新摘要。
-- 報告後停下；Recommended next 建議 Phase 1 horn bake 畫質（do not start）。
+- Push 含模型＋sheets＋測試結果；報告前後對照；停下。
 
 ### 回報格式
 
@@ -48,8 +48,9 @@ Task ID:
 Result:
 HEAD:
 What changed:
-Tests:
+Bake command:
 Screenshots:
+Tests:
 Not verified:
 Recommended next (do not start):
 ```

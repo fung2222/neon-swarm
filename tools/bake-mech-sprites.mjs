@@ -169,6 +169,8 @@ async function realBake() {
           characterHeightFrac: r.characterHeightFrac,
           camera: r.camera,
           anchors: r.anchors,
+          anchorsByDir: r.anchorsByDir || null,
+          muzzleWorldByDir: r.muzzleWorldByDir || null,
           cells: r.cells,
         },
         dataUrls: r._dataUrls,
@@ -202,11 +204,23 @@ async function realBake() {
       },
     };
     writeFileSync(join(outDir, `${id}_atlas.json`), JSON.stringify(atlas, null, 2));
+    const dirsOut = result.meta.dirs || DIRS4;
+    const byDir = result.meta.anchorsByDir || {};
+    const worldByDir = result.meta.muzzleWorldByDir || {};
     writeFileSync(join(outDir, `${id}_anchors.json`), JSON.stringify({
       id,
       units: 'normalized',
-      shared: result.meta.anchors,
-      perDir: Object.fromEntries((result.meta.dirs || DIRS4).map((d) => [d, result.meta.anchors])),
+      version: result.meta.version || '0.9.2',
+      note: 'Per-dir muzzle UV/world from bake tip projection (gun pose). Cardinal snap only — not 360° smooth.',
+      shared: {
+        ...(result.meta.anchors || {}),
+        muzzle: (byDir.n && byDir.n.muzzle) || (result.meta.anchors && result.meta.anchors.muzzle),
+      },
+      muzzleWorldByDir: worldByDir,
+      perDir: Object.fromEntries(dirsOut.map((d) => [d, {
+        ...(byDir[d] || result.meta.anchors || {}),
+        muzzleWorld: worldByDir[d] || null,
+      }])),
     }, null, 2));
 
     console.log(JSON.stringify({

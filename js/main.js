@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.6 mobile GPU pressure cut (pools/PR/bloomKick/ordinary-kill FX)
+// RAMPAGE MECH 暴走機甲 — v0.9.7 horn bake quality pass (materials/layering/lighting; interim→improved)
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
