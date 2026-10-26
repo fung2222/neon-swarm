@@ -871,7 +871,7 @@ function dropMesh(d) {
 }
 // ---------------------------------------------------------------------------
 // Map props: low, readable, no tall buildings (never block the view).
-// Phase 6: lab (cool teal) / assembly (warm amber frames) / reactor (violet-cyan energy).
+// Phase 6: lab teal / assembly amber / reactor violet-cyan / blockade steel-olive.
 // Same arena size/floor; only edge décor + trim color temperature change.
 // ---------------------------------------------------------------------------
 const EDGE_SPOTS = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
@@ -1143,7 +1143,109 @@ function buildReactorEdgeDecor() {
   return group;
 }
 
+
+/**
+ * Blockade edge décor — distinct military shapes (not a recolor of prior zones):
+ * barricades, sandbags, wire, wrecked APC silhouettes, watch posts.
+ * Trim: steel-gray / olive-drab (contrast reactor violet-cyan, assembly amber, lab teal).
+ * Hull stays graphite — never red mech hulls. Danger telegraph colors stay free.
+ */
+function buildBlockadeEdgeDecor() {
+  const group = new THREE.Group();
+  group.name = 'edgeDecor';
+  const steel = new THREE.MeshStandardMaterial({ color: 0x3a4248, emissive: 0x1c2228, emissiveIntensity: 0.14, roughness: 0.55, metalness: 0.55 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1a1e22, emissive: 0x101418, emissiveIntensity: 0.1, roughness: 0.72, metalness: 0.35 });
+  const olive = mat(0x5a6a38, 0.22);      // olive-drab trim
+  const steelTrim = mat(0x8a9aaa, 0.2);   // steel-gray trim
+  const sand = new THREE.MeshStandardMaterial({ color: 0x6a5a38, emissive: 0x2a2418, emissiveIntensity: 0.1, roughness: 0.9, metalness: 0.05 });
+  const wireMat = new THREE.MeshStandardMaterial({ color: 0x4a5058, emissive: 0x202428, emissiveIntensity: 0.08, roughness: 0.45, metalness: 0.7 });
+
+  let i = 0;
+  for (const [zx, zz] of EDGE_SPOTS) {
+    const kind = i % 4;
+    if (kind === 0) {
+      // Concrete barricade / jersey barrier + olive stripe
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.7, 0.45), dark);
+      wall.position.set(zx, 0.35, zz);
+      const top = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.08, 0.5), steel);
+      top.position.set(zx, 0.74, zz);
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.22, 0.06, 0.48), olive);
+      stripe.position.set(zx, 0.5, zz);
+      group.add(wall, top, stripe);
+    } else if (kind === 1) {
+      // Sandbag stack + low wire coil
+      for (let k = 0; k < 3; k++) {
+        for (let r = 0; r < 2 - (k === 2 ? 1 : 0); r++) {
+          const bag = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.22, 0.35), sand);
+          bag.position.set(zx - 0.3 + r * 0.55 + (k % 2) * 0.1, 0.12 + k * 0.22, zz);
+          bag.rotation.y = (k + r) * 0.15;
+          group.add(bag);
+        }
+      }
+      // Wire posts + strand
+      const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.7, 6), wireMat);
+      postL.position.set(zx - 0.9, 0.35, zz + 0.45);
+      const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.7, 6), wireMat);
+      postR.position.set(zx + 0.9, 0.35, zz + 0.45);
+      const strand = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.8, 6), wireMat);
+      strand.rotation.z = Math.PI / 2;
+      strand.position.set(zx, 0.55, zz + 0.45);
+      group.add(postL, postR, strand);
+    } else if (kind === 2) {
+      // Wrecked APC silhouette: hull + turret stub + broken track (graphite, not red)
+      const hull = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.55, 0.95), steel);
+      hull.position.set(zx, 0.35, zz);
+      hull.rotation.y = 0.25;
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.4, 0.75), dark);
+      cabin.position.set(zx - 0.35, 0.75, zz);
+      cabin.rotation.y = 0.25;
+      const turret = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.25, 8), steel);
+      turret.position.set(zx + 0.25, 0.78, zz + 0.05);
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.55, 6), dark);
+      barrel.rotation.z = Math.PI / 2;
+      barrel.position.set(zx + 0.55, 0.78, zz + 0.05);
+      const trackL = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.18, 0.18), dark);
+      trackL.position.set(zx, 0.1, zz + 0.5);
+      trackL.rotation.y = 0.25;
+      const trim = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.8), olive);
+      trim.position.set(zx - 0.35, 0.96, zz);
+      trim.rotation.y = 0.25;
+      group.add(hull, cabin, turret, barrel, trackL, trim);
+    } else {
+      // Watch post: upright + platform + olive rail
+      const pole = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.5, 0.14), steel);
+      pole.position.set(zx, 0.75, zz);
+      const platform = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.9), dark);
+      platform.position.set(zx, 1.5, zz);
+      const railF = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 0.06), olive);
+      railF.position.set(zx, 1.7, zz + 0.4);
+      const railB = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 0.06), olive);
+      railB.position.set(zx, 1.7, zz - 0.4);
+      const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), steelTrim);
+      lamp.position.set(zx, 1.85, zz);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.5), dark);
+      base.position.set(zx, 0.05, zz);
+      group.add(pole, platform, railF, railB, lamp, base);
+    }
+    i++;
+  }
+
+  // Perimeter steel/olive panel strips
+  for (let k = 0; k < 6; k++) {
+    const ang = (k / 6) * Math.PI * 2;
+    const r = ARENA.soft - 1.2;
+    const px = Math.cos(ang) * r;
+    const pz = Math.sin(ang) * r;
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.35), k % 2 ? olive : steelTrim);
+    panel.position.set(px, 0.12, pz);
+    panel.rotation.y = -ang + Math.PI / 2;
+    group.add(panel);
+  }
+  return group;
+}
+
 function buildEdgeDecor(zone) {
+  if (zone === 'blockade') return buildBlockadeEdgeDecor();
   if (zone === 'reactor') return buildReactorEdgeDecor();
   if (zone === 'assembly') return buildAssemblyEdgeDecor();
   return buildLabEdgeDecor();
@@ -1171,7 +1273,7 @@ export class View {
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
 
-    // Soft playable ring + outer hard edge (lab teal / assembly amber / reactor violet)
+    // Soft playable ring + outer hard edge (lab teal / assembly amber / reactor violet / blockade olive)
     this.softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
       new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.055, side: THREE.DoubleSide })
@@ -1542,13 +1644,14 @@ export class View {
   _setEmissive(mats, flash) { for (const m of mats) m.emissiveIntensity = flash; }
 
   /**
-   * Swap edge décor when mapZone changes (lab ↔ assembly ↔ reactor).
+   * Swap edge décor when mapZone changes (lab ↔ assembly ↔ reactor ↔ blockade).
    * Floor / arena size unchanged; only edge props + quiet ring tint.
    */
   setMapZone(zone) {
-    const z = zone === 'reactor' ? 'reactor'
-      : zone === 'assembly' ? 'assembly'
-        : 'lab';
+    const z = zone === 'blockade' ? 'blockade'
+      : zone === 'reactor' ? 'reactor'
+        : zone === 'assembly' ? 'assembly'
+          : 'lab';
     if (this.mapZone === z && this.edgeDecor) return;
     this.mapZone = z;
     if (this.edgeDecor) {
@@ -1558,13 +1661,15 @@ export class View {
     }
     this.edgeDecor = buildEdgeDecor(z);
     this.group.add(this.edgeDecor);
-    // Quiet ring tint: teal (lab) / amber (assembly) / violet (reactor). Low opacity — no danger steal.
-    const soft = z === 'reactor' ? 0x6a38c8
-      : z === 'assembly' ? 0xb86a28
-        : 0x1a6a78;
-    const hard = z === 'reactor' ? 0x3a5080
-      : z === 'assembly' ? 0x8a6040
-        : 0x3a6068;
+    // Quiet ring tint: teal / amber / violet / olive-steel. Low opacity — no danger steal.
+    const soft = z === 'blockade' ? 0x5a6a40
+      : z === 'reactor' ? 0x6a38c8
+        : z === 'assembly' ? 0xb86a28
+          : 0x1a6a78;
+    const hard = z === 'blockade' ? 0x4a5558
+      : z === 'reactor' ? 0x3a5080
+        : z === 'assembly' ? 0x8a6040
+          : 0x3a6068;
     if (this.softRing && this.softRing.material) this.softRing.material.color.setHex(soft);
     if (this.hardRing && this.hardRing.material) this.hardRing.material.color.setHex(hard);
     if (this.padRing && this.padRing.material) this.padRing.material.color.setHex(soft);

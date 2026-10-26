@@ -100,4 +100,6 @@ i18n.add({
   'zone.assemblyEn': ['ASSEMBLY BAY', 'ASSEMBLY BAY'],
   'zone.reactor': ['進入 · 能源反應爐', 'ENTER · REACTOR'],
   'zone.reactorEn': ['REACTOR', 'REACTOR'],
+  'zone.blockade': ['進入 · 軍事封鎖區', 'ENTER · BLOCKADE'],
+  'zone.blockadeEn': ['BLOCKADE', 'BLOCKADE'],
 });

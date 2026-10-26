@@ -389,24 +389,31 @@ export function swarmPressure(t) {
 }
 
 /**
- * Phase 6 map zones (v0.9.15) — same arena; edge décor + wave mix shift.
+ * Phase 6 map zones (v0.9.16) — same arena; edge décor + wave mix shift.
  * Escape path (HANDOFF): lab → assembly → reactor → blockade → rooftop.
- * Implemented: lab + assembly + reactor.
+ * Implemented: lab + assembly + reactor + blockade.
  * assemblyAt = 195s (3:15), after sentinel@120 and before hunter@240.
  * reactorAt  = 285s (4:45), after hunter@240 and before boss@360.
+ * blockadeAt = 420s (7:00), after boss@360.
  */
 export const MAP_ZONE = {
   assemblyAt: 195,
   reactorAt: 285,
+  blockadeAt: 420,
 };
 
 /** Weighted wave table. Optional zone overrides lab table. */
 export function waveMix(t, zone = null) {
   const z = zone || (
-    t >= MAP_ZONE.reactorAt ? 'reactor'
-      : t >= MAP_ZONE.assemblyAt ? 'assembly'
-        : 'lab'
+    t >= MAP_ZONE.blockadeAt ? 'blockade'
+      : t >= MAP_ZONE.reactorAt ? 'reactor'
+        : t >= MAP_ZONE.assemblyAt ? 'assembly'
+          : 'lab'
   );
+  if (z === 'blockade') {
+    // Blockade: military pressure — more soldier/officer/chief/mech, fewer staffer/drone.
+    return [['soldier', 0.30], ['officer', 0.24], ['chief', 0.18], ['mech', 0.18], ['walker', 0.08], ['drone', 0.02]];
+  }
   if (z === 'reactor') {
     // Reactor: energy facility pressure — more drone/mech/officer, fewer staffer/guard.
     return [['drone', 0.28], ['mech', 0.22], ['officer', 0.22], ['walker', 0.14], ['soldier', 0.1], ['chief', 0.04]];

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.15 Phase 6 reactor map zone slice
+// RAMPAGE MECH 暴走機甲 — v0.9.16 Phase 6 blockade map zone slice
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -831,14 +831,18 @@ else if (ev.type === 'xp') {
       particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0xff2bd6), 10, 5, 0.18);
     }
     else if (ev.type === 'zoneEnter') {
-      const key = ev.zone === 'reactor' ? 'zone.reactor'
-        : ev.zone === 'assembly' ? 'zone.assembly'
-          : 'zone.assembly';
-      const keyEn = ev.zone === 'reactor' ? 'zone.reactorEn'
-        : ev.zone === 'assembly' ? 'zone.assemblyEn'
-          : 'zone.assemblyEn';
-      const zh = t(key);
-      const en = t(keyEn);
+      const zoneKey = {
+        blockade: 'zone.blockade',
+        reactor: 'zone.reactor',
+        assembly: 'zone.assembly',
+      }[ev.zone] || 'zone.assembly';
+      const zoneKeyEn = {
+        blockade: 'zone.blockadeEn',
+        reactor: 'zone.reactorEn',
+        assembly: 'zone.assemblyEn',
+      }[ev.zone] || 'zone.assemblyEn';
+      const zh = t(zoneKey);
+      const en = t(zoneKeyEn);
       showBeatBanner(zh, en, 1800);
       try { audio.wave(); } catch (_) {}
     }
