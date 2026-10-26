@@ -3,38 +3,31 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE3-ENEMY-BOMBER-001 → **Complete**（`?v=0.9.40`）
+## 狀態：Active = **PHASE6-PERIODIC-DANGER-001**（目標 `?v=0.9.41`）
 
-**ROY（2026-10-26 ~23:16 HKT）ROY_OVERRIDE／continue：** 「暫時都ok繼續去」— soft-juice DONE 後仍繼續 safe content。Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish。
+**ROY（2026-10-26 ~23:16 HKT）ROY_OVERRIDE／continue：** 「暫時都ok繼續去」— still on。Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent more toast／streak／coach polish。
 
-### Just shipped
+### Active
 
-**PHASE3-ENEMY-BOMBER-001** → live cache-bust **`?v=0.9.40`**.
+**PHASE6-PERIODIC-DANGER-001** — periodic must-dodge **red** danger circles（map hazard；**not** bomber／artillery reuse）.
 
-- `ENEMIES.bomber` 自爆單位／Suicide Bomber；compact runner + charge pack／antenna／blinker；dark steel + danger crimson／magenta
-- Chase（above-soldier speed）→ fuse band → **red** ground-circle telegraph under self ≥0.9s（`BOMBER.telegraphSec`）→ AoE detonate；no dmg during telegraph；killed mid-chase／telegraph = no explode
-- Events: `telegraph kind:bomber` + `bomberDetonate`；view red ring（≠ artillery orange aim-zone）
-- waveMix: no early lab（t&lt;40）；light mid-late lab＋assembly／blockade／rooftop／reactor；sum≈1；prior shield／artillery／sniper floors kept
-- Tests: `tests/bomber.test.mjs` + shots `tests/screenshots/phase3-bomber/`
-- Player weapon／DPS／XP／heal／economy **unchanged**
+Scope:
+- Mid–late run cadence: after `DANGER_PULSE.startAfter` (~75–90s), every `everySec` (~18–24s) spawn 1 circle near player（offset clamp；not dead-center cheese）
+- Telegraph ≥0.9s red ground ring → AoE pulse damage if player still inside；events `telegraph kind:dangerPulse` + `dangerPulse`
+- Max concurrent 1–2；skip while paused／levelup／weaponOffer／over；no damage during telegraph
+- Distinct from bomber（enemy fuse）and artillery（orange aim-zone）：this is **arena strike** hazard for positioning
+- Player weapon／DPS／XP／heal／economy／waveMix enemy tables **unchanged**
+- Tests `tests/danger-pulse.test.mjs` + shots `tests/screenshots/phase6-danger-pulse/`（1280+390 telegraph）
+- Bump `?v=0.9.41`；update AGENT_TASK Complete + HANDOFF §0／§11／history；commit＋push `main`
 
-### Soft-juice usability queue → still **DONE**（do not reopen）
+**Out of scope：** Phase 4；horn art lock；phone GPU；soft-juice toasts；balance economy overhaul；new elite／boss silhouettes this slice.
 
-### Next
+### Soft-juice → still **DONE**
 
-1. **HIT-FEEL-DEVICE** — when Roy can play on phone（SwiftShader ≠ device）
-2. OR Roy-named Active only
-3. Phone GPU／horn art lock — deferred／only after Roy OK
-
-**Do NOT start：** Phase 4／horn art lock／§9／phone GPU／balance／more soft-juice invention.
-
-### Recently completed（do not re-implement）
+### Recently completed
 
 - `PHASE3-ENEMY-BOMBER-001` → **v0.9.40** (`2ab9dbb`)
 - `PHASE6-RESULT-SHARE-001` → **v0.9.39** (`87eb03a`)
-- `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** (`fc61ddc`)
-- `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
-- … through commander／8-dir／inventory／maps／endless
 
 ---
 
