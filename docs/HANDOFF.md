@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.30 Phase 6 drop readability（XP shards／heal pack／magnet disc；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.31 Phase 6 level-up card UX（tap／hierarchy／stack／slot hint；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.30`**（drop readability：XP shards／heal pack／magnet disc＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.31`**（level-up card UX＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -57,6 +57,7 @@
   - v0.9.23 — PHASE3-ENEMY-SNIPER-001：`ENEMIES.sniper` 狙擊單位／Sniper Unit；olive＋crimson；long-rifle procedural mesh（≠ soldier／officer recolor）；`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan；events `telegraph kind:sniper`＋`sniperShot`；waveMix mid-late lab＋reactor／blockade／rooftop／assembly lightly；截圖 `tests/screenshots/phase3-sniper/`；測試 `tests/sniper.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.24 — PHASE3-ENEMY-SHIELD-001：`ENEMIES.shield` 盾衛／Shield Guard；steel＋cyan-blue；large front-plate procedural mesh（≠ soldier／walker recolor）；`_tickShield` slow chase＋face player；frontal mitigation only（`face · normalize(src−enemy) ≥ 0.5` → ×0.15 dmg；flank／rear full）；bash = short **red** contact telegraph；waveMix assembly／blockade ~0.12、lab after ~65s light、**no** early lab；截圖 `tests/screenshots/phase3-shield/`；測試 `tests/shield.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.25 — PHASE3-ENEMY-ARTILLERY-001：`ENEMIES.artillery` 重炮單位／Heavy Artillery；amber＋olive；procedural **big howitzer barrel** mesh（≠ walker／mech／sniper recolor）；`_tickArtillery` slow／stationary-ish → **orange** blast telegraph（`ARTILLERY.telegraphSec=1.0`）→ AoE impact at predicted／player-area；events `telegraph kind:artillery`＋`artilleryImpact`；waveMix blockade／rooftop light-mid、late lab light、assembly rare、**no** early lab；截圖 `tests/screenshots/phase3-artillery/`；測試 `tests/artillery.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
+  - v0.9.31 — PHASE6-LEVELUP-CARD-UX-001：升級卡 UX — 層次（zh 標題＋EN 細字／kind pill／desc clamp）、對比、更大 emblem、stack `n/max`＋progress bar、390 tap min-height、新 slot 武器輕提示（裝入空欄／欄滿・需替換）；pickup-offer 共用 chrome；keep／swap／convertHeal 不回歸；截圖 `tests/screenshots/phase6-levelup-ux/`；測試 `tests/levelup-ux.test.mjs`。卡池／DPS／經濟 **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.30 — PHASE6-DROP-READABILITY-001：地面掉落剪影可讀 — XP＝細綠 **shards**；heal＝白＋綠 **cross repair pack**；magnet＝罕見藍 **pulse disc** 地面掉落（`MAGNET_DROP_CHANCE=0.025`，套用既有 magnet util ×1.35／max 4，無新公式）；weapon 金框 board＋v0.9.29 halo 保留；size hierarchy XP < heal < weapon；per-kind floor halo／rim；截圖 `tests/screenshots/phase6-drop-readability/`；測試 `tests/drop-readability.test.mjs`。XP／heal 數值、magnet mul、weapon DPS、drop *rate tables*（heal chance 不變）**unchanged**。未做：Phase 4／horn art lock／phone GPU／temp buff 新經濟。
   - v0.9.29 — PHASE6-PICKUP-POLISH-001：slot-fire sync（只有 `weaponSlots` 內武器開火；orphan stacks prune）；take／upgrade／swap／keep／convertHeal 文案縮短；swap 高亮目標欄；武器箱 halo 加強；截圖 `tests/screenshots/phase6-pickup-polish/`。Player balance **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.28 — PHASE6-MULTI-SLOT-INVENTORY-001：`weaponSlots`×4（start mg）；slot weapons mg／laser／shotgun／rocket／grenade／plasma；滿欄＋新型 → swap／keep；HUD `#weapon-slots`；`taken` stacks 仍驅動火力；截圖 `tests/screenshots/phase6-inventory/`；測試 `inventory.test.mjs`。Player balance **unchanged**。未做：Phase 4／horn art lock／phone GPU。
@@ -79,7 +80,7 @@
 - PERF-REBASELINE 已更新桌面 GTX 1070 Ti／v0.9.20（≈58–60 FPS）；**手機真機 200 敵效能仍未驗收**（Roy deferred phone GPU）。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 戰鬥可讀性：**v0.9.22 follow-up completed**（grunt rings off；elite／danger／pickups／floor／FX）；真機 hit-feel 仍待 Roy。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）**＋ **PHASE3-ELITE-COMMANDER-001（v0.9.26）**＋ **GUN-8DIR-001（v0.9.27）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型＝`taken` stacks＋**v0.9.28 `weaponSlots`×4 HUD**＋**v0.9.29 slot-fire sync（HUD≡shots）**＋**v0.9.30 drop silhouettes（XP／heal／magnet／weapon）**。下一步：`AGENT_TASK` → level-up card UX polish 或 pause／zone banner QOL（Roy continuous；skip HIT-FEEL wait）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）**＋ **PHASE3-ELITE-COMMANDER-001（v0.9.26）**＋ **GUN-8DIR-001（v0.9.27）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型＝`taken` stacks＋**v0.9.28 `weaponSlots`×4 HUD**＋**v0.9.29 slot-fire sync（HUD≡shots）**＋**v0.9.30 drop silhouettes（XP／heal／magnet／weapon）**。下一步：`AGENT_TASK` → pause／zone banner timing QOL，之後 sync before Phase 4（Roy continuous；skip HIT-FEEL wait）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -457,8 +458,9 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.30（PHASE6-DROP-READABILITY-001；HEAD 以 `main`／live `?v=0.9.30` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
+**目前基準 v0.9.31（PHASE6-LEVELUP-CARD-UX-001；HEAD 以 `main`／live `?v=0.9.31` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
+- `PHASE6-LEVELUP-CARD-UX-001` **已完成**（v0.9.31）：升級卡 UX／tap／stack／slot hint；截圖 `tests/screenshots/phase6-levelup-ux/`。
 - `PHASE6-DROP-READABILITY-001` **已完成**（v0.9.30）：XP shards／heal pack／magnet disc／weapon board；截圖 `tests/screenshots/phase6-drop-readability/`。
 - `PHASE6-PICKUP-POLISH-001` **已完成**（v0.9.29）：slot-fire sync＋pickup UX polish；截圖 `tests/screenshots/phase6-pickup-polish/`。
 - `PHASE6-MULTI-SLOT-INVENTORY-001` **已完成**（v0.9.28）：4-slot weapon bar＋swap-when-full；截圖 `tests/screenshots/phase6-inventory/`。
@@ -473,13 +475,14 @@ Rollback baseline:
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
 - `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；HIT-FEEL-DEVICE needs Roy phone（skip wait per continuous）。**下一項：** level-up card UX polish 或 pause／zone banner QOL — **do not** start Phase 4／horn art lock。
+- Roy deferred phone GPU／mid-run WebGL；HIT-FEEL-DEVICE needs Roy phone（skip wait per continuous）。**下一項：** pause／zone banner timing QOL，之後 **sync with Roy before Phase 4** — **do not** start Phase 4／horn art lock。
 - AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
 - Queue：真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish。
 - SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
 
 ## 版本歷史（增量）
 
+- **v0.9.31** (`PHASE6-LEVELUP-CARD-UX-001`) — Level-up card UX: hierarchy, contrast, larger emblems, stack n/max+bar, mobile tap targets, slot fill/swap hint. Pickup chrome shared. Screenshots `tests/screenshots/phase6-levelup-ux/`. Next: banner timing QOL then sync before Phase 4.
 - **v0.9.30** (`PHASE6-DROP-READABILITY-001`) — Distinct ground-drop silhouettes: XP green shards, heal white+green cross pack, rare magnet blue pulse disc (applies existing util ×1.35/max 4), weapon gold board+halo. Screenshots `tests/screenshots/phase6-drop-readability/`. Next: level-up card UX polish.
 - **v0.9.29** (`PHASE6-PICKUP-POLISH-001`) — Slot-fire sync (HUD≡shots) + pickup UX polish (swap highlight, convertHeal +2, keep=resume). Screenshots `tests/screenshots/phase6-pickup-polish/`. Next: XP/heal/magnet pickup readability.
 - **v0.9.28** (`PHASE6-MULTI-SLOT-INVENTORY-001`) — 4-slot inventory HUD + swap-when-full. Screenshots `tests/screenshots/phase6-inventory/`. Next: pickup polish.

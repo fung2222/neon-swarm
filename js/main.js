@@ -1,11 +1,11 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.21 horn mecha silhouette pass (interim, awaiting Roy eyes); was v0.9.20 phone stable
+// RAMPAGE MECH 暴走機甲 — v0.9.31 level-up card UX; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
   ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
@@ -558,6 +558,7 @@ function showLevelCards(cards, opts = {}) {
     }
   }
   let prevTaken = (S.game && S.game.taken) || {};
+  const slots = (S.game && S.game.weaponSlots) || null;
   cards.forEach((c) => {
     const b = document.createElement('button');
     const action = c.pickupAction || '';
@@ -576,14 +577,41 @@ function showLevelCards(cards, opts = {}) {
             ? (i18n.isZh() ? '略過' : 'SKIP')
             : (i18n.isZh() ? '輔助' : 'UTIL'));
     const showCount = c.max != null && !String(c.id || '').startsWith('_pickup_') && action !== 'swap';
-    const times = showCount ? `<em class="card-count">${prevTaken[c.id] || 0}/${c.max}</em>` : '';
+    const stackNow = prevTaken[c.id] || 0;
+    let times = '';
+    if (showCount) {
+      const pct = Math.max(0, Math.min(100, Math.round((stackNow / Math.max(1, c.max)) * 100)));
+      times = `<em class="card-count" title="${stackNow}/${c.max}">`
+        + `${stackNow}/${c.max}`
+        + `<span class="stack-bar" aria-hidden="true"><span class="stack-fill" style="width:${pct}%"></span></span>`
+        + `</em>`;
+    }
     const healBadge = action === 'convertHeal' && c.healAmount
       ? `<em class="card-count heal">+${c.healAmount} HP</em>` : '';
+    // Light slot context on level-up new slot weapons (not pickup actions — those already say take/swap).
+    let slotHint = '';
+    if (!isPickup && !action && c.kind === 'weapon' && isSlotWeapon(c.id) && slots) {
+      const owned = !!(prevTaken[c.id] || (slots || []).includes(c.id));
+      if (!owned) {
+        if (hasEmptyWeaponSlot(slots)) {
+          slotHint = `<em class="card-slot-hint fill">${i18n.isZh() ? '裝入空欄' : 'EMPTY SLOT'}</em>`;
+        } else {
+          slotHint = `<em class="card-slot-hint swap-need">${i18n.isZh() ? '欄滿・需替換' : 'FULL · SWAP'}</em>`;
+        }
+      }
+    }
+    const titleZh = c.zh || c.en || '';
+    const titleEn = c.en || '';
+    const titleHtml = i18n.isZh()
+      ? `<strong class="card-title">${titleZh}</strong>`
+        + (titleEn ? `<em class="card-title-en">${titleEn}</em>` : '')
+      : `<strong class="card-title">${titleEn || titleZh}</strong>`;
+    const desc = i18n.isZh() ? (c.descZh || c.descEn || '') : (c.descEn || c.descZh || '');
     b.innerHTML =
       `<span class="card-icon" aria-hidden="true">${cardEmblem(c)}</span>` +
-      `<span class="card-body"><b>${i18n.isZh() ? c.zh : c.en}</b>` +
-      `<em class="card-kind">${kind}</em>${times}${healBadge}` +
-      `<small>${i18n.isZh() ? c.descZh : c.descEn}</small></span>`;
+      `<span class="card-body">${titleHtml}` +
+      `<span class="card-meta"><em class="card-kind">${kind}</em>${times}${healBadge}${slotHint}</span>` +
+      `<small class="card-desc">${desc}</small></span>`;
     if (action === 'swap') {
       const idx = c.swapIndex;
       b.addEventListener('pointerenter', () => highlightSwapSlot(idx));

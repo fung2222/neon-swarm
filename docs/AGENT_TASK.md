@@ -28,36 +28,35 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-DROP-READABILITY-001 → **complete**（v0.9.30 / `ea204fb`）
+## 狀態：PHASE6-LEVELUP-CARD-UX-001 → **complete**（v0.9.31 / pending SHA）
 
 **ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Active this turn
 
-**none** — last shipped: `PHASE6-DROP-READABILITY-001` → **`?v=0.9.30`**.
+**none** — last shipped: `PHASE6-LEVELUP-CARD-UX-001` → **`?v=0.9.31`**.
 
 **Shipped behavior：**
-- XP = small green crystal **shards** (not letter-board)
-- Heal = white+green **cross repair pack**
-- Magnet = rare blue **pulse disc** ground drop (`MAGNET_DROP_CHANCE=0.025`) applying existing magnet util card (×1.35, max 4) — no new formula
-- Weapon = gold-framed board landmark (v0.9.29 halo kept)
-- Size hierarchy XP < heal < weapon; per-kind floor halo/rim
-- Screenshots `tests/screenshots/phase6-drop-readability/`
+- Clearer card hierarchy (zh title + EN under / kind pill / desc clamp)
+- Stronger contrast + larger emblems; stack `n/max` pill + progress bar
+- Thumb-friendly min-height ~96px on 390; :hover/:active/:focus-visible
+- Light slot hint on new slot weapons: 裝入空欄 / 欄滿・需替換
+- Pickup-offer shares chrome; keep/swap/convertHeal intact
+- Screenshots `tests/screenshots/phase6-levelup-ux/`
 
 ### Queue（recommended next — safe, no Phase 4）
 
-1. **PHASE6-LEVELUP-CARD-UX-001** — level-up card UX polish (layout／contrast／tap targets) — preferred next
-2. OR pause／zone banner timing QOL if card UX unclear
+1. **PHASE6-BANNER-TIMING-001** — pause／zone banner timing QOL — preferred next (last clear safe Phase6 polish)
+2. After banner QOL (or if skipped): **sync with Roy before Phase 4** — do not invent systems
 3. **HIT-FEEL-DEVICE**（needs Roy 真機）— skip wait；keep queued
 4. Phone GPU／WebGL — **deferred by Roy**
 5. Horn art lock — **only after** Roy later OK
-
-If safe Phase6 polish queue thins after card UX — sync before Phase 4 (do not invent systems).
 
 **Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU 深入／further horn polish.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
 - `PHASE6-DROP-READABILITY-001` → **v0.9.30**.
 - `PHASE6-PICKUP-POLISH-001` → **v0.9.29**.
 - `PHASE6-MULTI-SLOT-INVENTORY-001` → **v0.9.28**.
