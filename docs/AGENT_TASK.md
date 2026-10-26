@@ -9,7 +9,7 @@
 
 ### Complete — PHASE6-TRADEOFF-CARDS-001
 
-**PHASE6-TRADEOFF-CARDS-001** → live cache-bust **`?v=0.9.43`**（code `PENDING`）.
+**PHASE6-TRADEOFF-CARDS-001** → live cache-bust **`?v=0.9.43`**（code `d44af7a`）.
 
 - Exactly **3** trade-off cards additive to `CARDS`（existing numbers **unchanged**）:
   - `overclock` — MG fireCd×0.85 · armor−1（floor 0）；max 3
@@ -25,7 +25,7 @@
 
 ### Recently completed
 
-- `PHASE6-TRADEOFF-CARDS-001` → **v0.9.43** (`PENDING`)
+- `PHASE6-TRADEOFF-CARDS-001` → **v0.9.43** (`d44af7a`)
 - `PHASE6-ZONE-PRESSURE-001` → **v0.9.42** (`ddf39c4`)
 - `PHASE6-PERIODIC-DANGER-001` → **v0.9.41** (`3040b5e`)
 
