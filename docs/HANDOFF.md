@@ -464,7 +464,7 @@ Rollback baseline:
 
 **目前基準 v0.9.35（PHASE6-MUTE-PERSIST-001；HEAD 以 `main`／live `?v=0.9.35` 為準）。** Roy continue（「未用得」）still on — safe UX only。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-MUTE-PERSIST-001` **已完成**（v0.9.35）：mute persist harden＋menu chrome＋cold-load；截圖 `tests/screenshots/phase6-mute-persist/`。
+- `PHASE6-MUTE-PERSIST-001` **已完成**（v0.9.35 / `a026e1e`）：mute persist harden＋menu chrome＋cold-load；截圖 `tests/screenshots/phase6-mute-persist/`。
 - `PHASE6-DAMAGE-NUMBERS-LITE-001` **已完成**（v0.9.34 / `3da3007`）：hit／heal／hurt floats；截圖 `tests/screenshots/phase6-damage-numbers/`。
 - `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33 / `7db11c0`）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
 - `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `e578bae`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
@@ -490,7 +490,7 @@ Rollback baseline:
 
 ## 版本歷史（增量）
 
-- **v0.9.35** (`PHASE6-MUTE-PERSIST-001`) — Mute preference survives reload/next visit; early-paint + menu mute chrome + zh-HK aria; kit store already had persist — harden only. Screenshots `tests/screenshots/phase6-mute-persist/`. Next: PHASE6-SAFE-AREA-001 (still ban Phase 4).
+- **v0.9.35** / `a026e1e` (`PHASE6-MUTE-PERSIST-001`) — Mute preference survives reload/next visit; early-paint + menu mute chrome + zh-HK aria; kit store already had persist — harden only. Screenshots `tests/screenshots/phase6-mute-persist/`. Next: PHASE6-SAFE-AREA-001 (still ban Phase 4).
 - **v0.9.34** (`PHASE6-DAMAGE-NUMBERS-LITE-001`) — Floating hit/heal/hurt digits (DOM pool, throttle, mobile-light). Screenshots `tests/screenshots/phase6-damage-numbers/`.
 - **v0.9.33** (`PHASE6-RUN-LOOP-UX-001`) — First-run coach tip, hurt vignette, XP bar punch, over zone+loadout. Screenshots `tests/screenshots/phase6-run-loop-ux/`.
 - **v0.9.32** (`PHASE6-BANNER-TIMING-001`) — Banner short priority queue + min display; timings zone1400/elite1600/boss2600/phase900; pause zh-HK + no-auto-resume hint. Screenshots `tests/screenshots/phase6-banner-timing/`.
