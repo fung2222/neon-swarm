@@ -30,11 +30,12 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ## 狀態：HOLD — awaiting Kimi independent review of AIM-HIT-FAST-002
 
-**Completed（do not re-implement）：** `AIM-HIT-FAST-002` → **v0.9.19** / `3e3d20e`
+**Completed（do not re-implement）：** `AIM-HIT-FAST-002` → **v0.9.19** / `3e3d20e`（之後 docs／協作 commit 在 `main`；以 live `?v=0.9.19` 為準）
 
 - Precise quadratic intercept + muzzle two-stage；relative continuous collision；MG logic jitter removed。
 - Evidence：`tests/aim-hit-fast.test.mjs`、`tests/aim-hit-002-shots.mjs`、`tests/screenshots/aim-hit-002/`。
 - 屬**重大改動**（碰撞 update order／瞄準管線）→ 等 Kimi 審完先自動接 queue。
+- **Whole-game audit（常規／唔改玩法）：** `docs/AUDIT-v0.9.19.md`（2026-10-26）— MD vs code／headless 全綠；裝置／WebGL／horn lock／Play **未**驗收。唔當審核通過。
 
 **Do NOT start until review clears：** Phase 4 Precision／Morph、horn 最終 art lock、§9 系列規則落地、PERF rebaseline 當「已驗收」。
 

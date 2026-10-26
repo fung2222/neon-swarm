@@ -9,6 +9,8 @@
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
+>
+> **Whole-game audit：** `docs/AUDIT-v0.9.19.md`（Grok bot，2026-10-26 Asia/Hong_Kong）— 對齊 HANDOFF／AGENT_TASK 與 headless；SwiftShader ≠ 真機。
 
 ## 0. 先讀這一段：目前狀態與證據等級
 
@@ -444,9 +446,10 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.19（AIM-HIT-FAST-002；HEAD 以 `main`／live `?v=0.9.19` 為準）。**
+**目前基準 v0.9.19（AIM-HIT-FAST-002；HEAD 以 `main`／live `?v=0.9.19` 為準）。** 整局對照見 `docs/AUDIT-v0.9.19.md`。
 
 - `AIM-HIT-FAST-002` **已由 Grok bot 實作並 headless／SwiftShader 驗證**（重大：碰撞／瞄準）→ `docs/AGENT_TASK.md` **HOLD 等 Kimi 審**。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.19。
+- 2026-10-26 whole-game audit：所列 headless＋`aim-hit-002-shots` 全 PASS；MD 與 code 大致一致。**唔**等於 Kimi 審核通過或 Roy 真機驗收。
 - 協作已改：**常規 queue 項審完後 Grok 自動推進**；唔使 Roy 每輪轉發 MD。審核／任務回覆請直接改 repo 文件並 push。
 - 審核通過後按 `AGENT_TASK` queue：手機穩定 follow-up → horn 剪影方向（要 Roy 肉眼）→ 真機 hit feel → PERF rebaseline → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地。
 - SwiftShader ≠ 真機；高速橫向仍待 Roy 實玩。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
