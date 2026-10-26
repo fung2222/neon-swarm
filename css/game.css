@@ -487,3 +487,68 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 520px) {
   .boss-hp { top: calc(48px + env(safe-area-inset-top)); width: min(340px, 86vw); }
 }
+
+
+/* Phase 6 multi-slot weapon bar (v0.9.28) */
+.weapon-slots {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 6;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+.wslot {
+  width: 58px;
+  height: 58px;
+  border: 1.5px solid rgba(0, 229, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(5, 1, 15, 0.72);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.18), inset 0 0 10px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  color: #c8f7ff;
+}
+.wslot.filled {
+  border-color: rgba(255, 43, 214, 0.65);
+  box-shadow: 0 0 14px rgba(255, 43, 214, 0.28), inset 0 0 10px rgba(0, 0, 0, 0.35);
+}
+.wslot.primary {
+  border-color: rgba(0, 229, 255, 0.85);
+}
+.wslot.empty {
+  opacity: 0.42;
+  border-style: dashed;
+  border-color: rgba(180, 200, 220, 0.35);
+  color: #6a7a88;
+}
+.wslot-ico { font-size: 18px; line-height: 1; }
+.wslot-name {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.wslot-lv {
+  font-size: 10px;
+  color: #ffe600;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.wslot.empty .wslot-lv { display: none; }
+@media (max-width: 480px) {
+  .weapon-slots {
+    bottom: calc(96px + env(safe-area-inset-bottom)); /* above virtual stick */
+    gap: 6px;
+  }
+  .wslot { width: 48px; height: 48px; border-radius: 8px; }
+  .wslot-ico { font-size: 15px; }
+  .wslot-name { font-size: 8px; }
+  .wslot-lv { font-size: 9px; }
+}

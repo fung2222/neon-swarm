@@ -578,21 +578,108 @@ export function pickCards(rng, n = 3, taken = null) {
 
 
 /**
- * Phase 6 weapon-crate offer (v0.9.11).
- * Always returns a pickable choice list — never silently mutates `taken`.
- * Modes: take (not owned) | upgrade (owned, below max) | max (at cap).
- * Architecture is stack counts in `taken` — no multi-slot inventory.
+ * Phase 6 multi-slot inventory (v0.9.28).
+ * Fireable weapon systems that occupy HUD slots. MG upgrades (dmg/rate/…) do NOT.
+ * Cap 4: start with mg in slot 0; up to 3 additional specials.
  */
-export function buildWeaponPickupOffer(weaponId, taken = {}) {
+export const SLOT_WEAPONS = ['mg', 'laser', 'shotgun', 'rocket', 'grenade', 'plasma'];
+export const WEAPON_SLOT_MAX = 4;
+
+export function isSlotWeapon(id) {
+  return SLOT_WEAPONS.includes(id);
+}
+
+export function emptyWeaponSlots() {
+  const slots = new Array(WEAPON_SLOT_MAX).fill(null);
+  slots[0] = 'mg';
+  return slots;
+}
+
+export function slotFilledCount(slots) {
+  return (slots || []).filter(Boolean).length;
+}
+
+export function hasEmptyWeaponSlot(slots, max = WEAPON_SLOT_MAX) {
+  return slotFilledCount(slots) < max && (slots || []).some((s) => s == null);
+}
+
+/** Display level for a slot weapon (mg defaults to 1 even when not in `taken`). */
+export function weaponSlotLevel(id, taken = {}) {
+  if (!id) return 0;
+  if (id === 'mg') {
+    const n = Math.max((taken && taken.mg) || 0, (taken && taken.dmg) || 0);
+    return Math.max(1, n);
+  }
+  return (taken && taken[id]) || 0;
+}
+
+/**
+ * Phase 6 weapon-crate offer (v0.9.11 + v0.9.28 slots).
+ * Always returns a pickable choice list — never silently mutates `taken` / slots.
+ * Modes: take | upgrade | max | swap (new type, inventory full).
+ * Stacks live in `taken`; ownership visibility in `weaponSlots`.
+ */
+export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
   const base = CARDS_BY_ID[weaponId];
+  // Synthetic mg has no card — only real weapon cards are crate targets.
   if (!base || base.kind !== 'weapon') return null;
   const stacks = (taken && taken[weaponId]) || 0;
-  const owned = stacks > 0;
+  const slotWeapon = isSlotWeapon(weaponId);
+  const inSlots = !!(slots && slotWeapon && slots.includes(weaponId));
+  const owned = stacks > 0 || inSlots;
   const atMax = base.max != null && stacks >= base.max;
-  const mode = atMax ? 'max' : (owned ? 'upgrade' : 'take');
+  const slotsFull = slotWeapon && slots && !owned && !hasEmptyWeaponSlot(slots);
+  let mode = atMax ? 'max' : (owned ? 'upgrade' : (slotsFull ? 'swap' : 'take'));
   const choices = [];
 
-  if (!atMax) {
+  if (mode === 'swap') {
+    // One swap choice per filled non-mg slot (mg stays as the always-on starter).
+    (slots || []).forEach((sid, i) => {
+      if (!sid || sid === 'mg') return;
+      const out = CARDS_BY_ID[sid];
+      const outZh = out ? out.zh : sid;
+      const outEn = out ? out.en : sid.toUpperCase();
+      choices.push({
+        id: base.id,
+        kind: base.kind,
+        icon: base.icon,
+        shape: base.shape,
+        max: base.max,
+        apply: base.apply,
+        pickupAction: 'swap',
+        swapIndex: i,
+        swapOut: sid,
+        zh: `替換 · ${outZh} → ${base.zh}`,
+        en: `SWAP · ${outEn} → ${base.en}`,
+        descZh: `卸下 ${outZh}，裝備 ${base.zh} · ${base.descZh}`,
+        descEn: `Unequip ${outEn}, equip ${base.en} · ${base.descEn}`,
+      });
+    });
+    // Fallback: if somehow only mg is filled but count says full, allow swapping any non-null.
+    if (!choices.length) {
+      (slots || []).forEach((sid, i) => {
+        if (!sid) return;
+        const out = CARDS_BY_ID[sid];
+        const outZh = out ? out.zh : (sid === 'mg' ? '機槍' : sid);
+        const outEn = out ? out.en : (sid === 'mg' ? 'MG' : sid.toUpperCase());
+        choices.push({
+          id: base.id,
+          kind: base.kind,
+          icon: base.icon,
+          shape: base.shape,
+          max: base.max,
+          apply: base.apply,
+          pickupAction: 'swap',
+          swapIndex: i,
+          swapOut: sid,
+          zh: `替換 · ${outZh} → ${base.zh}`,
+          en: `SWAP · ${outEn} → ${base.en}`,
+          descZh: `卸下 ${outZh}，裝備 ${base.zh}`,
+          descEn: `Unequip ${outEn}, equip ${base.en}`,
+        });
+      });
+    }
+  } else if (!atMax) {
     choices.push({
       id: base.id,
       kind: base.kind,
@@ -636,12 +723,16 @@ export function buildWeaponPickupOffer(weaponId, taken = {}) {
     pickupAction: 'keep',
     zh: '保留現狀',
     en: 'KEEP CURRENT',
-    descZh: atMax ? '已滿級 · 唔改裝備' : '唔攞呢件 · 繼續用現有裝備',
-    descEn: atMax ? 'At max · leave gear unchanged' : 'Decline · keep current gear',
+    descZh: mode === 'swap'
+      ? '唔換 · 繼續用現有四格武器'
+      : (atMax ? '已滿級 · 唔改裝備' : '唔攞呢件 · 繼續用現有裝備'),
+    descEn: mode === 'swap'
+      ? 'Decline · keep current loadout'
+      : (atMax ? 'At max · leave gear unchanged' : 'Decline · keep current gear'),
     apply: () => {},
   });
 
-  return { weaponId, mode, stacks, owned, atMax, choices, base };
+  return { weaponId, mode, stacks, owned, atMax, choices, base, slotsFull: !!slotsFull };
 }
 
 

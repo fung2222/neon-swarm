@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -258,6 +258,8 @@ export class Game {
     this.pendingCards = null;
     this.pausedForLevel = false;
     this.taken = {};
+    // Phase 6 multi-slot inventory (v0.9.28): visible ownership; stacks still in `taken`.
+    this.weaponSlots = emptyWeaponSlots();
 
     this.px = 0; this.pz = 0;
     this.vx = 0; this.vz = 0;
@@ -342,16 +344,95 @@ export class Game {
     if (!card) return;
     const action = card.pickupAction;
     const synthetic = action === 'keep' || action === 'convertHeal';
-    if (action !== 'keep') card.apply(this);
     if (!this.taken) this.taken = {};
-    // Real take/upgrade (and normal level-up cards) go through `taken` stacks.
-    // Synthetic keep / heal consolation must not pollute the card pool.
-    if (!synthetic) this.taken[card.id] = (this.taken[card.id] || 0) + 1;
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+
+    // Level-up pick of a NEW slot weapon when inventory is full → open swap offer (never silent).
+    if (!synthetic && action !== 'swap' && isSlotWeapon(card.id)
+        && !this.weaponSlots.includes(card.id) && !hasEmptyWeaponSlot(this.weaponSlots)) {
+      this._openSwapOffer(card.id, card);
+      return;
+    }
+
+    if (action === 'swap') {
+      this._swapWeaponSlot(card.swapIndex, card.id);
+      if (typeof card.apply === 'function') card.apply(this);
+      this.taken[card.id] = (this.taken[card.id] || 0) + 1;
+    } else {
+      if (action !== 'keep') card.apply(this);
+      // Real take/upgrade (and normal level-up cards) go through `taken` stacks.
+      // Synthetic keep / heal consolation must not pollute the card pool.
+      if (!synthetic) this.taken[card.id] = (this.taken[card.id] || 0) + 1;
+      if (!synthetic && isSlotWeapon(card.id) && !this.weaponSlots.includes(card.id)) {
+        this._fillWeaponSlot(card.id);
+      }
+    }
+
     this.pendingCards = null;
     this.pausedForLevel = false;
     this.pendingFrom = null;
     // XP may have banked past threshold while a pickup offer was open — open level-up now.
     if (this.xp >= this.xpNeed) this._levelUp();
+  }
+
+  _fillWeaponSlot(weaponId) {
+    if (!isSlotWeapon(weaponId)) return false;
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    if (this.weaponSlots.includes(weaponId)) return false;
+    const i = this.weaponSlots.findIndex((s) => s == null);
+    if (i < 0) return false;
+    this.weaponSlots[i] = weaponId;
+    return true;
+  }
+
+  /** Zero combat stacks for a slot weapon removed from the bar. */
+  _clearSlotWeaponState(weaponId) {
+    if (!weaponId || weaponId === 'mg') return; // mg stays as base fire; never fully stripped here
+    if (this.taken) delete this.taken[weaponId];
+    if (weaponId === 'laser') { this.laser = 0; this.laserT = 0; }
+    else if (weaponId === 'shotgun') { this.shotgun = 0; this.shotgunT = 0; }
+    else if (weaponId === 'rocket') { this.rocket = 0; this.rocketT = 0; }
+    else if (weaponId === 'grenade') { this.grenade = 0; this.grenadeT = 0; }
+    else if (weaponId === 'plasma') { this.plasma = 0; this.plasmaT = 0; }
+  }
+
+  _swapWeaponSlot(index, newId) {
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    if (index == null || index < 0 || index >= this.weaponSlots.length) return false;
+    if (!isSlotWeapon(newId)) return false;
+    const old = this.weaponSlots[index];
+    if (old && old !== newId) this._clearSlotWeaponState(old);
+    // Drop duplicate if newId already sat in another slot
+    for (let i = 0; i < this.weaponSlots.length; i++) {
+      if (i !== index && this.weaponSlots[i] === newId) this.weaponSlots[i] = null;
+    }
+    this.weaponSlots[index] = newId;
+    return true;
+  }
+
+  _openSwapOffer(weaponId, pendingCard = null) {
+    if (!this.taken) this.taken = {};
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    const offer = buildWeaponPickupOffer(weaponId, this.taken, this.weaponSlots);
+    if (!offer || offer.mode !== 'swap') {
+      // Safety: if offer builder can't swap, refuse rather than silent overwrite.
+      this.pendingCards = [{
+        id: '_pickup_keep', kind: 'util', icon: '↩', shape: 'deflect', max: null,
+        pickupAction: 'keep', zh: '欄位已滿', en: 'SLOTS FULL',
+        descZh: '武器欄已滿 · 無法新增', descEn: 'Weapon bar full · cannot add',
+        apply: () => {},
+      }];
+      this.pausedForLevel = true;
+      this.pendingFrom = 'pickup';
+      this._pendingSwapCard = null;
+      return null;
+    }
+    // Preserve original card.apply if level-up deferred into swap (already on choices).
+    this.pendingCards = offer.choices;
+    this.pausedForLevel = true;
+    this.pendingFrom = 'pickup';
+    this._pendingSwapCard = pendingCard || null;
+    return offer;
   }
 
   /**
@@ -360,7 +441,8 @@ export class Game {
    */
   _offerWeaponPickup(weaponId) {
     if (!this.taken) this.taken = {};
-    const offer = buildWeaponPickupOffer(weaponId, this.taken);
+    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    const offer = buildWeaponPickupOffer(weaponId, this.taken, this.weaponSlots);
     if (!offer) return null;
     this.pendingCards = offer.choices;
     this.pausedForLevel = true;
@@ -2512,4 +2594,4 @@ export class Game {
   }
 }
 
-export { DROP, cratesFor, WEAPON_IDS, PRIMARY_VISUAL_WEAPONS };
+export { DROP, cratesFor, WEAPON_IDS, PRIMARY_VISUAL_WEAPONS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, weaponSlotLevel };

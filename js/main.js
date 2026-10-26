@@ -329,7 +329,9 @@ function updateHUD(force = false) {
   const hp = Math.max(0, g.hp);
   const xpPct = Math.min(1, g.xp / g.xpNeed);
   const goalLeft = Math.max(0, (g.goalKills || 0) - g.kills);
-  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '|' + xpPct.toFixed(2) + '|' + goalLeft;
+  const slotsKey = (g.weaponSlots || []).map((id) => id || '-').join(',')
+    + ':' + (g.weaponSlots || []).map((id) => id ? ((g.taken && g.taken[id]) || (id === 'mg' ? 1 : 0)) : 0).join(',');
+  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '|' + xpPct.toFixed(2) + '|' + goalLeft + '|' + slotsKey;
   if (!force && snap === _hudSnap) return;
   _hudSnap = snap;
   $('hud-score').textContent = String(score);
@@ -343,6 +345,48 @@ function updateHUD(force = false) {
     goalEl.classList.toggle('done', goalLeft === 0);
     const lab = goalEl.querySelector('span');
     if (lab) lab.textContent = goalLeft === 0 ? t('goal.ready') : t('goal.kills');
+  }
+  updateWeaponSlotsHUD(g);
+}
+
+const SLOT_LABEL = {
+  mg: 'MG', laser: 'LASER', shotgun: 'SG', rocket: 'RKT', grenade: 'GRN', plasma: 'PLAS',
+};
+const SLOT_ICON = {
+  mg: '⚡', laser: '═', shotgun: '✴', rocket: '🚀', grenade: '💣', plasma: '☢',
+};
+
+function updateWeaponSlotsHUD(g) {
+  const bar = $('weapon-slots');
+  if (!bar || !g) return;
+  const slots = g.weaponSlots || ['mg', null, null, null];
+  const kids = bar.children;
+  for (let i = 0; i < 4; i++) {
+    let el = kids[i];
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'wslot';
+      el.setAttribute('data-i', String(i));
+      bar.appendChild(el);
+    }
+    const id = slots[i] || null;
+    el.classList.toggle('empty', !id);
+    el.classList.toggle('filled', !!id);
+    el.classList.toggle('primary', id === 'mg' || id === 'laser');
+    if (!id) {
+      el.innerHTML = '<span class="wslot-ico" aria-hidden="true">·</span><span class="wslot-lv"></span>';
+      el.title = i18n.isZh() ? '空武器格' : 'Empty slot';
+      continue;
+    }
+    let lv = (g.taken && g.taken[id]) || 0;
+    if (id === 'mg') lv = Math.max(1, lv, (g.taken && g.taken.dmg) || 0);
+    const lab = SLOT_LABEL[id] || id.toUpperCase();
+    const ico = SLOT_ICON[id] || '◆';
+    el.innerHTML =
+      `<span class="wslot-ico" aria-hidden="true">${ico}</span>` +
+      `<span class="wslot-name">${lab}</span>` +
+      `<span class="wslot-lv">Lv${lv}</span>`;
+    el.title = `${lab} Lv${lv}`;
   }
 }
 
@@ -476,9 +520,10 @@ function showLevelCards(cards, opts = {}) {
   const from = opts.from || (S.game && S.game.pendingFrom) || 'level';
   const title = $('level-title');
   if (title) {
-    title.textContent = from === 'pickup'
-      ? t('pickup.title')
-      : t('levelUp');
+    const isSwap = from === 'pickup' && cards.some((c) => c.pickupAction === 'swap');
+    title.textContent = isSwap
+      ? t('pickup.swap')
+      : (from === 'pickup' ? t('pickup.title') : t('levelUp'));
   }
   const box = $('level-cards');
   box.innerHTML = '';
@@ -535,6 +580,8 @@ function startRun() {
     g.grenade = Math.max(g.grenade, 1);
     g.plasma = Math.max(g.plasma, 1);
     g.taken = { ...(g.taken || {}), laser: 1, shotgun: 1, rocket: 1, grenade: 1, plasma: 1 };
+    // HUD shows max 4 slots; extras still fire via stacks (QA cheat).
+    g.weaponSlots = ['mg', 'laser', 'shotgun', 'rocket'];
   }
   view.setMech(S.mechId);
   S.state = 'play';
