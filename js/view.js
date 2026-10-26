@@ -870,24 +870,25 @@ function dropMesh(d) {
   return g;
 }
 // ---------------------------------------------------------------------------
-// Map props:// ---------------------------------------------------------------------------
 // Map props: low, readable, no tall buildings (never block the view).
+// Phase 6: lab (cool teal crates/fence) vs assembly (mech frames/gantry/pallets).
+// Same arena size/floor; only edge décor + trim color temperature change.
 // ---------------------------------------------------------------------------
-function buildObstacles(parent) {
+const EDGE_SPOTS = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
+
+function buildLabEdgeDecor() {
   const group = new THREE.Group();
-  parent.add(group);
+  group.name = 'edgeDecor';
   // Phase 3 lab framing: cooler cyan-teal edge accents; keep décor dim vs playable floor.
   const crateMat = new THREE.MeshStandardMaterial({ color: 0x101820, emissive: 0x0c141c, emissiveIntensity: 0.14, roughness: 0.72, metalness: 0.28 });
-  const edgeMat = mat(0x1a6a78, 0.22); // cooler lab teal (was warmer blue-gray)
+  const edgeMat = mat(0x1a6a78, 0.22); // cooler lab teal
   const wallMat = new THREE.MeshStandardMaterial({ color: 0x0c141c, emissive: 0x0e1a22, emissiveIntensity: 0.12, roughness: 0.74, metalness: 0.22 });
   const debrisMat = new THREE.MeshStandardMaterial({ color: 0x121a24, emissive: 0x101c28, emissiveIntensity: 0.12, roughness: 0.68, metalness: 0.3 });
   const pipeMat = hullMat(0x163040, 0.12);
-  const panelMat = mat(0x148a9a, 0.28); // small containment panel strips
+  const panelMat = mat(0x148a9a, 0.28);
 
-  // three low "lab zones" scattered around the arena: crates + fence + containers
-  const zones = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
   let i = 0;
-  for (const [zx, zz] of zones) {
+  for (const [zx, zz] of EDGE_SPOTS) {
     const kind = i % 4;
     if (kind === 0) {
       for (let k = 0; k < 3; k++) {
@@ -900,7 +901,6 @@ function buildObstacles(parent) {
         group.add(c, top);
       }
     } else if (kind === 1) {
-      // low fence barrier
       for (let k = 0; k < 3; k++) {
         const p = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.08), pipeMat);
         p.position.set(zx + k * 0.7 - 0.7, 0.22, zz);
@@ -910,14 +910,12 @@ function buildObstacles(parent) {
       rail.position.set(zx, 0.4, zz);
       group.add(rail);
     } else if (kind === 2) {
-      // shipping container (low, wide)
       const box = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.0), wallMat);
       box.position.set(zx, 0.45, zz);
       const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.42, 0.06, 1.02), edgeMat);
       stripe.position.set(zx, 0.86, zz);
       group.add(box, stripe);
     } else {
-      // debris scatter
       for (let k = 0; k < 4; k++) {
         const d = new THREE.Mesh(new THREE.BoxGeometry(0.3 + (k % 2) * 0.2, 0.18, 0.28), debrisMat);
         d.position.set(zx + (k - 1.5) * 0.4, 0.1, zz + (k % 2) * 0.3);
@@ -928,7 +926,6 @@ function buildObstacles(parent) {
     i++;
   }
 
-  // a few pipe runs + cooler lab panel strips (containment framing)
   for (let k = 0; k < 5; k++) {
     const x = -24 + k * 12;
     const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.2, 8), pipeMat);
@@ -947,6 +944,104 @@ function buildObstacles(parent) {
     group.add(panel);
   }
   return group;
+}
+
+/**
+ * Assembly bay edge décor — distinct shapes (not a teal→amber recolor of lab crates):
+ * incomplete mech frames, gantry/crane silhouettes, part pallets, hazard stripes.
+ * Trim: warm amber/industrial orange at low emissive (danger telegraph colors stay free).
+ * Hull steel stays graphite — never red mech hulls.
+ */
+function buildAssemblyEdgeDecor() {
+  const group = new THREE.Group();
+  group.name = 'edgeDecor';
+  const steel = new THREE.MeshStandardMaterial({ color: 0x242830, emissive: 0x1a1e26, emissiveIntensity: 0.16, roughness: 0.55, metalness: 0.55 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x181c22, emissive: 0x12161c, emissiveIntensity: 0.12, roughness: 0.7, metalness: 0.4 });
+  const amber = mat(0xc47828, 0.28); // warm industrial trim (not danger red / acid)
+  const stripeA = mat(0xd48820, 0.24);
+  const stripeB = new THREE.MeshStandardMaterial({ color: 0x141820, emissive: 0x0a0c10, emissiveIntensity: 0.06, roughness: 0.8, metalness: 0.2 });
+
+  let i = 0;
+  for (const [zx, zz] of EDGE_SPOTS) {
+    const kind = i % 4;
+    if (kind === 0) {
+      // Incomplete mech frame: pelvis + torso + one missing-limb stub (graphite, not red)
+      const pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.35, 0.55), steel);
+      pelvis.position.set(zx, 0.28, zz);
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.85, 0.45), dark);
+      torso.position.set(zx, 0.85, zz);
+      const stub = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.55, 0.22), steel);
+      stub.position.set(zx + 0.55, 0.7, zz);
+      stub.rotation.z = 0.4;
+      const trim = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.05, 0.48), amber);
+      trim.position.set(zx, 1.28, zz);
+      // empty socket plate (missing limb)
+      const socket = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.08), amber);
+      socket.position.set(zx - 0.42, 0.75, zz);
+      group.add(pelvis, torso, stub, trim, socket);
+    } else if (kind === 1) {
+      // Gantry / crane silhouette: two uprights + boom
+      const postL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.6, 0.12), steel);
+      postL.position.set(zx - 0.9, 0.8, zz);
+      const postR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.6, 0.12), steel);
+      postR.position.set(zx + 0.9, 0.8, zz);
+      const boom = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.1, 0.14), dark);
+      boom.position.set(zx, 1.55, zz);
+      const hook = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.08), amber);
+      hook.position.set(zx + 0.3, 1.25, zz);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.12, 0.5), dark);
+      base.position.set(zx, 0.06, zz);
+      group.add(postL, postR, boom, hook, base);
+    } else if (kind === 2) {
+      // Part pallet + stacked parts
+      const pallet = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.12, 1.1), dark);
+      pallet.position.set(zx, 0.08, zz);
+      for (let k = 0; k < 3; k++) {
+        const part = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.28 + (k % 2) * 0.15, 0.35), steel);
+        part.position.set(zx - 0.5 + k * 0.5, 0.3 + (k % 2) * 0.05, zz + (k % 2) * 0.15);
+        part.rotation.y = k * 0.4;
+        group.add(part);
+      }
+      // Hazard stripe bar on pallet edge (amber/dark alternating — décor, not telegraph)
+      for (let k = 0; k < 5; k++) {
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.04, 0.12), k % 2 ? stripeA : stripeB);
+        s.position.set(zx - 0.7 + k * 0.35, 0.16, zz + 0.55);
+        group.add(s);
+      }
+      group.add(pallet);
+    } else {
+      // Floor hazard chevron strip + low rack
+      for (let k = 0; k < 4; k++) {
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.03, 0.22), k % 2 ? stripeA : stripeB);
+        s.position.set(zx + (k - 1.5) * 0.5, 0.03, zz);
+        s.rotation.y = 0.35;
+        group.add(s);
+      }
+      const rack = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.7, 0.35), steel);
+      rack.position.set(zx, 0.4, zz - 0.4);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.05, 0.08), amber);
+      rail.position.set(zx, 0.78, zz - 0.4);
+      group.add(rack, rail);
+    }
+    i++;
+  }
+
+  // Perimeter amber panel strips (warmer trim vs lab teal)
+  for (let k = 0; k < 6; k++) {
+    const ang = (k / 6) * Math.PI * 2;
+    const r = ARENA.soft - 1.2;
+    const px = Math.cos(ang) * r;
+    const pz = Math.sin(ang) * r;
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.35), amber);
+    panel.position.set(px, 0.12, pz);
+    panel.rotation.y = -ang + Math.PI / 2;
+    group.add(panel);
+  }
+  return group;
+}
+
+function buildEdgeDecor(zone) {
+  return zone === 'assembly' ? buildAssemblyEdgeDecor() : buildLabEdgeDecor();
 }
 
 export class View {
@@ -971,30 +1066,32 @@ export class View {
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
 
-    // Soft playable ring + outer hard edge (cyan arena, not magenta cage)
-    const softRing = new THREE.Mesh(
+    // Soft playable ring + outer hard edge (lab = cool teal; assembly swaps amber)
+    this.softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
       new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.055, side: THREE.DoubleSide })
     );
-    softRing.rotation.x = -Math.PI / 2;
-    softRing.position.y = 0.04;
-    this.group.add(softRing);
-    const hardRing = new THREE.Mesh(
+    this.softRing.rotation.x = -Math.PI / 2;
+    this.softRing.position.y = 0.04;
+    this.group.add(this.softRing);
+    this.hardRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.06, 96),
       new THREE.MeshBasicMaterial({ color: 0x3a6068, transparent: true, opacity: 0.07, side: THREE.DoubleSide })
     );
-    hardRing.rotation.x = -Math.PI / 2;
-    hardRing.position.y = 0.05;
-    this.group.add(hardRing);
+    this.hardRing.rotation.x = -Math.PI / 2;
+    this.hardRing.position.y = 0.05;
+    this.group.add(this.hardRing);
     // Center pad ring — reads as lab arena spawn (kept quiet vs pickups)
-    const pad = new THREE.Mesh(
+    this.padRing = new THREE.Mesh(
       new THREE.RingGeometry(2.4, 2.55, 64),
       new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.045, side: THREE.DoubleSide })
     );
-    pad.rotation.x = -Math.PI / 2;
-    pad.position.y = 0.035;
-    this.group.add(pad);
-    buildObstacles(this.group);
+    this.padRing.rotation.x = -Math.PI / 2;
+    this.padRing.position.y = 0.035;
+    this.group.add(this.padRing);
+    this.mapZone = 'lab';
+    this.edgeDecor = buildEdgeDecor('lab');
+    this.group.add(this.edgeDecor);
 
     this.player = null;
     this.playerMechId = null;
@@ -1339,7 +1436,31 @@ export class View {
 
   _setEmissive(mats, flash) { for (const m of mats) m.emissiveIntensity = flash; }
 
+  /**
+   * Swap edge décor when mapZone changes (lab ↔ assembly).
+   * Floor / arena size unchanged; only edge props + quiet ring tint.
+   */
+  setMapZone(zone) {
+    const z = zone === 'assembly' ? 'assembly' : 'lab';
+    if (this.mapZone === z && this.edgeDecor) return;
+    this.mapZone = z;
+    if (this.edgeDecor) {
+      this.group.remove(this.edgeDecor);
+      disposeTree(this.edgeDecor);
+      this.edgeDecor = null;
+    }
+    this.edgeDecor = buildEdgeDecor(z);
+    this.group.add(this.edgeDecor);
+    // Quiet ring tint: teal (lab) vs warm amber (assembly). Low opacity — no danger steal.
+    const soft = z === 'assembly' ? 0xb86a28 : 0x1a6a78;
+    const hard = z === 'assembly' ? 0x8a6040 : 0x3a6068;
+    if (this.softRing && this.softRing.material) this.softRing.material.color.setHex(soft);
+    if (this.hardRing && this.hardRing.material) this.hardRing.material.color.setHex(hard);
+    if (this.padRing && this.padRing.material) this.padRing.material.color.setHex(soft);
+  }
+
   sync(game, dt = 0.016) {
+    if (game && game.mapZone && game.mapZone !== this.mapZone) this.setMapZone(game.mapZone);
     this.setMech(game.mech || 'horn');
     this.player.position.set(game.px, 0, game.pz);
 

@@ -95,4 +95,7 @@ i18n.add({
   'boss.phase.orbit': ['軌道相位', 'ORBIT PHASE'],
   'boss.phase.volley': ['齊射相位', 'VOLLEY PHASE'],
   'boss.phase.frenzy': ['狂潮相位', 'FRENZY PHASE'],
+  // Phase 6 map zone banners (zh-HK first)
+  'zone.assembly': ['進入 · 機甲組裝區', 'ENTER · ASSEMBLY BAY'],
+  'zone.assemblyEn': ['ASSEMBLY BAY', 'ASSEMBLY BAY'],
 });

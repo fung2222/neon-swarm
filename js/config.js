@@ -388,8 +388,23 @@ export function swarmPressure(t) {
   return { density, hpMul, speedMul };
 }
 
-/** Weighted wave table: what the lab throws at you at time t. */
-export function waveMix(t) {
+/**
+ * Phase 6 map zones (v0.9.14) — same arena; edge décor + wave mix shift.
+ * Escape path (HANDOFF): lab → assembly → reactor → blockade → rooftop.
+ * Only lab + assembly are implemented. assemblyAt = 195s (3:15), after
+ * sentinel@120 and before hunter@240 so the bay reads before elite #2.
+ */
+export const MAP_ZONE = {
+  assemblyAt: 195,
+};
+
+/** Weighted wave table. Optional zone overrides lab table (assembly: fewer staffers). */
+export function waveMix(t, zone = null) {
+  const z = zone || (t >= MAP_ZONE.assemblyAt ? 'assembly' : 'lab');
+  if (z === 'assembly') {
+    // Assembly bay: industrial pressure — more soldier/walker, fewer panic staffers.
+    return [['soldier', 0.32], ['walker', 0.28], ['officer', 0.18], ['drone', 0.12], ['chief', 0.06], ['staffer', 0.04]];
+  }
   if (t < 18) return [['staffer', 0.6], ['guard', 0.25], ['drone', 0.15]];
   if (t < 40) return [['staffer', 0.32], ['guard', 0.2], ['soldier', 0.3], ['drone', 0.18]];
   if (t < 65) return [['staffer', 0.2], ['soldier', 0.35], ['drone', 0.25], ['officer', 0.1], ['walker', 0.1]];
@@ -397,8 +412,8 @@ export function waveMix(t) {
   return [['soldier', 0.25], ['walker', 0.25], ['officer', 0.2], ['chief', 0.15], ['mech', 0.15]];
 }
 
-export function pickEnemyType(rng, t) {
-  const mix = waveMix(t);
+export function pickEnemyType(rng, t, zone = null) {
+  const mix = waveMix(t, zone);
   let r = rng();
   for (const [id, w] of mix) {
     if (r < w) return id;

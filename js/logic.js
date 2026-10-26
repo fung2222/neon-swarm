@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, buildWeaponPickupOffer, eliteCfg } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -228,6 +228,8 @@ export class Game {
     // Phase 3 elite / boss beats
     this._beatsFired = Object.create(null);
     this._spawnPauseUntil = 0;
+    // Phase 6 map zone (lab → assembly @ MAP_ZONE.assemblyAt)
+    this.mapZone = 'lab';
     this.bossHazards = []; // volley bullets + orbit floor telegraphs
     for (let i = 0; i < 10; i++) this._spawn();
   }
@@ -280,7 +282,7 @@ export class Game {
   }
 
   _pickType() {
-    return pickEnemyType(this.rng, this.t);
+    return pickEnemyType(this.rng, this.t, this.mapZone);
   }
 
   _softClamp(x, z, radius = 0) {
@@ -1377,6 +1379,11 @@ export class Game {
     if (!this.alive || this.pausedForLevel) return { events: [] };
     const events = [];
     this.t += dt;
+    // Phase 6: lab → assembly time gate (before hunter@240)
+    if (this.mapZone === 'lab' && this.t >= MAP_ZONE.assemblyAt) {
+      this.mapZone = 'assembly';
+      events.push({ type: 'zoneEnter', zone: 'assembly', at: MAP_ZONE.assemblyAt });
+    }
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
     if (this.muzzle > 0) this.muzzle -= dt;

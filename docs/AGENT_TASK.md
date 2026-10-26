@@ -1,6 +1,6 @@
 # RAMPAGE MECH — Active Agent Task
 
-> 開始前必讀 `docs/HANDOFF.md`、`docs/BEATS-PLAN.md`。本文件只定義目前授權範圍。
+> 開始前必讀 `docs/HANDOFF.md`。本文件只定義目前授權範圍。
 
 ## 固定工作規則
 
@@ -10,35 +10,36 @@
 
 ## Active task
 
-**Task ID:** `PHASE3-ELITE2-001`  
-**名稱：** Phase 3 — 精英 #2（約 4:00，variant／多段 telegraph）  
-**性質：** 內容 beat；不改 horn、唔開 Precision／Morph、唔做手機 GPU、唔鋪五區地圖、唔重做 boss。
+**Task ID:** `PHASE6-MAP-ASSEMBLY-001`  
+**名稱：** Phase 6 — 機甲組裝區 vertical slice（lab → assembly）  
+**性質：** 地圖／敘事分區小片；不改 horn、唔開 Precision／Morph、唔做手機 GPU、唔做五區一次做齊。
 
 ### 背景
 
-- AIM-HIT-FAST（v0.9.12）Roy OK，叫繼續流程。
-- BEATS-PLAN：2:00 SENTINEL、**4:00 elite #2（variant, more segments）**、6:00 SWARM CORE。
-- 現況：`BEATS` 只有 sentinel@120 + swarm_core@360；缺第二精英。
+- Elite #2（v0.9.13）已落地；Roy 叫繼續流程。
+- HANDOFF 逃亡線分區：收容實驗室 → **機甲組裝** → 能源反應爐 → 軍事封鎖 → 天台逃出。
+- 現況：全程 lab 邊緣色溫＋crate／fence；未有真正「換區」敘事。
 
 ### 授權（收窄）
 
 允許：
 
-1. **BEATS：** `{ at: 240, kind: 'elite', id: '…' }`；沿用 max-one-elite、spawn pause、zh-HK 橫幅、擊殺 2 卡＋XP。
-2. **剪影：** 與 SENTINEL **可辨不同**（例如獵殺機甲／雙段衝刺型）；程序化 mesh；**禁止只 recolor**；**唔用紅機殼**。
-3. **多段節拍：** 「more segments」＝比 SENTINEL 多一段可讀壓力，例如：telegraph → charge → 短 recover → **第二段 telegraph／charge**，或雙 warning lane。每段 telegraph ≥1.2s 先傷。
-4. 字串 zh-HK／en；擴充 `beats.test.mjs`（240s 觸發、多段時序、仍 max one）；回歸；截圖；cache-bust **0.9.13**；更新 HANDOFF。
+1. **分區狀態：** run 內可切換／推進 `mapZone`（或等價）：至少 `lab` → `assembly`。觸發可用時間門檻（建議 ~3:00–3:30 進入組裝，喺 hunter@4:00 前有感）、或擊殺／距離——擇一寫清並可測。
+2. **組裝區視覺（唔係只 recolor）：** 邊緣裝飾換成組裝廠感（半完成機甲骨架、吊臂／龍門、零件托盤、警示條紋等程序化 props）；邊緣色溫可偏暖工業橙／琥珀 trim，**可玩地面維持低對比暗底**（沿用 0.9.8 原則）；danger 色（紅／橙／酸綠 telegraph）唔被裝飾搶走。
+3. **輕量玩法理由：** 組裝區敵人 mix 微調（例如多啲 walker／soldier、少啲 staffer panic）或 1 個組裝主題雜兵剪影（可選，勿膨脹）；唔好整新 boss。
+4. **UI：** 進入分區時短 zh-HK 橫幅（例：「進入 · 機甲組裝區」）；en 細字。
+5. 測試（zone 觸發、decoration／mix 切換唔爆）；回歸；截圖 lab vs assembly；cache-bust **0.9.14**；更新 HANDOFF。
 
-不允許：endless 90s elite 循環、五區地圖、武器數值大改、horn bake、Precision／Morph、手機 GPU、改 aim/hit 核心（除非回歸）。
+不允許：一次做齊五區、reactor／blockade／rooftop、endless elites、horn bake、Precision／Morph、手機 GPU、武器大改、aim/hit 重寫。
 
 ### 目標
 
-- 跑到 ~4:00 出現第二精英，剪影＋多段 telegraph 與 SENTINEL 分得清。
-- 誠實標：仍係 lab 地圖上嘅第二 beat，唔係新地圖區。
+- 一場 run 由實驗室感過渡到組裝廠感，肉眼分得到；核心 bullet-heaven 操作不變。
+- 誠實標：仍係同一 arena 換邊飾／色溫／mix，唔係無縫大地圖。
 
 ### 完成條件
 
-- Push＋報告＋截圖；停下。Recommended next：下一地圖區／endless beats（do not start）。
+- Push＋報告＋截圖；停下。Recommended next：reactor 區／endless beats（do not start）。
 
 ### 回報格式
 

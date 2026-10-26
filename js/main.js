@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.13 Phase 3 elite #2 — multi-segment hunter beat
+// RAMPAGE MECH 暴走機甲 — v0.9.14 Phase 6 assembly bay map zone slice
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -829,6 +829,12 @@ else if (ev.type === 'xp') {
     else if (ev.type === 'wave') {
       audio.wave();
       particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0xff2bd6), 10, 5, 0.18);
+    }
+    else if (ev.type === 'zoneEnter') {
+      const zh = t('zone.assembly');
+      const en = t('zone.assemblyEn');
+      showBeatBanner(zh, en, 1800);
+      try { audio.wave(); } catch (_) {}
     }
     else if (ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite')) {
       const zh = ev.nameZh
