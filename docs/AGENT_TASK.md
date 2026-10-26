@@ -30,7 +30,7 @@ Do **not** invent more toast／streak／coach／banner polish.
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-RESULT-SHARE-001` → **v0.9.39** (`PENDING`)
+- `PHASE6-RESULT-SHARE-001` → **v0.9.39** (`87eb03a`)
 - `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** (`fc61ddc`)
 - `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
 - `PHASE6-SAFE-AREA-001` → **v0.9.36** (`eee063e`)

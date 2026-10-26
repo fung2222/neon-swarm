@@ -492,7 +492,7 @@ Rollback baseline:
 
 ## 版本歷史（增量）
 
-- **v0.9.39** / `PENDING` (`PHASE6-RESULT-SHARE-001`) — Over-screen 複製戰績／SHARE RUN (clipboard or navigator.share); zh-HK run line + live URL; confirm toast; no SDK. Soft-juice queue **done**. Screenshots `tests/screenshots/phase6-result-share/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
+- **v0.9.39** / `87eb03a` (`PHASE6-RESULT-SHARE-001`) — Over-screen 複製戰績／SHARE RUN (clipboard or navigator.share); zh-HK run line + live URL; confirm toast; no SDK. Soft-juice queue **done**. Screenshots `tests/screenshots/phase6-result-share/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
 - **v0.9.38** / `fc61ddc` (`PHASE6-KILL-STREAK-LITE-001`) — Soft kill-streak toast「連殺 ×N」at 5/10/15 (2.2s window; reset on hurt/timeout); **feedback only — no DPS/XP economy**; skips while early toast busy; kickFx at 10+. Screenshots `tests/screenshots/phase6-kill-streak/`. Next: RESULT-SHARE then pause invention / HIT-FEEL on phone (still ban Phase 4).
 - **v0.9.37** / `ea04be7` (`PHASE6-EARLY-FEEDBACK-001`) — Once-per-run first-kill toast「首殺」／FIRST BLOOD + first level-up chime/XP pulse/glow + soft first-heal micro-toast; coach-defer; `#early-toast` non-blocking. Screenshots `tests/screenshots/phase6-early-feedback/`. Next: KILL-STREAK-LITE or RESULT-SHARE; HIT-FEEL when Roy phones (still ban Phase 4).
 - **v0.9.36** / `eee063e` (`PHASE6-SAFE-AREA-001`) — Notch/home-bar safe-area: `--sa-*` tokens, HUD L/R, mute/pause, stick, weapon-slots, xp L/R, beat/coach width, pause/over/level/gfx panel padding, cheap landscape. Screenshots `tests/screenshots/phase6-safe-area/` (simulated insets). Next: PHASE6-EARLY-FEEDBACK-001 or HIT-FEEL-DEVICE (still ban Phase 4).
