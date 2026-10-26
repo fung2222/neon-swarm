@@ -28,7 +28,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-DROP-READABILITY-001 → **complete**（v0.9.30 / pending SHA）
+## 狀態：PHASE6-DROP-READABILITY-001 → **complete**（v0.9.30 / `ea204fb`）
 
 **ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
 
