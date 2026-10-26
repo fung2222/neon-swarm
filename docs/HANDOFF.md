@@ -470,7 +470,7 @@ Rollback baseline:
 
 **目前基準 v0.9.44（PHASE6-SCORE-POSITION-001；HEAD 以 `main`／live `?v=0.9.44` 為準）。** **HOLD for Roy try** — positioning trio + tradeoffs + score = full product beat。**Soft-juice usability queue DONE** — do not invent more toast／streak／coach polish。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-SCORE-POSITION-001` **已完成**（v0.9.44 / `PENDING`）：SCORE_POS move／safe／pace kill bonuses；over「走位／安全區／清場 +N」；測試 `tests/score-position.test.mjs`。
+- `PHASE6-SCORE-POSITION-001` **已完成**（v0.9.44 / `f52e205`）：SCORE_POS move／safe／pace kill bonuses；over「走位／安全區／清場 +N」；測試 `tests/score-position.test.mjs`。
 - `PHASE6-TRADEOFF-CARDS-001` **已完成**（v0.9.43 / `d44af7a`）：3 trade-off cards overclock／glass／heavy_frame；截圖 `tests/screenshots/phase6-tradeoff-cards/`。
 - `PHASE6-ZONE-PRESSURE-001` **已完成**（v0.9.42 / `ddf39c4`）：shrinking／pollution safe zone；cyan／acid edge；截圖 `tests/screenshots/phase6-zone-pressure/`。
 - `PHASE6-PERIODIC-DANGER-001` **已完成**（v0.9.41 / `3040b5e`）：periodic arena red danger circles telegraph≥0.9s＋AoE；截圖 `tests/screenshots/phase6-danger-pulse/`。
@@ -503,7 +503,7 @@ Rollback baseline:
 
 ## 版本歷史（增量）
 
-- **v0.9.44** / `PENDING` (`PHASE6-SCORE-POSITION-001`) — SCORE_POS: moveBonus(+2)/safeBonus(+3)/paceBonus(+1 cap) additive on kill; base e.score+floor(t) unchanged; over-screen 走位／安全區／清場; no mid-run toast. Tests `tests/score-position.test.mjs`. **HOLD for Roy try** (still ban Phase 4).
+- **v0.9.44** / `f52e205` (`PHASE6-SCORE-POSITION-001`) — SCORE_POS: moveBonus(+2)/safeBonus(+3)/paceBonus(+1 cap) additive on kill; base e.score+floor(t) unchanged; over-screen 走位／安全區／清場; no mid-run toast. Tests `tests/score-position.test.mjs`. **HOLD for Roy try** (still ban Phase 4).
 - **v0.9.43** / `d44af7a` (`PHASE6-TRADEOFF-CARDS-001`) — Exactly 3 trade-off cards: overclock (fireCd×0.85, armor−1), glass (+0.45 dmg, maxHp−1 floor 3), heavy_frame (armor+1, speed×0.88). Existing card numbers unchanged; floors; no new toast. Screenshots `tests/screenshots/phase6-tradeoff-cards/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
 - **v0.9.42** / `ddf39c4` (`PHASE6-ZONE-PRESSURE-001`) — Shrinking/pollution safe zone after ~110s; safeR lerps ~30→~16 over ~200s; outside tick DoT; cyan/acid edge ring; event `zonePressure start`; exposes safeR/zonePressureActive; no new toast; ARENA/weapons/danger-pulse/bomber/artillery unchanged. Screenshots `tests/screenshots/phase6-zone-pressure/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).
 - **v0.9.41** / `3040b5e` (`PHASE6-PERIODIC-DANGER-001`) — Periodic arena red danger circles after ~80s every ~20s; telegraph≥0.9s then AoE; events `telegraph kind:dangerPulse` + `dangerPulse`; max 2 concurrent; skip pause/levelup; no new toast. Screenshots `tests/screenshots/phase6-danger-pulse/`. Next: HIT-FEEL-DEVICE when Roy phones (still ban Phase 4).

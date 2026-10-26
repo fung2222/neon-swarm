@@ -9,7 +9,7 @@
 
 ### Complete — PHASE6-SCORE-POSITION-001
 
-**PHASE6-SCORE-POSITION-001** → live cache-bust **`?v=0.9.44`**（code `PENDING`）.
+**PHASE6-SCORE-POSITION-001** → live cache-bust **`?v=0.9.44`**（code `f52e205`）.
 
 - `SCORE_POS`：moveBonus／safeBonus／paceBonus additive on ordinary kill path；base `e.score + floor(t)` **unchanged**
 - Track `scoreMove`／`scoreSafe`／`scorePace`；over-screen one-line「走位／安全區／清場 +N」（**no** mid-run toast）
@@ -20,7 +20,7 @@
 
 ### Recently completed
 
-- `PHASE6-SCORE-POSITION-001` → **v0.9.44** (`PENDING`)
+- `PHASE6-SCORE-POSITION-001` → **v0.9.44** (`f52e205`)
 - `PHASE6-TRADEOFF-CARDS-001` → **v0.9.43** (`d44af7a`)
 - `PHASE6-ZONE-PRESSURE-001` → **v0.9.42** (`ddf39c4`)
 
