@@ -317,6 +317,86 @@ function sniperMesh() {
   return g;
 }
 
+
+/**
+ * Phase 3 shield guard: stocky body + LARGE front shield plate (silhouette ≠ walker/soldier).
+ * Steel-blue plate, navy cloth — red reserved for bash contact telegraph.
+ */
+function shieldMesh() {
+  const g = new THREE.Group();
+  const color = 0x6a8cff;
+  const clothC = 0x243048;
+  const steel = 0x8aa0c8;
+  const cloth = new THREE.MeshStandardMaterial({ color: clothC, emissive: clothC, emissiveIntensity: 0.45, roughness: 0.72, metalness: 0.2 });
+  const skin = new THREE.MeshStandardMaterial({ color: 0xf1cfa8, emissive: 0x6a4a30, emissiveIntensity: 0.15, roughness: 0.9 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1a2235, emissive: 0x101828, emissiveIntensity: 0.4, roughness: 0.55, metalness: 0.55 });
+  const plateM = new THREE.MeshStandardMaterial({ color: steel, emissive: color, emissiveIntensity: 0.55, roughness: 0.35, metalness: 0.75 });
+  const accent = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.95, roughness: 0.3 });
+  const legs = [];
+  const arms = [];
+
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.09, -0.18, 0);
+    leg.add(box(0.11, 0.24, 0.12, dark, 0, -0.06, 0));
+    leg.add(box(0.12, 0.1, 0.16, dark, 0, -0.22, 0.02));
+    g.add(leg);
+    legs.push(leg);
+  }
+
+  const torso = slab(0.28, 0.3, 0.34, 0.2, cloth);
+  torso.position.set(0, 0.14, 0);
+  const vest = box(0.3, 0.22, 0.18, dark, 0, 0.16, 0.02);
+  const belt = box(0.3, 0.05, 0.18, dark, 0, -0.02, 0);
+  g.add(torso, vest, belt);
+
+  const head = new THREE.Group();
+  head.position.set(0, 0.42, 0);
+  head.add(box(0.14, 0.14, 0.14, skin, 0, 0, 0, 0.2));
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8, 0, Math.PI * 2, 0, Math.PI / 1.6), dark);
+  helm.position.set(0, 0.04, 0);
+  const visor = box(0.16, 0.04, 0.04, accent, 0, 0.0, 0.09, 0.2);
+  head.add(helm, visor);
+  g.add(head);
+
+  for (const side of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(side * 0.18, 0.22, 0);
+    arm.add(box(0.08, 0.22, 0.08, cloth, 0, -0.1, 0, 0.2));
+    arm.add(box(0.07, 0.07, 0.07, skin, 0, -0.22, 0.02, 0.3));
+    if (side === -1) {
+      const shield = new THREE.Group();
+      shield.position.set(0.02, -0.05, 0.22);
+      shield.add(box(0.42, 0.55, 0.06, plateM, 0, 0.05, 0, 0.05));
+      shield.add(box(0.46, 0.06, 0.07, accent, 0, 0.28, 0.01, 0.05));
+      shield.add(box(0.46, 0.06, 0.07, dark, 0, -0.2, 0.01, 0.05));
+      shield.add(box(0.08, 0.4, 0.04, accent, 0, 0.05, 0.04, 0.1));
+      shield.add(box(0.12, 0.12, 0.05, accent, 0, 0.08, 0.05, 0.15));
+      shield.add(box(0.06, 0.48, 0.05, dark, -0.22, 0.04, 0, 0.05));
+      shield.add(box(0.06, 0.48, 0.05, dark, 0.22, 0.04, 0, 0.05));
+      arm.add(shield);
+      arm.userData.shieldPlate = shield;
+      arm.rotation.x = -0.35;
+      arm.rotation.z = 0.25;
+    } else {
+      const baton = box(0.045, 0.045, 0.28, dark, 0, -0.22, 0.12, 0.15);
+      const tip = box(0.04, 0.04, 0.04, accent, 0, -0.22, 0.28, 0.2);
+      arm.add(baton, tip);
+      arm.rotation.x = -0.55;
+    }
+    g.add(arm);
+    arms.push(arm);
+  }
+
+  g.add(unitRing(color, 0.42, 0.32));
+  g.scale.setScalar(2.05);
+  g.userData.legs = legs;
+  g.userData.arms = arms;
+  g.userData.type = 'shield';
+  g.userData.shieldGuard = true;
+  return g;
+}
+
 /** Drone / walker / escort mech support frames. */
 function supportMesh(kind, color) {
   const g = new THREE.Group();
@@ -551,6 +631,23 @@ function warningLane() {
   return g;
 }
 
+
+/** Short red contact-slam wedge for shield bash telegraph (red = contact, not AoE orange). */
+function shieldBashLane() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff2a4a, transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+  quad.rotation.x = -Math.PI / 2;
+  quad.position.y = 0.08;
+  g.add(quad);
+  g.userData.quad = quad;
+  g.userData.mat = mat;
+  g.visible = false;
+  return g;
+}
+
 /** Thin red aim line for sniper telegraph (danger red = imminent damage). */
 function sniperAimLine() {
   const g = new THREE.Group();
@@ -649,6 +746,7 @@ function enemyMeshFor(type) {
     return humanMesh(type, def.color || 0xff3b6e, def.coat);
   }
   if (type === 'sniper') return sniperMesh();
+  if (type === 'shield') return shieldMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -1533,6 +1631,13 @@ export class View {
       this.group.add(line);
       this.sniperAimLines.push(line);
     }
+    // Phase 3 shield: up to 4 concurrent red bash wedges
+    this.shieldBashLanes = [];
+    for (let i = 0; i < 4; i++) {
+      const lane = shieldBashLane();
+      this.group.add(lane);
+      this.shieldBashLanes.push(lane);
+    }
     // Boss volley lanes (up to 6) + orbit floor ring
     this.bossLanes = [];
     for (let i = 0; i < 6; i++) {
@@ -2042,7 +2147,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2057,9 +2162,11 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = (e.sniperPhase === 'aim' && (e.aimDx != null))
-        ? Math.atan2(e.aimDx, e.aimDz)
-        : Math.atan2(game.px - e.x, game.pz - e.z);
+      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield'))
+        ? Math.atan2(e.faceDx, e.faceDz)
+        : ((e.sniperPhase === 'aim' && (e.aimDx != null))
+          ? Math.atan2(e.aimDx, e.aimDz)
+          : Math.atan2(game.px - e.x, game.pz - e.z));
       const spd = Math.hypot(e.vx || 0, e.vz || 0);
       const moving = spd > 0.12;
       const isFlyer = !!(m.userData.flyer || m.userData.bob || e.type === 'drone');
@@ -2127,6 +2234,7 @@ export class View {
     // Phase 3 telegraph lane: one elite max
     this._syncWarnLane(game);
     this._syncSniperAim(game);
+    this._syncShieldBash(game);
     this._syncBossHazards(game);
 
     // Doctor NPC prop: face camera, idle sway
@@ -2340,6 +2448,36 @@ export class View {
       const mat = ln.userData.mat;
       if (quad) quad.scale.set(0.12 + u * 0.1, dist, 1); // thin red beam
       if (mat) mat.opacity = 0.45 + u * 0.5;
+    }
+  }
+
+
+  /** Short red bash wedges for shield guards in telegraph (contact red). */
+  _syncShieldBash(game) {
+    const lanes = this.shieldBashLanes || [];
+    for (const ln of lanes) ln.visible = false;
+    let li = 0;
+    for (const e of game.enemies) {
+      if (!(e.shieldGuard || e.kind === 'shield' || e.type === 'shield')) continue;
+      if (e.shieldPhase !== 'telegraph') continue;
+      if (li >= lanes.length) break;
+      const ln = lanes[li++];
+      const ax = e.aimDx != null ? e.aimDx : (e.faceDx != null ? e.faceDx : (game.px - e.x));
+      const az = e.aimDz != null ? e.aimDz : (e.faceDz != null ? e.faceDz : (game.pz - e.z));
+      const len = Math.hypot(ax, az) || 1;
+      const ndx = ax / len, ndz = az / len;
+      const dist = 1.8;
+      const u = Math.max(0, Math.min(1, 1 - (e.shieldPhaseT || 0) / Math.max(0.01, e.telegraphDur || 0.65)));
+      const yaw = Math.atan2(ndx, ndz);
+      const mx = e.x + ndx * dist * 0.55;
+      const mz = e.z + ndz * dist * 0.55;
+      ln.visible = true;
+      ln.position.set(mx, 0, mz);
+      ln.rotation.y = yaw;
+      const quad = ln.userData.quad;
+      const mat = ln.userData.mat;
+      if (quad) quad.scale.set(0.7 + u * 0.35, dist, 1);
+      if (mat) mat.opacity = 0.4 + u * 0.5;
     }
   }
 
@@ -2566,6 +2704,7 @@ if (typeof window !== 'undefined') {
     buildDoctorNpc,
     humanMesh,
     sniperMesh,
+    shieldMesh,
     supportMesh,
     eliteMesh,
     hunterMesh,

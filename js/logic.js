@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -421,6 +421,11 @@ export class Game {
       sniper: !!def.sniper || type === 'sniper',
       sniperPhase: (!!def.sniper || type === 'sniper') ? 'reposition' : undefined,
       sniperPhaseT: (!!def.sniper || type === 'sniper') ? (0.4 + this.rng() * 0.8) : undefined,
+      shieldGuard: !!def.shieldGuard || type === 'shield',
+      shieldPhase: (!!def.shieldGuard || type === 'shield') ? 'chase' : undefined,
+      shieldPhaseT: (!!def.shieldGuard || type === 'shield') ? (0.6 + this.rng() * 0.8) : undefined,
+      faceDx: 0,
+      faceDz: 1,
       telegraphDur: 0,
       telegraphAt: 0,
       aimDx: 0,
@@ -1380,10 +1385,8 @@ export class Game {
     for (let j = this.enemies.length - 1; j >= 0; j--) {
       const e = this.enemies[j];
       if (Math.hypot(e.x - x, e.z - z) > radius + e.r) continue;
-      e.hp -= dmg * (1 - (e.shield || 0));
-      e.hit = 0.18;
-      events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy: true });
-      if (e.hp <= 0) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
+      const dead = this._applyEnemyDamage(e, dmg, x, z, events, { hitTime: 0.18, pushHit: true, heavy: true });
+      if (dead) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
     }
     events.push({ type: 'explode', x, z, r: radius, tag });
   }
@@ -1394,8 +1397,8 @@ export class Game {
     for (let j = this.enemies.length - 1; j >= 0; j--) {
       const e = this.enemies[j];
       if (Math.hypot(e.x - this.px, e.z - this.pz) > R) continue;
-      e.hp -= dmg; e.hit = 0.15;
-      if (e.hp <= 0) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
+      const dead = this._applyEnemyDamage(e, dmg, this.px, this.pz, events, { hitTime: 0.15 });
+      if (dead) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
     }
     events.push({ type: 'nova', r: R });
   }
@@ -1528,6 +1531,176 @@ export class Game {
     return fired;
   }
 
+
+
+  /**
+   * Incoming damage multiplier.
+   * Shield Guard rule (PHASE3-ENEMY-SHIELD-001): if attack travel dir (src→enemy)
+   * dots facing ≥ frontConeDot (~120° front), apply (1 - frontMitigation);
+   * flank/rear (dot below threshold) take full damage. Other enemies keep flat e.shield.
+   */
+  _enemyIncomingMul(e, srcX, srcZ) {
+    if (e.shieldGuard || e.kind === 'shield' || e.type === 'shield') {
+      const cfg = SHIELD_GUARD;
+      let fdx = e.faceDx, fdz = e.faceDz;
+      if (fdx == null || fdz == null || (Math.abs(fdx) + Math.abs(fdz)) < 1e-6) {
+        fdx = this.px - e.x;
+        fdz = this.pz - e.z;
+      }
+      const fl = Math.hypot(fdx, fdz) || 1;
+      fdx /= fl; fdz /= fl;
+      // Front if shield faces the damage source (face · dirToSrc >= cone).
+      let ax = (srcX != null ? srcX : this.px) - e.x;
+      let az = (srcZ != null ? srcZ : this.pz) - e.z;
+      const al = Math.hypot(ax, az) || 1;
+      ax /= al; az /= al;
+      const dot = ax * fdx + az * fdz;
+      if (dot >= (cfg.frontConeDot ?? 0.5)) {
+        return 1 - (cfg.frontMitigation ?? 0.85);
+      }
+      return 1;
+    }
+    return 1 - (e.shield || 0);
+  }
+
+  /** Apply damage to enemy with directional / flat mitigation. Returns true if killed. */
+  _applyEnemyDamage(e, dmg, srcX, srcZ, events, opts = {}) {
+    const mul = this._enemyIncomingMul(e, srcX, srcZ);
+    e.hp -= dmg * mul;
+    e.hit = opts.hitTime != null ? opts.hitTime : 0.12;
+    if (opts.pushHit) {
+      events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy: !!opts.heavy, frontBlock: mul < 0.5 });
+    }
+    return e.hp <= 0;
+  }
+
+  /**
+   * Shield Guard AI: slow chase, prefer face player, short red bash telegraph → contact slam.
+   * Frontal defense handled in _enemyIncomingMul (not here).
+   */
+  _tickShield(e, dt, events) {
+    const cfg = SHIELD_GUARD;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const dx = this.px - e.x, dz = this.pz - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+
+    // Prefer face player (smooth turn)
+    let fdx = e.faceDx != null ? e.faceDx : ndx;
+    let fdz = e.faceDz != null ? e.faceDz : ndz;
+    const fl0 = Math.hypot(fdx, fdz) || 1;
+    fdx /= fl0; fdz /= fl0;
+    const turn = Math.min(1, (cfg.faceTurnRate || 4.5) * dt);
+    fdx = fdx * (1 - turn) + ndx * turn;
+    fdz = fdz * (1 - turn) + ndz * turn;
+    const fl = Math.hypot(fdx, fdz) || 1;
+    e.faceDx = fdx / fl;
+    e.faceDz = fdz / fl;
+    e.aimDx = e.faceDx;
+    e.aimDz = e.faceDz;
+
+    if (!e.shieldPhase) e.shieldPhase = 'chase';
+    if (e.shieldPhaseT == null) e.shieldPhaseT = 0.5;
+
+    if (e.shieldPhase === 'telegraph') {
+      e.vx = 0; e.vz = 0;
+      e.shieldPhaseT -= dt;
+      // Lock face toward player during wind-up for readable slam cone
+      e.faceDx = ndx; e.faceDz = ndz;
+      e.aimDx = ndx; e.aimDz = ndz;
+      if (e.shieldPhaseT <= 0) {
+        let hitPlayer = false;
+        if (dist < (cfg.bashRange || 1.55) + PLAYER.radius) {
+          hitPlayer = true;
+          if (this.invuln <= 0) {
+            const taken = Math.max(1, (cfg.bashDamage || e.damage || 2) - (this.armor || 0));
+            this.hp -= taken;
+            this.invuln = 0.85 + (this.deflect || 0);
+            this.hitFlash = 0.32;
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, shieldBash: true });
+            // shove player slightly back
+            this.px += ndx * 0.35;
+            this.pz += ndz * 0.35;
+            if (this.hp <= 0) {
+              this.alive = false;
+              this.hp = 0;
+              this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+              events.push({ type: 'dead' });
+            }
+          }
+        }
+        events.push({
+          type: 'shieldBash',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          aimDx: ndx, aimDz: ndz,
+          hit: hitPlayer,
+        });
+        e.shieldPhase = 'recover';
+        e.shieldPhaseT = cfg.bashCooldownSec;
+        e.shotFlash = 0.16;
+      }
+      return;
+    }
+
+    // chase / recover: slow advance, face player
+    e.shieldPhaseT -= dt;
+    if (e.shotFlash > 0) e.shotFlash -= dt;
+    const spd = e.speed * e.chase * slowMul;
+    // During recover, move even slower
+    const moveMul = e.shieldPhase === 'recover' ? 0.45 : 1;
+    const stepX = ndx * spd * moveMul * dt;
+    const stepZ = ndz * spd * moveMul * dt;
+    e.vx = stepX / Math.max(dt, 1e-6);
+    e.vz = stepZ / Math.max(dt, 1e-6);
+    e.x += stepX;
+    e.z += stepZ;
+    const moving = Math.hypot(e.vx, e.vz) > 0.05;
+    e.animPhase = (e.animPhase || 0) + (moving ? Math.max(6, Math.hypot(e.vx, e.vz) * 5.5) * dt : 0);
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+
+    if (e.shieldPhase === 'recover') {
+      if (e.shieldPhaseT <= 0) {
+        e.shieldPhase = 'chase';
+        e.shieldPhaseT = 0.2 + this.rng() * 0.35;
+      }
+    } else if (e.shieldPhase === 'chase' && e.shieldPhaseT <= 0 && dist < (cfg.bashRange || 1.55) * 1.35) {
+      e.shieldPhase = 'telegraph';
+      e.shieldPhaseT = cfg.bashTelegraphSec;
+      e.telegraphDur = cfg.bashTelegraphSec;
+      e.telegraphAt = this.t;
+      e.faceDx = ndx; e.faceDz = ndz;
+      e.aimDx = ndx; e.aimDz = ndz;
+      events.push({
+        type: 'telegraph',
+        kind: 'shield',
+        enemyId: e.id,
+        x: e.x, z: e.z,
+        aimDx: ndx, aimDz: ndz,
+        duration: cfg.bashTelegraphSec,
+      });
+    }
+
+    // Contact body damage (separate from bash slam)
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.28;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      e.x -= ndx * 0.7;
+      e.z -= ndz * 0.7;
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
 
   /**
    * Sniper AI: prefer keep distance → red aim telegraph (≥~1s) → hitscan shot.
@@ -1698,6 +1871,10 @@ export class Game {
         this._tickSniper(e, dt, events);
         continue;
       }
+      if (e.shieldGuard || e.kind === 'shield' || e.type === 'shield') {
+        this._tickShield(e, dt, events);
+        continue;
+      }
       if (e.hit > 0) e.hit -= dt;
       if (e.slow > 0) e.slow -= dt;
       const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
@@ -1779,12 +1956,12 @@ export class Game {
         const ez0 = e.prevZ != null ? e.prevZ : e.z;
         // Relative continuous: bullet segment + enemy segment over same interval.
         if (relativeSegmentHitsCircle(prevX, prevZ, b.x, b.z, ex0, ez0, e.x, e.z, er)) {
-          e.hp -= b.dmg * (1 - (e.shield || 0));
-          e.hit = 0.12;
+          // Source ≈ previous bullet pos (attack travel dir toward enemy)
+          const dead = this._applyEnemyDamage(e, b.dmg, prevX, prevZ, events, { hitTime: 0.12 });
           b.hitIds.add(e);
           const heavy = b.weapon === 'rocket' || b.weapon === 'laser' || b.weapon === 'grenade';
-          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy });
-          if (e.hp <= 0) {
+          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy, frontBlock: this._enemyIncomingMul(e, prevX, prevZ) < 0.5 });
+          if (dead) {
             this._kill(e, j, events);
             const punch = isPunchKill(e, heavy);
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
@@ -1862,7 +2039,7 @@ export class Game {
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const e = this.enemies[j];
         if (Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) {
-          e.hp -= z.dps * dt * 3.2;
+          this._applyEnemyDamage(e, z.dps * dt * 3.2, z.x, z.z, events, { hitTime: 0.08 });
           e.slow = Math.max(e.slow, 0.35);
           e.hit = Math.max(e.hit, 0.05);
           if (e.hp <= 0) {
@@ -1884,9 +2061,8 @@ export class Game {
         for (let j = this.enemies.length - 1; j >= 0; j--) {
           const e = this.enemies[j];
           if (Math.hypot(ox - e.x, oz - e.z) < 0.35 + e.r) {
-            e.hp -= 0.55 * this.bulletDmg * dt * 8;
-            e.hit = 0.08;
-            if (e.hp <= 0) {
+            const dead = this._applyEnemyDamage(e, 0.55 * this.bulletDmg * dt * 8, ox, oz, events, { hitTime: 0.08 });
+            if (dead) {
               this._kill(e, j, events);
               const punch = isPunchKill(e, false);
               events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });

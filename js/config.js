@@ -171,6 +171,12 @@ export const ENEMIES = {
     hp: 8, speed: 1.55, radius: 0.36, xp: 4, score: 48, chase: 0.7, damage: 1,
     color: 0xc93a4a, coat: 0x2a3328, gun: true, sniper: true,
   },
+  // ---- Phase 3 shield guard (big front plate + frontal mitigation) — not a recolor ----
+  shield: {
+    zh: '盾衛', en: 'Shield Guard', family: 'human', kind: 'shield', tier: 3,
+    hp: 24, speed: 1.05, radius: 0.48, xp: 5, score: 58, chase: 0.72, damage: 2,
+    color: 0x6a8cff, coat: 0x243048, shieldGuard: true,
+  },
   walker: {
     zh: '重裝機甲', en: 'Heavy Walker', family: 'support', kind: 'walker', tier: 3,
     hp: 16, speed: 1.2, radius: 0.52, xp: 5, score: 55, chase: 0.85, damage: 2,
@@ -224,6 +230,22 @@ export const SNIPER = {
   shotRange: 18,
   beamHalfWidth: 0.45,
   repositionSpeedMul: 0.9,
+};
+
+/**
+ * Shield Guard (PHASE3-ENEMY-SHIELD-001): slow chase, face player, frontal defense.
+ * Clear rule: face · normalize(src − enemy) ≥ frontConeDot (~120° front cone)
+ * → damage × (1 − frontMitigation); flank/rear take full damage.
+ * Bash = short red contact-slam telegraph (not AoE orange).
+ */
+export const SHIELD_GUARD = {
+  frontMitigation: 0.85,
+  frontConeDot: 0.5,
+  bashTelegraphSec: 0.65,
+  bashCooldownSec: 2.6,
+  bashRange: 1.55,
+  bashDamage: 2,
+  faceTurnRate: 4.5,
 };
 
 
@@ -454,27 +476,27 @@ export function waveMix(t, zone = null) {
             : 'lab'
   );
   if (z === 'rooftop') {
-    // Rooftop: sky pressure — more drone/mech/chief, fewer staffer; light sniper.
-    return [['drone', 0.30], ['mech', 0.22], ['chief', 0.16], ['officer', 0.12], ['soldier', 0.08], ['walker', 0.02], ['sniper', 0.10]];
+    // Rooftop: sky pressure — more drone/mech/chief, fewer staffer; light sniper/shield.
+    return [['drone', 0.28], ['mech', 0.20], ['chief', 0.15], ['officer', 0.12], ['soldier', 0.08], ['walker', 0.02], ['sniper', 0.09], ['shield', 0.06]];
   }
   if (z === 'blockade') {
-    // Blockade: military pressure — more soldier/officer/chief/mech; light sniper.
-    return [['soldier', 0.28], ['officer', 0.22], ['chief', 0.16], ['mech', 0.16], ['walker', 0.06], ['drone', 0.02], ['sniper', 0.10]];
+    // Blockade: military pressure — soldier/officer/chief/mech hold; mid shield presence.
+    return [['soldier', 0.25], ['officer', 0.20], ['chief', 0.15], ['mech', 0.15], ['walker', 0.04], ['drone', 0.02], ['sniper', 0.07], ['shield', 0.12]];
   }
   if (z === 'reactor') {
-    // Reactor: energy facility pressure — more drone/mech/officer; light sniper.
-    return [['drone', 0.26], ['mech', 0.20], ['officer', 0.20], ['walker', 0.12], ['soldier', 0.08], ['chief', 0.04], ['sniper', 0.10]];
+    // Reactor: energy facility pressure — more drone/mech/officer; light sniper/shield.
+    return [['drone', 0.24], ['mech', 0.18], ['officer', 0.18], ['walker', 0.12], ['soldier', 0.08], ['chief', 0.04], ['sniper', 0.09], ['shield', 0.07]];
   }
   if (z === 'assembly') {
-    // Assembly bay: industrial pressure — more soldier/walker; rare sniper.
-    return [['soldier', 0.30], ['walker', 0.26], ['officer', 0.16], ['drone', 0.12], ['chief', 0.06], ['staffer', 0.04], ['sniper', 0.06]];
+    // Assembly bay: industrial pressure — soldier/walker stay heavy; shield light presence.
+    return [['soldier', 0.28], ['walker', 0.23], ['officer', 0.14], ['drone', 0.10], ['chief', 0.05], ['staffer', 0.03], ['sniper', 0.05], ['shield', 0.12]];
   }
   if (t < 18) return [['staffer', 0.6], ['guard', 0.25], ['drone', 0.15]];
   if (t < 40) return [['staffer', 0.32], ['guard', 0.2], ['soldier', 0.3], ['drone', 0.18]];
-  // Mid-late lab: introduce sniper lightly (after ~40s) — do not dominate early.
+  // Mid-late lab: sniper after ~40s; shield only after ~65s — do not flood early lab.
   if (t < 65) return [['staffer', 0.18], ['soldier', 0.33], ['drone', 0.23], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08]];
-  if (t < 100) return [['soldier', 0.28], ['drone', 0.18], ['walker', 0.16], ['officer', 0.20], ['chief', 0.08], ['sniper', 0.10]];
-  return [['soldier', 0.22], ['walker', 0.22], ['officer', 0.18], ['chief', 0.14], ['mech', 0.14], ['sniper', 0.10]];
+  if (t < 100) return [['soldier', 0.26], ['drone', 0.16], ['walker', 0.14], ['officer', 0.18], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08]];
+  return [['soldier', 0.20], ['walker', 0.20], ['officer', 0.16], ['chief', 0.12], ['mech', 0.12], ['sniper', 0.10], ['shield', 0.10]];
 }
 
 export function pickEnemyType(rng, t, zone = null) {

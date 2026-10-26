@@ -34,6 +34,7 @@ export const ENEMY_SPRITE_KEY = {
   walker: 'enemy_magenta',
   mech: 'enemy_magenta',
   sniper: 'enemy_magenta',
+  shield: 'enemy_magenta',
 };
 
 /** World-space billboard size (width, height) + optional float. */
@@ -48,6 +49,7 @@ export const ENEMY_SPRITE_SIZE = {
   walker: { w: 1.74, h: 1.87 },
   mech: { w: 1.95, h: 2.12 },
   sniper: { w: 1.45, h: 1.72 },
+  shield: { w: 1.70, h: 1.85 },
 };
 
 /**
@@ -68,6 +70,7 @@ export const ENEMY_RING_STYLE = {
   mech:    { radiusScale: 1.05, opacity: 0.40, visible: true },
   // sniper: thin identity ring (procedural mesh also draws one)
   sniper:  { radiusScale: 0.70, opacity: 0.28, visible: true },
+  shield:  { radiusScale: 0.85, opacity: 0.30, visible: true },
 };
 
 const RING_BY_KEY = {
