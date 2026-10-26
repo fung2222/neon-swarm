@@ -28,7 +28,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-RUN-LOOP-UX-001 → **complete**（v0.9.33）
+## 狀態：PHASE6-RUN-LOOP-UX-001 → **complete**（v0.9.33 / `7db11c0`）
 
 **ROY（2026-10-26 ~22:22 HKT）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— cleared prior HOLD；resume continuous safe content（game still not usable enough）. Do NOT start Phase 4／horn art lock／phone GPU.
 
@@ -55,7 +55,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33**.
+- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`).
 - `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`).
 - `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
 - `PHASE6-DROP-READABILITY-001` → **v0.9.30**.

@@ -462,7 +462,7 @@ Rollback baseline:
 
 **目前基準 v0.9.33（PHASE6-RUN-LOOP-UX-001；HEAD 以 `main`／live `?v=0.9.33` 為準）。** Roy cleared HOLD（「未用得」→ continue safe UX）。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
+- `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33 / `7db11c0`）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
 - `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `e578bae`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
 - `PHASE6-LEVELUP-CARD-UX-001` **已完成**（v0.9.31）：升級卡 UX／tap／stack／slot hint；截圖 `tests/screenshots/phase6-levelup-ux/`。
 - `PHASE6-DROP-READABILITY-001` **已完成**（v0.9.30）：XP shards／heal pack／magnet disc／weapon board；截圖 `tests/screenshots/phase6-drop-readability/`。
