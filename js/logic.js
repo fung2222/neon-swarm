@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -424,6 +424,11 @@ export class Game {
       shieldGuard: !!def.shieldGuard || type === 'shield',
       shieldPhase: (!!def.shieldGuard || type === 'shield') ? 'chase' : undefined,
       shieldPhaseT: (!!def.shieldGuard || type === 'shield') ? (0.6 + this.rng() * 0.8) : undefined,
+      artillery: !!def.artillery || type === 'artillery',
+      artilleryPhase: (!!def.artillery || type === 'artillery') ? 'reposition' : undefined,
+      artilleryPhaseT: (!!def.artillery || type === 'artillery') ? (0.8 + this.rng() * 1.0) : undefined,
+      aimX: 0,
+      aimZ: 0,
       faceDx: 0,
       faceDz: 1,
       telegraphDur: 0,
@@ -1851,6 +1856,169 @@ export class Game {
     }
   }
 
+
+  /**
+   * Heavy Artillery AI: slow/stationary-ish → orange blast telegraph (≥~1s) → AoE impact.
+   * Aim zone = predicted player area (lead). Never silent — damage only after telegraph.
+   * Orange = blast radius (distinct from sniper/shield red contact).
+   */
+  _tickArtillery(e, dt, events) {
+    const cfg = ARTILLERY;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const dx = this.px - e.x, dz = this.pz - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+
+    if (!e.artilleryPhase) e.artilleryPhase = 'reposition';
+    if (e.artilleryPhaseT == null) e.artilleryPhaseT = 0.5;
+
+    if (e.artilleryPhase === 'telegraph') {
+      e.vx = 0; e.vz = 0;
+      e.artilleryPhaseT -= dt;
+      // Mild retarget so dodge still works but orange ring stays readable
+      const lead = cfg.leadSec || 0.55;
+      const pvx = (this.vx || 0) * (this.speed || 0);
+      const pvz = (this.vz || 0) * (this.speed || 0);
+      const predX = this.px + pvx * lead;
+      const predZ = this.pz + pvz * lead;
+      const track = Math.min(1, dt * 0.9);
+      e.aimX = (e.aimX != null ? e.aimX : predX) * (1 - track) + predX * track;
+      e.aimZ = (e.aimZ != null ? e.aimZ : predZ) * (1 - track) + predZ * track;
+      // Face toward blast aim
+      const adx = e.aimX - e.x, adz = e.aimZ - e.z;
+      const al = Math.hypot(adx, adz) || 1;
+      e.aimDx = adx / al;
+      e.aimDz = adz / al;
+      e.faceDx = e.aimDx;
+      e.faceDz = e.aimDz;
+      if (e.artilleryPhaseT <= 0) {
+        const blastR = cfg.blastRadius || 2.4;
+        const ax = e.aimX, az = e.aimZ;
+        const toPlayer = Math.hypot(this.px - ax, this.pz - az);
+        let hitPlayer = false;
+        if (toPlayer < blastR + PLAYER.radius) {
+          hitPlayer = true;
+          if (this.invuln <= 0) {
+            const taken = Math.max(1, (cfg.blastDamage || 2) - (this.armor || 0));
+            this.hp -= taken;
+            this.invuln = 0.85 + (this.deflect || 0);
+            this.hitFlash = 0.35;
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, artillery: true });
+            if (this.hp <= 0) {
+              this.alive = false;
+              this.hp = 0;
+              this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+              events.push({ type: 'dead' });
+            }
+          }
+        }
+        events.push({
+          type: 'artilleryImpact',
+          enemyId: e.id,
+          x: ax, z: az,
+          radius: blastR,
+          hit: hitPlayer,
+          fromX: e.x, fromZ: e.z,
+        });
+        e.artilleryPhase = 'cooldown';
+        e.artilleryPhaseT = cfg.cooldownSec;
+        e.shotFlash = 0.22;
+      }
+      // Contact body damage while planted
+      if (this.invuln <= 0 && dist < e.r + PLAYER.radius) {
+        const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
+        this.hitFlash = 0.28;
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        e.x -= ndx * 0.7;
+        e.z -= ndz * 0.7;
+        if (this.hp <= 0) {
+          this.alive = false;
+          this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+          events.push({ type: 'dead' });
+        }
+      }
+      return;
+    }
+
+    e.artilleryPhaseT -= dt;
+    if (e.shotFlash > 0) e.shotFlash -= dt;
+    // Slow reposition toward ideal band (stationary-ish)
+    let toward = 0;
+    if (dist < cfg.retreatBelow) toward = -1;
+    else if (dist > cfg.approachAbove) toward = 1;
+    else if (dist < cfg.idealMin) toward = -0.4;
+    else if (dist > cfg.idealMax) toward = 0.4;
+    else toward = 0;
+    const spd = e.speed * e.chase * slowMul * (cfg.repositionSpeedMul || 0.55);
+    const stepX = ndx * toward * spd * dt;
+    const stepZ = ndz * toward * spd * dt;
+    e.vx = stepX / Math.max(dt, 1e-6);
+    e.vz = stepZ / Math.max(dt, 1e-6);
+    e.x += stepX;
+    e.z += stepZ;
+    const moving = Math.hypot(e.vx, e.vz) > 0.05;
+    e.animPhase = (e.animPhase || 0) + (moving ? Math.max(6, Math.hypot(e.vx, e.vz) * 5) * dt : 0);
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+    e.faceDx = ndx;
+    e.faceDz = ndz;
+    e.aimDx = ndx;
+    e.aimDz = ndz;
+
+    const inBand = dist >= cfg.idealMin * 0.8 && dist <= cfg.idealMax * 1.2;
+    if (e.artilleryPhase === 'cooldown') {
+      if (e.artilleryPhaseT <= 0) {
+        e.artilleryPhase = 'reposition';
+        e.artilleryPhaseT = 0.35 + this.rng() * 0.5;
+      }
+    } else if (e.artilleryPhase === 'reposition' && e.artilleryPhaseT <= 0 && (inBand || dist < cfg.approachAbove)) {
+      e.artilleryPhase = 'telegraph';
+      e.artilleryPhaseT = cfg.telegraphSec;
+      e.telegraphDur = cfg.telegraphSec;
+      e.telegraphAt = this.t;
+      e.blastRadius = cfg.blastRadius;
+      const lead = cfg.leadSec || 0.55;
+      const pvx = (this.vx || 0) * (this.speed || 0);
+      const pvz = (this.vz || 0) * (this.speed || 0);
+      e.aimX = this.px + pvx * lead;
+      e.aimZ = this.pz + pvz * lead;
+      const adx = e.aimX - e.x, adz = e.aimZ - e.z;
+      const al = Math.hypot(adx, adz) || 1;
+      e.aimDx = adx / al;
+      e.aimDz = adz / al;
+      events.push({
+        type: 'telegraph',
+        kind: 'artillery',
+        enemyId: e.id,
+        x: e.aimX, z: e.aimZ,
+        radius: cfg.blastRadius,
+        fromX: e.x, fromZ: e.z,
+        duration: cfg.telegraphSec,
+      });
+    }
+
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.28;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      e.x -= ndx * 0.7;
+      e.z -= ndz * 0.7;
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
+
   /**
    * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
    * Contact damage / elite / boss AI stay here (same as pre-reorder).
@@ -1873,6 +2041,10 @@ export class Game {
       }
       if (e.shieldGuard || e.kind === 'shield' || e.type === 'shield') {
         this._tickShield(e, dt, events);
+        continue;
+      }
+      if (e.artillery || e.kind === 'artillery' || e.type === 'artillery') {
+        this._tickArtillery(e, dt, events);
         continue;
       }
       if (e.hit > 0) e.hit -= dt;

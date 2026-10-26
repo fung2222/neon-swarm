@@ -935,6 +935,23 @@ else if (ev.type === 'xp') {
       try { audio.wave(); } catch (_) {}
       if (ev.hit) kickFx({ trauma: 0.06, fovKick: 0.01 });
     }
+    else if (ev.type === 'artilleryImpact') {
+      const ix = ev.x != null ? ev.x : 0;
+      const iz = ev.z != null ? ev.z : 0;
+      const impact = new THREE.Vector3(ix, 0.2, iz);
+      particles.burst(impact, new THREE.Color(0xff6a1a), burstN(8), { speed: 4.0, up: 1.2, life: 0.35, size: 0.48, bright: 1.0 });
+      if (!MOBILE_GFX) {
+        particles.burst(impact, new THREE.Color(0xffa040), burstN(4), { speed: 2.2, up: 0.8, life: 0.22, size: 0.32, bright: 0.95 });
+        particles.ring(impact, new THREE.Color(0xff6a1a), 14, 7, 0.32);
+      }
+      try { audio.nova(); } catch (_) {}
+      if (ev.hit) {
+        if (MOBILE_GFX) kickFx({ trauma: 0.08, fovKick: 0.015 });
+        else kickFx({ trauma: 0.12, fovKick: 0.025, bloomDamp: 0.55 });
+      } else if (!MOBILE_GFX) {
+        kickFx({ trauma: 0.04, fovKick: 0.01 });
+      }
+    }
     else if (ev.type === 'eliteCharge') {
       // v0.9.20: mobile — trauma only, no bloomDamp
       if (MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });

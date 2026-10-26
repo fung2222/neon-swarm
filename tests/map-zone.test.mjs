@@ -34,8 +34,11 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
   assert.ok(asmSoldier + asmWalker > 0.5, 'assembly heavier soldier/walker');
   const asmShield = Object.fromEntries(asm)['shield'] || 0;
   assert.ok(asmShield >= 0.10 && asmShield <= 0.16, 'assembly light shield presence');
+  const asmArt = Object.fromEntries(asm)['artillery'] || 0;
+  assert.ok(asmArt >= 0.03 && asmArt <= 0.08, 'assembly rare artillery');
   const labShield = Object.fromEntries(lab)['shield'] || 0;
   assert.equal(labShield, 0, 'early lab has no shield');
+  assert.equal(Object.fromEntries(lab)['artillery'] || 0, 0, 'early lab has no artillery');
 }
 
 // Reactor mix
@@ -62,6 +65,7 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
   assert.ok((m.staffer || 0) < 0.05, 'blockade almost no staffers');
   assert.ok((m.drone || 0) < 0.08, 'blockade fewer drones');
   assert.ok((m.shield || 0) >= 0.10 && (m.shield || 0) <= 0.16, 'blockade light shield presence');
+  assert.ok((m.artillery || 0) >= 0.05 && (m.artillery || 0) <= 0.12, 'blockade light-mid artillery');
   const ids = bl.map(([id]) => id);
   assert.ok(!ids.includes('hunter') && !ids.includes('swarm_core') && !ids.includes('sentinel'),
     'blockade mix has no elite/boss types');
@@ -75,6 +79,7 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
   assert.ok((m.mech || 0) >= 0.2, 'rooftop more mechs');
   assert.ok((m.chief || 0) >= 0.15, 'rooftop more chiefs');
   assert.ok((m.staffer || 0) < 0.05, 'rooftop almost no staffers');
+  assert.ok((m.artillery || 0) >= 0.05 && (m.artillery || 0) <= 0.12, 'rooftop light artillery');
   const ids = rt.map(([id]) => id);
   assert.ok(!ids.includes('hunter') && !ids.includes('swarm_core') && !ids.includes('sentinel'),
     'rooftop mix has no elite/boss types');
@@ -93,13 +98,13 @@ assert.equal(BEATS.find((b) => b.id === 'swarm_core').at, 360);
 {
   const rng = (() => { let i = 0; const seq = [0.01, 0.4, 0.7, 0.9]; return () => seq[i++ % seq.length]; })();
   const a = pickEnemyType(rng, 200, 'assembly');
-  assert.ok(['soldier', 'walker', 'officer', 'drone', 'chief', 'staffer', 'sniper', 'shield'].includes(a));
+  assert.ok(['soldier', 'walker', 'officer', 'drone', 'chief', 'staffer', 'sniper', 'shield', 'artillery'].includes(a));
   const r = pickEnemyType(rng, 300, 'reactor');
-  assert.ok(['drone', 'mech', 'officer', 'walker', 'soldier', 'chief', 'sniper', 'shield'].includes(r));
+  assert.ok(['drone', 'mech', 'officer', 'walker', 'soldier', 'chief', 'sniper', 'shield', 'artillery'].includes(r));
   const b = pickEnemyType(rng, 430, 'blockade');
-  assert.ok(['soldier', 'officer', 'chief', 'mech', 'walker', 'drone', 'sniper', 'shield'].includes(b));
+  assert.ok(['soldier', 'officer', 'chief', 'mech', 'walker', 'drone', 'sniper', 'shield', 'artillery'].includes(b));
   const t = pickEnemyType(rng, 520, 'rooftop');
-  assert.ok(['drone', 'mech', 'chief', 'officer', 'soldier', 'walker', 'sniper', 'shield'].includes(t));
+  assert.ok(['drone', 'mech', 'chief', 'officer', 'soldier', 'walker', 'sniper', 'shield', 'artillery'].includes(t));
 }
 
 function drive(g, until, onEvents) {

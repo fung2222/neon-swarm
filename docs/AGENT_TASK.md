@@ -28,20 +28,20 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE3-ENEMY-SHIELD-001 → **completed**（v0.9.24）
+## 狀態：PHASE3-ENEMY-ARTILLERY-001 → **completed**（v0.9.25）
 
-**ROY（2026-10-26）：** continue pipeline after sniper v0.9.23 — next safe CONTENT = shield（大盾、慢、正面防禦；非 Phase 4／horn／phone GPU）。
+**ROY（2026-10-26）：** continue pipeline after shield v0.9.24 — next safe CONTENT = heavy artillery（大管 + orange blast telegraph；非 Phase 4／horn／phone GPU）。
 
 ### Completed this turn
 
-**Task ID：** `PHASE3-ENEMY-SHIELD-001` — live cache-bust **`?v=0.9.24`**.
+**Task ID：** `PHASE3-ENEMY-ARTILLERY-001` — live cache-bust **`?v=0.9.25`**.
 
-- `ENEMIES.shield`：盾衛 / Shield Guard；steel＋cyan-blue plate；procedural front-plate mesh（≠ soldier／walker recolor）。
-- Behavior：`_tickShield` slow chase + face player；frontal mitigation only — `face · normalize(src−enemy) ≥ frontConeDot(0.5)` → damage × `(1 − frontMitigation=0.85)`；flank／rear full；bash = short **red** contact-slam telegraph（`SHIELD_GUARD.bashTelegraphSec=0.65`）；events `telegraph kind:shieldBash` + bash hit.
-- Wave mix：assembly／blockade light presence（~0.12）；mid-late lab after ~65s light；**no** early lab flood.
-- View：large front shield plate silhouette；red bash telegraph wedge；identity ring.
-- Screenshots：`tests/screenshots/phase3-shield/`（silhouette／front telegraph／flank-rear／mobile）.
-- Tests：`tests/shield.test.mjs`＋map-zone pick／weight asserts；full headless regression green.
+- `ENEMIES.artillery`：重炮單位 / Heavy Artillery；amber＋olive carriage；procedural **big howitzer barrel** mesh（≠ walker／mech／sniper recolor）。
+- Behavior：`_tickArtillery` slow／stationary-ish reposition → **orange** blast telegraph（`ARTILLERY.telegraphSec=1.0`，blast radius ring）→ AoE impact at predicted／player-area aim zone；events `telegraph kind:artillery`＋`artilleryImpact`；**never silent**.
+- Wave mix：blockade／rooftop light-mid；late lab light；assembly rare；**no** early lab.
+- View：artillery mesh＋orange blast ring pool；impact particles／ring VFX.
+- Screenshots：`tests/screenshots/phase3-artillery/`（silhouette／orange telegraph／barrel identity／mobile）.
+- Tests：`tests/artillery.test.mjs`＋map-zone pick／weight asserts；full headless regression green.
 - Elite／boss／player weapon balance tables **unchanged**. No Phase 4／horn／phone GPU.
 
 ### Queue（recommended next）
@@ -56,6 +56,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
+- `PHASE3-ENEMY-ARTILLERY-001` → **v0.9.25**.
 - `PHASE3-ENEMY-SHIELD-001` → **v0.9.24**.
 - `PHASE3-ENEMY-SNIPER-001` → **v0.9.23**.
 - `PHASE2-COMBAT-READABILITY-002` → **v0.9.22**.

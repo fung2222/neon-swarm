@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -397,6 +397,75 @@ function shieldMesh() {
   return g;
 }
 
+
+/**
+ * Phase 3 heavy artillery: squat carriage + BIG howitzer barrel (silhouette ≠ walker/mech/sniper).
+ * Steel/olive hull, amber trim — orange reserved for blast telegraph ring.
+ */
+function artilleryMesh() {
+  const g = new THREE.Group();
+  const color = 0xff8a20;
+  const hullC = 0x2a2e28;
+  const steelC = 0x6a7060;
+  const hull = new THREE.MeshStandardMaterial({ color: hullC, emissive: hullC, emissiveIntensity: 0.4, roughness: 0.7, metalness: 0.35 });
+  const steel = new THREE.MeshStandardMaterial({ color: steelC, emissive: 0x3a4030, emissiveIntensity: 0.35, roughness: 0.45, metalness: 0.7 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x181c16, emissive: 0x0e120c, emissiveIntensity: 0.4, roughness: 0.55, metalness: 0.6 });
+  const accent = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.95, roughness: 0.3 });
+  const legs = [];
+  const arms = [];
+
+  // Wide tracked / wheeled base (reads as gun carriage, not biped walker)
+  const base = box(0.55, 0.12, 0.42, dark, 0, -0.22, 0, 0.1);
+  const skirt = box(0.58, 0.06, 0.38, hull, 0, -0.14, 0, 0.1);
+  g.add(base, skirt);
+  for (const side of [-1, 1]) {
+    const track = box(0.1, 0.14, 0.48, dark, side * 0.28, -0.24, 0, 0.1);
+    const wheelF = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.06, 10), steel);
+    wheelF.rotation.z = Math.PI / 2;
+    wheelF.position.set(side * 0.28, -0.28, 0.16);
+    const wheelR = wheelF.clone();
+    wheelR.position.z = -0.16;
+    g.add(track, wheelF, wheelR);
+    legs.push(track);
+  }
+
+  // Low squat turret body
+  const body = slab(0.36, 0.28, 0.32, 0.28, hull);
+  body.position.set(0, 0.08, -0.02);
+  const plate = box(0.38, 0.16, 0.22, steel, 0, 0.18, 0.02);
+  const hatch = box(0.14, 0.04, 0.14, dark, 0, 0.28, -0.02);
+  g.add(body, plate, hatch);
+
+  // BIG howitzer barrel — dominant silhouette cue (much longer/thicker than sniper rifle)
+  const barrelG = new THREE.Group();
+  barrelG.position.set(0, 0.22, 0.12);
+  const breech = box(0.18, 0.16, 0.22, steel, 0, 0, -0.02, 0.1);
+  const tube = box(0.11, 0.11, 0.72, dark, 0, 0.02, 0.42, 0.1);
+  const reinforce = box(0.14, 0.14, 0.18, steel, 0, 0.02, 0.22, 0.1);
+  const muzzle = box(0.13, 0.13, 0.08, accent, 0, 0.02, 0.78, 0.15);
+  const muzzleRing = box(0.16, 0.16, 0.04, accent, 0, 0.02, 0.72, 0.2);
+  const elev = box(0.06, 0.2, 0.06, dark, 0.12, -0.02, 0.0, 0.1);
+  barrelG.add(breech, tube, reinforce, muzzle, muzzleRing, elev);
+  barrelG.rotation.x = -0.28; // elevated howitzer angle
+  g.add(barrelG);
+  arms.push(barrelG);
+  g.userData.barrel = barrelG;
+
+  // Side ammo crates (bulk silhouette)
+  g.add(box(0.12, 0.14, 0.16, dark, -0.28, 0.02, -0.08, 0.1));
+  g.add(box(0.12, 0.14, 0.16, dark, 0.28, 0.02, -0.08, 0.1));
+  g.add(box(0.08, 0.04, 0.08, accent, 0, 0.32, 0.08, 0.2)); // optic
+
+  g.add(unitRing(color, 0.48, 0.3));
+  g.scale.setScalar(2.1);
+  g.userData.legs = legs;
+  g.userData.arms = arms;
+  g.userData.type = 'artillery';
+  g.userData.artillery = true;
+  return g;
+}
+
+
 /** Drone / walker / escort mech support frames. */
 function supportMesh(kind, color) {
   const g = new THREE.Group();
@@ -664,6 +733,33 @@ function sniperAimLine() {
   return g;
 }
 
+
+/** Orange blast circle/ring for artillery telegraph (orange = AoE blast radius). */
+function artilleryBlastRing() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff6a1a, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide,
+  });
+  // Outer ring (blast radius outline)
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.82, 1.0, 48), mat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.07;
+  // Soft fill disc
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: 0xff8a20, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const fill = new THREE.Mesh(new THREE.CircleGeometry(1, 40), fillMat);
+  fill.rotation.x = -Math.PI / 2;
+  fill.position.y = 0.05;
+  g.add(ring, fill);
+  g.userData.ring = ring;
+  g.userData.fill = fill;
+  g.userData.mat = mat;
+  g.userData.fillMat = fillMat;
+  g.visible = false;
+  return g;
+}
+
 /**
  * SWARM CORE boss: hexagonal dark plate core + acid-green seams + rotating drone pod ring.
  * No red hull (Roy rule).
@@ -747,6 +843,7 @@ function enemyMeshFor(type) {
   }
   if (type === 'sniper') return sniperMesh();
   if (type === 'shield') return shieldMesh();
+  if (type === 'artillery') return artilleryMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -1638,6 +1735,13 @@ export class View {
       this.group.add(lane);
       this.shieldBashLanes.push(lane);
     }
+    // Phase 3 artillery: up to 4 concurrent orange blast rings
+    this.artilleryBlastRings = [];
+    for (let i = 0; i < 4; i++) {
+      const ring = artilleryBlastRing();
+      this.group.add(ring);
+      this.artilleryBlastRings.push(ring);
+    }
     // Boss volley lanes (up to 6) + orbit floor ring
     this.bossLanes = [];
     for (let i = 0; i < 6; i++) {
@@ -2147,7 +2251,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2162,7 +2266,7 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield'))
+      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery'))
         ? Math.atan2(e.faceDx, e.faceDz)
         : ((e.sniperPhase === 'aim' && (e.aimDx != null))
           ? Math.atan2(e.aimDx, e.aimDz)
@@ -2235,6 +2339,7 @@ export class View {
     this._syncWarnLane(game);
     this._syncSniperAim(game);
     this._syncShieldBash(game);
+    this._syncArtilleryBlast(game);
     this._syncBossHazards(game);
 
     // Doctor NPC prop: face camera, idle sway
@@ -2481,6 +2586,31 @@ export class View {
     }
   }
 
+
+  /** Orange blast rings for artillery in telegraph (orange = AoE blast radius). */
+  _syncArtilleryBlast(game) {
+    const rings = this.artilleryBlastRings || [];
+    for (const ln of rings) ln.visible = false;
+    let li = 0;
+    for (const e of game.enemies) {
+      if (!(e.artillery || e.kind === 'artillery' || e.type === 'artillery')) continue;
+      if (e.artilleryPhase !== 'telegraph') continue;
+      if (li >= rings.length) break;
+      const ln = rings[li++];
+      const ax = e.aimX != null ? e.aimX : game.px;
+      const az = e.aimZ != null ? e.aimZ : game.pz;
+      const r = (e.blastRadius != null ? e.blastRadius : (ARTILLERY.blastRadius || 2.4));
+      const u = Math.max(0, Math.min(1, 1 - (e.artilleryPhaseT || 0) / Math.max(0.01, e.telegraphDur || 1)));
+      ln.visible = true;
+      ln.position.set(ax, 0, az);
+      ln.scale.setScalar(r);
+      const mat = ln.userData.mat;
+      const fillMat = ln.userData.fillMat;
+      if (mat) mat.opacity = 0.35 + u * 0.45;
+      if (fillMat) fillMat.opacity = 0.12 + u * 0.22;
+    }
+  }
+
   /** Draw ground warning strip from elite → locked charge aim while telegraphing. */
   _syncWarnLane(game) {
     const lane = this.warnLane;
@@ -2705,6 +2835,8 @@ if (typeof window !== 'undefined') {
     humanMesh,
     sniperMesh,
     shieldMesh,
+    artilleryMesh,
+    artilleryBlastRing,
     supportMesh,
     eliteMesh,
     hunterMesh,
