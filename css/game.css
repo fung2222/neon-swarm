@@ -52,11 +52,20 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     font-size: 10px; padding: 3px 10px;
   }
 }#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
+/* v0.9.33 XP bar punch — readable mid-fight */
 .xp-bar {
-  position: absolute; left: 12%; right: 12%; bottom: calc(18px + env(safe-area-inset-bottom));
-  height: 8px; border-radius: 99px; background: #1a104088; border: 1px solid #00e5ff44; z-index: 5; overflow: hidden;
+  position: absolute; left: 10%; right: 10%; bottom: calc(16px + env(safe-area-inset-bottom));
+  height: 10px; border-radius: 99px;
+  background: rgba(6, 4, 16, 0.85); border: 1px solid rgba(0, 229, 255, 0.55);
+  z-index: 5; overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.18), inset 0 0 6px rgba(0,0,0,0.45);
 }
-.xp-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #00e5ff, #ff2bd6); box-shadow: 0 0 12px #00e5ff; }
+.xp-bar i#xp-fill,
+.xp-bar i {
+  display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, #00f0ff 0%, #7cff3a 45%, #ff2bd6 100%);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.85), 0 0 22px rgba(255, 43, 214, 0.35);
+}
 .trial-note { margin-top: 8px; font-size: 12px; color: #ff7ae6; }
 .record { color: #ffe600; text-shadow: 0 0 10px #ffe60088; margin: 8px 0; letter-spacing: 2px; }
 
@@ -68,6 +77,14 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   opacity: 0.28; pointer-events: none; transition: opacity .12s ease;
 }
 .stick.ready { opacity: 0.28; }
+.stick.ready.hint-pulse {
+  opacity: 0.55;
+  animation: stick-hint-pulse 0.9s ease-in-out 2;
+}
+@keyframes stick-hint-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.72; transform: scale(1.04); }
+}
 .stick.following, .stick.active {
   opacity: 1; pointer-events: none; /* input is on scene; stick is visual only */
 }
@@ -214,6 +231,76 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   /* v0.8.6: brief soft magenta pulse — never opaque white */
   background: radial-gradient(circle, #ff2bd633 0%, #ff2bd600 55%);
   opacity: 0.55;
+}
+/* v0.9.33 hurt edge vignette — light, no heavy particles */
+.fx-hurt {
+  position: fixed; inset: 0; z-index: 21; pointer-events: none;
+  opacity: 0; transition: opacity 0.1s ease-out;
+  background:
+    radial-gradient(ellipse at center, transparent 38%, rgba(220, 10, 40, 0.55) 100%);
+  box-shadow: inset 0 0 80px 24px rgba(255, 30, 50, 0.55);
+  mix-blend-mode: normal;
+}
+.fx-hurt.on { opacity: 1; transition: opacity 0.03s ease-in; }
+
+/* v0.9.33 first-run coach tip — never steals stick input */
+.run-coach {
+  position: fixed;
+  left: 50%;
+  top: max(22%, calc(110px + env(safe-area-inset-top)));
+  transform: translateX(-50%);
+  z-index: 27;
+  pointer-events: none;
+  text-align: center;
+  padding: 12px 20px;
+  min-width: min(280px, 84vw);
+  max-width: min(420px, 92vw);
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  background: rgba(6, 4, 18, 0.78);
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.22);
+}
+.run-coach.hidden { display: none; }
+.run-coach-zh {
+  font-family: var(--font-zh, inherit);
+  font-size: clamp(15px, 4vw, 20px);
+  font-weight: 800;
+  color: #e8ffff;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.55);
+}
+.run-coach-en {
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9ab0c8;
+  font-weight: 600;
+}
+.over-meta {
+  margin: 10px 0 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(140, 100, 255, 0.35);
+  background: rgba(10, 6, 22, 0.55);
+  text-align: left;
+  font-size: 13px;
+  color: #c8bfd8;
+}
+.over-meta-row {
+  display: flex; justify-content: space-between; gap: 10px;
+  margin: 3px 0; line-height: 1.35;
+}
+.over-meta-row span {
+  font-family: var(--font-zh, inherit);
+  color: #9a93bf; font-size: 11px; letter-spacing: 0.06em; flex-shrink: 0;
+}
+.over-meta-row b {
+  font-family: var(--font-zh, inherit);
+  color: #e8e0ff; font-weight: 700; text-align: right;
+  word-break: break-word;
+}
+@media (max-width: 520px) {
+  .run-coach { top: max(18%, calc(96px + env(safe-area-inset-top))); padding: 10px 14px; }
+  .xp-bar { left: 6%; right: 6%; height: 11px; }
 }
 
 /* ---- frame picker (three selectable mechs on the home screen) ---- */

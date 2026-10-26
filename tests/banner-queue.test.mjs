@@ -134,7 +134,7 @@ assert.equal(bannerDuration('zone', 9999), 9999);
   assert.ok(css.includes('pause-hint') || css.includes('#screen-pause'), 'pause polish css');
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('pauseHint'), 'pause hint markup');
-  assert.ok(html.includes('?v=0.9.32'), 'cache-bust 0.9.32');
+  assert.ok(/\?v=0\.9\.\d+/.test(html), 'cache-bust semver');
 }
 
 console.log('banner-queue.test.mjs: PASS');

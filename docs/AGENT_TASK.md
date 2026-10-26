@@ -28,39 +28,37 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-BANNER-TIMING-001 → **complete**（v0.9.32 / `e578bae`）
+## 狀態：PHASE6-RUN-LOOP-UX-001 → **complete**（v0.9.33）
 
-**ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content **ended** after this last clear Phase6 polish. Do NOT invent new systems.
+**ROY（2026-10-26 ~22:22 HKT）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— cleared prior HOLD；resume continuous safe content（game still not usable enough）. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Active this turn
 
-**none** — **HOLD for product sync.** Last shipped: `PHASE6-BANNER-TIMING-001` → **`?v=0.9.32`**.
+**none** — last shipped: `PHASE6-RUN-LOOP-UX-001` → **`?v=0.9.33`**.
 
 **Shipped behavior：**
-- Short priority banner queue (max 2 pending) + **min display 700ms** (`js/banner-queue.js`)
-- Priority: boss (3) > elite (2) > zone (1) > phase (0); higher jumps pending; same/lower latest-wins on overflow
-- Timings: zone **1400** / elite **1600** / boss **2600** / phase **900**
-- Pause: zh-HK title first + `pauseHint`（背景唔會自動恢復）; resume path unchanged (v0.9.20 no auto-resume)
-- CSS: readable `#beat-banner` on 390+1280; sit under goal HUD, clear of weapon-slots
-- Screenshots `tests/screenshots/phase6-banner-timing/`
-- Tests: `banner-queue.test.mjs` + `bg-pause.test.mjs` green
+- First-run coach tip（session OR `localStorage neon-swarm-coach-v1`）~3.2s；`pointer-events: none`；dismiss timeout／first stick／WASD
+- Touch: coach **or** stick `hint-pulse`（not both）；desktop WASD coach when no stick
+- Hurt: red edge `#fx-hurt` vignette + existing audio／light flash
+- XP bar punch（contrast／glow；no xpToLevel change）
+- Over screen: zone reached（zh-HK）+ loadout summary；`btn-retry` unchanged
+- Screenshots `tests/screenshots/phase6-run-loop-ux/`
 
-### Queue（CRITICAL — sync with Roy）
+### Queue（recommended next — safe usability, no Phase 4）
 
-1. **SYNC WITH ROY BEFORE PHASE 4** — Active **none** / **HOLD**. Grok **stops** auto-advance of new content slices until Roy says continue again **OR** names next Active.
-2. For Roy product sync: HIT-FEEL 真機 play / horn direction / whether to open Phase 4 later
-3. Phone GPU／WebGL — deferred；horn art lock — only after Roy OK
+1. **PHASE6-DAMAGE-NUMBERS-LITE-001** — brief floating damage／heal digits（mobile-light）— preferred next usability
+2. Mute persistence／safe-area polish — alternate
+3. HIT-FEEL-DEVICE（Roy 真機）— keep queued
+4. Phone GPU／horn art lock — deferred／only after Roy OK
 
-**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU／any invented feature.
+**Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance rewrite.
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33**.
 - `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`).
 - `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
 - `PHASE6-DROP-READABILITY-001` → **v0.9.30**.
-- `PHASE6-PICKUP-POLISH-001` → **v0.9.29**.
-- `PHASE6-MULTI-SLOT-INVENTORY-001` → **v0.9.28**.
-- `GUN-8DIR-001` → **v0.9.27**.
 
 ---
 

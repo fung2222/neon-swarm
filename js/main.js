@@ -1,17 +1,21 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.32 banner timing / queue; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.33 run-loop UX; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
   ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot, CARDS_BY_ID } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
 import { createBannerController, BANNER_MS } from './banner-queue.js';
+import {
+  shouldShowCoach, markCoachSeen, zoneShortLabel, formatLoadoutFromGame,
+  COACH_MS, HURT_VIGNETTE_MS, STICK_HINT_MS,
+} from './run-loop-ux.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -265,6 +269,10 @@ new ViewInput($('scene'), {
 
 window.__swarm = S;
 S.view = view;
+S._coachSessionShown = false;
+S._coachTimer = 0;
+S._stickHintTimer = 0;
+
 
 /** Select-stage drag: horizontal yaw on #mech-stage (mouse + one finger). */
 (function wireMenuMechDrag() {
@@ -492,6 +500,10 @@ function showBeatBanner(zh, en, ms, opts = {}) {
   });
 }
 S.showBeatBanner = showBeatBanner;
+S.showRunCoach = showRunCoach;
+S.hideRunCoach = hideRunCoach;
+S.flashHurtVignette = flashHurtVignette;
+S.pulseStickHint = pulseStickHint;
 S._bannerCtl = _bannerCtl;
 S.BANNER_MS = BANNER_MS;
 
@@ -672,6 +684,61 @@ function showLevelCards(cards, opts = {}) {
 }
 S.showLevelCards = showLevelCards;
 
+
+/** v0.9.33 first-run coach — pointer-events none; dismiss on timeout or first stick. */
+function hideRunCoach() {
+  const el = $('run-coach');
+  if (el) el.classList.add('hidden');
+  if (S._coachTimer) { clearTimeout(S._coachTimer); S._coachTimer = 0; }
+}
+
+function showRunCoach(opts = {}) {
+  const el = $('run-coach');
+  const zhEl = $('run-coach-zh');
+  const enEl = $('run-coach-en');
+  if (!el) return false;
+  const touch = !!opts.touch;
+  const zh = touch ? t('coach.move') : t('coach.wasd');
+  const en = touch ? t('coach.moveEn') : t('coach.wasdEn');
+  if (zhEl) zhEl.textContent = zh;
+  if (enEl) enEl.textContent = en;
+  el.classList.remove('hidden');
+  if (S._coachTimer) clearTimeout(S._coachTimer);
+  S._coachTimer = setTimeout(() => hideRunCoach(), COACH_MS);
+  try {
+    markCoachSeen(typeof localStorage !== 'undefined' ? localStorage : null);
+  } catch (_) {}
+  S._coachSessionShown = true;
+  return true;
+}
+
+function maybeShowRunCoach(touch) {
+  const session = { sessionShown: !!S._coachSessionShown };
+  let store = null;
+  try { store = typeof localStorage !== 'undefined' ? localStorage : null; } catch (_) {}
+  if (!shouldShowCoach(store, session)) return false;
+  return showRunCoach({ touch });
+}
+
+function pulseStickHint() {
+  const root = $('stick');
+  if (!root || root.classList.contains('hidden')) return;
+  root.classList.add('hint-pulse');
+  if (S._stickHintTimer) clearTimeout(S._stickHintTimer);
+  S._stickHintTimer = setTimeout(() => {
+    root.classList.remove('hint-pulse');
+    S._stickHintTimer = 0;
+  }, STICK_HINT_MS);
+}
+
+function flashHurtVignette() {
+  const el = $('fx-hurt');
+  if (!el) return;
+  el.classList.add('on');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('on'), HURT_VIGNETTE_MS);
+}
+
 function startRun() {
   if (!isMechPlayable(S.mechId)) {
     refreshStartLock();
@@ -715,9 +782,15 @@ function startRun() {
   const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
   $('stick').classList.toggle('hidden', !touch);
   $('stick').classList.add('ready');
-  $('stick').classList.remove('active', 'following');
+  $('stick').classList.remove('active', 'following', 'hint-pulse');
   updateHUD();
   audio.click();
+  // First-run coach OR light stick pulse (not both noisy)
+  const showedCoach = maybeShowRunCoach(touch);
+  if (!showedCoach) {
+    hideRunCoach();
+    if (touch) pulseStickHint();
+  }
 }
 
 function endRun(trial = false) {
@@ -743,6 +816,11 @@ function endRun(trial = false) {
   $('over-note').textContent = trial
     ? (i18n.isZh() ? '試玩時間到 · 解鎖金級繼續暴走' : 'Trial time up — unlock Gold to keep rampaging')
     : (who ? t('killedBy', { who }) : t('overNote'));
+  // v0.9.33 zone reached + loadout summary
+  const zh = i18n.isZh();
+  if ($('over-zone')) $('over-zone').textContent = zoneShortLabel(g.mapZone || 'lab', zh);
+  if ($('over-loadout')) $('over-loadout').textContent = formatLoadoutFromGame(g, CARDS_BY_ID, zh);
+  hideRunCoach();
   ui.show('over');
   audio.dead();
   if (ADS_ON) ads.naturalBreak('over').catch(() => {});
@@ -756,6 +834,7 @@ function applyMoveFromInput() {
   if (S.keys.KeyA || S.keys.ArrowLeft) dx -= 1;
   if (S.keys.KeyD || S.keys.ArrowRight) dx += 1;
   if (S.stick.active) { dx += S.stick.dx; dz += S.stick.dy; }
+  if (dx || dz) hideRunCoach();
   if (S.demo) {
     S.demoT += 0.016;
     dx = Math.cos(S.demoT * 0.7) + Math.sin(S.demoT * 1.3) * 0.3;
@@ -796,6 +875,9 @@ function applyMoveFromInput() {
     setKnob(0, 0);
     S.stick.active = true;
     S.stick.dx = 0; S.stick.dy = 0;
+    hideRunCoach();
+    const st = $('stick');
+    if (st) st.classList.remove('hint-pulse');
     root.classList.add('active', 'following');
     root.classList.remove('hidden');
     audio.init();
@@ -1013,9 +1095,15 @@ else if (ev.type === 'xp') {
       // Hurt feedback only — applyMoveFromInput / setMove still run during hitFlash/invuln.
       audio.hurt();
       kickFx({ trauma: 0.14, aberr: 0.12, bloomDamp: 0.7 });
-      particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), burstN(8), { speed: 3.2, up: 1.4, size: 0.45, bright: 1.0 });
+      // v0.9.33: keep light burst; add red edge vignette (no heavy FX)
+      if (!MOBILE_GFX) {
+        particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), burstN(8), { speed: 3.2, up: 1.4, size: 0.45, bright: 1.0 });
+      } else {
+        particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0xff2bd6), burstN(3), { speed: 2.4, up: 1.0, size: 0.35, bright: 0.9 });
+      }
       const flash = $('fx-flash');
       if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 50); }
+      flashHurtVignette();
     }
     else if (ev.type === 'dead') endRun(false);
     else if (ev.type === 'levelup') showLevelCards(ev.cards, { from: ev.from || 'level' });
