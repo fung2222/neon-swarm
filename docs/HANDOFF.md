@@ -5,37 +5,41 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.3，commit `6ddc483`  
+> **建議承接基準：** v0.9.6，commit `ec12087`（main／live cache-bust `?v=0.9.6`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
 
 ## 0. 先讀這一段：目前狀態與證據等級
 
-本文件已按 v0.9.3 source snapshot 重整；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
+本文件狀態段已對齊 **v0.9.6 / `ec12087`**（2026-10-26 Phase 0 baseline）。產品方向與架構說明仍以本文件後段為準；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
 
-### 已核對
+### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 已檢查 `6ddc483` 的程式、文件、素材及測試清單。
-- 2026-10-26 重新跑過 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files`，全部通過。
+- 目前 `main` HEAD：`ec12087`（v0.9.6）；live `index.html`／`main.js` cache-bust **`?v=0.9.6`**。
+- **Done since `6ddc483`：**
+  - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
+  - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
+  - v0.9.6 — 更強手機 GPU 減壓（pools／PR／bloom kick／ordinary-kill FX 等；不改平衡）。
+  - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
+- 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
 
-### 開發 agent 回報，今次未獨立重跑
+### Browser／截圖（本輪 Phase 0，2026-10-26 重跑）
 
-- v0.9.3 browser suite **36/36 PASS**。
-- v0.9.3 手機 390×844 的 Box3 投影約為 `minX=102 / maxX=288 / center=195`。
-- 桌面、手機直向、手機橫向及 resize 後的選擇畫面構圖。
+- `tests/browser-hotfix-0.9.3.mjs`：**36/36 PASS**（Chrome + SwiftShader；非真機 FPS）。
+- 手機 390×844 Box3 投影約 `minX=106 / maxX=284 / midX=195`（置中）；桌面 1280×800 右欄 `wrap.x=1.15`，`midX≈897`。
+- Selection 截圖（人工看過）：`tests/screenshots/phase0-baseline/menu-desktop-1280x800.png`、`menu-mobile-390x844.png`（另有 landscape）。桌面／直向選擇畫面無明顯 cards 遮擋 mech／出界。
 
-這些結果有對應測試程式，但今次只檢查測試內容，**不是本人重跑後的驗收結論**。下一位 agent 若要聲稱 v0.9.3 已完整驗收，應先重跑 browser suite 並看截圖。
+### Open gaps／仍未完成
 
-### 仍未完成／不能當已完成
-
-- `horn` 的模型、材質、燈光與烘焙品質仍是臨時美術，並非最終主角品質。
+- `horn` 的模型、材質、燈光與烘焙品質仍是**臨時／interim 美術**，並非最終主角品質（Phase 1）。
+- **手機 mid-run WebGL context loss 仍會發生**（Roy 實機回報「繪圖暫時中斷」）；v0.9.5 overlay 已捕捉、v0.9.6 已再減壓，但 **Roy deferred 進一步 GPU cuts**——稍後另開任務，本 Phase 0 不處理。
 - 槍層仍是 **N/E/S/W 四方向切圖**，不是平滑 360° 炮塔。
-- 未有真 GPU 桌面及目標手機的 200 敵機效能驗收。
+- PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
-- 普通敵人的光圈仍可能太多、太搶，戰鬥可讀性未完成。
-- 敵人剪影包、完整地圖分區、武器拾取選擇器及後續內容仍未完成。
+- Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
+- 敵人剪影包、完整地圖分區、武器拾取選擇器及 Phase 3+ 內容仍未完成。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -289,6 +293,8 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 2 — 戰鬥可讀性與敵人光圈減噪
 
+> **部分完成：** v0.9.4 已 dim 普通敵人（grunt）地面光圈；其餘可讀性／精英保留／地板對比等工作仍開放。
+
 - 普通敵人不應每個都有大光圈；保留給精英、危險攻擊或必要身份提示。
 - 地板與 ambient 要比敵人、子彈、拾取物暗；warning red／orange／acid 不被裝飾搶用。
 - 減少無意義全場 slow-motion、過量 bloom、粒子與 HUD 寫入。
@@ -392,4 +398,4 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-不要立即開發 Precision 或 Morph。先以目前 HEAD 重跑 baseline，親自看 v0.9.3 的桌面／手機截圖與反向跑射，再從 **Phase 1 的 horn 烘焙品質或真機效能** 選一個小任務。若 Roy 已指定其他優先項，仍沿用本文件的小步修改、測試、截圖與如實交接流程。
+**Phase 0 baseline（本輪）應對齊 v0.9.6 / `ec12087`。** 不要立即開發 Precision 或 Morph，也不要在未授權下再開手機 GPU 減壓。下一步建議：**Phase 1 — horn bake 畫質**（模型／材質／燈光／重新 bake；do not start in the same turn as Phase 0）。手機 mid-run context loss 屬 deferred gap。若 Roy 已指定其他優先項，仍沿用本文件的小步修改、測試、截圖與如實交接流程。
