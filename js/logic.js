@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -225,9 +225,12 @@ export class Game {
     this.killer = null;
     this.goalKills = 40;
     this.goalsCleared = 0;
-    // Phase 3 elite / boss beats
+    // Phase 3 elite / boss beats + Phase 6 endless cadence (v0.9.18)
     this._beatsFired = Object.create(null);
     this._spawnPauseUntil = 0;
+    this._nextEndlessEliteAt = null; // set lazily after ENDLESS.startAfter
+    this._nextEndlessBossAt = null;
+    this._endlessEliteIdx = 0;
     // Phase 6 map zone (lab → assembly @195 → reactor @285)
     this.mapZone = 'lab';
     this.bossHazards = []; // volley bullets + orbit floor telegraphs
@@ -324,7 +327,7 @@ export class Game {
     });
   }
 
-  /** Fire named beats (elite @120/@240, boss @360). Spawns pause briefly before arrival. */
+  /** Fire named beats (elite @120/@240, boss @360) then endless cadence. */
   _beatCheck(events) {
     for (const beat of BEATS) {
       const key = String(beat.at) + ':' + (beat.id || beat.kind);
@@ -349,6 +352,54 @@ export class Game {
         this._spawnBoss(beat, events);
         this._beatsFired[key] = true;
       }
+    }
+    this._endlessBeatCheck(events);
+  }
+
+  /**
+   * Endless elites/boss after ENDLESS.startAfter (default 360).
+   * Only when this.endless === true. Defers schedule while elite/boss still alive
+   * (does not mark skipped — waits and spawns when clear). Alternates eliteRotate.
+   */
+  _endlessBeatCheck(events) {
+    if (!this.endless) return;
+    if (this.t < ENDLESS.startAfter) return;
+    if (this._nextEndlessEliteAt == null) {
+      this._nextEndlessEliteAt = ENDLESS.startAfter + ENDLESS.eliteEvery;
+      this._nextEndlessBossAt = ENDLESS.startAfter + ENDLESS.bossEvery;
+      this._endlessEliteIdx = 0;
+    }
+
+    const eAt = this._nextEndlessEliteAt;
+    const ePause = ELITE.spawnPauseSec || 0;
+    if (ePause > 0 && this.t >= eAt - ePause && this.t < eAt) {
+      this._spawnPauseUntil = Math.max(this._spawnPauseUntil, eAt);
+    }
+    if (this.t >= eAt) {
+      const eliteAlive = this.enemies.some((e) => e.elite && !e.boss);
+      if (!eliteAlive) {
+        const rotate = ENDLESS.eliteRotate || ['sentinel', 'hunter'];
+        const id = rotate[this._endlessEliteIdx % rotate.length];
+        this._endlessEliteIdx += 1;
+        this._spawnElite({ at: eAt, kind: 'elite', id }, events);
+        this._nextEndlessEliteAt = eAt + ENDLESS.eliteEvery;
+      }
+      // else: defer — leave _nextEndlessEliteAt unchanged
+    }
+
+    const bAt = this._nextEndlessBossAt;
+    const bPause = BOSS.spawnPauseSec || 0;
+    if (bPause > 0 && this.t >= bAt - bPause && this.t < bAt) {
+      this._spawnPauseUntil = Math.max(this._spawnPauseUntil, bAt);
+    }
+    if (this.t >= bAt) {
+      const bossAlive = this.enemies.some((e) => e.boss);
+      if (!bossAlive) {
+        const id = ENDLESS.bossId || 'swarm_core';
+        this._spawnBoss({ at: bAt, kind: 'boss', id }, events);
+        this._nextEndlessBossAt = bAt + ENDLESS.bossEvery;
+      }
+      // else: defer
     }
   }
 

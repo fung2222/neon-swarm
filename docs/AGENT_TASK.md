@@ -10,35 +10,35 @@
 
 ## Active task
 
-**Task ID:** `PHASE6-MAP-ROOFTOP-001`  
-**名稱：** Phase 6 — 天台逃出區 vertical slice（blockade → rooftop）  
-**性質：** 地圖／敘事分區小片；不改 horn、唔開 Precision／Morph、唔做手機 GPU、唔做五區一次做齊。
+**Task ID:** `PHASE6-ENDLESS-ELITES-001`  
+**名稱：** Phase 6 — endless elites after boss（~90s 週期）  
+**性質：** 節奏／beats 擴展；重用現有 elite／boss 類型；不改 horn、唔開 Precision／Morph、唔做手機 GPU、唔做地圖五區重做。
 
 ### 背景
 
-- Blockade（v0.9.16）已落地；Roy 授權跟流程一直推，到 Phase 4／美術／§9 規則先停夾。
-- 逃亡線：lab → assembly → reactor → blockade → **rooftop**（最後一區）。
-- 現況：`mapZone` 至 `blockade`；`blockadeAt = 420`；boss @360。
+- 五區地圖（v0.9.17）已齊；Roy 授權跟流程一直推，到 Phase 4／美術／§9 規則先停夾。
+- BEATS-PLAN：after 6:00 → elites every ~90 s，boss every ~5 min（endless pressure）。
+- 現況：`BEATS` 只有 fixed `sentinel@120`、`hunter@240`、`swarm_core@360`；`_beatCheck` 只掃靜態表；trial `TRIAL.surviveSec=480` 仍要尊重。
 
 ### 授權（收窄）
 
 允許：
 
-1. **分區狀態：** 擴展 `mapZone` 至五區齊：`lab | assembly | reactor | blockade | rooftop`。時間門檻建議 `rooftopAt ≈ 510`（8:30，blockade 之後），寫清並可測。
-2. **天台視覺（唔係只 recolor）：** 邊緣裝飾換成天台／夜空逃出感（天線／通風口／直升機停機坪剪影／矮欄杆／遠方城市光點／夜空冷色邊緣等程序化 props）；色溫偏夜藍／冷白 trim（對比前四區）；**可玩地面維持低對比暗底**（可略偏瀝青灰，仍低對比）；danger telegraph 色唔被裝飾搶走；**唔好紅機甲 hull**；唔好加會挡視線嘅高 props。
-3. **輕量玩法理由：** rooftop `waveMix` 微調（多 drone／mech／chief、少 staffer；天空壓迫感）；唔好整新 boss／elite（endless 另開）。
-4. **UI：** 進入分區短 zh-HK 橫幅（例：「進入 · 天台逃出區」）；en 細字。
-5. 測試（zone 觸發、decoration／mix；五區時間序）；回歸；截圖 blockade vs rooftop（desktop＋390）；cache-bust **0.9.17**；更新 HANDOFF（誠實標：同一 arena 換邊飾，五區敘事齊）。
+1. **Endless elite 排程：** boss 之後（t≥360 且 boss beat 已觸發／或 t 過 boss at）每隔約 **90s** 再出一隻 elite；交替重用現有 `sentinel`／`hunter`（或可配置序列），**唔好發明新 elite 剪影**。
+2. **可選輕量 endless boss：** 每隔約 **5 min**（300s）再出一隻 `swarm_core`（或明確寫「本輪只做 elite、boss 週期留 Recommended next」——優先兩邊都做若工作量可控）。
+3. **約束：** max one elite at a time（沿用）；elite 仍在場時延後下次排程，唔好疊兩隻；spawn pause／telegraph／reward（XP＋2 卡）沿用現有路徑；`endless:false`／trial 行為唔好壞。
+4. **實作形狀：** 可擴 `BEATS` 動態生成、或 `_beatCheck` 加 endless 分支、或 `ENDLESS = { eliteEvery: 90, bossEvery: 300, startAfter: 360 }`——擇一寫清並可測。
+5. 測試：t≈450／540 等會再出 elite；max one；trial 480 仍結束；回歸 beats／logic／balance；cache-bust **0.9.18**；更新 HANDOFF＋BEATS-PLAN 狀態註記。截圖可選（elite banner 再出現一次即可）。
 
-不允許：endless elites（本輪）、horn bake、Precision／Morph、手機 GPU、武器大改、aim/hit 重寫、真正無縫大地圖。
+不允許：新 elite／boss 美術類型、horn bake、Precision／Morph、手機 GPU、地圖區重做、武器大改、aim/hit 重寫、改平衡數值表（hp／dmg 表）。
 
 ### 目標
 
-- 逃亡線五區邊飾／色溫／mix 齊；肉眼分得到天台；核心操作不變。
+- 打過 6:00 boss 之後 run 唔會「冇 landmark」；壓力有節奏地持續。
 
 ### 完成條件
 
-- Push＋報告＋截圖；停下。Recommended next：endless ~90s elites after boss（do not start in this task）。
+- Push＋報告；停下。Recommended next：Phase 4 Precision／美術鎖定／§9 規則夾（**do not start** — Roy 要先停夾）。
 
 ### 回報格式
 

@@ -1,10 +1,11 @@
 /**
  * Phase 3 beats — SENTINEL PRIME + HUNTER RAID + SWARM CORE boss.
+ * Phase 6 endless — elites ~90s / boss ~300s after startAfter=360 (v0.9.18).
  * Run: node tests/beats.test.mjs
  */
 import assert from 'assert';
 import { Game } from '../js/logic.js';
-import { ELITE, BOSS, BEATS, ENEMIES, TRIAL, eliteCfg } from '../js/config.js';
+import { ELITE, BOSS, BEATS, ENDLESS, ENEMIES, TRIAL, eliteCfg } from '../js/config.js';
 
 assert.ok(ENEMIES.sentinel, 'sentinel enemy def');
 assert.ok(ENEMIES.hunter, 'hunter enemy def');
@@ -24,6 +25,11 @@ assert.equal(BEATS[2].kind, 'boss');
 assert.equal(BEATS[2].id, 'swarm_core');
 assert.equal(BOSS.cardChoices, 3);
 assert.equal(TRIAL.surviveSec, 480);
+assert.equal(ENDLESS.startAfter, 360);
+assert.equal(ENDLESS.eliteEvery, 90);
+assert.equal(ENDLESS.bossEvery, 300);
+assert.deepEqual(ENDLESS.eliteRotate, ['sentinel', 'hunter']);
+assert.equal(ENDLESS.bossId, 'swarm_core');
 
 const dt = 1 / 30;
 
@@ -408,10 +414,165 @@ const dt = 1 / 30;
   assert.ok(!g.enemies.some((e) => e.type === 'hunter'), 'no hunter while sentinel alive');
 }
 
+// ---------- Endless elites after boss (v0.9.18) ----------
+function driveQuiet(g, until, onEvents) {
+  let guard = 0;
+  while (g.t < until && g.alive && guard++ < 500000) {
+    g.invuln = 999;
+    // Clear ordinary swarm noise; keep elites/boss for cadence tests
+    g.enemies = g.enemies.filter((e) => e.elite || e.boss);
+    g.bullets.length = 0;
+    g.gems.length = 0;
+    g.spawnAcc = 0;
+    g.bossHazards.length = 0;
+    if (g.pausedForLevel && g.pendingCards && g.pendingCards.length) {
+      g.applyCard(g.pendingCards[0]);
+    }
+    g.stopMove();
+    const { events } = g.step(dt);
+    if (onEvents) onEvents(events, g);
+  }
+}
+
+// After ~450 and ~540 another elite can spawn (rotate sentinel → hunter)
+{
+  const g = new Game({ seed: 77, endless: true });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  // Skip fixed beats so we only observe endless cadence
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['360:swarm_core'] = true;
+  g.t = ENDLESS.startAfter - 0.05;
+  g._spawnPauseUntil = 0;
+
+  const spawned = [];
+  const noteSpawn = (game) => {
+    const el = game.enemies.find((e) => e.elite && !e.boss && e.hp > 0);
+    if (!el) return;
+    const last = spawned[spawned.length - 1];
+    if (last && Math.abs(last.t - game.t) < 0.5) return; // beat + eliteIn same tick
+    spawned.push({ t: game.t, type: el.type });
+  };
+  driveQuiet(g, ENDLESS.startAfter + ENDLESS.eliteEvery + 2, (events, game) => {
+    if (events.some((ev) => ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite'))) {
+      noteSpawn(game);
+    }
+    // Remove elite so next schedule can fire (defer-while-alive)
+    game.enemies = game.enemies.filter((e) => !(e.elite && !e.boss));
+  });
+  assert.ok(spawned.length >= 1, 'endless elite near 450, got ' + spawned.length);
+  assert.ok(spawned[0].t >= ENDLESS.startAfter + ENDLESS.eliteEvery - 1, 'first endless ~450');
+  assert.ok(spawned[0].t < ENDLESS.startAfter + ENDLESS.eliteEvery + 3);
+  assert.equal(spawned[0].type, 'sentinel', 'first endless rotates sentinel');
+
+  // Continue to ~540
+  driveQuiet(g, ENDLESS.startAfter + ENDLESS.eliteEvery * 2 + 2, (events, game) => {
+    if (events.some((ev) => ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite'))) {
+      noteSpawn(game);
+    }
+    game.enemies = game.enemies.filter((e) => !(e.elite && !e.boss));
+  });
+  assert.ok(spawned.length >= 2, 'second endless elite near 540, got ' + JSON.stringify(spawned));
+  assert.ok(spawned[1].t >= ENDLESS.startAfter + ENDLESS.eliteEvery * 2 - 1);
+  assert.equal(spawned[1].type, 'hunter', 'second endless rotates hunter');
+}
+
+// Max one elite: defer schedule while elite alive (do not stack)
+{
+  const g = new Game({ seed: 88, endless: true });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['360:swarm_core'] = true;
+  g.t = ENDLESS.startAfter + ENDLESS.eliteEvery - 0.05;
+  g._spawnPauseUntil = 0;
+  // Pre-place an elite; endless should defer
+  const stuck = g._spawnElite({ at: g.t, kind: 'elite', id: 'sentinel' }, []);
+  assert.ok(stuck);
+  stuck.hp = 9999;
+  const beforeAt = g._nextEndlessEliteAt; // still null until first _endlessBeatCheck
+  driveQuiet(g, ENDLESS.startAfter + ENDLESS.eliteEvery + 5, null);
+  assert.equal(g.enemies.filter((e) => e.elite && !e.boss).length, 1, 'still max one elite');
+  assert.ok(g._nextEndlessEliteAt != null, 'schedule initialized');
+  // Schedule not advanced past first slot while elite lived
+  assert.equal(g._nextEndlessEliteAt, ENDLESS.startAfter + ENDLESS.eliteEvery,
+    'deferred: nextEndlessEliteAt stays at first slot while elite alive');
+  // Clear elite and advance — should spawn and advance schedule
+  g.enemies = g.enemies.filter((e) => !(e.elite && !e.boss));
+  driveQuiet(g, Math.max(g.t, ENDLESS.startAfter + ENDLESS.eliteEvery) + 3, (events, game) => {
+    // Keep at most briefly; clear after spawn so we observe advance
+    if (game.enemies.some((e) => e.elite && !e.boss)) {
+      game.enemies = game.enemies.filter((e) => !(e.elite && !e.boss));
+    }
+  });
+  assert.ok(
+    g._nextEndlessEliteAt >= ENDLESS.startAfter + ENDLESS.eliteEvery * 2 - 0.01,
+    'after clear, schedule advances; got ' + g._nextEndlessEliteAt,
+  );
+}
+
+// endless:false skips endless cadence
+{
+  const g = new Game({ seed: 91, endless: false });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['360:swarm_core'] = true;
+  g.t = ENDLESS.startAfter + ENDLESS.eliteEvery - 0.05;
+  driveQuiet(g, ENDLESS.startAfter + ENDLESS.eliteEvery + 5, null);
+  assert.equal(g.enemies.filter((e) => e.elite).length, 0, 'no endless elite when endless:false');
+  assert.equal(g._nextEndlessEliteAt, null);
+}
+
+// Endless boss reuses swarm_core ~300s after startAfter
+{
+  const g = new Game({ seed: 95, endless: true });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['360:swarm_core'] = true;
+  g.t = ENDLESS.startAfter + ENDLESS.bossEvery - 0.05;
+  g._spawnPauseUntil = 0;
+  let sawBoss = false;
+  driveQuiet(g, ENDLESS.startAfter + ENDLESS.bossEvery + 3, (events, game) => {
+    for (const ev of events) {
+      if (ev.type === 'bossIn' || (ev.type === 'beat' && ev.kind === 'boss')) sawBoss = true;
+    }
+    // Drop endless elites quickly so they don't clutter; keep boss
+    game.enemies = game.enemies.filter((e) => !(e.elite && !e.boss));
+  });
+  assert.ok(sawBoss || g.enemies.some((e) => e.boss), 'endless boss near 660');
+  const boss = g.enemies.find((e) => e.boss);
+  assert.ok(boss);
+  assert.equal(boss.type, 'swarm_core');
+}
+
+// Trial surviveSec still 480 — logic does not auto-end; document main.checkTrialEnd
+{
+  assert.equal(TRIAL.surviveSec, 480);
+  const g = new Game({ seed: 101, endless: true });
+  g.invuln = 999;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._beatsFired['360:swarm_core'] = true;
+  g.t = TRIAL.surviveSec - 0.5;
+  driveQuiet(g, TRIAL.surviveSec + 1.0, null);
+  assert.ok(g.alive, 'logic keeps run alive past surviveSec');
+  assert.ok(g.t >= TRIAL.surviveSec, 'time passed trial cap');
+  // main.checkTrialEnd() ends trial UI runs at TRIAL.surviveSec
+}
+
 console.log('beats OK', {
   eliteAt: BEATS[0].at,
   elite2At: BEATS[1].at,
   bossAt: BEATS[2].at,
+  endlessEliteEvery: ENDLESS.eliteEvery,
+  endlessBossEvery: ENDLESS.bossEvery,
+  endlessStartAfter: ENDLESS.startAfter,
   hunterComboSegs: eliteCfg('hunter').comboSegs,
   volleyTelegraphSec: BOSS.volleyTelegraphSec,
   cardChoices: BOSS.cardChoices,

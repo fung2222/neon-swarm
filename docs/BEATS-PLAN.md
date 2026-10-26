@@ -1,4 +1,14 @@
-# ELITE / BOSS BEAT — design note for NEON SWARM v0.3.5 (proposal, not yet implemented)
+# ELITE / BOSS BEAT — design note for NEON SWARM
+
+> **Status (v0.9.18):** Fixed beats + endless cadence implemented.
+> `BEATS` = sentinel@120, hunter@240, swarm_core@360.
+> `ENDLESS` = `{ startAfter:360, eliteEvery:90, bossEvery:300, eliteRotate:['sentinel','hunter'], bossId:'swarm_core' }`
+> via `Game._endlessBeatCheck` (ENDLESS config + `_beatCheck` extension — not dynamic BEATS rows).
+> Max one elite; defer while alive. `endless:false` skips cadence. Trial `surviveSec=480` unchanged.
+> No new elite/boss silhouettes. See `tests/beats.test.mjs` / HANDOFF v0.9.18.
+>
+> Below is the original design note (kept for telegraph / silhouette intent).
+
 
 Goal: give each run a **named beat with a readable telegraph** so the swarm stops being one continuous blur,
 without breaking Roy's visual rules (no red mech hull, no tall props, mech silhouettes not primitives,

@@ -283,6 +283,22 @@ export const BEATS = [
   { at: 360, kind: 'boss', id: 'swarm_core' },
 ];
 
+/**
+ * Endless cadence after fixed boss (BEATS-PLAN §1 / v0.9.18).
+ * Shape: ENDLESS config + Game._beatCheck → _endlessBeatCheck (not dynamic BEATS rows).
+ * - Elites every eliteEvery sec after startAfter, alternating eliteRotate (existing types only).
+ * - Boss every bossEvery sec, reusing swarm_core.
+ * - Max one elite; schedule defers while elite (or boss for boss beats) still alive.
+ * - Gated on Game.endless === true so endless:false skips cadence; trial surviveSec unchanged.
+ */
+export const ENDLESS = {
+  startAfter: 360,
+  eliteEvery: 90,
+  bossEvery: 300,
+  eliteRotate: ['sentinel', 'hunter'],
+  bossId: 'swarm_core',
+};
+
 
 /**
  * Drops. Everything lands as a big letter, a weapon icon or a plain cube:

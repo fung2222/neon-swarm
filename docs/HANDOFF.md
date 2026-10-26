@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.17 Phase 6 rooftop map zone（五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.18 Phase 6 endless elites（rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -16,7 +16,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.17`**（rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.18`**（endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -32,6 +32,7 @@
   - v0.9.15 — Phase 6 reactor map zone slice：`mapZone` lab→assembly→reactor @`MAP_ZONE.reactorAt=285`（4:45，hunter@240 後、boss@360 前）；反應爐邊緣裝飾（冷卻塔／電漿管／能量柱／警示欄／輻射條紋，非只 recolor）；冷紫／電青 trim vs assembly 暖琥珀／lab 冷 teal；可玩地板維持暗底；reactor `waveMix` 多 drone／mech／officer、少 staffer／guard；`zoneEnter` 橫幅「進入 · 能源反應爐」／REACTOR；測試 `tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-reactor/`。誠實標：同一 arena 換邊飾／色溫／mix。未做：blockade／rooftop／endless elites。Box＝SwiftShader，非真機驗收。
   - v0.9.16 — Phase 6 blockade map zone slice：`mapZone` lab→assembly→reactor→blockade @`MAP_ZONE.blockadeAt=420`（7:00，boss@360 後）；軍事封鎖邊緣裝飾（路障／沙袋／鐵絲／APC 殘骸／崗哨，非只 recolor）；鋼灰／軍綠 trim vs reactor 紫青／assembly 琥珀／lab teal；可玩地板維持暗底；blockade `waveMix` 多 soldier／officer／chief／mech、少 staffer／drone；`zoneEnter` 橫幅「進入 · 軍事封鎖區」／BLOCKADE；測試 `tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-blockade/`。誠實標：同一 arena 換邊飾／色溫／mix。未做：rooftop／endless elites。Box＝SwiftShader，非真機驗收。
   - v0.9.17 — Phase 6 rooftop map zone slice（**五區齊**）：`mapZone` lab→assembly→reactor→blockade→rooftop @`MAP_ZONE.rooftopAt=510`（8:30，blockade@420 後）；天台邊緣裝飾（天線／通風／停機坪剪影／矮欄杆／遠城燈光點，非只 recolor）；夜藍／冷白 trim vs blockade 橄欖／reactor 紫青／assembly 琥珀／lab teal；可玩地板暗瀝青灰、低對比；rooftop `waveMix` 多 drone／mech／chief、少 staffer；`zoneEnter` 橫幅「進入 · 天台逃出區」／ROOFTOP；測試 `tests/map-zone.test.mjs` 五區時間序；截圖 `tests/screenshots/phase6-rooftop/`。誠實標：同一 arena 換邊飾／色溫／mix，唔係無縫大地圖。未做：endless ~90s elites。Box＝SwiftShader，非真機驗收。
+  - v0.9.18 — Phase 6 endless elites after boss：`ENDLESS = { startAfter:360, eliteEvery:90, bossEvery:300, eliteRotate:['sentinel','hunter'], bossId:'swarm_core' }`＋`Game._endlessBeatCheck`（固定 `BEATS` 之後；**唔係**動態塞 BEATS 列）；交替重用現有 elite／boss；max one elite、存活時延後排程；`endless:false` 跳過 cadence；trial `TRIAL.surviveSec=480` 不變（main.checkTrialEnd）；測試 `tests/beats.test.mjs`。可選截圖 `tests/screenshots/phase6-endless/`。未做：新 elite／boss 剪影、Phase 4 Precision。Box＝SwiftShader，非真機驗收。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -50,7 +51,7 @@
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ **rooftop zone（v0.9.17，五區敘事齊）** 已落地；endless ~90s elites 仍未完成。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ **endless elites／boss cadence（v0.9.18）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步產品夾：Phase 4 Precision／美術鎖定／HANDOFF §9（需 Roy）。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -350,7 +351,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 6 — 武器、拾取、地圖分區與內容擴展
 
-> **部分完成（v0.9.11＋v0.9.14＋v0.9.15＋v0.9.16＋v0.9.17）：** 武器地面拾取選擇器（v0.9.11）— 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。**地圖分區小片（v0.9.14–v0.9.17，五區齊）** — `mapZone` lab→assembly @195s→reactor @285s→blockade @420s→rooftop @510s；組裝／反應爐／封鎖／天台邊緣 props＋琥珀／紫青／鋼綠／夜藍 trim；waveMix 微調；`zoneEnter` 橫幅；`tests/map-zone.test.mjs`；截圖 `tests/screenshots/phase6-assembly/`、`phase6-reactor/`、`phase6-blockade/`、`phase6-rooftop/`。未做：多槽庫存、新武器數值大改、endless ~90s elites。elite #2 已於 v0.9.13。
+> **部分完成（v0.9.11＋v0.9.14–v0.9.18）：** 武器地面拾取選擇器（v0.9.11）— 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。**地圖分區小片（v0.9.14–v0.9.17，五區齊）** — `mapZone` lab→assembly @195s→reactor @285s→blockade @420s→rooftop @510s；組裝／反應爐／封鎖／天台邊緣 props＋琥珀／紫青／鋼綠／夜藍 trim；waveMix 微調；`zoneEnter` 橫幅；`tests/map-zone.test.mjs`；截圖 `phase6-assembly/`、`phase6-reactor/`、`phase6-blockade/`、`phase6-rooftop/`。**Endless cadence（v0.9.18）** — `ENDLESS`＋`_endlessBeatCheck`：boss@360 後 elite 每 ~90s（sentinel／hunter 交替）、boss 每 ~300s（swarm_core）；max one elite、延後排程；`tests/beats.test.mjs`。未做：多槽庫存、新武器數值大改、新 elite／boss 剪影。elite #2 已於 v0.9.13。
 
 - 武器拾取遇到已有裝備時，要提供替換／保留／槽位選擇；**不可靜靜覆蓋裝備**。（v0.9.11：以疊層升級／保留實作；現有架構無多槽。）
 - 新武器必須遵守 primary visual aim 與 per-fire-event aim 分工。
