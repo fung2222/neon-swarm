@@ -461,7 +461,7 @@ Rollback baseline:
 
 **目前基準 v0.9.32（PHASE6-BANNER-TIMING-001；HEAD 以 `main`／live `?v=0.9.32` 為準）。** **Active = none — SYNC WITH ROY BEFORE PHASE 4。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
+- `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `e578bae`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
 - `PHASE6-LEVELUP-CARD-UX-001` **已完成**（v0.9.31）：升級卡 UX／tap／stack／slot hint；截圖 `tests/screenshots/phase6-levelup-ux/`。
 - `PHASE6-DROP-READABILITY-001` **已完成**（v0.9.30）：XP shards／heal pack／magnet disc／weapon board；截圖 `tests/screenshots/phase6-drop-readability/`。
 - `PHASE6-PICKUP-POLISH-001` **已完成**（v0.9.29）：slot-fire sync＋pickup UX polish；截圖 `tests/screenshots/phase6-pickup-polish/`。

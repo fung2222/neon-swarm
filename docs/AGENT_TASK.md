@@ -28,7 +28,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-BANNER-TIMING-001 → **complete**（v0.9.32 / ）
+## 狀態：PHASE6-BANNER-TIMING-001 → **complete**（v0.9.32 / `e578bae`）
 
 **ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content **ended** after this last clear Phase6 polish. Do NOT invent new systems.
 
@@ -55,7 +55,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-BANNER-TIMING-001` → **v0.9.32** ().
+- `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`).
 - `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
 - `PHASE6-DROP-READABILITY-001` → **v0.9.30**.
 - `PHASE6-PICKUP-POLISH-001` → **v0.9.29**.
