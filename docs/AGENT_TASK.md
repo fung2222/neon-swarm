@@ -28,37 +28,35 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-MUTE-PERSIST-001 → **complete**（v0.9.35 / `a026e1e`）
+## 狀態：PHASE6-SAFE-AREA-001 → **Complete**（`?v=0.9.36`）
 
-**ROY（2026-10-26 ~22:22 HKT）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
+**ROY（2026-10-26）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
 
-### Active this turn
+### Just shipped
 
-**none** — last shipped: `PHASE6-MUTE-PERSIST-001` → **`?v=0.9.35`**.
+**PHASE6-SAFE-AREA-001** → live cache-bust **`?v=0.9.36`**.
 
-**Shipped behavior：**
-- Honest baseline: kit `SynthAudio` already persisted `cyber.neon-swarm.muted` via store — this ship **hardens** cold-load／UI／menu／tests（not invent dual sliders）
-- Namespaced kit key + alias `neon-swarm-mute`；early inline LS paint（no unmuted flash）
-- Menu `#btn-mute-menu` as `menu-icon-btn`（kit `tidyTopRight` no longer hides it）；HUD mute＋KeyM＋menu sync
-- zh-HK aria／title：靜音／取消靜音；`aria-pressed`；`?mute=1` session override without rewriting store
-- Ad ducking unchanged；music／SFX design unchanged
-- Screenshots `tests/screenshots/phase6-mute-persist/`；tests `tests/mute-persist.test.mjs`
+- `:root` `--sa-*` wraps `env(safe-area-inset-*)` (testable overrides)
+- Gaps fixed: `.hud-left` L；`.hud-buttons.top` R；mobile `.hud-goal` L；`.xp-bar` L/R media；screen pause/over/level/gfx padding；weapon-slots／beat／coach width；cheap landscape
+- `viewport-fit=cover` already present（verified）
+- Shots `tests/screenshots/phase6-safe-area/`（simulated large insets）；test `tests/safe-area.test.mjs`
 
-### Queue（recommended next — safe usability, no Phase 4）
+### Queue（usability thinning — next concrete）
 
-1. **PHASE6-SAFE-AREA-001** — preferred next
-2. HIT-FEEL-DEVICE（Roy 真機）— keep queued
-3. Phone GPU／horn art lock — deferred／only after Roy OK
+1. **PHASE6-EARLY-FEEDBACK-001**（recommended）— first-kill／first-level lite juice；still「未用得」feel without inventing Phase 4
+2. OR kill-streak juice lite／result share copy
+3. HIT-FEEL-DEVICE — preferred **when Roy can play on phone**（SwiftShader ≠ device）
+4. Phone GPU／horn art lock — deferred／only after Roy OK
 
 **Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9／phone GPU／balance rewrite.
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`).
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`).
-- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`).
-- `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`).
-- `PHASE6-LEVELUP-CARD-UX-001` → **v0.9.31**.
+- `PHASE6-SAFE-AREA-001` → **v0.9.36**
+- `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`)
+- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`)
+- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`)
+- `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`)
 
 ---
 

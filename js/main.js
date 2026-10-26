@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.35 mute persist; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.36 safe-area; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,

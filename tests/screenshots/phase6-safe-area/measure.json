@@ -1,0 +1,316 @@
+{
+  "sa": {
+    "top": 54,
+    "right": 28,
+    "bottom": 40,
+    "left": 28
+  },
+  "shots": [
+    "390-play-safe.png",
+    "390-pause-safe.png",
+    "390-over-safe.png",
+    "390-level-safe.png",
+    "1280-play-safe.png"
+  ],
+  "checks": [
+    {
+      "view": "390-play",
+      "m": {
+        "vw": 390,
+        "vh": 844,
+        "sa": {
+          "top": 54,
+          "right": 28,
+          "bottom": 40,
+          "left": 28
+        },
+        "hudLeft": {
+          "sel": ".hud-left",
+          "top": 62,
+          "right": 116.03125,
+          "bottom": 107,
+          "left": 36,
+          "w": 80.03125,
+          "h": 45,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "hudRight": {
+          "sel": ".hud-right",
+          "top": 62,
+          "right": 250,
+          "bottom": 104,
+          "left": 143.25,
+          "w": 106.75,
+          "h": 42,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "hudButtons": {
+          "sel": ".hud-buttons.top",
+          "top": 62,
+          "right": 354,
+          "bottom": 106,
+          "left": 260,
+          "w": 94,
+          "h": 44,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "btnMute": {
+          "sel": "#btn-mute",
+          "top": 62,
+          "right": 304,
+          "bottom": 106,
+          "left": 260,
+          "w": 44,
+          "h": 44,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "btnPause": {
+          "sel": "#btn-pause",
+          "top": 62,
+          "right": 354,
+          "bottom": 106,
+          "left": 310,
+          "w": 44,
+          "h": 44,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "stick": {
+          "sel": "#stick",
+          "top": 636,
+          "right": 180,
+          "bottom": 768,
+          "left": 48,
+          "w": 132,
+          "h": 132,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "slots": {
+          "sel": "#weapon-slots",
+          "top": 660,
+          "right": 300,
+          "bottom": 708,
+          "left": 90,
+          "w": 210,
+          "h": 48,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "xp": {
+          "sel": ".xp-bar",
+          "top": 777,
+          "right": 350,
+          "bottom": 788,
+          "left": 40,
+          "w": 310,
+          "h": 11,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "beat": {
+          "sel": "#beat-banner",
+          "top": 118,
+          "right": 345,
+          "bottom": 164.421875,
+          "left": 45,
+          "w": 300,
+          "h": 46.421875,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "coach": {
+          "sel": "#run-coach",
+          "top": 151.90625,
+          "right": 183,
+          "bottom": 214.90625,
+          "left": -127,
+          "w": 310,
+          "h": 63,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": false,
+          "clearRight": true
+        },
+        "goal": {
+          "sel": ".hud-goal",
+          "top": 112,
+          "right": 128.078125,
+          "bottom": 136,
+          "left": 36,
+          "w": 92.078125,
+          "h": 24,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        }
+      }
+    },
+    {
+      "view": "390-pause-pad",
+      "pausePad": {
+        "pt": 66,
+        "pb": 52,
+        "pl": 40,
+        "pr": 40,
+        "okTop": true,
+        "okBottom": true
+      }
+    },
+    {
+      "view": "1280-play",
+      "m": {
+        "vw": 1280,
+        "vh": 800,
+        "sa": {
+          "top": 54,
+          "right": 28,
+          "bottom": 40,
+          "left": 28
+        },
+        "hudLeft": {
+          "sel": ".hud-left",
+          "top": 64,
+          "right": 258,
+          "bottom": 128,
+          "left": 38,
+          "w": 220,
+          "h": 64,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "hudRight": {
+          "sel": ".hud-right",
+          "top": 64,
+          "right": 1144,
+          "bottom": 128,
+          "left": 924,
+          "w": 220,
+          "h": 64,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "hudButtons": {
+          "sel": ".hud-buttons.top",
+          "top": 64,
+          "right": 1242,
+          "bottom": 108,
+          "left": 1148,
+          "w": 94,
+          "h": 44,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "btnMute": {
+          "sel": "#btn-mute",
+          "top": 64,
+          "right": 1192,
+          "bottom": 108,
+          "left": 1148,
+          "w": 44,
+          "h": 44,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "btnPause": {
+          "sel": "#btn-pause",
+          "top": 64,
+          "right": 1242,
+          "bottom": 108,
+          "left": 1198,
+          "w": 44,
+          "h": 44,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "stick": null,
+        "slots": {
+          "sel": "#weapon-slots",
+          "top": 684,
+          "right": 768,
+          "bottom": 742,
+          "left": 512,
+          "w": 256,
+          "h": 58,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "xp": {
+          "sel": ".xp-bar",
+          "top": 734,
+          "right": 1152,
+          "bottom": 744,
+          "left": 128,
+          "w": 1024,
+          "h": 10,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "beat": {
+          "sel": "#beat-banner",
+          "top": 126,
+          "right": 790,
+          "bottom": 182,
+          "left": 490,
+          "w": 300,
+          "h": 56,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        },
+        "coach": null,
+        "goal": {
+          "sel": ".hud-goal",
+          "top": 64,
+          "right": 690.171875,
+          "bottom": 92,
+          "left": 589.828125,
+          "w": 100.34375,
+          "h": 28,
+          "clearTop": true,
+          "clearBottom": true,
+          "clearLeft": true,
+          "clearRight": true
+        }
+      }
+    }
+  ]
+}

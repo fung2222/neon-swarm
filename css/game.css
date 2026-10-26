@@ -1,17 +1,24 @@
 html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; touch-action: none; }
+/* v0.9.36 PHASE6-SAFE-AREA-001 — tokens wrap env() so tests can simulate large insets */
+:root {
+  --sa-top: env(safe-area-inset-top, 0px);
+  --sa-right: env(safe-area-inset-right, 0px);
+  --sa-bottom: env(safe-area-inset-bottom, 0px);
+  --sa-left: env(safe-area-inset-left, 0px);
+}
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #fx-flash, #scanlines { pointer-events: none; }
 /* ---- v0.6.0 HUD: one row of numbers, controls pinned to a reserved corner ----
    Layout: [HP | LV] ............ [GOAL] ............ [TIME | SCORE] [mute][pause]
    The right panel stops 112px short of the edge so the 2x44px buttons never sit on top of it. */
-.hud-panel { position: absolute; top: calc(10px + env(safe-area-inset-top)); z-index: 5; padding: 6px 12px; }
-.hud-left { left: 10px; }
-.hud-right { right: calc(108px + env(safe-area-inset-right)); text-align: right; }
+.hud-panel { position: absolute; top: calc(10px + var(--sa-top)); z-index: 5; padding: 6px 12px; }
+.hud-left { left: calc(10px + var(--sa-left)); }
+.hud-right { right: calc(108px + var(--sa-right)); text-align: right; }
 .stat .label { font-size: 10px; letter-spacing: 1.5px; color: #9a93bf; }
 .stat .value { font-size: clamp(16px, 4.6vw, 22px); color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
 .stat .value.big { font-size: clamp(20px, 5.6vw, 28px); color: #7ef9ff; }
 .hud-buttons.top {
-  position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px;
+  position: absolute; top: calc(10px + var(--sa-top)); right: calc(10px + var(--sa-right));
   bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear or strip stretches full height */
   display: flex; gap: 6px; z-index: 6; align-items: flex-start;
   pointer-events: auto;
@@ -20,7 +27,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* goal line: the kills still needed for the next contract level */
 .hud-goal {
   position: absolute; left: 50%; transform: translateX(-50%);
-  top: calc(10px + env(safe-area-inset-top));
+  top: calc(10px + var(--sa-top));
   z-index: 5; pointer-events: none;
   padding: 5px 12px; border-radius: 99px;
   font-size: 11px; letter-spacing: 1px; color: #cfe6ff;
@@ -35,26 +42,30 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
    row 1: [HP | LV] ..... [TIME | SCORE] [mute][pause]
    row 2: goal chip under the left panel (centred between the panels) */
 @media (max-width: 560px) {
-  .hud-panel { padding: 3px 8px; top: calc(8px + env(safe-area-inset-top)); }
-  .hud-left { left: 8px; }
-  .hud-right { right: calc(112px + env(safe-area-inset-right)); }
+  .hud-panel { padding: 3px 8px; top: calc(8px + var(--sa-top)); }
+  .hud-left { left: calc(8px + var(--sa-left)); }
+  .hud-right { right: calc(112px + var(--sa-right)); }
   .hud-panel .stat { min-width: 0; }
   .hud-panel .stat + .stat { margin-left: 10px; }
   .stat .label { font-size: 9px; letter-spacing: 1px; }
   .stat .value { font-size: 15px; letter-spacing: 0; }
   .stat .value.big { font-size: 19px; }
   .hud-right .value.big { font-size: 17px; }
-  .hud-buttons.top { top: calc(8px + env(safe-area-inset-top)); right: 8px; }
+  .hud-buttons.top { top: calc(8px + var(--sa-top)); right: calc(8px + var(--sa-right)); }
   .hud-goal {
     top: auto; bottom: auto; margin-top: 0;
-    top: calc(58px + env(safe-area-inset-top));
-    left: 8px; transform: none;
+    top: calc(58px + var(--sa-top));
+    left: calc(8px + var(--sa-left)); transform: none;
     font-size: 10px; padding: 3px 10px;
   }
-}#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
+}
+#hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
 /* v0.9.33 XP bar punch — readable mid-fight */
 .xp-bar {
-  position: absolute; left: 10%; right: 10%; bottom: calc(16px + env(safe-area-inset-bottom));
+  position: absolute;
+  left: max(10%, calc(12px + var(--sa-left)));
+  right: max(10%, calc(12px + var(--sa-right)));
+  bottom: calc(16px + var(--sa-bottom));
   height: 10px; border-radius: 99px;
   background: rgba(6, 4, 16, 0.85); border: 1px solid rgba(0, 229, 255, 0.55);
   z-index: 5; overflow: hidden;
@@ -72,7 +83,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* Drag-anywhere stick: idle is a faint corner hint; on press it relocates under the finger.
    No opaque finger-press disc that blocks the playfield. */
 .stick {
-  position: fixed; left: calc(20px + env(safe-area-inset-left)); bottom: calc(36px + env(safe-area-inset-bottom));
+  position: fixed; left: calc(20px + var(--sa-left)); bottom: calc(36px + var(--sa-bottom));
   width: 132px; height: 132px; z-index: 8; touch-action: none;
   opacity: 0.28; pointer-events: none; transition: opacity .12s ease;
 }
@@ -247,14 +258,14 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .run-coach {
   position: fixed;
   left: 50%;
-  top: max(22%, calc(110px + env(safe-area-inset-top)));
+  top: max(22%, calc(110px + var(--sa-top)));
   transform: translateX(-50%);
   z-index: 27;
   pointer-events: none;
   text-align: center;
   padding: 12px 20px;
   min-width: min(280px, 84vw);
-  max-width: min(420px, 92vw);
+  max-width: min(420px, calc(100vw - 24px - var(--sa-left) - var(--sa-right)));
   border: 1px solid rgba(0, 229, 255, 0.45);
   background: rgba(6, 4, 18, 0.78);
   box-shadow: 0 0 22px rgba(0, 229, 255, 0.22);
@@ -299,8 +310,12 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   word-break: break-word;
 }
 @media (max-width: 520px) {
-  .run-coach { top: max(18%, calc(96px + env(safe-area-inset-top))); padding: 10px 14px; }
-  .xp-bar { left: 6%; right: 6%; height: 11px; }
+  .run-coach { top: max(18%, calc(96px + var(--sa-top))); padding: 10px 14px; left: max(8px, var(--sa-left)); right: max(8px, var(--sa-right)); }
+  .xp-bar {
+    left: max(6%, calc(12px + var(--sa-left)));
+    right: max(6%, calc(12px + var(--sa-right)));
+    height: 11px;
+  }
 }
 
 /* ---- frame picker (three selectable mechs on the home screen) ---- */
@@ -436,8 +451,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* Keep「啟動暴走」clear of home chrome on short / portrait phones */
 @media (max-width: 760px) {
   #screen-start .menu-mid {
-    --menu-brand-top: max(56px, calc(env(safe-area-inset-top, 0px) + 10vh));
-    --menu-cta-bottom: max(96px, calc(env(safe-area-inset-bottom, 0px) + 80px));
+    --menu-brand-top: max(56px, calc(var(--sa-top) + 10vh));
+    --menu-cta-bottom: max(96px, calc(var(--sa-bottom) + 80px));
     padding-left: 12px;
     padding-right: 12px;
   }
@@ -457,19 +472,19 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     margin-bottom: 4px;
   }
   #screen-start .menu-meta {
-    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    bottom: max(10px, var(--sa-bottom));
     font-size: 11px;
   }
 }
 @media (max-height: 560px) and (orientation: landscape) {
   #screen-start .menu-mid {
-    --menu-brand-top: max(28px, env(safe-area-inset-top, 0px));
-    --menu-cta-bottom: max(48px, calc(env(safe-area-inset-bottom, 0px) + 36px));
+    --menu-brand-top: max(28px, var(--sa-top));
+    --menu-cta-bottom: max(48px, calc(var(--sa-bottom) + 36px));
     flex-direction: row;
     align-items: flex-end;
     justify-content: flex-start;
     gap: 12px;
-    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-left: max(12px, var(--sa-left));
   }
   #screen-start .menu-brand {
     max-width: 42vw;
@@ -489,14 +504,14 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (min-width: 761px) and (max-height: 860px) {
   #screen-start .menu-mid {
     width: min(32vw, 400px);
-    --menu-brand-top: max(40px, calc(env(safe-area-inset-top, 0px) + 4vh));
-    --menu-cta-bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+    --menu-brand-top: max(40px, calc(var(--sa-top) + 4vh));
+    --menu-cta-bottom: max(72px, calc(var(--sa-bottom) + 56px));
   }
   #screen-start .menu-brand .title {
     font-size: clamp(36px, 4vw, 52px);
   }
   #screen-start .menu-meta {
-    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    bottom: max(8px, var(--sa-bottom));
     font-size: 12px;
     line-height: 1.25;
   }
@@ -508,9 +523,9 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* v0.9.2/0.9.4: phone portrait (~390×844) — title/cards/Start leave torso band clear; mech framing via updateMenuLayout */
 @media (max-width: 430px) and (min-height: 700px) {
   #screen-start .menu-mid {
-    --menu-brand-top: max(36px, calc(env(safe-area-inset-top, 0px) + 2vh));
+    --menu-brand-top: max(36px, calc(var(--sa-top) + 2vh));
     /* Push CTA (cards+Start) lower so the mid void can hold the centered 3D mech. */
-    --menu-cta-bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+    --menu-cta-bottom: max(72px, calc(var(--sa-bottom) + 56px));
   }
   #screen-start .menu-brand .title {
     font-size: clamp(28px, 8vw, 44px);
@@ -557,7 +572,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* v0.9.32 banner timing: sit under goal HUD / above combat mid — avoid weapon-slots + HP */
 .beat-banner {
   position: fixed;
-  top: max(12%, calc(72px + env(safe-area-inset-top)));
+  top: max(12%, calc(72px + var(--sa-top)));
   left: 50%;
   transform: translateX(-50%);
   z-index: 28;
@@ -568,7 +583,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   background: rgba(8, 4, 18, 0.82);
   box-shadow: 0 0 24px rgba(180, 77, 255, 0.25);
   min-width: min(300px, 82vw);
-  max-width: min(520px, 92vw);
+  max-width: min(520px, calc(100vw - 24px - var(--sa-left) - var(--sa-right)));
 }
 .beat-banner.hidden { display: none; }
 .beat-banner .beat-zh {
@@ -593,11 +608,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* ---- v0.9.10 Phase 3: boss HP strip under top HUD ---- */
 .boss-hp {
   position: absolute;
-  top: calc(52px + env(safe-area-inset-top));
+  top: calc(52px + var(--sa-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;
-  width: min(420px, 72vw);
+  width: min(420px, calc(72vw - var(--sa-left) - var(--sa-right)));
   pointer-events: none;
   text-align: center;
 }
@@ -649,9 +664,9 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   text-shadow: 0 0 12px rgba(184, 255, 58, 0.55);
 }
 @media (max-width: 520px) {
-  .boss-hp { top: calc(48px + env(safe-area-inset-top)); width: min(340px, 86vw); }
+  .boss-hp { top: calc(48px + var(--sa-top)); width: min(340px, calc(86vw - var(--sa-left) - var(--sa-right))); }
   .beat-banner {
-    top: max(10%, calc(64px + env(safe-area-inset-top)));
+    top: max(10%, calc(64px + var(--sa-top)));
     padding: 9px 16px;
     /* keep clear of bottom weapon-slots on 390 */
     bottom: auto;
@@ -695,11 +710,15 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(18px + env(safe-area-inset-bottom));
+  bottom: calc(18px + var(--sa-bottom));
   z-index: 6;
   display: flex;
   gap: 8px;
   pointer-events: none;
+  /* stay inside L/R insets without asymmetric padding (keeps true center) */
+  width: max-content;
+  max-width: calc(100vw - 16px - var(--sa-left) - var(--sa-right));
+  justify-content: center;
 }
 .wslot {
   width: 58px;
@@ -780,7 +799,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 @media (max-width: 480px) {
   .weapon-slots {
-    bottom: calc(96px + env(safe-area-inset-bottom)); /* above virtual stick */
+    bottom: calc(96px + var(--sa-bottom)); /* above virtual stick */
     gap: 6px;
   }
   .wslot { width: 48px; height: 48px; border-radius: 8px; }
@@ -847,6 +866,48 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .dmg-float.dmg-heal, .dmg-float.dmg-hurt { font-size: 16px; }
 }
 
+
+
+
+/* ---- v0.9.36 safe-area: pause / over / level / gfx panels clear notch + home bar ---- */
+#screen-pause,
+#screen-over,
+#screen-level,
+#screen-gfx {
+  padding-top: max(20px, calc(12px + var(--sa-top)));
+  padding-right: max(20px, calc(12px + var(--sa-right)));
+  padding-bottom: max(20px, calc(12px + var(--sa-bottom)));
+  padding-left: max(20px, calc(12px + var(--sa-left)));
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#screen-pause .panel,
+#screen-over .panel,
+#screen-level .panel,
+#screen-gfx .panel {
+  max-height: calc(100dvh - 24px - var(--sa-top) - var(--sa-bottom));
+  overflow-y: auto;
+}
+#screen-level .level-panel {
+  width: min(94vw, calc(460px - var(--sa-left) - var(--sa-right)));
+}
+
+/* Landscape phone: keep stick + slots + mute off notch sides */
+@media (orientation: landscape) and (max-height: 500px) {
+  .hud-panel { top: calc(6px + var(--sa-top)); }
+  .hud-buttons.top { top: calc(6px + var(--sa-top)); right: calc(8px + var(--sa-right)); }
+  .stick {
+    left: calc(12px + var(--sa-left));
+    bottom: calc(12px + var(--sa-bottom));
+    width: 110px; height: 110px;
+  }
+  .weapon-slots {
+    bottom: calc(12px + var(--sa-bottom));
+  }
+  .xp-bar { bottom: calc(8px + var(--sa-bottom)); height: 8px; }
+  .beat-banner { top: max(8%, calc(48px + var(--sa-top))); }
+}
 
 /* ---- v0.9.35 mute persist: menu mute chrome (menu-icon-btn so kit tidyTopRight keeps it) ---- */
 .menu-top-right { display: flex; align-items: center; gap: 8px; }
