@@ -72,8 +72,12 @@ const theme = new ThemeController(); theme.set(1, true);
 const city = new NeonCity(stage, {
   floor: 'plain', floorY: -0.9, innerRadius: 90, buildings: 0,
   billboard: null, signs: false, rain: false, traffic: false,
-  dustArea: MOBILE_GFX ? 28 : 48, dustHeight: MOBILE_GFX ? 5 : 8,
+  // Phase 2: no additive dust motes competing with pickups / MG tracers.
+  dust: false,
 });
+// Phase 2 ambient: pull shared city lights down a notch (floor MeshStandard reads darker).
+if (city.hemi) city.hemi.intensity = Math.min(city.hemi.intensity, 0.32);
+if (city.dirLight) city.dirLight.intensity = Math.min(city.dirLight.intensity, 0.45);
 
 const view = new View(stage);
 view.setVisible(false);

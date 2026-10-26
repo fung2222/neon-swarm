@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.7 horn bake quality（Phase 0 baseline was v0.9.6 / `ec12087`）  
+> **建議承接基準：** v0.9.8 Phase 2 floor readability（horn bake v0.9.7 / `64a7659`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -16,12 +16,13 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.7`**（horn bake quality）；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.8`**（Phase 2 floor readability；horn bake was v0.9.7）；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
   - v0.9.6 — 更強手機 GPU 減壓（pools／PR／bloom kick／ordinary-kill FX 等；不改平衡）。
   - v0.9.7 — horn bake quality pass：甲片層次／材質／bake 燈光＋rebake 32 sheets（仍非最終驗收）。
+  - v0.9.8 — Phase 2 floor readability：playable floor／grid／dust／edge decor ambient 減亮（不改 horn bake／平衡）。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -294,7 +295,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 2 — 戰鬥可讀性與敵人光圈減噪
 
-> **部分完成：** v0.9.4 已 dim 普通敵人（grunt）地面光圈；其餘可讀性／精英保留／地板對比等工作仍開放。
+> **部分完成：** v0.9.4 grunt 光圈 dim；**v0.9.8 Phase 2 floor pass** — 可玩地板／grid／dust／邊緣裝飾 ambient 減亮（截圖 `tests/screenshots/phase2-floor/`）。其餘可讀性／精英保留／FX／query 仍開放。
 
 - 普通敵人不應每個都有大光圈；保留給精英、危險攻擊或必要身份提示。
 - 地板與 ambient 要比敵人、子彈、拾取物暗；warning red／orange／acid 不被裝飾搶用。

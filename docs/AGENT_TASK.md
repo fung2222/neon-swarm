@@ -10,36 +10,30 @@
 
 ## Active task
 
-**Task ID:** `HORN-BAKE-QUALITY-001`  
-**Status note:** implemented 2026-10-26 — horn materials/layering + rebake v0.9.7; awaiting Roy visual accept (not final art).  
-**名稱：** Phase 1 — horn 模型／材質／燈光改善＋重新 bake  
-**性質：** 主角視覺品質；不改平衡、敵人、Precision／Morph、GPU 減壓。
+**Task ID:** `PHASE2-FLOOR-READABILITY-001`  
+**名稱：** Phase 2 — 地板／ambient 減亮（戰鬥可讀性）  
+**性質：** 視覺可讀性；不改平衡、bake 形狀、選機、GPU 減壓專案。
 
 ### 背景
 
-- Phase 0 baseline 已對齊 v0.9.6；下一步 HANDOFF Phase 1：horn 仍是臨時 blocky 美術。
-- `buildPlayerMech` 是 selection＋bake 唯一來源；改模型後必須 `node tools/bake-mech-sprites.mjs --id horn --dirs 4 --frames 4 --size 256` 並檢查 anchors／muzzle。
-- 手機 context loss **本輪不處理**（Roy 延後）。
+- Roy：horn 形狀未定案、唔優先改機體；繼續 HANDOFF 流程。
+- Phase 2 光圈減噪已做；下一步：地板與 ambient 要比敵人、子彈、拾取物暗，warning 色唔被裝飾搶。
+- 手機 context loss、horn 剪影重做 **本輪不處理**。
 
 ### 授權
 
 允許：
 
-- 改善 `js/mech-builder.js` 中 **horn** 外觀：甲片層次、材質、邊緣光／自發光（人格核心青）、單角、不對稱肩、中型步槍剪影；保持身份線索。
-- 必要時微調 bake 燈光／capture（`tools/bake-capture.html` 或 bake CLI）令 sheets 更清晰，唔洗白。
-- 重新 bake `assets/mechs/horn/sheets/`；更新 atlas／anchors；跑 bake-player／muzzle／相關測試。
-- 截圖：selection 3D + 遊戲內 idle／run／gun 對照（桌面）；cache-bust **0.9.7**。
+- 調暗可玩地板、grid、塵、邊緣裝飾亮度／對比（`view.js`／`NeonCity` 參數／相關材質）；唔改玩法碰撞。
+- 確認子彈、XP／heal 等拾取、危險 telegraph（紅／橙／酸綠）仍然更搶眼。
+- 前後截圖（壓力或普通戰鬥）；cache-bust **0.9.8**；輕量測試。
 
-不允許：開 Precision／Morph playable、改武器數值／刷怪、大改 GPU／bloom 政策、無關 AI 貼圖取代 buildPlayerMech、宣稱最終美術已驗收（需 Roy 肉眼）。
+不允許：改 horn mesh／重 bake、武器數值、刷怪、Precision／Morph、大改 bloom 全鏈（除非地板洗白必要極小調）、再開 WebGL 減壓大改。
 
 ### 目標
 
-- Selection 與 in-game baked sprites 同一身份，剪影／材質比現況明顯進步但仍誠實標 interim→improved pass。
-- Foot baseline、muzzle anchors 正確；反向跑射回歸仍過。
-
-### 完成條件
-
-- Push 含模型＋sheets＋測試結果；報告前後對照；停下。
+- 高密度時主角／敵剪影／子彈／拾取比地板清楚。
+- 報告後停下。
 
 ### 回報格式
 
@@ -48,9 +42,14 @@ Task ID:
 Result:
 HEAD:
 What changed:
-Bake command:
 Screenshots:
 Tests:
 Not verified:
 Recommended next (do not start):
 ```
+
+---
+
+## Completion (this round)
+
+**PHASE2-FLOOR-READABILITY-001 — DONE** in v0.9.8 (floor/grid/dust/edge ambient dim). Next Active task TBD by parent.

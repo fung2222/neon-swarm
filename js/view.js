@@ -620,11 +620,12 @@ function dropMesh(d) {
 function buildObstacles(parent) {
   const group = new THREE.Group();
   parent.add(group);
-  const crateMat = new THREE.MeshStandardMaterial({ color: 0x162033, emissive: 0x1b2a45, emissiveIntensity: 0.35, roughness: 0.6, metalness: 0.3 });
-  const edgeMat = mat(0x3fa9ff, 0.5);
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x121a2b, emissive: 0x182741, emissiveIntensity: 0.3, roughness: 0.65, metalness: 0.25 });
-  const debrisMat = new THREE.MeshStandardMaterial({ color: 0x1b2440, emissive: 0x27355e, emissiveIntensity: 0.32, roughness: 0.55, metalness: 0.35 });
-  const pipeMat = hullMat(0x24304c, 0.2);
+  // Phase 2: edge décor stays readable as silhouette, not neon that steals warning hues.
+  const crateMat = new THREE.MeshStandardMaterial({ color: 0x121926, emissive: 0x0e1624, emissiveIntensity: 0.16, roughness: 0.7, metalness: 0.25 });
+  const edgeMat = mat(0x2a5a78, 0.18);
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x0e1522, emissive: 0x101828, emissiveIntensity: 0.14, roughness: 0.72, metalness: 0.2 });
+  const debrisMat = new THREE.MeshStandardMaterial({ color: 0x141c30, emissive: 0x152038, emissiveIntensity: 0.14, roughness: 0.65, metalness: 0.28 });
+  const pipeMat = hullMat(0x1a2438, 0.1);
 
   // three low "lab zones" scattered around the arena: crates + fence + containers
   const zones = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
@@ -693,9 +694,10 @@ export class View {
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(floorSize, floorSize),
       new THREE.MeshStandardMaterial({
-        // Phase 1 dim-arena: keep floor quieter so cyan MG / pickups read
-        map: floorTex, color: 0x7a8490, emissive: 0x04080e, emissiveIntensity: 0.22,
-        roughness: 0.9, metalness: 0.1,
+        // Phase 2 floor readability: darker playable ground so silhouettes /
+        // bullets / pickups / danger telegraphs out-compete grid & dust.
+        map: floorTex, color: 0x3a4450, emissive: 0x020508, emissiveIntensity: 0.08,
+        roughness: 0.92, metalness: 0.06,
       })
     );
     floor.rotation.x = -Math.PI / 2;
@@ -705,22 +707,22 @@ export class View {
     // Soft playable ring + outer hard edge (cyan arena, not magenta cage)
     const softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
-      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.055, side: THREE.DoubleSide })
     );
     softRing.rotation.x = -Math.PI / 2;
     softRing.position.y = 0.04;
     this.group.add(softRing);
     const hardRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.06, 96),
-      new THREE.MeshBasicMaterial({ color: 0x5a9aaa, transparent: true, opacity: 0.14, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x3a6068, transparent: true, opacity: 0.07, side: THREE.DoubleSide })
     );
     hardRing.rotation.x = -Math.PI / 2;
     hardRing.position.y = 0.05;
     this.group.add(hardRing);
-    // Center pad ring — reads as lab arena spawn
+    // Center pad ring — reads as lab arena spawn (kept quiet vs pickups)
     const pad = new THREE.Mesh(
       new THREE.RingGeometry(2.4, 2.55, 64),
-      new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.1, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.045, side: THREE.DoubleSide })
     );
     pad.rotation.x = -Math.PI / 2;
     pad.position.y = 0.035;
@@ -1382,7 +1384,7 @@ export class View {
       // v0.8.4: subtler foot dust (was large every plant → read as sparks)
       if (Math.random() < 0.35) {
         this._fxDust.push({
-          x: e.x, z: e.z, y: 0.04, life: 0.14, max: 0.14, r: 0.14, kind: 'dust', color: 0x6a7a88,
+          x: e.x, z: e.z, y: 0.04, life: 0.14, max: 0.14, r: 0.14, kind: 'dust', color: 0x3a4552,
         });
       }
     } else if (!m.userData.footPlant) {
@@ -1464,35 +1466,72 @@ function makeFloorTexture() {
     tex.generateMipmaps = true;
     tex.minFilter = THREE.LinearMipmapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
     return tex;
   };
+  /** Crush bright cyan grid spikes so lines never read as MG tracers / XP. */
+  function dimFloorImage(img) {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const id = ctx.getImageData(0, 0, c.width, c.height);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      let nr = r, ng = g, nb = b;
+      if (lum > 36) {
+        const k = 36 / lum;
+        nr = r * k * 0.85; ng = g * k * 0.9; nb = b * k * 0.95;
+      }
+      d[i] = (nr * 0.72) | 0;
+      d[i + 1] = (ng * 0.72) | 0;
+      d[i + 2] = (nb * 0.72) | 0;
+    }
+    ctx.putImageData(id, 0, 0);
+    return c;
+  }
   try {
-    const tex = new THREE.TextureLoader().load('./assets/floor/background_arena.png');
-    return apply(tex);
+    const holder = apply(new THREE.Texture());
+    new THREE.TextureLoader().load('./assets/floor/background_arena.png', (tex) => {
+      try {
+        const canvas = dimFloorImage(tex.image);
+        holder.image = canvas;
+        holder.needsUpdate = true;
+        apply(holder);
+      } catch (_) {
+        holder.image = tex.image;
+        holder.needsUpdate = true;
+        apply(holder);
+      }
+    });
+    return holder;
   } catch (_) { /* fall through */ }
   const s = 512;
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#14181e';
+  ctx.fillStyle = '#0a0c10';
   ctx.fillRect(0, 0, s, s);
   const tile = 64;
   for (let y = 0; y < s; y += tile) {
     for (let x = 0; x < s; x += tile) {
-      const shade = 20 + ((x / tile + y / tile) % 2) * 3;
-      ctx.fillStyle = `rgb(${shade},${shade + 2},${shade + 4})`;
+      const shade = 10 + ((x / tile + y / tile) % 2) * 2;
+      ctx.fillStyle = `rgb(${shade},${shade + 1},${shade + 2})`;
       ctx.fillRect(x + 1, y + 1, tile - 2, tile - 2);
     }
   }
-  ctx.strokeStyle = 'rgba(0,180,210,0.12)';
+  // Quiet grid — must not read as cyan MG tracers or XP shards.
+  ctx.strokeStyle = 'rgba(0,100,120,0.055)';
   ctx.lineWidth = 1;
   for (let i = 0; i <= s; i += tile) {
     ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, s); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(s, i); ctx.stroke();
   }
-  ctx.strokeStyle = 'rgba(0,200,220,0.18)';
+  ctx.strokeStyle = 'rgba(0,110,130,0.07)';
   ctx.beginPath(); ctx.arc(s / 2, s / 2, 90, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = 'rgba(0,160,180,0.2)';
+  ctx.strokeStyle = 'rgba(0,90,110,0.08)';
   ctx.strokeRect(3, 3, s - 6, s - 6);
   return apply(new THREE.CanvasTexture(c));
 }
