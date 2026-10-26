@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -526,6 +526,9 @@ export class Game {
       artillery: !!def.artillery || type === 'artillery',
       artilleryPhase: (!!def.artillery || type === 'artillery') ? 'reposition' : undefined,
       artilleryPhaseT: (!!def.artillery || type === 'artillery') ? (0.8 + this.rng() * 1.0) : undefined,
+      bomber: !!def.bomber || type === 'bomber',
+      bomberPhase: (!!def.bomber || type === 'bomber') ? 'chase' : undefined,
+      bomberPhaseT: (!!def.bomber || type === 'bomber') ? 0 : undefined,
       aimX: 0,
       aimZ: 0,
       faceDx: 0,
@@ -2328,11 +2331,142 @@ export class Game {
   }
 
   /**
+   * Suicide Bomber AI: chase → red self-blast telegraph (≥0.9s) → AoE detonate (self dies).
+   * Blast ring under bomber (not artillery aim-zone). No damage during telegraph.
+   * Killed mid-chase / mid-telegraph → no explode (fairness).
+   */
+  _tickBomber(e, dt, events) {
+    const cfg = BOMBER;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const dx = this.px - e.x, dz = this.pz - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+
+    if (!e.bomberPhase) e.bomberPhase = 'chase';
+    if (e.bomberPhaseT == null) e.bomberPhaseT = 0;
+
+    e.faceDx = ndx;
+    e.faceDz = ndz;
+    e.aimDx = ndx;
+    e.aimDz = ndz;
+
+    if (e.bomberPhase === 'telegraph') {
+      // Slow/stop; blast ring stays under self; no damage yet
+      const tMul = cfg.telegraphSpeedMul != null ? cfg.telegraphSpeedMul : 0.12;
+      const spd = e.speed * e.chase * slowMul * tMul;
+      const stepX = ndx * spd * dt;
+      const stepZ = ndz * spd * dt;
+      e.vx = stepX / Math.max(dt, 1e-6);
+      e.vz = stepZ / Math.max(dt, 1e-6);
+      e.x += stepX;
+      e.z += stepZ;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.aimX = e.x;
+      e.aimZ = e.z;
+      e.blastRadius = cfg.blastRadius;
+      e.bomberPhaseT -= dt;
+      e.animPhase = (e.animPhase || 0) + 14 * dt; // frantic charge blink
+
+      if (e.bomberPhaseT <= 0) {
+        const blastR = cfg.blastRadius || 2.2;
+        const ax = e.x, az = e.z;
+        const toPlayer = Math.hypot(this.px - ax, this.pz - az);
+        let hitPlayer = false;
+        if (toPlayer < blastR + PLAYER.radius) {
+          hitPlayer = true;
+          if (this.invuln <= 0) {
+            const taken = Math.max(1, (cfg.blastDamage || 3) - (this.armor || 0));
+            this.hp -= taken;
+            this.invuln = 0.85 + (this.deflect || 0);
+            this.hitFlash = 0.4;
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, bomber: true, amount: taken });
+            if (this.hp <= 0) {
+              this.alive = false;
+              this.hp = 0;
+              this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+              events.push({ type: 'dead' });
+            }
+          }
+        }
+        events.push({
+          type: 'bomberDetonate',
+          enemyId: e.id,
+          x: ax, z: az,
+          radius: blastR,
+          hit: hitPlayer,
+        });
+        // Self-destruct after loop (avoid splice mid for-of). No second post-death AoE.
+        e.hp = 0;
+        e.bomberDetonated = true;
+      }
+      return;
+    }
+
+    // Chase toward player (above-soldier speed from ENEMIES.bomber.speed)
+    const spd = e.speed * e.chase * slowMul * (cfg.chaseSpeedMul != null ? cfg.chaseSpeedMul : 1);
+    const stepX = ndx * spd * dt;
+    const stepZ = ndz * spd * dt;
+    e.vx = stepX / Math.max(dt, 1e-6);
+    e.vz = stepZ / Math.max(dt, 1e-6);
+    e.x += stepX;
+    e.z += stepZ;
+    const moving = Math.hypot(e.vx, e.vz) > 0.05;
+    e.animPhase = (e.animPhase || 0) + (moving ? Math.max(10, Math.hypot(e.vx, e.vz) * 7) * dt : 0);
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+
+    const fuseMin = cfg.fuseMin != null ? cfg.fuseMin : 2.2;
+    const fuseMax = cfg.fuseMax != null ? cfg.fuseMax : 3.2;
+    const afterChase = Math.hypot(e.x - this.px, e.z - this.pz);
+    if (afterChase <= fuseMax) {
+      // Enter telegraph once inside fuse band (prefer fuseMin–fuseMax; allow closer too)
+      e.bomberPhase = 'telegraph';
+      e.bomberPhaseT = cfg.telegraphSec;
+      e.telegraphDur = cfg.telegraphSec;
+      e.telegraphAt = this.t;
+      e.blastRadius = cfg.blastRadius;
+      e.aimX = e.x;
+      e.aimZ = e.z;
+      events.push({
+        type: 'telegraph',
+        kind: 'bomber',
+        enemyId: e.id,
+        x: e.x, z: e.z,
+        radius: cfg.blastRadius,
+        duration: cfg.telegraphSec,
+      });
+      return;
+    }
+
+    // Ordinary contact while chasing (not blast) — same as grunt; telegraph path skips this
+    if (this.invuln <= 0 && afterChase < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.28;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
+      e.x -= ndx * 0.55;
+      e.z -= ndz * 0.55;
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
+
+  /**
    * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
    * Contact damage / elite / boss AI stay here (same as pre-reorder).
    */
   _moveEnemies(dt, events) {
-    for (const e of this.enemies) {
+    // Reverse index so bomber self-detonate (or any mid-tick remove) stays safe.
+    for (let ei = this.enemies.length - 1; ei >= 0; ei--) {
+      const e = this.enemies[ei];
       e.prevX = e.x;
       e.prevZ = e.z;
       if (e.boss) {
@@ -2353,6 +2487,17 @@ export class Game {
       }
       if (e.artillery || e.kind === 'artillery' || e.type === 'artillery') {
         this._tickArtillery(e, dt, events);
+        continue;
+      }
+      if (e.bomber || e.kind === 'bomber' || e.type === 'bomber') {
+        this._tickBomber(e, dt, events);
+        if (e.bomberDetonated) {
+          const idx = this.enemies.indexOf(e);
+          if (idx >= 0) {
+            this._kill(e, idx, events);
+            events.push({ type: 'kill', enemy: e, gore: true, bomber: true });
+          }
+        }
         continue;
       }
       if (e.hit > 0) e.hit -= dt;

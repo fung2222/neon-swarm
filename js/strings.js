@@ -107,6 +107,7 @@ i18n.add({
   'beat.sniperAim': ['狙擊鎖定', 'SNIPER LOCK'],
   'beat.shieldBash': ['盾擊', 'SHIELD BASH'],
   'beat.artilleryAim': ['重炮預警', 'ARTILLERY INCOMING'],
+  'beat.bomberAim': ['自爆預警', 'BOMBER FUSE'],
   'beat.boss': ['Boss 出現', 'BOSS'],
   'beat.bossIn': ['Boss 出現 · 洪流核心', 'BOSS INBOUND · SWARM CORE'],
   'beat.bossInEn': ['BOSS INBOUND', 'BOSS INBOUND'],

@@ -183,6 +183,12 @@ export const ENEMIES = {
     hp: 22, speed: 0.72, radius: 0.55, xp: 6, score: 70, chase: 0.35, damage: 2,
     color: 0xff8a20, coat: 0x2a2e28, artillery: true,
   },
+  // ---- Phase 3 suicide bomber (compact runner + charge pack; red self-blast telegraph) — not a recolor ----
+  bomber: {
+    zh: '自爆單位', en: 'Suicide Bomber', family: 'support', kind: 'bomber', tier: 2,
+    hp: 6, speed: 2.85, radius: 0.34, xp: 3, score: 36, chase: 1.05, damage: 1,
+    color: 0xff2a6a, coat: 0x2a2c32, bomber: true,
+  },
   walker: {
     zh: '重裝機甲', en: 'Heavy Walker', family: 'support', kind: 'walker', tier: 3,
     hp: 16, speed: 1.2, radius: 0.52, xp: 5, score: 55, chase: 0.85, damage: 2,
@@ -278,6 +284,20 @@ export const ARTILLERY = {
   repositionSpeedMul: 0.55,
 };
 
+/**
+ * Suicide Bomber (PHASE3-ENEMY-BOMBER-001): chase → red ground-circle telegraph under self ≥0.9s → AoE detonate.
+ * Red = must-dodge self-blast (distinct from artillery orange aim-zone). Killed mid-telegraph = no explode.
+ * Telegraph ≥0.9–1.2s. Fuse band ~2.2–3.2 world units.
+ */
+export const BOMBER = {
+  telegraphSec: 1.0,
+  blastRadius: 2.2,
+  blastDamage: 3,
+  fuseMin: 2.2,
+  fuseMax: 3.2,
+  chaseSpeedMul: 1.0,
+  telegraphSpeedMul: 0.12,
+};
 
 /**
  * Elite defaults (SENTINEL) + per-type overrides (BEATS-PLAN elite #2 = more segments).
@@ -550,27 +570,27 @@ export function waveMix(t, zone = null) {
             : 'lab'
   );
   if (z === 'rooftop') {
-    // Rooftop: sky pressure — more drone/mech/chief; light sniper/shield/artillery.
-    return [['drone', 0.25], ['mech', 0.20], ['chief', 0.15], ['officer', 0.10], ['soldier', 0.07], ['walker', 0.02], ['sniper', 0.08], ['shield', 0.05], ['artillery', 0.08]];
+    // Rooftop: sky pressure — more drone/mech/chief; light sniper/shield/artillery/bomber.
+    return [['drone', 0.25], ['mech', 0.20], ['chief', 0.15], ['officer', 0.08], ['soldier', 0.07], ['walker', 0.02], ['sniper', 0.07], ['shield', 0.04], ['artillery', 0.07], ['bomber', 0.05]];
   }
   if (z === 'blockade') {
-    // Blockade: military pressure — mid artillery + shield presence.
-    return [['soldier', 0.25], ['officer', 0.20], ['chief', 0.15], ['mech', 0.15], ['walker', 0.01], ['drone', 0.01], ['sniper', 0.05], ['shield', 0.12], ['artillery', 0.06]];
+    // Blockade: military pressure — mid artillery + shield; light bomber.
+    return [['soldier', 0.25], ['officer', 0.20], ['chief', 0.15], ['mech', 0.15], ['sniper', 0.05], ['shield', 0.12], ['artillery', 0.05], ['bomber', 0.03]];
   }
   if (z === 'reactor') {
-    // Reactor: energy facility — light sniper/shield/artillery.
-    return [['drone', 0.22], ['mech', 0.18], ['officer', 0.18], ['walker', 0.10], ['soldier', 0.08], ['chief', 0.04], ['sniper', 0.08], ['shield', 0.06], ['artillery', 0.06]];
+    // Reactor: energy facility — light sniper/shield/artillery/bomber.
+    return [['drone', 0.22], ['mech', 0.18], ['officer', 0.16], ['walker', 0.09], ['soldier', 0.07], ['chief', 0.04], ['sniper', 0.07], ['shield', 0.06], ['artillery', 0.06], ['bomber', 0.05]];
   }
   if (z === 'assembly') {
-    // Assembly bay: industrial — shield mid, artillery rare.
-    return [['soldier', 0.28], ['walker', 0.23], ['officer', 0.13], ['drone', 0.09], ['chief', 0.04], ['staffer', 0.03], ['sniper', 0.04], ['shield', 0.12], ['artillery', 0.04]];
+    // Assembly bay: industrial — shield mid, artillery rare, light bomber.
+    return [['soldier', 0.28], ['walker', 0.23], ['officer', 0.11], ['drone', 0.08], ['chief', 0.03], ['staffer', 0.03], ['sniper', 0.04], ['shield', 0.12], ['artillery', 0.04], ['bomber', 0.04]];
   }
   if (t < 18) return [['staffer', 0.6], ['guard', 0.25], ['drone', 0.15]];
   if (t < 40) return [['staffer', 0.32], ['guard', 0.2], ['soldier', 0.3], ['drone', 0.18]];
-  // Mid-late lab: sniper after ~40s; shield after ~65s; artillery only late (≥100s) — rare early.
-  if (t < 65) return [['staffer', 0.18], ['soldier', 0.33], ['drone', 0.23], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08]];
-  if (t < 100) return [['soldier', 0.26], ['drone', 0.16], ['walker', 0.14], ['officer', 0.18], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08]];
-  return [['soldier', 0.17], ['walker', 0.18], ['officer', 0.16], ['chief', 0.12], ['mech', 0.12], ['sniper', 0.10], ['shield', 0.10], ['artillery', 0.05]];
+  // Mid-late lab: sniper after ~40s; bomber light after ~40s; shield after ~65s; artillery only late (≥100s).
+  if (t < 65) return [['staffer', 0.18], ['soldier', 0.30], ['drone', 0.21], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08], ['bomber', 0.05]];
+  if (t < 100) return [['soldier', 0.23], ['drone', 0.15], ['walker', 0.13], ['officer', 0.17], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08], ['bomber', 0.06]];
+  return [['soldier', 0.15], ['walker', 0.17], ['officer', 0.15], ['chief', 0.12], ['mech', 0.11], ['sniper', 0.10], ['shield', 0.10], ['artillery', 0.05], ['bomber', 0.05]];
 }
 
 export function pickEnemyType(rng, t, zone = null) {

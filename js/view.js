@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -466,6 +466,91 @@ function artilleryMesh() {
 }
 
 
+
+/**
+ * Phase 3 suicide bomber: compact fast runner + visible charge pack / antenna / blinker.
+ * Dark steel hull + danger crimson/magenta accents — NOT a solid red wash (readable silhouette).
+ * Distinct from drone/soldier/artillery/walker recolor.
+ */
+function bomberMesh() {
+  const g = new THREE.Group();
+  const accent = 0xff2a6a;
+  const mag = 0xd02080;
+  const hullC = 0x2a2c32;
+  const steelC = 0x5a6068;
+  const hull = new THREE.MeshStandardMaterial({ color: hullC, emissive: 0x1a1c22, emissiveIntensity: 0.45, roughness: 0.55, metalness: 0.65 });
+  const steel = new THREE.MeshStandardMaterial({ color: steelC, emissive: 0x2a3038, emissiveIntensity: 0.35, roughness: 0.4, metalness: 0.75 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x14161a, emissive: 0x0a0c10, emissiveIntensity: 0.4, roughness: 0.5, metalness: 0.7 });
+  const danger = new THREE.MeshStandardMaterial({ color: accent, emissive: accent, emissiveIntensity: 1.05, roughness: 0.3 });
+  const magMat = new THREE.MeshStandardMaterial({ color: mag, emissive: mag, emissiveIntensity: 0.9, roughness: 0.35 });
+  const legs = [];
+  const arms = [];
+
+  // Compact runner legs (shorter stance than soldier)
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.07, -0.18, 0);
+    leg.add(box(0.07, 0.2, 0.09, dark, 0, -0.05, 0));
+    leg.add(box(0.08, 0.08, 0.13, steel, 0, -0.2, 0.02));
+    g.add(leg);
+    legs.push(leg);
+  }
+
+  // Compact torso (narrower/shorter than soldier)
+  const torso = slab(0.2, 0.2, 0.26, 0.16, hull);
+  torso.position.set(0, 0.1, 0);
+  const chestPlate = box(0.18, 0.1, 0.08, steel, 0, 0.14, 0.08);
+  g.add(torso, chestPlate);
+
+  // Visible rear CHARGE PACK (silhouette cue ≠ backpack drone)
+  const pack = new THREE.Group();
+  pack.position.set(0, 0.12, -0.12);
+  pack.add(box(0.2, 0.22, 0.12, dark, 0, 0, 0, 0.1));
+  pack.add(box(0.08, 0.14, 0.08, danger, -0.06, 0.02, -0.02, 0.15)); // charge cell L
+  pack.add(box(0.08, 0.14, 0.08, magMat, 0.06, 0.02, -0.02, 0.15)); // charge cell R
+  pack.add(box(0.04, 0.04, 0.04, danger, 0, 0.14, 0.02, 0.25)); // top blinker
+  g.add(pack);
+  g.userData.chargePack = pack;
+
+  // Antenna mast (reads as fuse/antenna, not rifle)
+  const antenna = new THREE.Group();
+  antenna.position.set(0.06, 0.28, -0.06);
+  antenna.add(box(0.025, 0.28, 0.025, steel, 0, 0.1, 0, 0.1));
+  antenna.add(box(0.05, 0.05, 0.05, danger, 0, 0.28, 0, 0.3)); // tip blinker
+  g.add(antenna);
+  g.userData.antenna = antenna;
+
+  // Head — compact helm + visor stripe (magenta, not full red hull)
+  const head = new THREE.Group();
+  head.position.set(0, 0.36, 0.02);
+  head.add(box(0.14, 0.12, 0.14, hull, 0, 0, 0, 0.15));
+  head.add(box(0.12, 0.03, 0.04, magMat, 0, 0.01, 0.08, 0.25));
+  g.add(head);
+
+  // Arms — forward runner pose (no big gun)
+  for (const side of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(side * 0.15, 0.18, 0);
+    arm.add(box(0.055, 0.18, 0.055, hull, 0, -0.08, 0, 0.2));
+    arm.add(box(0.05, 0.05, 0.05, steel, 0, -0.18, 0.02, 0.25));
+    arm.rotation.x = -0.7;
+    g.add(arm);
+    arms.push(arm);
+  }
+
+  // Side danger stripe (accent only — hull stays steel)
+  g.add(box(0.02, 0.12, 0.08, danger, -0.12, 0.1, 0.02, 0.2));
+  g.add(box(0.02, 0.12, 0.08, danger, 0.12, 0.1, 0.02, 0.2));
+
+  g.add(unitRing(accent, 0.32, 0.28));
+  g.scale.setScalar(1.9);
+  g.userData.legs = legs;
+  g.userData.arms = arms;
+  g.userData.type = 'bomber';
+  g.userData.bomber = true;
+  return g;
+}
+
 /** Drone / walker / escort mech support frames. */
 function supportMesh(kind, color) {
   const g = new THREE.Group();
@@ -874,6 +959,31 @@ function artilleryBlastRing() {
   return g;
 }
 
+
+/** Red ground blast circle/ring for bomber telegraph (danger red = must-dodge self-AoE; ≠ artillery orange). */
+function bomberBlastRing() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff1a3a, transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.82, 1.0, 48), mat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.07;
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: 0xff2a6a, transparent: true, opacity: 0.24, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const fill = new THREE.Mesh(new THREE.CircleGeometry(1, 40), fillMat);
+  fill.rotation.x = -Math.PI / 2;
+  fill.position.y = 0.05;
+  g.add(ring, fill);
+  g.userData.ring = ring;
+  g.userData.fill = fill;
+  g.userData.mat = mat;
+  g.userData.fillMat = fillMat;
+  g.visible = false;
+  return g;
+}
+
 /**
  * SWARM CORE boss: hexagonal dark plate core + acid-green seams + rotating drone pod ring.
  * No red hull (Roy rule).
@@ -958,6 +1068,7 @@ function enemyMeshFor(type) {
   if (type === 'sniper') return sniperMesh();
   if (type === 'shield') return shieldMesh();
   if (type === 'artillery') return artilleryMesh();
+  if (type === 'bomber') return bomberMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -1996,6 +2107,13 @@ export class View {
       this.group.add(ring);
       this.artilleryBlastRings.push(ring);
     }
+    // Phase 3 bomber: up to 4 concurrent red self-blast rings
+    this.bomberBlastRings = [];
+    for (let i = 0; i < 4; i++) {
+      const ring = bomberBlastRing();
+      this.group.add(ring);
+      this.bomberBlastRings.push(ring);
+    }
     // Phase 3 commander: up to 6 orange/red summon drop marks
     this.commanderSummonRings = [];
     for (let i = 0; i < 6; i++) {
@@ -2512,7 +2630,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2527,7 +2645,7 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery'))
+      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber'))
         ? Math.atan2(e.faceDx, e.faceDz)
         : ((e.sniperPhase === 'aim' && (e.aimDx != null))
           ? Math.atan2(e.aimDx, e.aimDz)
@@ -2601,6 +2719,7 @@ export class View {
     this._syncSniperAim(game);
     this._syncShieldBash(game);
     this._syncArtilleryBlast(game);
+    this._syncBomberBlast(game);
     this._syncCommanderSummon(game);
     this._syncBossHazards(game);
 
@@ -2876,6 +2995,34 @@ export class View {
     }
   }
 
+
+  /** Red blast rings under bombers in telegraph (danger red = must-dodge self-AoE). */
+  _syncBomberBlast(game) {
+    const rings = this.bomberBlastRings || [];
+    for (const ln of rings) ln.visible = false;
+    let li = 0;
+    for (const e of game.enemies) {
+      if (!(e.bomber || e.kind === 'bomber' || e.type === 'bomber')) continue;
+      if (e.bomberPhase !== 'telegraph') continue;
+      if (li >= rings.length) break;
+      const ln = rings[li++];
+      const ax = e.x;
+      const az = e.z;
+      const r = (e.blastRadius != null ? e.blastRadius : (BOMBER.blastRadius || 2.2));
+      const u = Math.max(0, Math.min(1, 1 - (e.bomberPhaseT || 0) / Math.max(0.01, e.telegraphDur || 1)));
+      ln.visible = true;
+      ln.position.set(ax, 0, az);
+      ln.scale.setScalar(r);
+      const mat = ln.userData.mat;
+      const fillMat = ln.userData.fillMat;
+      if (mat) mat.opacity = 0.4 + u * 0.5;
+      if (fillMat) fillMat.opacity = 0.14 + u * 0.28;
+      // Pulse blinker feel on charge pack via subtle scale breath
+      const pulse = 1 + Math.sin((game.t || 0) * 18) * 0.03 * u;
+      ln.scale.setScalar(r * pulse);
+    }
+  }
+
   /** Orange/red drop marks while commander is in summon telegraph. */
   _syncCommanderSummon(game) {
     const rings = this.commanderSummonRings || [];
@@ -3126,6 +3273,8 @@ if (typeof window !== 'undefined') {
     shieldMesh,
     artilleryMesh,
     artilleryBlastRing,
+    bomberMesh,
+    bomberBlastRing,
     supportMesh,
     eliteMesh,
     hunterMesh,

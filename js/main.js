@@ -1529,6 +1529,23 @@ else if (ev.type === 'xp') {
         kickFx({ trauma: 0.04, fovKick: 0.01 });
       }
     }
+    else if (ev.type === 'bomberDetonate') {
+      const ix = ev.x != null ? ev.x : 0;
+      const iz = ev.z != null ? ev.z : 0;
+      const impact = new THREE.Vector3(ix, 0.25, iz);
+      particles.burst(impact, new THREE.Color(0xff1a3a), burstN(10), { speed: 4.5, up: 1.4, life: 0.38, size: 0.5, bright: 1.0 });
+      if (!MOBILE_GFX) {
+        particles.burst(impact, new THREE.Color(0xff2a6a), burstN(5), { speed: 2.4, up: 0.9, life: 0.24, size: 0.34, bright: 0.95 });
+        particles.ring(impact, new THREE.Color(0xff1a3a), 16, 7.5, 0.34);
+      }
+      try { audio.nova(); } catch (_) {}
+      if (ev.hit) {
+        if (MOBILE_GFX) kickFx({ trauma: 0.09, fovKick: 0.018 });
+        else kickFx({ trauma: 0.14, fovKick: 0.028, bloomDamp: 0.55 });
+      } else if (!MOBILE_GFX) {
+        kickFx({ trauma: 0.05, fovKick: 0.012 });
+      }
+    }
     else if (ev.type === 'eliteCharge') {
       // v0.9.20: mobile — trauma only, no bloomDamp
       if (MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });
