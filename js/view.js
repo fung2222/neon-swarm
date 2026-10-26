@@ -216,12 +216,9 @@ function humanMesh(kind, color, coat) {
     aura.position.y = 0.05;
     g.add(aura);
   }
-  // Ring presence: chief/officer keep identity; Phase 3 lab meshes need a quiet foot mark.
-  if (kind === 'chief') g.add(unitRing(color, 0.42, 0.5));
-  else if (kind === 'officer') g.add(unitRing(color, 0.36, 0.28));
-  else if (kind === 'guard') g.add(unitRing(color, 0.30, 0.22));
-  else if (kind === 'staffer') g.add(unitRing(color, 0.26, 0.14));
-  else g.add(unitRing(color, 0.28, 0.10));
+  // v0.9.22 Phase 2: ordinary grunts — no ground rings; chief/officer keep identity.
+  if (kind === 'chief') g.add(unitRing(color, 0.42, 0.52));
+  else if (kind === 'officer') g.add(unitRing(color, 0.36, 0.34));
 
   g.scale.setScalar(scale);
   g.userData.legs = legs;
@@ -260,7 +257,7 @@ function supportMesh(kind, color) {
       thr.position.set(side * 0.36, -0.02, -0.04);
       g.add(thr);
     }
-    g.add(unitRing(color, 0.22, 0.16)); // Phase 3 drone — small flying silhouette
+    // v0.9.22: no ground ring on ordinary drones (silhouette/fin read is enough)
     g.userData.bob = true;
     g.userData.flyer = true;
     g.userData.baseY = 0.55;
@@ -288,7 +285,7 @@ function supportMesh(kind, color) {
       gun.position.set(side * 0.36, 0.62, 0.2);
       g.add(pad, gun);
     }
-    g.add(unitRing(color, 0.42, 0.30)); // walker elite keep
+    g.add(unitRing(color, 0.42, 0.36)); // walker elite keep
     g.userData.legs = legs;
   } else {
     // escort mech — heaviest support frame, angular anime-style mass
@@ -316,7 +313,7 @@ function supportMesh(kind, color) {
       barrel.position.set(side * 0.46, 0.82, 0.22);
       g.add(pad, barrel);
     }
-    g.add(unitRing(color, 0.52, 0.34)); // escort mech keep
+    g.add(unitRing(color, 0.52, 0.40)); // escort mech keep
     g.userData.legs = legs;
   }
   g.userData.type = kind;
@@ -460,7 +457,8 @@ function hunterMesh() {
 function warningLane() {
   const g = new THREE.Group();
   const mat = new THREE.MeshBasicMaterial({
-    color: 0x00e5ff, transparent: true, opacity: 0.55, depthWrite: false, depthWrite: false, side: THREE.DoubleSide,
+    // v0.9.22: danger orange — reads vs floor / player cyan / décor teal
+    color: 0xff6a1a, transparent: true, opacity: 0.62, depthWrite: false, side: THREE.DoubleSide,
   });
   const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
   quad.rotation.x = -Math.PI / 2;
@@ -799,7 +797,7 @@ function makeDropTexture(kind, weapon) {
   const px = len <= 2 ? 118 : len <= 3 ? 92 : len <= 4 ? 72 : 58;
   ctx.font = '900 ' + px + 'px "Segoe UI", "Arial Black", Orbitron, sans-serif';
   ctx.shadowColor = hex;
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = 26; // v0.9.22 pickup glyph punch
   ctx.fillText(label, s / 2, s / 2 + 4);
   ctx.shadowBlur = 0;
   // tiny caption strip
@@ -828,7 +826,7 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function dropTexture(kind, weapon) {
-  const key = kind + ':' + (weapon || '') + ':v2';
+  const key = kind + ':' + (weapon || '') + ':v3';
   if (!DROP_TEX[key]) DROP_TEX[key] = makeDropTexture(kind, weapon);
   return DROP_TEX[key];
 }
@@ -850,16 +848,16 @@ function dropMesh(d) {
   );
   board.position.y = 0.85;
   board.name = 'face';
+  // v0.9.22: brighter floor halo so XP/heal/weapon crates beat dark floor
   const glow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.55, 24),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.28, depthWrite: false, fog: false })
+    new THREE.CircleGeometry(0.62, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.42, depthWrite: false, fog: false })
   );
   glow.rotation.x = -Math.PI / 2;
   glow.position.y = 0.03;
-  // thin neon rim ring
   const rim = new THREE.Mesh(
-    new THREE.RingGeometry(0.52, 0.58, 28),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false, fog: false })
+    new THREE.RingGeometry(0.54, 0.64, 28),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.62, side: THREE.DoubleSide, depthWrite: false, fog: false })
   );
   rim.rotation.x = -Math.PI / 2;
   rim.position.y = 0.04;
@@ -1370,8 +1368,8 @@ export class View {
       new THREE.MeshStandardMaterial({
         // Phase 2 floor readability: darker playable ground so silhouettes /
         // bullets / pickups / danger telegraphs out-compete grid & dust.
-        map: floorTex, color: 0x3a4450, emissive: 0x020508, emissiveIntensity: 0.08,
-        roughness: 0.92, metalness: 0.06,
+        map: floorTex, color: 0x303842, emissive: 0x010406, emissiveIntensity: 0.06,
+        roughness: 0.94, metalness: 0.05,
       })
     );
     floor.rotation.x = -Math.PI / 2;
@@ -1381,14 +1379,14 @@ export class View {
     // Soft playable ring + outer hard edge (five-zone trim: teal/amber/violet/olive/night-blue)
     this.softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
-      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.055, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.04, side: THREE.DoubleSide })
     );
     this.softRing.rotation.x = -Math.PI / 2;
     this.softRing.position.y = 0.04;
     this.group.add(this.softRing);
     this.hardRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.06, 96),
-      new THREE.MeshBasicMaterial({ color: 0x3a6068, transparent: true, opacity: 0.07, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x3a6068, transparent: true, opacity: 0.05, side: THREE.DoubleSide })
     );
     this.hardRing.rotation.x = -Math.PI / 2;
     this.hardRing.position.y = 0.05;
@@ -1396,7 +1394,7 @@ export class View {
     // Center pad ring — reads as lab arena spawn (kept quiet vs pickups)
     this.padRing = new THREE.Mesh(
       new THREE.RingGeometry(2.4, 2.55, 64),
-      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.045, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.032, side: THREE.DoubleSide })
     );
     this.padRing.rotation.x = -Math.PI / 2;
     this.padRing.position.y = 0.035;
@@ -1428,7 +1426,7 @@ export class View {
     this.warnLane = warningLane();
     this.group.add(this.warnLane);
     this.warnLane2 = warningLane();
-    if (this.warnLane2.userData.mat) this.warnLane2.userData.mat.color.setHex(0x7dffef);
+    if (this.warnLane2.userData.mat) this.warnLane2.userData.mat.color.setHex(0xff8a1a);
     this.group.add(this.warnLane2);
     // Boss volley lanes (up to 6) + orbit floor ring
     this.bossLanes = [];
@@ -1441,7 +1439,7 @@ export class View {
     this.bossOrbitRing = new THREE.Mesh(
       new THREE.RingGeometry(1.6, 2.5, 40),
       new THREE.MeshBasicMaterial({
-        color: 0xb8ff3a, transparent: true, opacity: 0.35, side: THREE.DoubleSide,
+        color: 0xb8ff3a, transparent: true, opacity: 0.42, side: THREE.DoubleSide,
         depthWrite: false,
       })
     );
@@ -2241,7 +2239,7 @@ export class View {
       const quad = ln.userData.quad;
       const mat = ln.userData.mat;
       if (quad) quad.scale.set(width, dist, 1);
-      if (mat) mat.opacity = 0.35 + u * 0.45;
+      if (mat) mat.opacity = 0.42 + u * 0.50; // v0.9.22 stronger telegraph
     };
     if (elite.dualLane || elite.type === 'hunter') {
       const off = 0.55;
@@ -2266,7 +2264,7 @@ export class View {
         this.bossOrbitRing.visible = true;
         this.bossOrbitRing.position.set(ringH.x, 0.05, ringH.z);
         const u = 1 - Math.max(0, ringH.life) / Math.max(0.01, ringH.maxLife || 1);
-        this.bossOrbitRing.material.opacity = 0.2 + u * 0.45;
+        this.bossOrbitRing.material.opacity = 0.28 + u * 0.52;
         const sc = 0.85 + u * 0.25;
         this.bossOrbitRing.scale.set(sc, sc, sc);
       } else {
@@ -2291,7 +2289,7 @@ export class View {
       if (quad) quad.scale.set(0.85, dist, 1);
       if (mat) {
         const u = 1 - Math.max(0, h.life) / Math.max(0.01, h.maxLife || 1);
-        mat.opacity = 0.3 + u * 0.5;
+        mat.opacity = 0.38 + u * 0.55; // v0.9.22 acid lanes punchier
       }
     }
     // Volley bullets (acid dots)

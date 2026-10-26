@@ -1018,9 +1018,10 @@ export class Game {
    */
   _targetsForWeapon(n = 1, maxRange = null) {
     const R = maxRange == null ? this.fireRange : maxRange;
-    const hold = 0.20;
-    const stealFrac = 0.20;
-    const stealAbs = 1.25;
+    // v0.9.22: slightly stickier primary (readability / aim calm); no balance table change
+    const hold = 0.24;
+    const stealFrac = 0.22;
+    const stealAbs = 1.35;
     const want = Math.max(1, n | 0);
 
     let sticky = this._sticky;

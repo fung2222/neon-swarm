@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.21 horn mecha silhouette interim（awaiting Roy eyes；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.22 Phase 2 combat readability（horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.21`**（horn mecha silhouette interim；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.22`**（Phase 2 combat readability；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -52,7 +52,8 @@
   - v0.9.19 — AIM-HIT-FAST-002：高速橫向命中。`interceptAimDir`（quadratic closed-form）＋`muzzleInterceptAimDir`（兩階段 muzzle）；`relativeSegmentHitsCircle`＋enemy `prevX/prevZ`；`_moveEnemies` 先於 `_stepProjectiles`（同 dt）；MG 邏輯彈取消 0.08rad jitter（`AIM_LEAD_MAX_T` 仍 0.30，唔係靠加大 lead cap）。測試 `tests/aim-hit-fast.test.mjs`（002 cases）＋`tests/aim-hit-002-shots.mjs`；證據 `tests/screenshots/aim-hit-002/`。未改 bulletDmg／HP／radius／elite speed。Box＝SwiftShader，**非** Roy 真機驗收。角色：Kimi＝設計／審核／除錯；Grok bot＝實作；Roy＝產品／最終。
   - v0.9.20 — PHONE-STABLE-FOLLOWUP（Roy continue past AIM-HIT HOLD；Kimi rate-limited）：`visibilitychange`／`pagehide` → `pauseRun()`（等同手動暫停；**唔** auto-resume）；`MOBILE_GFX` 再減壓 — pool 800、永久較低 bloom、kickFx bloomDamp≤0.18、跳過 muzzle 次要／非必要 rings、elite inbound bloom kick 減／跳；desktop 路徑不變。測試 `tests/bg-pause.test.mjs`＋既有 headless。未改平衡表。Box＝SwiftShader，**未**宣稱真機 mid-run WebGL 已修好。
   - PERF-REBASELINE（Roy 桌面 GTX 1070 Ti，live **v0.9.20**）：見 `docs/PERF-BASELINE.md` — 3×60s ≈ **58–60 FPS**；仍 **非** 手機驗收；唔當玩法完成。大 dumps 預設不提交。
-  - v0.9.21 — HORN-SILHOUETTE-DIRECTION（Roy「我要機甲咁」）：`buildPlayerMech` horn-only mecha proportions（longer limbs、narrower torso、angular plates）；rebake 32 sheets＋atlas／anchors；muzzle sync；heavy／prototype stubs unchanged。截圖 `tests/screenshots/horn-silhouette-mecha/`。**interim for Roy 肉眼** — **not** art lock／**not** §9 locked；blocky／cube-stack **rejected** as shared style。未改平衡／Phase 4／phone GPU。
+  - v0.9.21 — HORN-SILHOUETTE-DIRECTION（Roy「我要機甲咁」）：`buildPlayerMech` horn-only mecha proportions（longer limbs、narrower torso、angular plates）；rebake 32 sheets＋atlas／anchors；muzzle sync；heavy／prototype stubs unchanged。截圖 `tests/screenshots/horn-silhouette-mecha/`。**interim** — **not** art lock／**not** §9 locked；blocky／cube-stack **rejected** as shared style。未改平衡／Phase 4／phone GPU。
+  - v0.9.22 — PHASE2-COMBAT-READABILITY-002（Roy「繼續出去啦繼續流程」；horn visual HOLD cleared for pipeline；silhouette interim OK-to-continue）：ordinary enemy ground rings off；elite／boss／danger rings kept／stronger；floor／ambient darker；elite telegraph → danger orange；pickup halos punchier；ordinary kill FX declutter（no ring／wave）；sticky aim mild hold tweak；screenshots `tests/screenshots/phase2-readability/`。未改平衡表／horn mesh／Phase 4／phone GPU；mobile v0.9.20 cuts untouched。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
 
@@ -64,13 +65,13 @@
 
 ### Open gaps／仍未完成
 
-- `horn` 已做 **v0.9.7 bake quality**＋**v0.9.21 mecha silhouette**（Roy direction＝機甲；塊狀 rejected）。**implemented + screenshots**；仍 **非** Roy visual／device-final art lock（唔標 §9 locked）。
+- `horn` 已做 **v0.9.7 bake quality**＋**v0.9.21 mecha silhouette**（Roy direction＝機甲；塊狀 rejected）。**interim silhouette accepted for pipeline**（Roy 2026-10-26 continue）；仍 **非** final art lock／device-final（唔標 §9 locked）；**唔**再自動 polish horn。
 - **手機 mid-run WebGL context loss 仍可能發生**（Roy 實機曾回報「繪圖暫時中斷」）；v0.9.5 overlay、v0.9.6＋**v0.9.20** 再減壓＋commute bg auto-pause 已落地，但 **真機 mid-run 穩定性仍未驗收**（Box＝SwiftShader ≠ device）。
 - 槍層仍是 **N/E/S/W 四方向切圖**，不是平滑 360° 炮塔。
 - PERF-REBASELINE 已更新桌面 GTX 1070 Ti／v0.9.20（≈58–60 FPS）；**手機真機 200 敵效能仍未驗收**（Roy deferred phone GPU）。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
-- Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → **HOLD for Roy 肉眼** on live `?v=0.9.21` horn mecha；然後 HIT-FEEL-DEVICE（真機）。**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
+- Phase 2 戰鬥可讀性：**v0.9.22 follow-up completed**（grunt rings off；elite／danger／pickups／floor／FX）；真機 hit-feel 仍待 Roy。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → **HIT-FEEL-DEVICE**（Roy 真機 play）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -339,12 +340,12 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 2 — 戰鬥可讀性與敵人光圈減噪
 
-> **部分完成：** v0.9.4 grunt 光圈 dim；**v0.9.8 Phase 2 floor pass** — 可玩地板／grid／dust／邊緣裝飾 ambient 減亮（截圖 `tests/screenshots/phase2-floor/`）。其餘可讀性／精英保留／FX／query 仍開放。
+> **完成（v0.9.22 follow-up）：** v0.9.4 grunt dim → **v0.9.22 ordinary rings off**；**v0.9.8 floor**＋v0.9.22 darker ambient；elite／boss／danger telegraphs＋pickups punchier；ordinary kill FX declutter；nearest／sticky confirmed（mild hold tweak）。截圖 `tests/screenshots/phase2-readability/`＋既有 `phase2-floor/`。真機 hit-feel 仍屬 HIT-FEEL-DEVICE。
 
-- 普通敵人不應每個都有大光圈；保留給精英、危險攻擊或必要身份提示。
-- 地板與 ambient 要比敵人、子彈、拾取物暗；warning red／orange／acid 不被裝飾搶用。
-- 減少無意義全場 slow-motion、過量 bloom、粒子與 HUD 寫入。
-- target query 不要每把武器、每幀做完整敵人排序；沿用或改善 nearest／sticky 策略。
+- 普通敵人不應每個都有大光圈；保留給精英、危險攻擊或必要身份提示。 ✅
+- 地板與 ambient 要比敵人、子彈、拾取物暗；warning red／orange／acid 不被裝飾搶用。 ✅（elite telegraph = danger orange；boss = acid）
+- 減少無意義全場 slow-motion、過量 bloom、粒子與 HUD 寫入。 ✅（ordinary kill no ring／wave；mobile cuts preserved）
+- target query 不要每把武器、每幀做完整敵人排序；沿用或改善 nearest／sticky 策略。 ✅
 
 **出閘：** 高密度戰鬥仍能看清主角、敵人輪廓、危險區、子彈與拾取物；效能沒有明顯回歸。
 
@@ -448,12 +449,13 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.21（HORN-SILHOUETTE-DIRECTION interim；HEAD 以 `main`／live `?v=0.9.21` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
+**目前基準 v0.9.22（PHASE2-COMBAT-READABILITY-002；HEAD 以 `main`／live `?v=0.9.22` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `HORN-SILHOUETTE-DIRECTION` **已完成 interim**（v0.9.21）：horn mecha silhouette＋rebake；截圖 `tests/screenshots/horn-silhouette-mecha/`。**HOLD for Roy 肉眼** — open gap 仍是 **not Roy art lock**／**not** §9 locked。
-- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.20。
+- `PHASE2-COMBAT-READABILITY-002` **已完成**（v0.9.22）：ordinary rings off；floor／FX／telegraph／pickup readability；截圖 `tests/screenshots/phase2-readability/`。
+- `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
+- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.22。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；**下一項：** await Roy eyes on `?v=0.9.21`，然後 HIT-FEEL-DEVICE — **do not** further horn polish／art lock without Roy。
-- AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規／要眼睛嘅美術項排隊。
-- Queue：Roy 肉眼 horn → 真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入。
+- Roy deferred phone GPU／mid-run WebGL；**下一項：** **HIT-FEEL-DEVICE**（needs Roy phone play）— **do not** start Phase 4／horn art lock。
+- AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
+- Queue：真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish。
 - SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。

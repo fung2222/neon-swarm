@@ -54,16 +54,16 @@ export const ENEMY_SPRITE_SIZE = {
  * Danger telegraphs stay separate (projectiles / AOE) — do not steal warn colors here.
  */
 export const ENEMY_RING_STYLE = {
-  // common
-  staffer: { radiusScale: 0.55, opacity: 0.08, visible: true },
-  guard:   { radiusScale: 0.55, opacity: 0.08, visible: true },
-  soldier: { radiusScale: 0.58, opacity: 0.10, visible: true },
-  drone:   { radiusScale: 0.50, opacity: 0.07, visible: true },
-  // elite / heavy — keep readable rings
-  officer: { radiusScale: 0.85, opacity: 0.28, visible: true },
-  chief:   { radiusScale: 0.95, opacity: 0.36, visible: true },
-  walker:  { radiusScale: 0.90, opacity: 0.30, visible: true },
-  mech:    { radiusScale: 1.00, opacity: 0.34, visible: true },
+  // v0.9.22 Phase 2: ordinary grunts — no ground rings (silhouette only).
+  staffer: { radiusScale: 0.45, opacity: 0.0, visible: false },
+  guard:   { radiusScale: 0.45, opacity: 0.0, visible: false },
+  soldier: { radiusScale: 0.48, opacity: 0.0, visible: false },
+  drone:   { radiusScale: 0.40, opacity: 0.0, visible: false },
+  // elite / heavy / danger identity — keep strong rings
+  officer: { radiusScale: 0.90, opacity: 0.34, visible: true },
+  chief:   { radiusScale: 1.00, opacity: 0.42, visible: true },
+  walker:  { radiusScale: 0.95, opacity: 0.36, visible: true },
+  mech:    { radiusScale: 1.05, opacity: 0.40, visible: true },
 };
 
 const RING_BY_KEY = {

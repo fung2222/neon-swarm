@@ -88,9 +88,9 @@ const city = new NeonCity(stage, {
   // Phase 2: no additive dust motes competing with pickups / MG tracers.
   dust: false,
 });
-// Phase 2 ambient: pull shared city lights down a notch (floor MeshStandard reads darker).
-if (city.hemi) city.hemi.intensity = Math.min(city.hemi.intensity, 0.32);
-if (city.dirLight) city.dirLight.intensity = Math.min(city.dirLight.intensity, 0.45);
+// Phase 2 ambient: keep floor darker than enemies / bullets / pickups / telegraphs.
+if (city.hemi) city.hemi.intensity = Math.min(city.hemi.intensity, 0.28);
+if (city.dirLight) city.dirLight.intensity = Math.min(city.dirLight.intensity, 0.40);
 
 const view = new View(stage);
 view.setVisible(false);
@@ -808,11 +808,9 @@ function tick(dt) {
         kickFx({ trauma: 0.12, slowmo: 0.06, fovKick: 0.02, bloomDamp: 0.85 });
         const flash = $('fx-flash');
         if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 45); }
-      } else if (!MOBILE_GFX) {
-        // Ordinary kill ring/wave skipped on mobile (v0.9.6); small burst kept above.
-        particles.ring(pos, c, 6, 3.5, 0.18);
-        waves.spawn(pos, c, { r0: 0.2, r1: 1.1, dur: 0.28, a: 0.4 });
       }
+      // v0.9.22: ordinary kill — local burst only (no ring/wave/slowmo clutter in dense combat).
+      // Elite/gore punch path above keeps ring + wave + hit-stop.
     }
     else if (ev.type === 'explode') {
       audio.nova();
@@ -897,7 +895,7 @@ else if (ev.type === 'xp') {
       showBeatBanner(zh, en, 1800);
       audio.wave();
       // v0.9.20: skip elite inbound bloom kick on mobile
-      if (!MOBILE_GFX) kickFx({ trauma: 0.08, bloomDamp: 0.5 });
+      if (!MOBILE_GFX) kickFx({ trauma: 0.08, bloomDamp: 0.35 }); // v0.9.22 less bloom spam
     }
     else if (ev.type === 'bossIn' || (ev.type === 'beat' && ev.kind === 'boss')) {
       const zh = ev.nameZh

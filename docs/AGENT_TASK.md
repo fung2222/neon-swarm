@@ -28,34 +28,37 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：HORN-SILHOUETTE-DIRECTION → **completed interim**（v0.9.21；**HOLD for Roy 肉眼**）
+## 狀態：PHASE2-COMBAT-READABILITY-002 → **completed**（v0.9.22）
 
-**ROY direction（2026-10-26）：** 「我要機甲咁」— Japanese refined mecha + cyberpunk mil-tech；**reject** 現行塊狀／cube-stack 作為後續 mech 共用風格。本輪 = interim mecha silhouette pass for eyes only — **not** device-final-art-locked／**not** HANDOFF §9 locked。
+**ROY（2026-10-26）：** 「繼續出去啦繼續流程」— horn in-game interim 4-dir bake **accepted as interim silhouette direction for pipeline**（仍非 final art lock）。**Cleared** prior horn visual HOLD for pipeline；**do not** further polish horn／art lock／Phase 4／phone GPU。
 
 ### Completed this turn
 
-**Task ID：** `HORN-SILHOUETTE-DIRECTION` — live cache-bust **`?v=0.9.21`**.
+**Task ID：** `PHASE2-COMBAT-READABILITY-002` — live cache-bust **`?v=0.9.22`**.
 
-- `js/mech-builder.js` horn-only：longer limbs vs torso、narrower chest／pelvis、neck、thigh/shin wedges、sharper asymmetric pauldrons、slender arms + mid rifle；identity cues kept（single horn antenna、cyan chest core、asymmetric pauldrons、mid rifle、deep-gray／violet／cyan）。
-- Rebake 32 PNG sheets + `horn_atlas.json`／`horn_anchors.json`；`js/muzzle.js` HORN_MUZZLE_BY_DIR synced from atlas.
-- heavy／prototype stubs **unchanged**（no copy of new horn mesh）。
-- Screenshots：`tests/screenshots/horn-silhouette-mecha/`（menu desktop／rear／mobile + ingame idle + bake cells）。
-- Docs：art-bible silhouette note（Roy = mecha；blocky rejected；pending visual lock）；HANDOFF v0.9.21；本文件 HOLD。
-- **誠實標：** implemented + screenshots；**not** Roy art lock；**not** §9 locked；no balance／combat／Phase 4／phone GPU。
+- Ordinary enemy ground rings **off**（sprites `ENEMY_RING_STYLE` + procedural staffer／guard／drone）；elite／officer／chief／walker／mech／boss **keep／slightly stronger**.
+- Floor／ambient darker again；arena soft／hard／pad rings quieter.
+- Elite charge telegraph → **danger orange**（vs player cyan／décor teal）；boss acid lanes／orbit ring punchier.
+- Pickup XP／heal／weapon floor halo＋rim brighter（texture cache `:v3`）.
+- Ordinary kill：local burst only（no ring／wave／slowmo clutter）；desktop can still punch elite／gore／explode；mobile v0.9.20 cuts **not** undone.
+- Target query：nearest／sticky confirmed； mild sticky hold／steal tweak only（no balance table）.
+- Screenshots：`tests/screenshots/phase2-readability/`（combat-dense／danger-telegraph／pickups）.
+- Docs：本文件 Active done；HANDOFF Phase 2＋§0／§11；horn HOLD cleared for pipeline（silhouette interim OK-to-continue）.
 
-### Queue（**HOLD — await Roy 肉眼 on live ?v=0.9.21**）
+### Queue（recommended next）
 
-1. **Await Roy visual OK／iterate** on horn mecha silhouette — **do not polish further until he OK**。← **recommended next**
-2. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。
-3. **CONTENT** light only if safe — **no** Phase 4 Precision／Morph bulk。
-4. Phone GPU／WebGL mid-run — **deferred by Roy**。
-5. （背景）AIM-HIT-FAST-002 Kimi 獨立審。
+1. **HIT-FEEL-DEVICE**（常規驗收）— Roy 真機高速橫向怪；SwiftShader ≠ device。← **recommended next（needs Roy play）**
+2. **CONTENT** light only if safe — **no** Phase 4 Precision／Morph bulk。
+3. Phone GPU／WebGL mid-run — **deferred by Roy**。
+4. （背景）AIM-HIT-FAST-002 Kimi 獨立審。
+5. Horn art lock／further silhouette polish — **only after** Roy later OK；interim direction accepted for pipeline.
 
-**Do NOT start：** Phase 4／horn art lock／§9 落地／phone GPU 深入／further horn polish without Roy eyes。
+**Do NOT start：** Phase 4／horn art lock／§9 落地／phone GPU 深入／further horn polish。
 
 ### Recently completed（do not re-implement）
 
-- `HORN-SILHOUETTE-DIRECTION` → **v0.9.21** interim mecha silhouette（本輪；awaiting Roy eyes）。
+- `PHASE2-COMBAT-READABILITY-002` → **v0.9.22**.
+- `HORN-SILHOUETTE-DIRECTION` → **v0.9.21** interim mecha silhouette（pipeline OK-to-continue；**not** final art lock）.
 - `PERF-REBASELINE` → desktop v0.9.20 GTX 1070 Ti。
 - `PHONE-STABLE-FOLLOWUP` → **v0.9.20**。
 - `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`。

@@ -85,7 +85,7 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 
 - **Wanted:** Japanese refined mecha + cyberpunk mil-tech (this bible’s style line) — humanoid-mecha proportions, longer limbs vs torso, sharper angular plates.
 - **Rejected:** blocky／塊狀／cube-stack body as the shared style for later mechs. Do **not** lock the old toy-block read.
-- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Pending Roy visual lock** — not device-final-art-locked；not HANDOFF §9 locked. Further polish only after Roy OK／iterate.
+- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Roy 2026-10-26:** interim silhouette accepted for pipeline continue（「繼續出去啦」）；**still not** device-final-art-locked／HANDOFF §9 locked. **Do not** further polish horn until later Roy art lock.
 
 ## 5. Dim-arena rule
 
