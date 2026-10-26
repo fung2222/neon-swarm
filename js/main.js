@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.33 run-loop UX; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.34 damage numbers lite; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -16,6 +16,10 @@ import {
   shouldShowCoach, markCoachSeen, zoneShortLabel, formatLoadoutFromGame,
   COACH_MS, HURT_VIGNETTE_MS, STICK_HINT_MS,
 } from './run-loop-ux.js';
+import {
+  createDamageFloatPool, ndcToCss,
+  DMG_FLOAT_MAX_DESKTOP, DMG_FLOAT_MAX_MOBILE,
+} from './damage-numbers.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -107,6 +111,48 @@ stage.onResize((w, h, pr) => {
 });
 const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 10 : 24);
 const fx = new FxState();
+
+// v0.9.34: DOM floating damage / heal / hurt digits (mobile-light pool)
+const _dmgRoot = $('dmg-floats');
+const dmgFloats = _dmgRoot
+  ? createDamageFloatPool(_dmgRoot, {
+      max: MOBILE_GFX ? DMG_FLOAT_MAX_MOBILE : DMG_FLOAT_MAX_DESKTOP,
+    })
+  : null;
+const _dmgProj = new THREE.Vector3();
+function worldXZToScreen(x, z, y = 0.95) {
+  const cam = stage.camera;
+  const canvas = stage.renderer?.domElement || $('scene');
+  if (!cam || !canvas) return null;
+  _dmgProj.set(x, y, z).project(cam);
+  if (_dmgProj.z > 1.05) return null;
+  const w = canvas.clientWidth || window.innerWidth;
+  const h = canvas.clientHeight || window.innerHeight;
+  return ndcToCss(_dmgProj.x, _dmgProj.y, w, h);
+}
+function spawnCombatFloat(opts) {
+  if (!dmgFloats || !opts) return;
+  let left = opts.left, top = opts.top;
+  if (left == null || top == null) {
+    const scr = worldXZToScreen(
+      opts.x != null ? opts.x : (S.game && S.game.px) || 0,
+      opts.z != null ? opts.z : (S.game && S.game.pz) || 0,
+      opts.y != null ? opts.y : 0.95,
+    );
+    if (!scr) return;
+    left = scr.left + (opts.jitterX || 0);
+    top = scr.top + (opts.jitterY || 0);
+  }
+  dmgFloats.spawn({
+    kind: opts.kind,
+    amount: opts.amount,
+    left, top,
+    heavy: opts.heavy,
+    frontBlock: opts.frontBlock,
+    key: opts.key,
+  });
+}
+
 /** Mobile: clamp bloomDamp and roughly half trauma/slowmo so late-run AoE cannot white-out GPU. Desktop unchanged.
  *  v0.9.20: bloomDamp cap 0.25→0.18 (stronger mid-run GPU cut). */
 function kickFx(o) {
@@ -504,6 +550,8 @@ S.showRunCoach = showRunCoach;
 S.hideRunCoach = hideRunCoach;
 S.flashHurtVignette = flashHurtVignette;
 S.pulseStickHint = pulseStickHint;
+S.spawnCombatFloat = spawnCombatFloat;
+S.dmgFloats = dmgFloats;
 S._bannerCtl = _bannerCtl;
 S.BANNER_MS = BANNER_MS;
 
@@ -794,6 +842,8 @@ function startRun() {
 }
 
 function endRun(trial = false) {
+  try { dmgFloats && dmgFloats.clear(); } catch (_) {}
+
   const g = S.game;
   if (!g) return;
   const score = Math.floor(g.score);
@@ -1036,6 +1086,16 @@ function tick(dt) {
         particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, burstN(Math.min(n, 8)), { speed: ev.heavy ? 4 : 3, up: 1.2, life: 0.55, bright: 1.0 });
         // v0.8.5: no white hit particles
         if (ev.heavy) kickFx({ trauma: 0.08, slowmo: 0.04, bloomDamp: 0.35 });
+        // v0.9.34 floating dmg (throttled per enemy)
+        if (ev.dmg != null || ev.frontBlock) {
+          spawnCombatFloat({
+            kind: 'hit', amount: ev.dmg, x: ev.x, z: ev.z, y: 1.05,
+            heavy: ev.heavy, frontBlock: ev.frontBlock,
+            key: ev.id != null ? ev.id : `${ev.kind}:${Math.round(ev.x * 2)}:${Math.round(ev.z * 2)}`,
+            jitterX: (Math.random() - 0.5) * 18,
+            jitterY: -8 - Math.random() * 10,
+          });
+        }
       }
     }
     else if (ev.type === 'kill') {
@@ -1086,6 +1146,12 @@ else if (ev.type === 'xp') {
       particles.burst(new THREE.Vector3(S.game.px, 0.7, S.game.pz), new THREE.Color(0x00e5ff), burstN(10), { speed: 2.5, up: 2, size: 0.5, bright: 1.0 });
       // v0.9.20: skip heal ring on mobile (pickup-adjacent non-essential)
       if (!MOBILE_GFX) particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0x00e5ff), 10, 5, 0.2);
+      if (ev.amount != null) {
+        spawnCombatFloat({
+          kind: 'heal', amount: ev.amount, x: S.game.px, z: S.game.pz, y: 1.2,
+          jitterY: -12,
+        });
+      }
     }
     else if (ev.type === 'weapon') {
       audio.nova();
@@ -1104,6 +1170,13 @@ else if (ev.type === 'xp') {
       const flash = $('fx-flash');
       if (flash) { flash.classList.add('on'); clearTimeout(flash._t); flash._t = setTimeout(() => flash.classList.remove('on'), 50); }
       flashHurtVignette();
+      if (ev.amount != null) {
+        spawnCombatFloat({
+          kind: 'hurt', amount: ev.amount, x: S.game.px, z: S.game.pz, y: 1.15,
+          jitterX: (Math.random() - 0.5) * 12,
+          jitterY: -6,
+        });
+      }
     }
     else if (ev.type === 'dead') endRun(false);
     else if (ev.type === 'levelup') showLevelCards(ev.cards, { from: ev.from || 'level' });

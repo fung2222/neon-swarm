@@ -788,3 +788,61 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .wslot-name { font-size: 8px; }
   .wslot-lv { font-size: 9px; }
 }
+
+
+/* ---- v0.9.34 damage numbers lite (PHASE6-DAMAGE-NUMBERS-LITE-001) ---- */
+.dmg-floats {
+  position: fixed;
+  inset: 0;
+  z-index: 4; /* under HUD chrome (5+) so slots / HP stay readable */
+  pointer-events: none;
+  overflow: hidden;
+}
+.dmg-float {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display, "Orbitron", "Noto Sans TC", system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.85);
+  animation: dmg-float-rise 0.58s ease-out forwards;
+  will-change: transform, opacity;
+}
+.dmg-float.dmg-hit {
+  color: #e8ffff;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.75), 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.dmg-float.dmg-heavy {
+  font-size: 26px;
+  color: #ffe600;
+  text-shadow: 0 0 10px rgba(255, 230, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.dmg-float.dmg-block {
+  font-size: 15px;
+  color: #9aa3b5;
+  text-shadow: 0 0 6px rgba(80, 90, 110, 0.6), 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+.dmg-float.dmg-heal {
+  font-size: 20px;
+  color: #3bff8a;
+  text-shadow: 0 0 8px rgba(59, 255, 138, 0.7), 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.dmg-float.dmg-hurt {
+  font-size: 20px;
+  color: #ff4d6d;
+  text-shadow: 0 0 8px rgba(255, 45, 100, 0.65), 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+@keyframes dmg-float-rise {
+  0% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateY(-36px) scale(0.92); }
+}
+@media (max-width: 480px) {
+  .dmg-float { font-size: 15px; text-shadow: 0 0 4px rgba(0, 0, 0, 0.9); }
+  .dmg-float.dmg-heavy { font-size: 20px; }
+  .dmg-float.dmg-heal, .dmg-float.dmg-hurt { font-size: 16px; }
+}

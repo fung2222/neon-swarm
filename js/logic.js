@@ -744,7 +744,7 @@ export class Game {
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
-        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
         e.x -= e.chargeDx * 1.1;
         e.z -= e.chargeDz * 1.1;
         if (this.hp <= 0) {
@@ -841,7 +841,7 @@ export class Game {
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
-        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
         e.x -= e.chargeDx * 1.1;
         e.z -= e.chargeDz * 1.1;
         if (this.hp <= 0) {
@@ -1072,7 +1072,7 @@ export class Game {
       this.hp -= taken;
       this.invuln = 0.9 + (this.deflect || 0);
       this.hitFlash = 0.28;
-      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
       const pdx = this.px - e.x, pdz = this.pz - e.z;
       const pl = Math.hypot(pdx, pdz) || 1;
       e.x -= (pdx / pl) * 0.6;
@@ -1243,7 +1243,7 @@ export class Game {
           this.hp -= taken;
           this.invuln = 0.7 + (this.deflect || 0);
           this.hitFlash = 0.22;
-          events.push({ type: 'hurt', by: 'swarm_core', nameZh: '洪流核心', nameEn: 'SWARM CORE' });
+          events.push({ type: 'hurt', by: 'swarm_core', nameZh: '洪流核心', nameEn: 'SWARM CORE', amount: taken });
           this.bossHazards.splice(i, 1);
           if (this.hp <= 0) {
             this.alive = false;
@@ -1875,10 +1875,14 @@ export class Game {
   /** Apply damage to enemy with directional / flat mitigation. Returns true if killed. */
   _applyEnemyDamage(e, dmg, srcX, srcZ, events, opts = {}) {
     const mul = this._enemyIncomingMul(e, srcX, srcZ);
-    e.hp -= dmg * mul;
+    const applied = dmg * mul;
+    e.hp -= applied;
     e.hit = opts.hitTime != null ? opts.hitTime : 0.12;
     if (opts.pushHit) {
-      events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy: !!opts.heavy, frontBlock: mul < 0.5 });
+      events.push({
+        type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind,
+        heavy: !!opts.heavy, frontBlock: mul < 0.5, dmg: applied, id: e.id,
+      });
     }
     return e.hp <= 0;
   }
@@ -1928,7 +1932,7 @@ export class Game {
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.32;
-            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, shieldBash: true });
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, shieldBash: true, amount: taken });
             // shove player slightly back
             this.px += ndx * 0.35;
             this.pz += ndz * 0.35;
@@ -1999,7 +2003,7 @@ export class Game {
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
-      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
       e.x -= ndx * 0.7;
       e.z -= ndz * 0.7;
       if (this.hp <= 0) {
@@ -2056,7 +2060,7 @@ export class Game {
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.32;
-            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, sniper: true });
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, sniper: true, amount: taken });
             if (this.hp <= 0) {
               this.alive = false;
               this.hp = 0;
@@ -2084,7 +2088,7 @@ export class Game {
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
-        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
         e.x -= ndx * 0.9;
         e.z -= ndz * 0.9;
         if (this.hp <= 0) {
@@ -2148,7 +2152,7 @@ export class Game {
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
-      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
       e.x -= ndx * 0.9;
       e.z -= ndz * 0.9;
       if (this.hp <= 0) {
@@ -2209,7 +2213,7 @@ export class Game {
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.35;
-            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, artillery: true });
+            events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, artillery: true, amount: taken });
             if (this.hp <= 0) {
               this.alive = false;
               this.hp = 0;
@@ -2236,7 +2240,7 @@ export class Game {
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
-        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
         e.x -= ndx * 0.7;
         e.z -= ndz * 0.7;
         if (this.hp <= 0) {
@@ -2311,7 +2315,7 @@ export class Game {
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
-      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
       e.x -= ndx * 0.7;
       e.z -= ndz * 0.7;
       if (this.hp <= 0) {
@@ -2372,7 +2376,7 @@ export class Game {
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
-        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
         e.x -= (dx / len) * toward * 0.9;
         e.z -= (dz / len) * toward * 0.9;
         if (this.hp <= 0) {
@@ -2433,10 +2437,14 @@ export class Game {
         // Relative continuous: bullet segment + enemy segment over same interval.
         if (relativeSegmentHitsCircle(prevX, prevZ, b.x, b.z, ex0, ez0, e.x, e.z, er)) {
           // Source ≈ previous bullet pos (attack travel dir toward enemy)
+          const hitMul = this._enemyIncomingMul(e, prevX, prevZ);
           const dead = this._applyEnemyDamage(e, b.dmg, prevX, prevZ, events, { hitTime: 0.12 });
           b.hitIds.add(e);
           const heavy = b.weapon === 'rocket' || b.weapon === 'laser' || b.weapon === 'grenade';
-          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy, frontBlock: this._enemyIncomingMul(e, prevX, prevZ) < 0.5 });
+          events.push({
+            type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind,
+            heavy, frontBlock: hitMul < 0.5, dmg: b.dmg * hitMul, id: e.id,
+          });
           if (dead) {
             this._kill(e, j, events);
             const punch = isPunchKill(e, heavy);

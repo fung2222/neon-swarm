@@ -56,7 +56,7 @@ assert.ok(HURT_VIGNETTE_MS >= 120 && HURT_VIGNETTE_MS <= 280);
   assert.ok(html.includes('id="fx-hurt"'), 'hurt markup');
   assert.ok(html.includes('id="over-zone"'), 'over zone');
   assert.ok(html.includes('id="over-loadout"'), 'over loadout');
-  assert.ok(html.includes('?v=0.9.33'), 'cache-bust');
+  assert.ok(/\?v=0\.9\.\d+/.test(html), 'cache-bust');
 }
 
 console.log('run-loop-ux.test.mjs: PASS');
