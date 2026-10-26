@@ -14,11 +14,19 @@
 
 本文件狀態段：Phase 0 = **v0.9.6 / `ec12087`**；本輪 Phase 1 horn bake = **v0.9.7**（見下）。產品方向與架構說明仍以本文件後段為準；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
 
-### 角色分工（固定）
+### 角色分工與協作規則（2026-10-26 鎖定）
 
-- **Roy：** 產品方向與最終驗收。
-- **Kimi K3.1：** 流程設計、獨立檢查、bug 重現、修正範圍與審核。
-- **Grok bot（Grok 4.7）：** 本輪程式／測試／文件實作。Grok 的測試報告 ≠ Kimi 獨立驗證。
+- **Roy：** 產品方向、試玩、最終驗收；可下 `ROY_OVERRIDE`（須記範圍／原因）。目標：Google Play 上架 **CYBER ARCADE**（多遊戲 app）賺取生活費；**暴走機甲**為其中星級旗艦——完善可玩體驗，唔係假裝大製作。
+- **Kimi K3.1：** 流程設計、獨立檢查、bug 重現、重大改動審核；**亦可直接改程式／文件**。審批唔係每輪必須。
+- **Grok bot：** 按 `HANDOFF`＋`AGENT_TASK` **Active＋queue 自動推進**；常規／規則性工作完成→測→記→接下項，**唔使逐項等 Kimi**。Grok 測試報告 ≠ Kimi 獨立驗證。
+
+**文案直寫 GitHub：** 所有交接 MD（`HANDOFF`／`AGENT_TASK`／REVIEW 等）由作者直接 commit＋push；Roy／對方在 repo 打開即可，**唔再下載轉發**。
+
+**自動推進（常規）：** bugfix、補測試、文件、按現有風格 rebake、小型 UI／效能修正。  
+**停等審核（重大）：** 新機體、核心操作、渲染／烘焙管線、碰撞 update order、重大數值經濟、廣告／付費、save format、Google Play 上架。完成後由 Kimi 審（或 Roy 點名）。  
+**美術：** art bible＋剪影規則執行；常規修正唔逐張審；方向改變先停。  
+**同時開工：** 唔改同一批檔；小範圍分開 commit。  
+**每次改完必記：** 作者、Task ID、版本、SHA、改了甚麼、測試、截圖、未驗證、下一步（見 §10）。
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
@@ -58,7 +66,7 @@
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ **AIM-HIT-FAST-002 precise intercept／relative sweep（v0.9.19）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步產品夾：等 Kimi 審核 AIM-HIT-FAST-002 後再由 Roy 下發（手機 GPU／horn art／Precision — **do not start**）。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ **AIM-HIT-FAST-002 precise intercept／relative sweep（v0.9.19）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：等 Kimi 審核 AIM-HIT-FAST-002 後按 `AGENT_TASK` queue 自動推進（手機穩定／horn 剪影方向／真機 hit／PERF）；Phase 4 Precision — **do not start** until pillars＋審核。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -74,6 +82,18 @@
 - **不要**加入傳統手動 reload、roll、stamina 來增加所謂「深度」。
 - **不要**改寫成 Canvas2D、回合制、純 3D 雙搖桿或其他類型。
 - 現有技術是 Three.js 場景＋2D billboard sprites；這個組合是有意選擇，不是待刪除的臨時架構。
+
+### 1b. CYBER ARCADE 產品支柱（上架取向）
+
+- **快速：** 開 app 盡快玩到；開頭幾秒已有敵人、火力、成長反饋。
+- **容易：** 單手、自動攻擊、規則一看就明；深度放 Build 選擇，唔放操作負擔。
+- **坐車搭車：** 短局、可暫停、打斷可恢復、直向螢幕、字大、危險提示清楚。
+- **吸引力：** 主角有型、跑射流暢、**命中可靠**、升級有感、精英／Boss 有節奏（唔純堆怪）。
+- **穩定慳電：** 手機唔易 WebGL crash、唔長時間發熱降頻——優先於再加地圖。
+- **品質＞數量：** 每隻小遊戲要有完整開始→玩→結束→再玩；暴走機甲先做旗艦示範。
+- **收入取捨：** 核心盡量可離線；廣告放自然停頓，唔喺戰鬥／升級中途強插；唔課金先可正常玩。Play 包裝／lifecycle／返回鍵／安全區／存檔／私隱：核心體驗穩後再完整一輪。
+
+**暴走機甲優先序：** **命中可靠 → 手機穩定 → 主角好看 → 再擴內容。** 版本號多少次之。
 
 ### 故事與世界觀
 
@@ -426,7 +446,7 @@ Rollback baseline:
 
 **目前基準 v0.9.19（AIM-HIT-FAST-002；HEAD 以 `main`／live `?v=0.9.19` 為準）。**
 
-- `AIM-HIT-FAST-002` **已由 Grok bot 實作並 headless／SwiftShader 驗證**；`docs/AGENT_TASK.md` 現為 **HOLD／等待 Kimi 獨立審核**。**不要**重做 AIM-HIT-FAST-002 或任何已完成 v0.9.4–v0.9.19 任務。
-- 審核完成前：不要開 Phase 4 Precision、horn 最終美術鎖定、HANDOFF §9 系列規則落地、手機 GPU 進一步 cuts、PERF rebaseline。
-- Recommended next（**do not start**）：await Kimi independent review of AIM-HIT-FAST-002（then phone GPU／horn art lock／PERF rebaseline — only after new `AGENT_TASK.md` from Roy/Kimi）。
-- SwiftShader ≠ 真機驗收；高速橫向命中仍待 Roy 實玩。開始前仍要 `git log -1` 對齊 HEAD 與 live cache-bust。
+- `AIM-HIT-FAST-002` **已由 Grok bot 實作並 headless／SwiftShader 驗證**（重大：碰撞／瞄準）→ `docs/AGENT_TASK.md` **HOLD 等 Kimi 審**。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.19。
+- 協作已改：**常規 queue 項審完後 Grok 自動推進**；唔使 Roy 每輪轉發 MD。審核／任務回覆請直接改 repo 文件並 push。
+- 審核通過後按 `AGENT_TASK` queue：手機穩定 follow-up → horn 剪影方向（要 Roy 肉眼）→ 真機 hit feel → PERF rebaseline → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地。
+- SwiftShader ≠ 真機；高速橫向仍待 Roy 實玩。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
