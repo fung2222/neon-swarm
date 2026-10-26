@@ -30,12 +30,12 @@
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** （HEAD stamp on push）
-- `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`ea04be7`)
-- `PHASE6-SAFE-AREA-001` → **v0.9.36** (`eee063e`)
-- `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`a026e1e`)
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`)
-- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`)
+- `PHASE6-KILL-STREAK-LITE-001` → **v0.9.38** (`fc61ddc`)
+- `PHASE6-EARLY-FEEDBACK-001` → **v0.9.37** (`fc61ddc`)
+- `PHASE6-SAFE-AREA-001` → **v0.9.36** (`fc61ddc`)
+- `PHASE6-MUTE-PERSIST-001` → **v0.9.35** (`fc61ddc`)
+- `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`fc61ddc`)
+- `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`fc61ddc`)
 
 ---
 
