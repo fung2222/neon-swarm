@@ -181,9 +181,35 @@ export const ENEMIES = {
     hp: 40, speed: 1.35, radius: 0.6, xp: 10, score: 150, chase: 0.8, damage: 3,
     color: 0xff2bd6, shield: 0.25,
   },
+  // ---- Phase 3 elite beat (SENTINEL PRIME) ----
+  sentinel: {
+    zh: '哨戒長', en: 'SENTINEL PRIME', family: 'support', kind: 'sentinel', tier: 5,
+    hp: 90, speed: 1.15, radius: 0.72, xp: 18, score: 400, chase: 0.85, damage: 3,
+    color: 0xb44dff, elite: true,
+  },
 };
 
 export const ENEMY_BY_ID = ENEMIES;
+
+/** Simplified SENTINEL PRIME (BEATS-PLAN) — one elite beat with readable telegraph. */
+export const ELITE = {
+  type: 'sentinel',
+  telegraphSec: 1.2,
+  chargeSpeed: 9.5,
+  chargeSec: 0.55,
+  recoverSec: 2.0,
+  walkSecMin: 1.6,
+  walkSecMax: 2.8,
+  spawnPauseSec: 1.5,
+  walkSpeedMul: 0.85,
+  chargeDamage: 3,
+};
+
+/** Named run beats. Phase 3 ships elite #1 only (no boss). */
+export const BEATS = [
+  { at: 120, kind: 'elite', id: 'sentinel' },
+];
+
 
 /**
  * Drops. Everything lands as a big letter, a weapon icon or a plain cube:

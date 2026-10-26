@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.7 horn bake quality pass (materials/layering/lighting; interim→improved)
+// RAMPAGE MECH 暴走機甲 — v0.9.9 Phase 3 lab slice (distinct grunts + SENTINEL elite telegraph)
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -383,6 +383,19 @@ function cardEmblem(c) {
   };
   if (c.shape && shapes[c.shape]) return shapes[c.shape];
   return `<span class="emblem-glyph">${c.icon || '◆'}</span>`;
+}
+
+let _beatBannerT = 0;
+function showBeatBanner(zh, en, ms = 1600) {
+  const el = $('beat-banner');
+  const zhEl = $('beat-zh');
+  const enEl = $('beat-en');
+  if (!el) return;
+  if (zhEl) zhEl.textContent = zh || t('beat.eliteIn');
+  if (enEl) enEl.textContent = en || t('beat.eliteInEn');
+  el.classList.remove('hidden');
+  clearTimeout(_beatBannerT);
+  _beatBannerT = setTimeout(() => el.classList.add('hidden'), ms);
 }
 
 function showLevelCards(cards) {
@@ -776,6 +789,24 @@ else if (ev.type === 'xp') {
     else if (ev.type === 'wave') {
       audio.wave();
       particles.ring(new THREE.Vector3(S.game.px, 0.1, S.game.pz), new THREE.Color(0xff2bd6), 10, 5, 0.18);
+    }
+    else if (ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite')) {
+      const zh = ev.nameZh
+        ? (`精英出現 · ${ev.nameZh}`)
+        : t('beat.eliteIn');
+      const en = ev.nameEn
+        ? (`ELITE INBOUND · ${ev.nameEn}`)
+        : t('beat.eliteInEn');
+      showBeatBanner(zh, en, 1800);
+      audio.wave();
+      kickFx({ trauma: 0.08, bloomDamp: 0.5 });
+    }
+    else if (ev.type === 'telegraph') {
+      // View syncs warning lane from enemy.phase; light audio cue
+      try { audio.wave(); } catch (_) {}
+    }
+    else if (ev.type === 'eliteCharge') {
+      kickFx({ trauma: 0.1, fovKick: 0.02, bloomDamp: 0.6 });
     }
   }
 

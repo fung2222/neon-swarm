@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BEATS } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -71,7 +71,7 @@ export function resolveGrenadeThrow(px, pz, forwardX, forwardZ, enemies, maxRang
 function isPunchKill(e, heavyWeapon = false) {
   if (heavyWeapon) return true;
   const k = e && e.kind;
-  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer';
+  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || !!(e && e.elite);
 }
 
 function mulberry32(a) {
@@ -169,6 +169,9 @@ export class Game {
     this.killer = null;
     this.goalKills = 40;
     this.goalsCleared = 0;
+    // Phase 3 elite beat
+    this._beatsFired = Object.create(null);
+    this._spawnPauseUntil = 0;
     for (let i = 0; i < 10; i++) this._spawn();
   }
 
@@ -234,7 +237,164 @@ export class Game {
       damage: def.damage || 1, shield: def.shield || 0,
       hit: 0, slow: 0, wob: this.rng() * Math.PI * 2,
       animPhase: this.rng() * Math.PI * 2,
+      panic: !!def.panic,
+      elite: !!def.elite,
     });
+  }
+
+  /** Fire named beats (Phase 3: elite #1 at 120s). Spawns pause briefly before arrival. */
+  _beatCheck(events) {
+    for (const beat of BEATS) {
+      const key = String(beat.at) + ':' + (beat.id || beat.kind);
+      if (this._beatsFired[key]) continue;
+      // Pause normal spawns 1.5s before elite so the silhouette reads clean
+      if (beat.kind === 'elite' && this.t >= beat.at - ELITE.spawnPauseSec && this.t < beat.at) {
+        this._spawnPauseUntil = Math.max(this._spawnPauseUntil, beat.at);
+      }
+      if (this.t < beat.at) continue;
+      if (beat.kind === 'elite') {
+        // Max one elite alive
+        if (this.enemies.some((e) => e.elite)) {
+          this._beatsFired[key] = true;
+          continue;
+        }
+        this._spawnElite(beat, events);
+        this._beatsFired[key] = true;
+      }
+    }
+  }
+
+  _spawnElite(beat, events) {
+    const type = beat.id || ELITE.type || 'sentinel';
+    const def = ENEMIES[type];
+    if (!def) return null;
+    const ang = this.rng() * Math.PI * 2;
+    const dist = ARENA.spawnNear + 2 + this.rng() * 3;
+    const c = this._softClamp(this.px + Math.cos(ang) * dist, this.pz + Math.sin(ang) * dist, def.radius);
+    const { hpMul, speedMul } = swarmPressure(this.t);
+    const walkMin = ELITE.walkSecMin;
+    const walkMax = ELITE.walkSecMax;
+    const e = {
+      id: this._nextEid++,
+      type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
+      x: c.x, z: c.z, vx: 0, vz: 0,
+      hp: def.hp * hpMul, maxHp: def.hp * hpMul,
+      speed: def.speed * speedMul, r: def.radius,
+      xp: def.xp, score: def.score, color: def.color, chase: def.chase,
+      damage: def.damage || 1, shield: def.shield || 0,
+      hit: 0, slow: 0, wob: this.rng() * Math.PI * 2,
+      animPhase: this.rng() * Math.PI * 2,
+      panic: false,
+      elite: true,
+      phase: 'walk',
+      phaseT: walkMin + this.rng() * (walkMax - walkMin),
+      telegraphDur: ELITE.telegraphSec,
+      telegraphAt: 0,
+      damageAt: 0,
+      chargeDx: 0,
+      chargeDz: 1,
+    };
+    this.enemies.push(e);
+    events.push({
+      type: 'beat', kind: 'elite', id: type,
+      nameZh: def.zh, nameEn: def.en,
+    });
+    events.push({
+      type: 'eliteIn', nameZh: def.zh, nameEn: def.en,
+    });
+    return e;
+  }
+
+  /**
+   * Elite state machine: walk → telegraph (≥1.2s, no contact dmg ramp) → charge → recover.
+   * Damage from charge contact only after telegraph completes (telegraphAt → damageAt).
+   */
+  _tickElite(e, dt, events) {
+    e.phaseT -= dt;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? 0.55 : 1;
+
+    if (e.phase === 'walk') {
+      const dx = this.px - e.x, dz = this.pz - e.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const spd = e.speed * e.chase * ELITE.walkSpeedMul * slowMul;
+      e.vx = (dx / len) * spd;
+      e.vz = (dz / len) * spd;
+      e.x += e.vx * dt;
+      e.z += e.vz * dt;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.animPhase = (e.animPhase || 0) + Math.max(6, spd * 5) * dt;
+      if (e.phaseT <= 0) {
+        e.phase = 'telegraph';
+        e.phaseT = ELITE.telegraphSec;
+        e.telegraphDur = ELITE.telegraphSec;
+        e.telegraphAt = this.t;
+        e.damageAt = this.t + ELITE.telegraphSec;
+        const adx = this.px - e.x, adz = this.pz - e.z;
+        const al = Math.hypot(adx, adz) || 1;
+        e.chargeDx = adx / al;
+        e.chargeDz = adz / al;
+        e.vx = 0; e.vz = 0;
+        events.push({
+          type: 'telegraph',
+          eliteId: e.id,
+          x: e.x, z: e.z,
+          dx: e.chargeDx, dz: e.chargeDz,
+          duration: ELITE.telegraphSec,
+          damageAt: e.damageAt,
+        });
+      }
+    } else if (e.phase === 'telegraph') {
+      e.vx = 0; e.vz = 0;
+      // Hold aim lock; no charge damage yet
+      if (e.phaseT <= 0) {
+        e.phase = 'charge';
+        e.phaseT = ELITE.chargeSec;
+        events.push({ type: 'eliteCharge', eliteId: e.id });
+      }
+    } else if (e.phase === 'charge') {
+      const spd = ELITE.chargeSpeed * slowMul;
+      e.vx = e.chargeDx * spd;
+      e.vz = e.chargeDz * spd;
+      e.x += e.vx * dt;
+      e.z += e.vz * dt;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.animPhase = (e.animPhase || 0) + 14 * dt;
+      // Contact damage only during charge (after telegraph)
+      if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+        const dmg = ELITE.chargeDamage != null ? ELITE.chargeDamage : (e.damage || 3);
+        const taken = Math.max(1, dmg - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
+        this.hitFlash = 0.28;
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        e.x -= e.chargeDx * 1.1;
+        e.z -= e.chargeDz * 1.1;
+        if (this.hp <= 0) {
+          this.alive = false;
+          this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+          events.push({ type: 'dead' });
+        }
+      }
+      if (e.phaseT <= 0) {
+        e.phase = 'recover';
+        e.phaseT = ELITE.recoverSec;
+        e.vx = 0; e.vz = 0;
+      }
+    } else if (e.phase === 'recover') {
+      e.vx = 0; e.vz = 0;
+      if (e.phaseT <= 0) {
+        e.phase = 'walk';
+        e.phaseT = ELITE.walkSecMin + this.rng() * (ELITE.walkSecMax - ELITE.walkSecMin);
+      }
+    } else {
+      e.phase = 'walk';
+      e.phaseT = 1.5;
+    }
   }
 
   _waveBurst() {
@@ -608,7 +768,7 @@ export class Game {
       e.hp -= dmg * (1 - (e.shield || 0));
       e.hit = 0.18;
       events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy: true });
-      if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
+      if (e.hp <= 0) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
     }
     events.push({ type: 'explode', x, z, r: radius, tag });
   }
@@ -620,7 +780,7 @@ export class Game {
       const e = this.enemies[j];
       if (Math.hypot(e.x - this.px, e.z - this.pz) > R) continue;
       e.hp -= dmg; e.hit = 0.15;
-      if (e.hp <= 0) { this._kill(e, j); events.push({ type: 'kill', enemy: e, gore: true }); }
+      if (e.hp <= 0) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
     }
     events.push({ type: 'nova', r: R });
   }
@@ -642,7 +802,7 @@ export class Game {
     return owned[Math.floor(this.rng() * owned.length)];
   }
 
-  _kill(e, i) {
+  _kill(e, i, events) {
     this.enemies.splice(i, 1);
     this.kills++;
     if (this.kills >= this.goalKills) {
@@ -652,12 +812,27 @@ export class Game {
     }
     this.score += e.score + Math.floor(this.t);
     this._dropGem(e);
-    if ((e.kind === 'chief' || e.kind === 'mech') && this.rng() < 0.35) {
+    if ((e.kind === 'chief' || e.kind === 'mech' || e.elite) && this.rng() < (e.elite ? 1 : 0.35)) {
       const w = this.weaponIcon();
       this.gems.push({
         x: e.x, z: e.z, xp: 0, r: 0.22, life: 22, pop: 0.3, letter: 'W', kind: 'weapon',
         weapon: w, weaponIcon: WEAPON_ICONS[w] || '⚡',
       });
+    }
+    // Elite payoff: bonus XP crates + choice of 2 cards (BEATS-PLAN simplified)
+    if (e.elite) {
+      for (let k = 0; k < 3; k++) {
+        const ang = this.rng() * Math.PI * 2;
+        const d = 0.4 + this.rng() * 0.6;
+        this.gems.push({
+          x: e.x + Math.cos(ang) * d, z: e.z + Math.sin(ang) * d,
+          xp: 4, r: 0.24, life: 24, pop: 0.35, letter: 'X', kind: 'xp',
+        });
+      }
+      if (!this.taken) this.taken = {};
+      this.pendingCards = pickCards(this.rng, 2, this.taken);
+      this.pausedForLevel = true;
+      if (events) events.push({ type: 'levelup', cards: this.pendingCards, from: 'elite' });
     }
   }
 
@@ -787,7 +962,7 @@ export class Game {
           const heavy = b.weapon === 'rocket' || b.weapon === 'laser' || b.weapon === 'grenade';
           events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy });
           if (e.hp <= 0) {
-            this._kill(e, j);
+            this._kill(e, j, events);
             const punch = isPunchKill(e, heavy);
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
           }
@@ -820,7 +995,7 @@ export class Game {
           e.slow = Math.max(e.slow, 0.35);
           e.hit = Math.max(e.hit, 0.05);
           if (e.hp <= 0) {
-            this._kill(e, j);
+            this._kill(e, j, events);
             const punch = isPunchKill(e, true); // lingering acid still reads as special
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
           }
@@ -841,7 +1016,7 @@ export class Game {
             e.hp -= 0.55 * this.bulletDmg * dt * 8;
             e.hit = 0.08;
             if (e.hp <= 0) {
-              this._kill(e, j);
+              this._kill(e, j, events);
               const punch = isPunchKill(e, false);
               events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
             }
@@ -851,13 +1026,19 @@ export class Game {
     }
 
     for (const e of this.enemies) {
+      if (e.elite) {
+        this._tickElite(e, dt, events);
+        continue;
+      }
       if (e.hit > 0) e.hit -= dt;
       if (e.slow > 0) e.slow -= dt;
       const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
       const dx = this.px - e.x, dz = this.pz - e.z;
       const len = Math.hypot(dx, dz) || 1;
-      const stepX = (dx / len) * e.speed * e.chase * slowMul * dt;
-      const stepZ = (dz / len) * e.speed * e.chase * slowMul * dt;
+      // Staffer panic: retreat (negative chase) for scientist-coat flee feel
+      const toward = e.panic ? -1 : 1;
+      const stepX = (dx / len) * toward * e.speed * e.chase * slowMul * dt;
+      const stepZ = (dz / len) * toward * e.speed * e.chase * slowMul * dt;
       e.vx = stepX / Math.max(dt, 1e-6);
       e.vz = stepZ / Math.max(dt, 1e-6);
       e.x += stepX;
@@ -866,14 +1047,15 @@ export class Game {
       e.animPhase = (e.animPhase || 0) + (moving ? Math.max(8, Math.hypot(e.vx, e.vz) * 6.5) * dt : 0);
       const ec = this._softClamp(e.x, e.z, e.r);
       e.x = ec.x; e.z = ec.z;
+      // Fleeing staffers still hurt on contact if player corners them
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
         const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
         events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
-        e.x -= (dx / len) * 0.9;
-        e.z -= (dz / len) * 0.9;
+        e.x -= (dx / len) * toward * 0.9;
+        e.z -= (dz / len) * toward * 0.9;
         if (this.hp <= 0) {
           this.alive = false;
           this.hp = 0;
@@ -912,15 +1094,18 @@ export class Game {
       } else if (g.life <= 0) this.gems.splice(i, 1);
     }
 
+    this._beatCheck(events);
+
     const { density } = swarmPressure(this.t);
-    this.spawnAcc += dt * density;
+    const paused = this.t < this._spawnPauseUntil;
+    if (!paused) this.spawnAcc += dt * density;
     const cap = 24 + Math.min(36, Math.floor(this.t / 8));
-    while (this.spawnAcc >= 1 && this.enemies.length < cap) {
+    while (!paused && this.spawnAcc >= 1 && this.enemies.length < cap) {
       this.spawnAcc -= 1;
       this._spawn();
     }
     this.waveT -= dt;
-    if (this.waveT <= 0) {
+    if (!paused && this.waveT <= 0) {
       this._waveBurst();
       this.waveT = 11 + this.rng() * 5;
       events.push({ type: 'wave' });

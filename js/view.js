@@ -113,7 +113,7 @@ function humanMesh(kind, color, coat) {
   const skin = new THREE.MeshStandardMaterial({ color: 0xf1cfa8, emissive: 0x6a4a30, emissiveIntensity: 0.15, roughness: 0.9 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x2c3450, emissive: 0x1b2338, emissiveIntensity: 0.45, roughness: 0.65, metalness: 0.45 });
   const accent = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.85, roughness: 0.35 });
-  const scale = kind === 'chief' ? 2.15 : kind === 'officer' ? 2.0 : kind === 'soldier' ? 1.9 : 1.75;
+  const scale = kind === 'chief' ? 2.15 : kind === 'officer' ? 2.0 : kind === 'soldier' ? 1.9 : kind === 'guard' ? 1.85 : 1.75;
   const legs = [];
   const arms = [];
 
@@ -147,6 +147,15 @@ function humanMesh(kind, color, coat) {
     const pack = box(0.18, 0.2, 0.09, dark, 0, 0.12, -0.13);
     g.add(pack);
   }
+  // Phase 3: security guard — armored vest + radio + distinct from white-coat staffer
+  if (kind === 'guard') {
+    const vest = box(0.26, 0.22, 0.17, dark, 0, 0.12, 0);
+    const plate = box(0.18, 0.12, 0.04, accent, 0, 0.14, 0.09);
+    const shoulder = box(0.30, 0.05, 0.14, accent, 0, 0.24, 0);
+    const radio = box(0.06, 0.12, 0.05, dark, -0.14, 0.22, -0.02);
+    const antenna = box(0.015, 0.14, 0.015, accent, -0.14, 0.34, -0.02);
+    g.add(vest, plate, shoulder, radio, antenna);
+  }
 
   // ---- head: skin + helmet / cap + glowing eyewear
   const head = new THREE.Group();
@@ -162,6 +171,13 @@ function humanMesh(kind, color, coat) {
     helm.position.set(0, 0.04, 0);
     const visor = box(0.15, 0.04, 0.03, accent, 0, 0.0, 0.09, 0.2);
     head.add(helm, visor);
+  }
+  if (kind === 'guard') {
+    // security cap + goggles — reads as armed chase, not lab coat
+    const cap = box(0.17, 0.05, 0.16, dark, 0, 0.09, 0, 0.15);
+    const brim = box(0.18, 0.02, 0.07, dark, 0, 0.07, 0.08, 0.15);
+    const gog = box(0.14, 0.035, 0.03, accent, 0, 0.01, 0.08, 0.2);
+    head.add(cap, brim, gog);
   }
   if (kind === 'chief') {
     const cap = box(0.17, 0.05, 0.17, accent, 0, 0.1, 0, 0.2);
@@ -200,9 +216,11 @@ function humanMesh(kind, color, coat) {
     aura.position.y = 0.05;
     g.add(aura);
   }
-  // Ring presence: chief keeps identity; other humans stay subtle (PNG path is primary).
+  // Ring presence: chief/officer keep identity; Phase 3 lab meshes need a quiet foot mark.
   if (kind === 'chief') g.add(unitRing(color, 0.42, 0.5));
   else if (kind === 'officer') g.add(unitRing(color, 0.36, 0.28));
+  else if (kind === 'guard') g.add(unitRing(color, 0.30, 0.22));
+  else if (kind === 'staffer') g.add(unitRing(color, 0.26, 0.14));
   else g.add(unitRing(color, 0.28, 0.10));
 
   g.scale.setScalar(scale);
@@ -217,6 +235,7 @@ function clothColor(kind, coat) {
   if (kind === 'chief') return 0xffe9c4;        // warm lab coat
   if (kind === 'officer') return 0x6b2f6e;      // plum command uniform
   if (kind === 'soldier') return 0x4a7f99;      // slate-blue combat uniform, bright enough to read
+  if (kind === 'guard') return 0x2a3548;       // dark security uniform (vest/helmet carry silhouette)
   return coat || 0x2b3350;
 }
 
@@ -241,9 +260,10 @@ function supportMesh(kind, color) {
       thr.position.set(side * 0.36, -0.02, -0.04);
       g.add(thr);
     }
-    g.add(unitRing(color, 0.22, 0.08)); // drone grunt — dim
-    g.position.y = 0.5;
+    g.add(unitRing(color, 0.22, 0.16)); // Phase 3 drone — small flying silhouette
     g.userData.bob = true;
+    g.userData.flyer = true;
+    g.userData.baseY = 0.55;
   } else if (kind === 'walker') {
     const torso = slab(0.5, 0.62, 0.42, 0.44, metal);
     torso.position.y = 0.16;
@@ -303,8 +323,88 @@ function supportMesh(kind, color) {
   return g;
 }
 
+/** Phase 3 elite: heavy biped + acid elite ring (violet hull, no red). */
+function eliteMesh() {
+  const color = 0xb44dff;
+  const acid = 0xb8ff3a;
+  const g = new THREE.Group();
+  const metal = new THREE.MeshStandardMaterial({ color: 0x3a2a55, emissive: 0x2a1840, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.65 });
+  const plate = new THREE.MeshStandardMaterial({ color: 0x1a1e28, emissive: 0x12161f, emissiveIntensity: 0.4, roughness: 0.5, metalness: 0.7 });
+  const trim = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.9, roughness: 0.3 });
+  const acidM = new THREE.MeshBasicMaterial({ color: acid, transparent: true, opacity: 0.85 });
+
+  const torso = slab(0.55, 0.7, 0.48, 0.48, metal);
+  torso.position.y = 0.55;
+  const chest = box(0.28, 0.22, 0.08, trim, 0, 0.62, 0.26);
+  const head = box(0.28, 0.22, 0.28, plate, 0, 0.95, 0.02, 0.15);
+  const vis = box(0.24, 0.06, 0.04, trim, 0, 0.96, 0.16);
+  g.add(torso, chest, head, vis);
+
+  const legs = [];
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.2, 0.35, 0);
+    const thigh = slab(0.18, 0.24, 0.4, 0.22, metal);
+    thigh.position.set(0, -0.22, 0);
+    const shin = slab(0.16, 0.2, 0.28, 0.2, plate);
+    shin.position.set(0, -0.5, 0.02);
+    const foot = slab(0.18, 0.26, 0.1, 0.32, plate);
+    foot.position.set(0, -0.68, 0.06);
+    leg.add(thigh, shin, foot);
+    g.add(leg);
+    legs.push(leg);
+    // shoulder cannons
+    const pad = slab(0.18, 0.26, 0.18, 0.3, metal);
+    pad.position.set(side * 0.42, 0.78, 0);
+    const barrel = cyl(0.045, 0.055, 0.38, trim, 10);
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.set(side * 0.42, 0.78, 0.2);
+    g.add(pad, barrel);
+  }
+
+  const eliteRing = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.035, 8, 36), acidM);
+  eliteRing.rotation.x = -Math.PI / 2;
+  eliteRing.position.y = 0.08;
+  eliteRing.userData.eliteRing = true;
+  g.add(eliteRing);
+  g.add(unitRing(acid, 0.58, 0.45));
+
+  g.scale.setScalar(1.55);
+  g.userData.legs = legs;
+  g.userData.eliteRing = eliteRing;
+  g.userData.type = 'sentinel';
+  g.userData.elite = true;
+  return g;
+}
+
+/** Ground warning lane: thin additive strip elite → player during telegraph. */
+function warningLane() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x00e5ff, transparent: true, opacity: 0.55, depthWrite: false, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+  quad.rotation.x = -Math.PI / 2;
+  quad.position.y = 0.06;
+  g.add(quad);
+  g.userData.quad = quad;
+  g.userData.mat = mat;
+  g.visible = false;
+  return g;
+}
+
 function enemyMeshFor(type) {
-  // Approved colour-coded PNG billboards (magenta / lime / orange) — no shared cyan mesh.
+  // Phase 3 lab slice: distinct procedural silhouettes (not recolor-only PNGs).
+  if (type === 'staffer' || type === 'guard') {
+    const def = ENEMIES[type] || {};
+    return humanMesh(type, def.color || 0xff3b6e, def.coat);
+  }
+  if (type === 'drone') {
+    const def = ENEMIES[type] || {};
+    return supportMesh('drone', def.color || 0x00e5ff);
+  }
+  if (type === 'sentinel') return eliteMesh();
+  // Remaining types keep approved colour-coded PNG billboards.
   return buildEnemySprite(type);
 }
 // ---------------------------------------------------------------------------
@@ -620,12 +720,13 @@ function dropMesh(d) {
 function buildObstacles(parent) {
   const group = new THREE.Group();
   parent.add(group);
-  // Phase 2: edge décor stays readable as silhouette, not neon that steals warning hues.
-  const crateMat = new THREE.MeshStandardMaterial({ color: 0x121926, emissive: 0x0e1624, emissiveIntensity: 0.16, roughness: 0.7, metalness: 0.25 });
-  const edgeMat = mat(0x2a5a78, 0.18);
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x0e1522, emissive: 0x101828, emissiveIntensity: 0.14, roughness: 0.72, metalness: 0.2 });
-  const debrisMat = new THREE.MeshStandardMaterial({ color: 0x141c30, emissive: 0x152038, emissiveIntensity: 0.14, roughness: 0.65, metalness: 0.28 });
-  const pipeMat = hullMat(0x1a2438, 0.1);
+  // Phase 3 lab framing: cooler cyan-teal edge accents; keep décor dim vs playable floor.
+  const crateMat = new THREE.MeshStandardMaterial({ color: 0x101820, emissive: 0x0c141c, emissiveIntensity: 0.14, roughness: 0.72, metalness: 0.28 });
+  const edgeMat = mat(0x1a6a78, 0.22); // cooler lab teal (was warmer blue-gray)
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x0c141c, emissive: 0x0e1a22, emissiveIntensity: 0.12, roughness: 0.74, metalness: 0.22 });
+  const debrisMat = new THREE.MeshStandardMaterial({ color: 0x121a24, emissive: 0x101c28, emissiveIntensity: 0.12, roughness: 0.68, metalness: 0.3 });
+  const pipeMat = hullMat(0x163040, 0.12);
+  const panelMat = mat(0x148a9a, 0.28); // small containment panel strips
 
   // three low "lab zones" scattered around the arena: crates + fence + containers
   const zones = [[-14, -12], [16, -14], [12, 14], [-18, 14], [0, -20], [22, 2], [-22, -2], [0, 20]];
@@ -671,13 +772,23 @@ function buildObstacles(parent) {
     i++;
   }
 
-  // a few pipe runs + hazard lights for texture
+  // a few pipe runs + cooler lab panel strips (containment framing)
   for (let k = 0; k < 5; k++) {
     const x = -24 + k * 12;
     const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.2, 8), pipeMat);
     pipe.rotation.z = Math.PI / 2;
     pipe.position.set(x, 0.16, -26 + (k % 2) * 52);
     group.add(pipe);
+  }
+  for (let k = 0; k < 6; k++) {
+    const ang = (k / 6) * Math.PI * 2;
+    const r = ARENA.soft - 1.2;
+    const px = Math.cos(ang) * r;
+    const pz = Math.sin(ang) * r;
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.35), panelMat);
+    panel.position.set(px, 0.12, pz);
+    panel.rotation.y = -ang + Math.PI / 2;
+    group.add(panel);
   }
   return group;
 }
@@ -747,6 +858,10 @@ export class View {
     this.novaRing.rotation.x = -Math.PI / 2;
     this.novaRing.visible = false;
     this.group.add(this.novaRing);
+
+    // Phase 3: elite charge telegraph lane (synced from enemy.phase === 'telegraph')
+    this.warnLane = warningLane();
+    this.group.add(this.warnLane);
     this.novaAge = -1;
 
     this.enemyG = new THREE.Group();
@@ -1194,18 +1309,24 @@ export class View {
       if (k >= 1) { this.novaAge = -1; this.novaRing.visible = false; }
     }
 
-    // ---- enemies (colour-coded PNG billboards + shared VS bob/flip)
+    // ---- enemies (Phase 3 lab = procedural meshes; others = PNG billboards)
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      if (m.userData.type !== e.type) {
-        if (m.userData.isSprite) retargetEnemySprite(m, e.type);
-        else {
-          while (m.children.length) m.remove(m.children[0]);
-          const fresh = enemyMeshFor(e.type);
-          while (fresh.children.length) m.add(fresh.children[0]);
-          m.userData = { ...fresh.userData, type: e.type };
-        }
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'drone' || e.type === 'sentinel');
+      const haveProc = !m.userData.isSprite;
+      if (m.userData.type !== e.type || wantProc !== haveProc) {
+        // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
+        // that left staffer/guard sharing enemy_lime silhouettes.
+        while (m.children.length) m.remove(m.children[0]);
+        const fresh = enemyMeshFor(e.type);
+        while (fresh.children.length) m.add(fresh.children[0]);
+        // Preserve Group identity for pooling; copy mesh userData from fresh build.
+        const ud = { ...fresh.userData, type: e.type };
+        m.userData = ud;
+        // Sprite flag must match the fresh mesh family
+        if (fresh.userData.isSprite) m.userData.isSprite = true;
+        else delete m.userData.isSprite;
       }
       const faceYaw = Math.atan2(game.px - e.x, game.pz - e.z);
       const spd = Math.hypot(e.vx || 0, e.vz || 0);
@@ -1239,8 +1360,26 @@ export class View {
         m.traverse((ch) => {
           if (ch.isMesh && ch.material && ch.material.emissive) ch.material.emissiveIntensity = glow;
         });
+        // Elite ring collapse during telegraph
+        if (m.userData.eliteRing) {
+          const ring = m.userData.eliteRing;
+          if (e.phase === 'telegraph') {
+            const u = Math.max(0, Math.min(1, 1 - (e.phaseT || 0) / Math.max(0.01, e.telegraphDur || 1.2)));
+            ring.scale.setScalar(1 - u * 0.45);
+            if (ring.material) ring.material.opacity = 0.55 + u * 0.4;
+          } else if (e.phase === 'charge') {
+            ring.scale.setScalar(1.25);
+            if (ring.material) ring.material.opacity = 1;
+          } else {
+            ring.scale.setScalar(1);
+            if (ring.material) ring.material.opacity = 0.85;
+          }
+        }
       }
     }
+
+    // Phase 3 telegraph lane: one elite max
+    this._syncWarnLane(game);
 
     // Doctor NPC prop: face camera, idle sway
     if (this.doctor && this.doctor.userData.isSprite) {
@@ -1427,6 +1566,38 @@ export class View {
     }
   }
 
+  /** Draw ground warning strip from elite → locked charge aim while telegraphing. */
+  _syncWarnLane(game) {
+    const lane = this.warnLane;
+    if (!lane) return;
+    let elite = null;
+    for (const e of game.enemies) {
+      if (e.elite && e.phase === 'telegraph') { elite = e; break; }
+    }
+    if (!elite) {
+      lane.visible = false;
+      return;
+    }
+    const dx = elite.chargeDx != null ? elite.chargeDx : (game.px - elite.x);
+    const dz = elite.chargeDz != null ? elite.chargeDz : (game.pz - elite.z);
+    const len = Math.hypot(dx, dz) || 1;
+    const ndx = dx / len, ndz = dz / len;
+    // Lane length: toward player lock distance, clamped
+    const dist = Math.min(14, Math.max(3.5, Math.hypot(game.px - elite.x, game.pz - elite.z)));
+    const mx = elite.x + ndx * dist * 0.5;
+    const mz = elite.z + ndz * dist * 0.5;
+    lane.visible = true;
+    lane.position.set(mx, 0, mz);
+    lane.rotation.y = Math.atan2(ndx, ndz);
+    const quad = lane.userData.quad;
+    const mat = lane.userData.mat;
+    if (quad) quad.scale.set(1.1, dist, 1);
+    if (mat) {
+      const u = Math.max(0, Math.min(1, 1 - (elite.phaseT || 0) / Math.max(0.01, elite.telegraphDur || 1.2)));
+      mat.opacity = 0.35 + u * 0.45;
+    }
+  }
+
   frameCamera(cam, game, dt) {
     const z = this._zoom || 1;
     const k = Math.min(1, Math.max(0, dt) * 7);
@@ -1547,6 +1718,8 @@ if (typeof window !== 'undefined') {
     buildDoctorNpc,
     humanMesh,
     supportMesh,
+    eliteMesh,
+    warningLane,
     enemyMeshFor,
     THREE,
   };

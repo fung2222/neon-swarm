@@ -80,4 +80,9 @@ i18n.add({
   ],
   'gfx.reload': ['重新載入', 'RELOAD'],
   'gfx.reloadEn': ['RELOAD', 'RELOAD'],
+  // Phase 3 elite beat banners (zh-HK first)
+  'beat.elite': ['精英出現', 'ELITE'],
+  'beat.eliteIn': ['精英出現 · 哨戒長', 'ELITE INBOUND · SENTINEL PRIME'],
+  'beat.eliteInEn': ['ELITE INBOUND', 'ELITE INBOUND'],
+  'beat.telegraph': ['衝刺預警', 'CHARGE INCOMING'],
 });
