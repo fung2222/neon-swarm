@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -544,6 +544,10 @@ export class Game {
       bomber: !!def.bomber || type === 'bomber',
       bomberPhase: (!!def.bomber || type === 'bomber') ? 'chase' : undefined,
       bomberPhaseT: (!!def.bomber || type === 'bomber') ? 0 : undefined,
+      flanker: !!def.flanker || type === 'flanker',
+      flankerPhase: (!!def.flanker || type === 'flanker') ? 'flank' : undefined,
+      flankerPhaseT: (!!def.flanker || type === 'flanker') ? (0.35 + this.rng() * 0.55) : undefined,
+      flankSide: (!!def.flanker || type === 'flanker') ? (this.rng() < 0.5 ? -1 : 1) : undefined,
       aimX: 0,
       aimZ: 0,
       faceDx: 0,
@@ -2523,6 +2527,202 @@ export class Game {
     }
   }
 
+
+  /**
+   * Flanker AI: arc/flank approach → cyan/danger dash telegraph (≥0.85s) → dash contact → recover → re-angle.
+   * No damage during telegraph. Killed mid-telegraph = no dash (never reaches dash phase).
+   */
+  _tickFlanker(e, dt, events) {
+    const cfg = FLANKER;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const dx = this.px - e.x, dz = this.pz - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+
+    if (!e.flankerPhase) e.flankerPhase = 'flank';
+    if (e.flankerPhaseT == null) e.flankerPhaseT = 0.4;
+    if (e.flankSide == null) e.flankSide = (this.rng() < 0.5 ? -1 : 1);
+
+    // ---- telegraph: nearly stop; lock dash aim; no damage ----
+    if (e.flankerPhase === 'telegraph') {
+      const tMul = cfg.telegraphSpeedMul != null ? cfg.telegraphSpeedMul : 0.08;
+      const spd = e.speed * e.chase * slowMul * tMul;
+      const stepX = ndx * spd * dt;
+      const stepZ = ndz * spd * dt;
+      e.vx = stepX / Math.max(dt, 1e-6);
+      e.vz = stepZ / Math.max(dt, 1e-6);
+      e.x += stepX;
+      e.z += stepZ;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      // Mild aim track so dodge reads, but wedge stays readable
+      const track = Math.min(1, dt * 1.2);
+      let adx = e.aimDx != null ? e.aimDx : ndx;
+      let adz = e.aimDz != null ? e.aimDz : ndz;
+      adx = adx * (1 - track) + ndx * track;
+      adz = adz * (1 - track) + ndz * track;
+      const al = Math.hypot(adx, adz) || 1;
+      e.aimDx = adx / al;
+      e.aimDz = adz / al;
+      e.faceDx = e.aimDx;
+      e.faceDz = e.aimDz;
+      e.flankerPhaseT -= dt;
+      e.animPhase = (e.animPhase || 0) + 12 * dt;
+      if (e.flankerPhaseT <= 0) {
+        e.flankerPhase = 'dash';
+        e.flankerPhaseT = cfg.dashSec != null ? cfg.dashSec : 0.28;
+        e.dashHit = false;
+        e.shotFlash = 0.18;
+      }
+      return;
+    }
+
+    // ---- dash: rush along locked aim; contact damage once ----
+    if (e.flankerPhase === 'dash') {
+      const adx = e.aimDx != null ? e.aimDx : ndx;
+      const adz = e.aimDz != null ? e.aimDz : ndz;
+      const al = Math.hypot(adx, adz) || 1;
+      const ddx = adx / al, ddz = adz / al;
+      const dSpd = (cfg.dashSpeed != null ? cfg.dashSpeed : 11.5) * slowMul;
+      const stepX = ddx * dSpd * dt;
+      const stepZ = ddz * dSpd * dt;
+      e.vx = stepX / Math.max(dt, 1e-6);
+      e.vz = stepZ / Math.max(dt, 1e-6);
+      e.x += stepX;
+      e.z += stepZ;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.faceDx = ddx; e.faceDz = ddz;
+      e.animPhase = (e.animPhase || 0) + 18 * dt;
+      e.flankerPhaseT -= dt;
+
+      const hitR = (cfg.dashHitRadius != null ? cfg.dashHitRadius : 0.9) + PLAYER.radius;
+      const toP = Math.hypot(e.x - this.px, e.z - this.pz);
+      if (!e.dashHit && toP < hitR) {
+        e.dashHit = true;
+        let hitPlayer = false;
+        if (this.invuln <= 0) {
+          hitPlayer = true;
+          const taken = Math.max(1, (cfg.dashDamage || 2) - (this.armor || 0));
+          this.hp -= taken;
+          this.invuln = 0.85 + (this.deflect || 0);
+          this.hitFlash = 0.32;
+          events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, flanker: true, amount: taken });
+          this.px += ddx * 0.4;
+          this.pz += ddz * 0.4;
+          if (this.hp <= 0) {
+            this.alive = false;
+            this.hp = 0;
+            this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+            events.push({ type: 'dead' });
+          }
+        }
+        events.push({
+          type: 'flankerDash',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          aimDx: ddx, aimDz: ddz,
+          hit: hitPlayer,
+        });
+      }
+
+      if (e.flankerPhaseT <= 0) {
+        if (!e.dashHit) {
+          events.push({
+            type: 'flankerDash',
+            enemyId: e.id,
+            x: e.x, z: e.z,
+            aimDx: ddx, aimDz: ddz,
+            hit: false,
+          });
+        }
+        e.flankerPhase = 'recover';
+        e.flankerPhaseT = cfg.recoverSec != null ? cfg.recoverSec : 1.35;
+        e.flankSide = -e.flankSide; // re-angle opposite side
+      }
+      return;
+    }
+
+    // ---- flank / recover: arc approach ----
+    e.flankerPhaseT -= dt;
+    if (e.shotFlash > 0) e.shotFlash -= dt;
+    const pdx = -ndz, pdz = ndx;
+    const side = e.flankSide || 1;
+    const strafe = cfg.flankStrafe != null ? cfg.flankStrafe : 1.2;
+    let toward = 1;
+    if (dist < (cfg.flankIdealMin || 5.5)) toward = -0.35;
+    else if (dist > (cfg.flankIdealMax || 9.5)) toward = 1;
+    else toward = 0.35;
+    const moveMul = e.flankerPhase === 'recover'
+      ? (cfg.recoverSpeedMul != null ? cfg.recoverSpeedMul : 0.55)
+      : (cfg.approachSpeedMul != null ? cfg.approachSpeedMul : 1.05);
+    const spd = e.speed * e.chase * slowMul * moveMul;
+    const stepX = (ndx * toward + pdx * side * strafe) * spd * dt;
+    const stepZ = (ndz * toward + pdz * side * strafe) * spd * dt;
+    e.vx = stepX / Math.max(dt, 1e-6);
+    e.vz = stepZ / Math.max(dt, 1e-6);
+    e.x += stepX;
+    e.z += stepZ;
+    const moving = Math.hypot(e.vx, e.vz) > 0.05;
+    e.animPhase = (e.animPhase || 0) + (moving ? Math.max(10, Math.hypot(e.vx, e.vz) * 7) * dt : 0);
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+    e.faceDx = ndx;
+    e.faceDz = ndz;
+    e.aimDx = ndx;
+    e.aimDz = ndz;
+
+    if (e.flankerPhase === 'recover') {
+      if (e.flankerPhaseT <= 0) {
+        e.flankerPhase = 'flank';
+        e.flankerPhaseT = 0.25 + this.rng() * 0.45;
+      }
+    } else if (e.flankerPhase === 'flank' && e.flankerPhaseT <= 0) {
+      const commit = cfg.dashCommitRange != null ? cfg.dashCommitRange : 7.0;
+      if (dist <= commit) {
+        e.flankerPhase = 'telegraph';
+        e.flankerPhaseT = cfg.telegraphSec;
+        e.telegraphDur = cfg.telegraphSec;
+        e.telegraphAt = this.t;
+        e.aimDx = ndx;
+        e.aimDz = ndz;
+        e.faceDx = ndx;
+        e.faceDz = ndz;
+        e.dashHit = false;
+        events.push({
+          type: 'telegraph',
+          kind: 'flanker',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          aimDx: ndx, aimDz: ndz,
+          duration: cfg.telegraphSec,
+        });
+      } else {
+        // Still too far — keep flanking a bit longer
+        e.flankerPhaseT = 0.2 + this.rng() * 0.3;
+      }
+    }
+
+    // Ordinary body contact while flanking (not dash) — same as grunt
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.28;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
+      e.x -= ndx * 0.55;
+      e.z -= ndz * 0.55;
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
+
   /**
    * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
    * Contact damage / elite / boss AI stay here (same as pre-reorder).
@@ -2562,6 +2762,10 @@ export class Game {
             events.push({ type: 'kill', enemy: e, gore: true, bomber: true });
           }
         }
+        continue;
+      }
+      if (e.flanker || e.kind === 'flanker' || e.type === 'flanker') {
+        this._tickFlanker(e, dt, events);
         continue;
       }
       if (e.hit > 0) e.hit -= dt;

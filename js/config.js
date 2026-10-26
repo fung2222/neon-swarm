@@ -189,6 +189,12 @@ export const ENEMIES = {
     hp: 6, speed: 2.85, radius: 0.34, xp: 3, score: 36, chase: 1.05, damage: 1,
     color: 0xff2a6a, coat: 0x2a2c32, bomber: true,
   },
+  // ---- Phase 3 flanker (lean runner + asymmetric blades/vents; cyan dash telegraph) — not a recolor ----
+  flanker: {
+    zh: '側襲單位', en: 'Flanker', family: 'support', kind: 'flanker', tier: 2,
+    hp: 4, speed: 2.95, radius: 0.32, xp: 3, score: 30, chase: 1.1, damage: 1,
+    color: 0x9b6dff, coat: 0x2a2e38, flanker: true,
+  },
   walker: {
     zh: '重裝機甲', en: 'Heavy Walker', family: 'support', kind: 'walker', tier: 3,
     hp: 16, speed: 1.2, radius: 0.52, xp: 5, score: 55, chase: 0.85, damage: 2,
@@ -297,6 +303,27 @@ export const BOMBER = {
   fuseMax: 3.2,
   chaseSpeedMul: 1.0,
   telegraphSpeedMul: 0.12,
+};
+
+/**
+ * Flanker (PHASE3-ENEMY-FLANKER-001): arc/flank approach → cyan/danger dash telegraph ≥0.85s
+ * → dash contact damage → recover → re-angle. Forces run-and-gun + close-range aim.
+ * Steel + violet/cyan trim (no red hull). Killed mid-telegraph = no dash damage.
+ */
+export const FLANKER = {
+  telegraphSec: 0.9,
+  dashSpeed: 11.5,
+  dashSec: 0.28,
+  dashDamage: 2,
+  dashHitRadius: 0.9,
+  recoverSec: 1.35,
+  flankIdealMin: 5.5,
+  flankIdealMax: 9.5,
+  dashCommitRange: 7.0,
+  approachSpeedMul: 1.05,
+  telegraphSpeedMul: 0.08,
+  recoverSpeedMul: 0.55,
+  flankStrafe: 1.2,
 };
 
 /**
@@ -641,27 +668,27 @@ export function waveMix(t, zone = null) {
             : 'lab'
   );
   if (z === 'rooftop') {
-    // Rooftop: sky pressure — more drone/mech/chief; light sniper/shield/artillery/bomber.
-    return [['drone', 0.25], ['mech', 0.20], ['chief', 0.15], ['officer', 0.08], ['soldier', 0.07], ['walker', 0.02], ['sniper', 0.07], ['shield', 0.04], ['artillery', 0.07], ['bomber', 0.05]];
+    // Rooftop: sky pressure — more drone/mech/chief; light sniper/shield/artillery/bomber/flanker.
+    return [['drone', 0.24], ['mech', 0.19], ['chief', 0.14], ['officer', 0.08], ['soldier', 0.07], ['walker', 0.02], ['sniper', 0.07], ['shield', 0.04], ['artillery', 0.07], ['bomber', 0.04], ['flanker', 0.04]];
   }
   if (z === 'blockade') {
-    // Blockade: military pressure — mid artillery + shield; light bomber.
-    return [['soldier', 0.25], ['officer', 0.20], ['chief', 0.15], ['mech', 0.15], ['sniper', 0.05], ['shield', 0.12], ['artillery', 0.05], ['bomber', 0.03]];
+    // Blockade: military pressure — mid artillery + shield; light bomber/flanker.
+    return [['soldier', 0.23], ['officer', 0.19], ['chief', 0.14], ['mech', 0.14], ['sniper', 0.05], ['shield', 0.11], ['artillery', 0.05], ['bomber', 0.03], ['flanker', 0.06]];
   }
   if (z === 'reactor') {
-    // Reactor: energy facility — light sniper/shield/artillery/bomber.
-    return [['drone', 0.22], ['mech', 0.18], ['officer', 0.16], ['walker', 0.09], ['soldier', 0.07], ['chief', 0.04], ['sniper', 0.07], ['shield', 0.06], ['artillery', 0.06], ['bomber', 0.05]];
+    // Reactor: energy facility — light sniper/shield/artillery/bomber; flanker rare.
+    return [['drone', 0.21], ['mech', 0.18], ['officer', 0.16], ['walker', 0.09], ['soldier', 0.07], ['chief', 0.04], ['sniper', 0.07], ['shield', 0.06], ['artillery', 0.06], ['bomber', 0.04], ['flanker', 0.02]];
   }
   if (z === 'assembly') {
-    // Assembly bay: industrial — shield mid, artillery rare, light bomber.
-    return [['soldier', 0.28], ['walker', 0.23], ['officer', 0.11], ['drone', 0.08], ['chief', 0.03], ['staffer', 0.03], ['sniper', 0.04], ['shield', 0.12], ['artillery', 0.04], ['bomber', 0.04]];
+    // Assembly bay: industrial — shield mid, artillery rare, light bomber/flanker.
+    return [['soldier', 0.26], ['walker', 0.22], ['officer', 0.10], ['drone', 0.08], ['chief', 0.03], ['staffer', 0.03], ['sniper', 0.04], ['shield', 0.11], ['artillery', 0.04], ['bomber', 0.03], ['flanker', 0.06]];
   }
   if (t < 18) return [['staffer', 0.6], ['guard', 0.25], ['drone', 0.15]];
   if (t < 40) return [['staffer', 0.32], ['guard', 0.2], ['soldier', 0.3], ['drone', 0.18]];
-  // Mid-late lab: sniper after ~40s; bomber light after ~40s; shield after ~65s; artillery only late (≥100s).
-  if (t < 65) return [['staffer', 0.18], ['soldier', 0.30], ['drone', 0.21], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08], ['bomber', 0.05]];
-  if (t < 100) return [['soldier', 0.23], ['drone', 0.15], ['walker', 0.13], ['officer', 0.17], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08], ['bomber', 0.06]];
-  return [['soldier', 0.15], ['walker', 0.17], ['officer', 0.15], ['chief', 0.12], ['mech', 0.11], ['sniper', 0.10], ['shield', 0.10], ['artillery', 0.05], ['bomber', 0.05]];
+  // Mid-late lab: sniper/bomber/flanker after ~40s; shield after ~65s; artillery only late (≥100s).
+  if (t < 65) return [['staffer', 0.18], ['soldier', 0.28], ['drone', 0.19], ['officer', 0.09], ['walker', 0.09], ['sniper', 0.08], ['bomber', 0.05], ['flanker', 0.04]];
+  if (t < 100) return [['soldier', 0.21], ['drone', 0.14], ['walker', 0.12], ['officer', 0.16], ['chief', 0.08], ['sniper', 0.10], ['shield', 0.08], ['bomber', 0.05], ['flanker', 0.06]];
+  return [['soldier', 0.14], ['walker', 0.16], ['officer', 0.14], ['chief', 0.12], ['mech', 0.10], ['sniper', 0.10], ['shield', 0.09], ['artillery', 0.05], ['bomber', 0.05], ['flanker', 0.05]];
 }
 
 export function pickEnemyType(rng, t, zone = null) {

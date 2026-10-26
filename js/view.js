@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -551,6 +551,99 @@ function bomberMesh() {
   return g;
 }
 
+
+
+/**
+ * Phase 3 flanker: lean runner + asymmetric side blades / vents.
+ * Steel hull + violet/cyan trim — NO red hull (danger cyan reserved for dash telegraph).
+ * Distinct from soldier/bomber/hunter/drone recolor.
+ */
+function flankerMesh() {
+  const g = new THREE.Group();
+  const violet = 0x9b6dff;
+  const cyan = 0x00e5ff;
+  const hullC = 0x2a2e38;
+  const steelC = 0x6a7080;
+  const hull = new THREE.MeshStandardMaterial({ color: hullC, emissive: 0x1a1e28, emissiveIntensity: 0.45, roughness: 0.5, metalness: 0.7 });
+  const steel = new THREE.MeshStandardMaterial({ color: steelC, emissive: 0x2a3040, emissiveIntensity: 0.35, roughness: 0.4, metalness: 0.78 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x141820, emissive: 0x0a0c12, emissiveIntensity: 0.4, roughness: 0.5, metalness: 0.72 });
+  const vio = new THREE.MeshStandardMaterial({ color: violet, emissive: violet, emissiveIntensity: 0.95, roughness: 0.3 });
+  const cy = new THREE.MeshStandardMaterial({ color: cyan, emissive: cyan, emissiveIntensity: 1.0, roughness: 0.28 });
+  const legs = [];
+  const arms = [];
+
+  // Lean runner legs (longer stride cue than bomber)
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Group();
+    leg.position.set(side * 0.065, -0.16, 0);
+    leg.add(box(0.055, 0.26, 0.07, dark, 0, -0.06, 0));
+    leg.add(box(0.065, 0.06, 0.12, steel, 0, -0.22, 0.03));
+    g.add(leg);
+    legs.push(leg);
+  }
+
+  // Slim torso
+  const torso = slab(0.16, 0.2, 0.28, 0.14, hull);
+  torso.position.set(0, 0.12, 0);
+  g.add(torso);
+  g.add(box(0.14, 0.08, 0.06, steel, 0, 0.16, 0.07)); // chest plate
+
+  // Asymmetric LEFT side blade (large) — silhouette cue
+  const bladeL = new THREE.Group();
+  bladeL.position.set(-0.16, 0.14, 0.02);
+  bladeL.add(box(0.04, 0.22, 0.28, steel, 0, 0, 0.04, 0.12));
+  bladeL.add(box(0.03, 0.06, 0.22, vio, -0.02, 0.04, 0.06, 0.2));
+  bladeL.rotation.y = 0.25;
+  bladeL.rotation.z = -0.15;
+  g.add(bladeL);
+  g.userData.bladeL = bladeL;
+
+  // Asymmetric RIGHT vents (smaller stacked) — ≠ mirrored blade
+  const ventsR = new THREE.Group();
+  ventsR.position.set(0.14, 0.14, -0.02);
+  ventsR.add(box(0.06, 0.05, 0.1, dark, 0, 0.06, 0, 0.15));
+  ventsR.add(box(0.06, 0.05, 0.1, dark, 0, 0.0, 0, 0.15));
+  ventsR.add(box(0.06, 0.05, 0.1, dark, 0, -0.06, 0, 0.15));
+  ventsR.add(box(0.03, 0.03, 0.04, cy, 0.04, 0.06, 0.04, 0.25)); // cyan vent glow
+  ventsR.add(box(0.03, 0.03, 0.04, vio, 0.04, -0.06, 0.04, 0.25));
+  g.add(ventsR);
+  g.userData.ventsR = ventsR;
+
+  // Head — slim helm + cyan/violet visor stripe (not red)
+  const head = new THREE.Group();
+  head.position.set(0, 0.38, 0.02);
+  head.add(box(0.12, 0.11, 0.13, hull, 0, 0, 0, 0.15));
+  head.add(box(0.1, 0.025, 0.035, cy, 0, 0.01, 0.07, 0.25));
+  head.add(box(0.04, 0.04, 0.04, vio, 0.05, 0.06, 0, 0.3)); // side fin
+  g.add(head);
+
+  // Arms — sprint pose; left carries small blade stub
+  for (const side of [-1, 1]) {
+    const arm = new THREE.Group();
+    arm.position.set(side * 0.14, 0.2, 0);
+    arm.add(box(0.05, 0.2, 0.05, hull, 0, -0.08, 0, 0.2));
+    arm.add(box(0.045, 0.045, 0.045, steel, 0, -0.2, 0.02, 0.25));
+    if (side < 0) {
+      arm.add(box(0.03, 0.04, 0.14, vio, 0, -0.18, 0.1, 0.2)); // forearm blade
+    }
+    arm.rotation.x = -0.85;
+    g.add(arm);
+    arms.push(arm);
+  }
+
+  // Cyan/violet trim stripes (accent only — hull stays steel)
+  g.add(box(0.018, 0.14, 0.06, cy, -0.1, 0.12, 0.08, 0.2));
+  g.add(box(0.018, 0.1, 0.05, vio, 0.1, 0.1, 0.08, 0.2));
+
+  g.add(unitRing(violet, 0.3, 0.26));
+  g.scale.setScalar(1.95);
+  g.userData.legs = legs;
+  g.userData.arms = arms;
+  g.userData.type = 'flanker';
+  g.userData.flanker = true;
+  return g;
+}
+
 /** Drone / walker / escort mech support frames. */
 function supportMesh(kind, color) {
   const g = new THREE.Group();
@@ -893,6 +986,24 @@ function shieldBashLane() {
   return g;
 }
 
+
+
+/** Cyan/danger dash wedge for flanker telegraph (cyan = dash lane; ≠ red AoE / orange blast). */
+function flankerDashLane() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x00e5ff, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+  quad.rotation.x = -Math.PI / 2;
+  quad.position.y = 0.08;
+  g.add(quad);
+  g.userData.quad = quad;
+  g.userData.mat = mat;
+  g.visible = false;
+  return g;
+}
+
 /** Thin red aim line for sniper telegraph (danger red = imminent damage). */
 function sniperAimLine() {
   const g = new THREE.Group();
@@ -1095,6 +1206,7 @@ function enemyMeshFor(type) {
   if (type === 'shield') return shieldMesh();
   if (type === 'artillery') return artilleryMesh();
   if (type === 'bomber') return bomberMesh();
+  if (type === 'flanker') return flankerMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -2140,6 +2252,13 @@ export class View {
       this.group.add(ring);
       this.bomberBlastRings.push(ring);
     }
+    // Phase 3 flanker: up to 4 concurrent cyan dash wedges
+    this.flankerDashLanes = [];
+    for (let i = 0; i < 4; i++) {
+      const lane = flankerDashLane();
+      this.group.add(lane);
+      this.flankerDashLanes.push(lane);
+    }
     // Phase 6 danger pulse: up to 2 concurrent arena red rings (reuse bomber-style red helper)
     this.dangerPulseRings = [];
     for (let i = 0; i < 2; i++) {
@@ -2666,7 +2785,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'flanker' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2681,7 +2800,7 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber'))
+      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber' || e.flanker || e.type === 'flanker'))
         ? Math.atan2(e.faceDx, e.faceDz)
         : ((e.sniperPhase === 'aim' && (e.aimDx != null))
           ? Math.atan2(e.aimDx, e.aimDz)
@@ -2756,6 +2875,7 @@ export class View {
     this._syncShieldBash(game);
     this._syncArtilleryBlast(game);
     this._syncBomberBlast(game);
+    this._syncFlankerDash(game);
     this._syncDangerPulses(game);
     this._syncZonePressure(game);
     this._syncCommanderSummon(game);
@@ -3061,6 +3181,37 @@ export class View {
     }
   }
 
+
+
+  /** Cyan dash wedges for flankers in telegraph (cyan = dash lane toward player). */
+  _syncFlankerDash(game) {
+    const lanes = this.flankerDashLanes || [];
+    for (const ln of lanes) ln.visible = false;
+    let li = 0;
+    for (const e of game.enemies) {
+      if (!(e.flanker || e.kind === 'flanker' || e.type === 'flanker')) continue;
+      if (e.flankerPhase !== 'telegraph') continue;
+      if (li >= lanes.length) break;
+      const ln = lanes[li++];
+      const ax = e.aimDx != null ? e.aimDx : (game.px - e.x);
+      const az = e.aimDz != null ? e.aimDz : (game.pz - e.z);
+      const len = Math.hypot(ax, az) || 1;
+      const ndx = ax / len, ndz = az / len;
+      const dist = Math.min(8.5, Math.max(3.5, Math.hypot(game.px - e.x, game.pz - e.z) + 0.8));
+      const u = Math.max(0, Math.min(1, 1 - (e.flankerPhaseT || 0) / Math.max(0.01, e.telegraphDur || 0.9)));
+      const yaw = Math.atan2(ndx, ndz);
+      const mx = e.x + ndx * dist * 0.5;
+      const mz = e.z + ndz * dist * 0.5;
+      ln.visible = true;
+      ln.position.set(mx, 0, mz);
+      ln.rotation.y = yaw;
+      const quad = ln.userData.quad;
+      const mat = ln.userData.mat;
+      if (quad) quad.scale.set(0.55 + u * 0.45, dist, 1);
+      if (mat) mat.opacity = 0.4 + u * 0.5;
+    }
+  }
+
   /** Arena periodic danger-pulse red rings (PHASE6-PERIODIC-DANGER-001; ≠ bomber enemy fuse). */
   _syncDangerPulses(game) {
     const rings = this.dangerPulseRings || [];
@@ -3360,6 +3511,8 @@ if (typeof window !== 'undefined') {
     artilleryBlastRing,
     bomberMesh,
     bomberBlastRing,
+    flankerMesh,
+    flankerDashLane,
     zonePressureRing,
     supportMesh,
     eliteMesh,
