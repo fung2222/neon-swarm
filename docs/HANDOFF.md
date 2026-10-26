@@ -417,4 +417,9 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.13（elite #2 HUNTER）。** Active task 見 `docs/AGENT_TASK.md`（本輪 PHASE3-ELITE2-001）。不要開 Precision／Morph、horn bake、手機 GPU、五區地圖重做。Recommended next（do not start）：下一地圖區／endless beats。SwiftShader ≠ 真機驗收。
+**目前基準 v0.9.18（endless elites／boss cadence；HEAD 以 `main`／live `?v=0.9.18` 為準）。**
+
+- Phase 6 地圖五區（lab→assembly→reactor→blockade→rooftop）＋ endless cadence **已落地**；`docs/AGENT_TASK.md` 現為 **HOLD／等待 Roy 進度審核**，**不要**重做 `PHASE6-ENDLESS-ELITES-001` 或任何已完成 v0.9.4–v0.9.18 任務。
+- 審核完成前：不要開 Phase 4 Precision、horn 最終美術鎖定、HANDOFF §9 系列規則落地、手機 GPU 進一步 cuts。
+- Recommended next（**do not start** until new `AGENT_TASK.md`）：Phase 4 Precision／美術鎖定／§9 規則夾（由 Roy 審核後下發）。
+- SwiftShader ≠ 真機驗收。開始前仍要 `git log -1` 對齊 HEAD 與 live cache-bust。
