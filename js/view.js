@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, MEDIC, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -988,6 +988,124 @@ function shieldBashLane() {
 
 
 
+/**
+ * Phase 3 combat medic: white/teal support pack + antenna + lime cross plate.
+ * Distinct from staffer / chief / drone / flanker (no red hull).
+ */
+function medicMesh() {
+  const g = new THREE.Group();
+  const teal = 0x3ad7c8;
+  const white = 0xe8f4f2;
+  const lime = 0xb6ff3a;
+  const steel = 0x2a3238;
+  const matBody = new THREE.MeshStandardMaterial({ color: white, metalness: 0.25, roughness: 0.55, emissive: teal, emissiveIntensity: 0.18 });
+  const matPack = new THREE.MeshStandardMaterial({ color: steel, metalness: 0.55, roughness: 0.4, emissive: teal, emissiveIntensity: 0.22 });
+  const matLime = new THREE.MeshStandardMaterial({ color: lime, metalness: 0.2, roughness: 0.45, emissive: lime, emissiveIntensity: 0.55 });
+  const matAnt = new THREE.MeshStandardMaterial({ color: teal, metalness: 0.4, roughness: 0.35, emissive: teal, emissiveIntensity: 0.4 });
+
+  // Lean torso (white/teal)
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.48, 0.28), matBody);
+  torso.position.y = 0.52;
+  g.add(torso);
+
+  // Head
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.22), matBody);
+  head.position.y = 0.88;
+  g.add(head);
+
+  // Support pack (rear asymmetrical canister)
+  const pack = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.36, 6), matPack);
+  pack.position.set(0.02, 0.58, -0.22);
+  pack.rotation.x = 0.15;
+  g.add(pack);
+  const packCap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.06, 6), matAnt);
+  packCap.position.set(0.02, 0.78, -0.22);
+  g.add(packCap);
+
+  // Antenna (asymmetric — left tall)
+  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.42, 5), matAnt);
+  ant.position.set(-0.12, 1.05, -0.05);
+  g.add(ant);
+  const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), matLime);
+  antTip.position.set(-0.12, 1.28, -0.05);
+  g.add(antTip);
+
+  // Lime cross plate (chest badge) — horizontal + vertical bars
+  const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.04), matLime);
+  crossH.position.set(0, 0.58, 0.16);
+  g.add(crossH);
+  const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.18, 0.04), matLime);
+  crossV.position.set(0, 0.58, 0.16);
+  g.add(crossV);
+
+  // Side vent / injector (right only — asymmetric)
+  const vent = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.16, 0.1), matPack);
+  vent.position.set(0.22, 0.5, 0.02);
+  g.add(vent);
+  const ventGlow = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.1, 0.06), matLime);
+  ventGlow.position.set(0.26, 0.5, 0.02);
+  g.add(ventGlow);
+
+  // Legs
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.28, 0.12), matPack);
+  legL.position.set(-0.1, 0.16, 0);
+  g.add(legL);
+  const legR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.28, 0.12), matPack);
+  legR.position.set(0.1, 0.16, 0);
+  g.add(legR);
+
+  g.userData.type = 'medic';
+  g.userData.medic = true;
+  g.userData.baseY = 0;
+  return g;
+}
+
+/** Lime heal aura ring for medic telegraph (lime = heal; ≠ red AoE / cyan dash / orange blast). */
+function medicHealAura() {
+  const group = new THREE.Group();
+  const r = (typeof MEDIC !== 'undefined' && MEDIC.healRadius) ? MEDIC.healRadius : 4.2;
+  const ringGeo = new THREE.RingGeometry(r * 0.92, r, 48);
+  ringGeo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xb6ff3a,
+    transparent: true,
+    opacity: 0.55,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const ring = new THREE.Mesh(ringGeo, mat);
+  ring.position.y = 0.04;
+  group.add(ring);
+  const fillGeo = new THREE.CircleGeometry(r * 0.9, 48);
+  fillGeo.rotateX(-Math.PI / 2);
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: 0x7dffb0,
+    transparent: true,
+    opacity: 0.18,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const fill = new THREE.Mesh(fillGeo, fillMat);
+  fill.position.y = 0.02;
+  group.add(fill);
+  // Small cross mark at center
+  const crossMat = new THREE.MeshBasicMaterial({ color: 0xb6ff3a, transparent: true, opacity: 0.7, depthWrite: false });
+  const ch = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.12), crossMat);
+  ch.rotation.x = -Math.PI / 2;
+  ch.position.y = 0.06;
+  group.add(ch);
+  const cv = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.55), crossMat.clone());
+  cv.rotation.x = -Math.PI / 2;
+  cv.position.y = 0.06;
+  group.add(cv);
+  group.visible = false;
+  group.userData.mat = mat;
+  group.userData.fillMat = fillMat;
+  group.userData.crossMat = crossMat;
+  group.userData.baseR = r;
+  return group;
+}
+
 /** Cyan/danger dash wedge for flanker telegraph (cyan = dash lane; ≠ red AoE / orange blast). */
 function flankerDashLane() {
   const g = new THREE.Group();
@@ -1207,6 +1325,7 @@ function enemyMeshFor(type) {
   if (type === 'artillery') return artilleryMesh();
   if (type === 'bomber') return bomberMesh();
   if (type === 'flanker') return flankerMesh();
+  if (type === 'medic') return medicMesh();
   if (type === 'drone') {
     const def = ENEMIES[type] || {};
     return supportMesh('drone', def.color || 0x00e5ff);
@@ -2259,6 +2378,13 @@ export class View {
       this.group.add(lane);
       this.flankerDashLanes.push(lane);
     }
+    // Phase 3 medic: up to 3 concurrent lime heal auras
+    this.medicHealAuras = [];
+    for (let i = 0; i < 3; i++) {
+      const aura = medicHealAura();
+      this.group.add(aura);
+      this.medicHealAuras.push(aura);
+    }
     // Phase 6 danger pulse: up to 2 concurrent arena red rings (reuse bomber-style red helper)
     this.dangerPulseRings = [];
     for (let i = 0; i < 2; i++) {
@@ -2785,7 +2911,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'flanker' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'sniper' || e.type === 'shield' || e.type === 'artillery' || e.type === 'bomber' || e.type === 'flanker' || e.type === 'medic' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'commander' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -2800,7 +2926,7 @@ export class View {
         if (fresh.userData.isSprite) m.userData.isSprite = true;
         else delete m.userData.isSprite;
       }
-      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber' || e.flanker || e.type === 'flanker'))
+      const faceYaw = (e.faceDx != null && e.faceDz != null && (e.shieldGuard || e.type === 'shield' || e.artillery || e.type === 'artillery' || e.bomber || e.type === 'bomber' || e.flanker || e.type === 'flanker' || e.medic || e.type === 'medic'))
         ? Math.atan2(e.faceDx, e.faceDz)
         : ((e.sniperPhase === 'aim' && (e.aimDx != null))
           ? Math.atan2(e.aimDx, e.aimDz)
@@ -2876,6 +3002,7 @@ export class View {
     this._syncArtilleryBlast(game);
     this._syncBomberBlast(game);
     this._syncFlankerDash(game);
+    this._syncMedicHeal(game);
     this._syncDangerPulses(game);
     this._syncZonePressure(game);
     this._syncCommanderSummon(game);
@@ -3236,6 +3363,30 @@ export class View {
     }
   }
 
+  /** Lime heal auras for medics in telegraph (lime = heal pulse radius). */
+  _syncMedicHeal(game) {
+    const auras = this.medicHealAuras || [];
+    for (const a of auras) a.visible = false;
+    let ai = 0;
+    for (const e of game.enemies) {
+      if (!(e.medic || e.kind === 'medic' || e.type === 'medic')) continue;
+      if (e.medicPhase !== 'telegraph' && e.medicPhase !== 'heal') continue;
+      if (ai >= auras.length) break;
+      const aura = auras[ai++];
+      const r = (typeof MEDIC !== 'undefined' && MEDIC.healRadius) ? MEDIC.healRadius : (e.healRadius || 4.2);
+      const u = Math.max(0, Math.min(1, 1 - (e.medicPhaseT || 0) / Math.max(0.01, e.telegraphDur || 0.75)));
+      aura.visible = true;
+      aura.position.set(e.x, 0, e.z);
+      const pulse = 1 + Math.sin((game.t || 0) * 14) * 0.05 * (0.4 + u * 0.6);
+      const baseR = aura.userData.baseR || r;
+      aura.scale.setScalar((r / baseR) * pulse);
+      const mat = aura.userData.mat;
+      const fillMat = aura.userData.fillMat;
+      if (mat) mat.opacity = 0.35 + u * 0.45;
+      if (fillMat) fillMat.opacity = 0.12 + u * 0.22;
+    }
+  }
+
   /** Cyan/acid shrinking safe-edge (PHASE6-ZONE-PRESSURE-001; persistent boundary ≠ red pulse). */
   _syncZonePressure(game) {
     const edge = this.zonePressureEdge;
@@ -3513,6 +3664,8 @@ if (typeof window !== 'undefined') {
     bomberBlastRing,
     flankerMesh,
     flankerDashLane,
+    medicMesh,
+    medicHealAura,
     zonePressureRing,
     supportMesh,
     eliteMesh,

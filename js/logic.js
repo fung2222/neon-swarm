@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -548,6 +548,10 @@ export class Game {
       flankerPhase: (!!def.flanker || type === 'flanker') ? 'flank' : undefined,
       flankerPhaseT: (!!def.flanker || type === 'flanker') ? (0.35 + this.rng() * 0.55) : undefined,
       flankSide: (!!def.flanker || type === 'flanker') ? (this.rng() < 0.5 ? -1 : 1) : undefined,
+      medic: !!def.medic || type === 'medic',
+      medicPhase: (!!def.medic || type === 'medic') ? 'seek' : undefined,
+      medicPhaseT: (!!def.medic || type === 'medic') ? (0.3 + this.rng() * 0.5) : undefined,
+      healTargetId: undefined,
       aimX: 0,
       aimZ: 0,
       faceDx: 0,
@@ -2723,6 +2727,251 @@ export class Game {
     }
   }
 
+  _findWoundedAlly(medic, radius) {
+    const r2 = (radius != null ? radius : 12) ** 2;
+    let best = null;
+    let bestD = Infinity;
+    for (const o of this.enemies) {
+      if (!o || o === medic) continue;
+      if (o.elite || o.boss) continue;
+      if (o.hp == null || o.maxHp == null) continue;
+      if (o.hp >= o.maxHp - 1e-6) continue;
+      // Ordinary-only heal path (no elite/boss); medics may heal each other if wounded.
+      const dx = o.x - medic.x, dz = o.z - medic.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 > r2) continue;
+      // Prefer most wounded, then nearest
+      const miss = (o.maxHp - o.hp) / Math.max(1, o.maxHp);
+      const score = d2 - miss * 40;
+      if (score < bestD) { bestD = score; best = o; }
+    }
+    return best;
+  }
+
+  _tickMedic(e, dt, events) {
+    const cfg = MEDIC;
+    if (e.hit > 0) e.hit -= dt;
+    if (e.slow > 0) e.slow -= dt;
+    if (e.shotFlash > 0) e.shotFlash -= dt;
+    const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+    const pdx = this.px - e.x, pdz = this.pz - e.z;
+    const pDist = Math.hypot(pdx, pdz) || 1;
+    const pndx = pdx / pDist, pndz = pdz / pDist;
+
+    if (!e.medicPhase) e.medicPhase = 'seek';
+    if (e.medicPhaseT == null) e.medicPhaseT = 0.35;
+
+    const lowHp = e.hp <= e.maxHp * (cfg.fleeHpFrac != null ? cfg.fleeHpFrac : 0.45);
+    const playerClose = pDist < (cfg.fleePlayerDist != null ? cfg.fleePlayerDist : 3.4);
+    const wounded = this._findWoundedAlly(e, 14);
+    const alone = !wounded;
+
+    // Force flee when low / player close / alone (except mid-heal telegraph/heal)
+    if ((lowHp || playerClose || alone) && e.medicPhase !== 'telegraph' && e.medicPhase !== 'heal') {
+      if (e.medicPhase !== 'flee') {
+        e.medicPhase = 'flee';
+        e.medicPhaseT = 0.6 + this.rng() * 0.5;
+        e.healTargetId = undefined;
+      }
+    }
+
+    // ---- telegraph: nearly stop; lime aura; no heal yet ----
+    if (e.medicPhase === 'telegraph') {
+      const tMul = cfg.telegraphSpeedMul != null ? cfg.telegraphSpeedMul : 0.12;
+      // Drift gently toward locked heal target if still alive
+      let tdx = 0, tdz = 0;
+      const tgt = this.enemies.find((o) => o && o.id === e.healTargetId);
+      if (tgt) {
+        const dx = tgt.x - e.x, dz = tgt.z - e.z;
+        const d = Math.hypot(dx, dz) || 1;
+        tdx = dx / d; tdz = dz / d;
+        e.faceDx = tdx; e.faceDz = tdz;
+        e.aimDx = tdx; e.aimDz = tdz;
+        e.aimX = tgt.x; e.aimZ = tgt.z;
+      } else {
+        // Target gone — cancel heal
+        e.medicPhase = 'seek';
+        e.medicPhaseT = 0.2;
+        e.healTargetId = undefined;
+        return;
+      }
+      const spd = e.speed * e.chase * slowMul * tMul;
+      e.x += tdx * spd * dt;
+      e.z += tdz * spd * dt;
+      e.vx = tdx * spd; e.vz = tdz * spd;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.medicPhaseT -= dt;
+      e.animPhase = (e.animPhase || 0) + 10 * dt;
+      if (e.medicPhaseT <= 0) {
+        e.medicPhase = 'heal';
+        e.medicPhaseT = 0.12;
+        e.shotFlash = 0.22;
+      }
+      return;
+    }
+
+    // ---- heal: pulse once to nearby wounded ordinary allies ----
+    if (e.medicPhase === 'heal') {
+      const radius = cfg.healRadius != null ? cfg.healRadius : 4.2;
+      const amount = cfg.healAmount != null ? cfg.healAmount : 2;
+      const maxT = cfg.healMaxTargets != null ? cfg.healMaxTargets : 2;
+      const healed = [];
+      // Prefer locked target first
+      const ordered = [];
+      const locked = this.enemies.find((o) => o && o.id === e.healTargetId);
+      if (locked) ordered.push(locked);
+      for (const o of this.enemies) {
+        if (!o || o === e) continue;
+        if (ordered.includes(o)) continue;
+        ordered.push(o);
+      }
+      for (const o of ordered) {
+        if (healed.length >= maxT) break;
+        if (!o || o === e) continue;
+        if (o.elite || o.boss) continue;
+        if (o.hp == null || o.maxHp == null) continue;
+        if (o.hp >= o.maxHp - 1e-6) continue;
+        const d = Math.hypot(o.x - e.x, o.z - e.z);
+        if (d > radius) continue;
+        const before = o.hp;
+        o.hp = Math.min(o.maxHp, o.hp + amount);
+        if (o.hp > before) {
+          healed.push({ id: o.id, x: o.x, z: o.z, amount: o.hp - before });
+        }
+      }
+      events.push({
+        type: 'medicHeal',
+        enemyId: e.id,
+        x: e.x, z: e.z,
+        radius,
+        targets: healed,
+        count: healed.length,
+      });
+      e.medicPhase = 'recover';
+      e.medicPhaseT = cfg.recoverSec != null ? cfg.recoverSec : 1.15;
+      e.healTargetId = undefined;
+      return;
+    }
+
+    // ---- flee: soft kite away from player ----
+    if (e.medicPhase === 'flee') {
+      const fMul = cfg.fleeSpeedMul != null ? cfg.fleeSpeedMul : 1.3;
+      const spd = e.speed * e.chase * slowMul * fMul;
+      // Away from player; slight noise
+      const awayX = -pndx, awayZ = -pndz;
+      e.x += awayX * spd * dt;
+      e.z += awayZ * spd * dt;
+      e.vx = awayX * spd; e.vz = awayZ * spd;
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      e.faceDx = awayX; e.faceDz = awayZ;
+      e.animPhase = (e.animPhase || 0) + 14 * dt;
+      e.medicPhaseT -= dt;
+      if (e.medicPhaseT <= 0) {
+        // Re-evaluate: if wounded ally exists and not too threatened, seek
+        if (!lowHp && !playerClose && wounded) {
+          e.medicPhase = 'seek';
+          e.medicPhaseT = 0.25;
+        } else {
+          e.medicPhaseT = 0.4 + this.rng() * 0.4;
+        }
+      }
+      // Light contact only
+      if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+        const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
+        this.hitFlash = 0.22;
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
+        e.x -= pndx * 0.5; e.z -= pndz * 0.5;
+        if (this.hp <= 0) {
+          this.alive = false; this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+          events.push({ type: 'dead' });
+        }
+      }
+      return;
+    }
+
+    // ---- recover / seek: move mid-range toward wounded ally ----
+    e.medicPhaseT -= dt;
+    if (!wounded) {
+      e.medicPhase = 'flee';
+      e.medicPhaseT = 0.5;
+      return;
+    }
+    e.healTargetId = wounded.id;
+    const dx = wounded.x - e.x, dz = wounded.z - e.z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const ndx = dx / dist, ndz = dz / dist;
+    e.faceDx = ndx; e.faceDz = ndz;
+    e.aimDx = ndx; e.aimDz = ndz;
+    e.aimX = wounded.x; e.aimZ = wounded.z;
+
+    let toward = 1;
+    const idealMin = cfg.seekIdealMin != null ? cfg.seekIdealMin : 3.2;
+    const idealMax = cfg.seekIdealMax != null ? cfg.seekIdealMax : 6.0;
+    if (dist < idealMin) toward = -0.4;
+    else if (dist > idealMax) toward = 1;
+    else toward = 0.15;
+
+    const moveMul = e.medicPhase === 'recover'
+      ? (cfg.recoverSpeedMul != null ? cfg.recoverSpeedMul : 0.7)
+      : (cfg.approachSpeedMul != null ? cfg.approachSpeedMul : 1.0);
+    const spd = e.speed * e.chase * slowMul * moveMul;
+    // Strafe a bit so silhouette reads as support, not charge
+    const sdx = -ndz, sdz = ndx;
+    const side = (e.id % 2 === 0) ? 1 : -1;
+    e.x += (ndx * toward + sdx * side * 0.55) * spd * dt;
+    e.z += (ndz * toward + sdz * side * 0.55) * spd * dt;
+    e.vx = ndx * toward * spd; e.vz = ndz * toward * spd;
+    const ec = this._softClamp(e.x, e.z, e.r);
+    e.x = ec.x; e.z = ec.z;
+    e.animPhase = (e.animPhase || 0) + 11 * dt;
+
+    if (e.medicPhase === 'recover') {
+      if (e.medicPhaseT <= 0) {
+        e.medicPhase = 'seek';
+        e.medicPhaseT = 0.2 + this.rng() * 0.35;
+      }
+    } else if (e.medicPhase === 'seek' && e.medicPhaseT <= 0) {
+      // Commit to heal when close enough to wounded
+      if (dist <= idealMax + 1.5) {
+        e.medicPhase = 'telegraph';
+        e.medicPhaseT = cfg.telegraphSec;
+        e.telegraphDur = cfg.telegraphSec;
+        e.telegraphAt = this.t;
+        events.push({
+          type: 'telegraph',
+          kind: 'medic',
+          enemyId: e.id,
+          x: e.x, z: e.z,
+          aimX: wounded.x, aimZ: wounded.z,
+          targetId: wounded.id,
+          duration: cfg.telegraphSec,
+        });
+      } else {
+        e.medicPhaseT = 0.2 + this.rng() * 0.25;
+      }
+    }
+
+    // Light body contact
+    if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      this.hp -= taken;
+      this.invuln = 0.85 + (this.deflect || 0);
+      this.hitFlash = 0.22;
+      events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn, amount: taken });
+      e.x -= pndx * 0.5; e.z -= pndz * 0.5;
+      if (this.hp <= 0) {
+        this.alive = false; this.hp = 0;
+        this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+        events.push({ type: 'dead' });
+      }
+    }
+  }
+
   /**
    * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
    * Contact damage / elite / boss AI stay here (same as pre-reorder).
@@ -2766,6 +3015,10 @@ export class Game {
       }
       if (e.flanker || e.kind === 'flanker' || e.type === 'flanker') {
         this._tickFlanker(e, dt, events);
+        continue;
+      }
+      if (e.medic || e.kind === 'medic' || e.type === 'medic') {
+        this._tickMedic(e, dt, events);
         continue;
       }
       if (e.hit > 0) e.hit -= dt;

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.45 flanker; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.46 medic; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1588,6 +1588,18 @@ else if (ev.type === 'xp') {
         if (MOBILE_GFX) kickFx({ trauma: 0.07, fovKick: 0.014 });
         else kickFx({ trauma: 0.1, fovKick: 0.02, bloomDamp: 0.55 });
       }
+    }
+    else if (ev.type === 'medicHeal') {
+      const ix = ev.x != null ? ev.x : 0;
+      const iz = ev.z != null ? ev.z : 0;
+      const impact = new THREE.Vector3(ix, 0.4, iz);
+      particles.burst(impact, new THREE.Color(0xb6ff3a), burstN(7), { speed: 2.8, up: 1.0, life: 0.32, size: 0.34, bright: 1.0 });
+      if (!MOBILE_GFX) {
+        particles.burst(impact, new THREE.Color(0x7dffb0), burstN(4), { speed: 1.8, up: 0.6, life: 0.22, size: 0.24, bright: 0.9 });
+        particles.ring(impact, new THREE.Color(0xb6ff3a), 10, 5.5, 0.26);
+      }
+      try { audio.wave(); } catch (_) {}
+      if (!MOBILE_GFX) kickFx({ trauma: 0.04, fovKick: 0.008 });
     }
     else if (ev.type === 'dangerPulse') {
       const ix = ev.x != null ? ev.x : 0;

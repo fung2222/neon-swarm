@@ -109,6 +109,7 @@ i18n.add({
   'beat.artilleryAim': ['重炮預警', 'ARTILLERY INCOMING'],
   'beat.bomberAim': ['自爆預警', 'BOMBER FUSE'],
   'beat.flankerAim': ['側襲預警', 'FLANKER DASH'],
+  'beat.medicAim': ['醫療充能', 'MEDIC HEAL'],
   'beat.boss': ['Boss 出現', 'BOSS'],
   'beat.bossIn': ['Boss 出現 · 洪流核心', 'BOSS INBOUND · SWARM CORE'],
   'beat.bossInEn': ['BOSS INBOUND', 'BOSS INBOUND'],
