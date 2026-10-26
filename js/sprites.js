@@ -4,8 +4,8 @@
  * NPC: scientist doctor (map prop until a shop hook exists).
  */
 import * as THREE from 'three';
-import { yawToCardinal as yawToCardinalShared, muzzleWorld, HORN_MUZZLE_BY_DIR, muzzleUvAnchors } from './muzzle.js';
-export { yawToCardinalShared as yawToCardinal, muzzleWorld, HORN_MUZZLE_BY_DIR };
+import { yawToCardinal as yawToCardinalShared, yawToOctant, muzzleWorld, HORN_MUZZLE_BY_DIR, muzzleUvAnchors, DIRS8 } from './muzzle.js';
+export { yawToCardinalShared as yawToCardinal, yawToOctant, muzzleWorld, HORN_MUZZLE_BY_DIR, DIRS8 };
 
 export const SPRITE_PATHS = {
   // Primary player set (approved mech poses). Old player_* kept only as unused files on disk.
@@ -409,8 +409,8 @@ export const BAKED_PLAYER_BASE = {
   horn: {
     id: 'horn',
     root: './assets/mechs/horn/sheets/',
-    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.21',
-    dirs: ['n', 'e', 's', 'w'],
+    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.27',
+    dirs: ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'],
     runFrames: 4,
     cellSize: 256,
     anchors: { foot: [0.5, 0.92], pivot: [0.5, 0.52], muzzle: HORN_MUZZLE_BY_DIR.n.uv.slice() },
@@ -441,8 +441,8 @@ function cellPath(spec, dir, action, frame, layer) {
   const f = String(frame).padStart(2, '0');
   const suffix = layer === 'gun' ? '_gun' : '';
   // gun files: horn_n_gun_00_gun.png ; body: horn_n_idle_00.png
-  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.21`;
-  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.21`;
+  if (layer === 'gun') return `${spec.root}${spec.id}_${dir}_gun_${f}_gun.png?v=0.9.27`;
+  return `${spec.root}${spec.id}_${dir}_${action}_${f}.png?v=0.9.27`;
 }
 
 /**
@@ -547,9 +547,10 @@ export function buildBakedPlayerSprite(cfg) {
 }
 
 /**
- * Sync baked layers: body from movement, gun from primary visual aim.
+ * Sync baked layers: body from movement, gun from primary visual aim (8-dir).
+ * Legs≠aim: bodyDir from move, gunDir from visualAim independently.
  * Hurt = tint overlay only (does not swap run off). Death uses death cell.
- * No bob / squash.
+ * No bob / squash. Honest: 8-dir sector snap — not continuous 360° turret.
  */
 export function syncBakedPlayerSprite(root, {
   moveX = 0,
@@ -588,15 +589,26 @@ export function syncBakedPlayerSprite(root, {
 
   const runIdx = moving ? (Math.floor((ud.animPhase || 0) / (Math.PI / 2)) % frames) : 0;
 
+  // Prefer exact dir; fall back to nearest cardinal then n (mixed 4/8 atlases).
+  const CARDINAL_FALLBACK = { ne: 'n', se: 'e', sw: 's', nw: 'w' };
+  const pickDirMap = (table, dir) => {
+    if (!table) return null;
+    if (table[dir]) return table[dir];
+    const fb = CARDINAL_FALLBACK[dir];
+    if (fb && table[fb]) return table[fb];
+    return table.n || null;
+  };
+
   let bodyMap;
   if (!alive) {
-    bodyMap = maps.death[bodyDir] || maps.death.n;
+    bodyMap = pickDirMap(maps.death, bodyDir);
     if (ud.gunPlane) ud.gunPlane.visible = false;
   } else if (moving) {
-    bodyMap = (maps.run[bodyDir] && maps.run[bodyDir][runIdx]) || maps.idle[bodyDir];
+    const runArr = pickDirMap(maps.run, bodyDir);
+    bodyMap = (Array.isArray(runArr) && runArr[runIdx]) || pickDirMap(maps.idle, bodyDir);
     if (ud.gunPlane) ud.gunPlane.visible = true;
   } else {
-    bodyMap = maps.idle[bodyDir] || maps.idle.n;
+    bodyMap = pickDirMap(maps.idle, bodyDir);
     if (ud.gunPlane) ud.gunPlane.visible = true;
   }
 
@@ -604,7 +616,7 @@ export function syncBakedPlayerSprite(root, {
     ud.bodyMat.map = bodyMap;
     ud.bodyMat.needsUpdate = true;
   }
-  const gunMap = maps.gun[gunDir] || maps.gun.n;
+  const gunMap = pickDirMap(maps.gun, gunDir);
   if (gunMap && ud.gunMat && ud.gunMat.map !== gunMap) {
     ud.gunMat.map = gunMap;
     ud.gunMat.needsUpdate = true;

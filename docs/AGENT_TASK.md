@@ -28,33 +28,35 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE3-ELITE-COMMANDER-001 → **completed**（v0.9.26）
+## 狀態：GUN-8DIR-001 → **completed**（v0.9.27）
 
 **ROY（2026-10-26）：** 「嚟緊流程你試下一直去」— continuous auto-advance of safe content. Skip waiting for HIT-FEEL between slices. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Completed this turn
 
-**Task ID：** `PHASE3-ELITE-COMMANDER-001` — live cache-bust **`?v=0.9.26`**.
+**Task ID：** `GUN-8DIR-001` — live cache-bust **`?v=0.9.27`**.
 
-- `ENEMIES.commander`：軍指揮官 / ARMY COMMANDER；amber-gold tall officer-mech（crest／epaulettes／baton／signal mast；≠ sentinel／hunter／chief recolor）。
-- Behavior：mode shifts — (1) **summon** wave of soldiers／drones with orange/red telegraph marks（`summonTelegraphSec=1.0`）→ `commanderSummon`；(2) **personal attack** telegraph lane（`attackTelegraphSec=1.1`）→ charge. Readable telegraphs ≥0.8–1.2s. Max one elite still holds.
-- Beats：fixed `BEATS` commander @300（after hunter@240，before boss@360）；`ENDLESS.eliteRotate=['sentinel','hunter','commander']`.
-- Banner zh-HK first（精英出現 · 軍指揮官）.
-- Screenshots：`tests/screenshots/phase3-commander/`.
-- Tests：`tests/commander.test.mjs`＋extended `tests/beats.test.mjs`；full regression green.
-- No player balance table rewrite. No Phase 4／horn／phone GPU.
+- **Approach：** 8-dir bake（prefer over continuous turret）— horn full rebake idle/run/gun/hurt/death × N/NE/E/SE/S/SW/W/NW = **64 cells**.
+- `yawToCardinal` → 8-dir sector snap（alias `yawToOctant`）；honest：仍非 true 360° continuous turret.
+- `syncBakedPlayerSprite`／`HORN_MUZZLE_BY_DIR`／atlas／anchors 同步 8 dirs；legs≠aim、hurt overlay、muzzle anchors 保持.
+- Bake：`node tools/bake-mech-sprites.mjs --id horn --dirs 8`；`bake-capture.html` 接受 `?dirs=8`.
+- Screenshots：`tests/screenshots/gun-8dir/`（8 aim dirs + run-e-aim-nw legs≠aim + mobile NE）.
+- Tests：bake-player、muzzle、milestone-a、aim-hit-fast + regression green.
+- No balance changes. No Phase 4／horn art lock／phone GPU.
 
 ### Queue（recommended next — safe, no Phase 4）
 
-1. **Multi-slot inventory** OR **pickup polish** OR **8-dir gun eval** — implementer note；parent will chain. ← **recommended next**
+1. **Multi-slot inventory** OR **pickup polish** — ← **recommended next**（parent will chain）
 2. **HIT-FEEL-DEVICE**（needs Roy 真機 play）— skip wait per Roy continuous auto-advance；keep queued.
 3. Phone GPU／WebGL mid-run — **deferred by Roy**.
 4. Horn art lock／further silhouette polish — **only after** Roy later OK.
+5. Continuous 360° gun turret（optional later）— only if 8-dir still feels jumpy after play.
 
 **Do NOT start：** Phase 4 Precision／Morph／horn art lock／§9 落地／phone GPU 深入／further horn polish.
 
 ### Recently completed（do not re-implement）
 
+- `GUN-8DIR-001` → **v0.9.27**.
 - `PHASE3-ELITE-COMMANDER-001` → **v0.9.26**.
 - `PHASE3-ENEMY-ARTILLERY-001` → **v0.9.25**.
 - `PHASE3-ENEMY-SHIELD-001` → **v0.9.24**.
@@ -63,7 +65,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 - `HORN-SILHOUETTE-DIRECTION` → **v0.9.21** interim mecha silhouette（pipeline OK-to-continue；**not** final art lock）.
 - `PERF-REBASELINE` → desktop v0.9.20 GTX 1070 Ti。
 - `PHONE-STABLE-FOLLOWUP` → **v0.9.20**.
-- `AIM-HIT-FAST-002` → **v0.9.19**／`3e3d20e`。
+- `AIM-HIT-FAST-002` → **v0.9.19**.
 
 ---
 

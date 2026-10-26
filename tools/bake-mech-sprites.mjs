@@ -124,7 +124,7 @@ async function realBake() {
   ].filter(Boolean);
 
   const { server, port } = await startStaticServer();
-  const url = `http://127.0.0.1:${port}/tools/bake-capture.html?id=${encodeURIComponent(id)}&size=${size}&frames=${frames}`;
+  const url = `http://127.0.0.1:${port}/tools/bake-capture.html?id=${encodeURIComponent(id)}&size=${size}&frames=${frames}&dirs=${dirCount}`;
   console.error(`[bake] serve ${url}`);
 
   let browser;
@@ -197,8 +197,8 @@ async function realBake() {
         gun: 'independent aim layer (upper+rifle)',
       },
       usage: {
-        moveDir: 'select body run/idle by movement yaw → n/e/s/w',
-        aimDir: 'select gun layer by visualAim yaw → n/e/s/w',
+        moveDir: 'select body run/idle by movement yaw → n/ne/e/se/s/sw/w/nw (8-dir)',
+        aimDir: 'select gun layer by visualAim yaw → n/ne/e/se/s/sw/w/nw (8-dir snap; not continuous 360°)',
         hurt: 'overlay hurt cell OR tint; do not cancel run',
         muzzle: 'anchors.muzzle normalized; scale by sprite world size',
       },
@@ -211,7 +211,7 @@ async function realBake() {
       id,
       units: 'normalized',
       version: result.meta.version || '0.9.2',
-      note: 'Per-dir muzzle UV/world from bake tip projection (gun pose). Cardinal snap only — not 360° smooth.',
+      note: 'Per-dir muzzle UV/world from bake tip projection (gun pose). 8-dir sector snap — not continuous 360° turret.',
       shared: {
         ...(result.meta.anchors || {}),
         muzzle: (byDir.n && byDir.n.muzzle) || (result.meta.anchors && result.meta.anchors.muzzle),

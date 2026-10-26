@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.26 Phase 3 army commander elite（summon／mode telegraph；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.27 8-dir gun layer（sector snap；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.26`**（Phase 3 army commander；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.27`**（8-dir gun layer；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -57,7 +57,8 @@
   - v0.9.23 — PHASE3-ENEMY-SNIPER-001：`ENEMIES.sniper` 狙擊單位／Sniper Unit；olive＋crimson；long-rifle procedural mesh（≠ soldier／officer recolor）；`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan；events `telegraph kind:sniper`＋`sniperShot`；waveMix mid-late lab＋reactor／blockade／rooftop／assembly lightly；截圖 `tests/screenshots/phase3-sniper/`；測試 `tests/sniper.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.24 — PHASE3-ENEMY-SHIELD-001：`ENEMIES.shield` 盾衛／Shield Guard；steel＋cyan-blue；large front-plate procedural mesh（≠ soldier／walker recolor）；`_tickShield` slow chase＋face player；frontal mitigation only（`face · normalize(src−enemy) ≥ 0.5` → ×0.15 dmg；flank／rear full）；bash = short **red** contact telegraph；waveMix assembly／blockade ~0.12、lab after ~65s light、**no** early lab；截圖 `tests/screenshots/phase3-shield/`；測試 `tests/shield.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.25 — PHASE3-ENEMY-ARTILLERY-001：`ENEMIES.artillery` 重炮單位／Heavy Artillery；amber＋olive；procedural **big howitzer barrel** mesh（≠ walker／mech／sniper recolor）；`_tickArtillery` slow／stationary-ish → **orange** blast telegraph（`ARTILLERY.telegraphSec=1.0`）→ AoE impact at predicted／player-area；events `telegraph kind:artillery`＋`artilleryImpact`；waveMix blockade／rooftop light-mid、late lab light、assembly rare、**no** early lab；截圖 `tests/screenshots/phase3-artillery/`；測試 `tests/artillery.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
-  - v0.9.26 — PHASE3-ELITE-COMMANDER-001：`ENEMIES.commander` 軍指揮官／ARMY COMMANDER；amber-gold **tall officer-mech**（crest／epaulettes／baton／signal mast；≠ sentinel／hunter／chief recolor）；mode shifts — summon soldiers／drones（orange/red marks ≥1.0s）↔ personal attack telegraph≥1.1s→charge；fixed beat @300＋`ENDLESS.eliteRotate=['sentinel','hunter','commander']`；max one elite；zh-HK banner；截圖 `tests/screenshots/phase3-commander/`；測試 `tests/commander.test.mjs`＋`beats.test.mjs`。Player balance **unchanged**。未做：Phase 4／horn art lock／phone GPU。
+  - v0.9.27 — GUN-8DIR-001：horn gun layer **8-dir**（N/NE/E/SE/S/SW/W/NW）sector snap via `yawToCardinal`／`yawToOctant`；bake `?dirs=8` → 64 cells；`HORN_MUZZLE_BY_DIR`／atlas／anchors 同步；legs≠aim／hurt／muzzle 保持；honest：**非** continuous 360° turret。截圖 `tests/screenshots/gun-8dir/`；測試 bake-player／muzzle／milestone-a／aim-hit-fast＋`gun-8dir-shots.mjs`。Player balance **unchanged**。未做：Phase 4／horn art lock／phone GPU／true 360° turret。
+- v0.9.26 — PHASE3-ELITE-COMMANDER-001：`ENEMIES.commander` 軍指揮官／ARMY COMMANDER；amber-gold **tall officer-mech**（crest／epaulettes／baton／signal mast；≠ sentinel／hunter／chief recolor）；mode shifts — summon soldiers／drones（orange/red marks ≥1.0s）↔ personal attack telegraph≥1.1s→charge；fixed beat @300＋`ENDLESS.eliteRotate=['sentinel','hunter','commander']`；max one elite；zh-HK banner；截圖 `tests/screenshots/phase3-commander/`；測試 `tests/commander.test.mjs`＋`beats.test.mjs`。Player balance **unchanged**。未做：Phase 4／horn art lock／phone GPU。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
 
@@ -71,11 +72,11 @@
 
 - `horn` 已做 **v0.9.7 bake quality**＋**v0.9.21 mecha silhouette**（Roy direction＝機甲；塊狀 rejected）。**interim silhouette accepted for pipeline**（Roy 2026-10-26 continue）；仍 **非** final art lock／device-final（唔標 §9 locked）；**唔**再自動 polish horn。
 - **手機 mid-run WebGL context loss 仍可能發生**（Roy 實機曾回報「繪圖暫時中斷」）；v0.9.5 overlay、v0.9.6＋**v0.9.20** 再減壓＋commute bg auto-pause 已落地，但 **真機 mid-run 穩定性仍未驗收**（Box＝SwiftShader ≠ device）。
-- 槍層仍是 **N/E/S/W 四方向切圖**，不是平滑 360° 炮塔。
+- 槍層 **v0.9.27 起為 8-dir sector snap**（N/NE/E/SE/S/SW/W/NW）；**仍非**平滑 360° continuous turret。
 - PERF-REBASELINE 已更新桌面 GTX 1070 Ti／v0.9.20（≈58–60 FPS）；**手機真機 200 敵效能仍未驗收**（Roy deferred phone GPU）。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 戰鬥可讀性：**v0.9.22 follow-up completed**（grunt rings off；elite／danger／pickups／floor／FX）；真機 hit-feel 仍待 Roy。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）**＋ **PHASE3-ELITE-COMMANDER-001（v0.9.26）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → multi-slot inventory／pickup polish／8-dir gun eval（Roy continuous auto-advance；skip HIT-FEEL wait）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）**＋ **PHASE3-ELITE-COMMANDER-001（v0.9.26）**＋ **GUN-8DIR-001（v0.9.27）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型仍係 `taken` 疊層（無多槽庫存）。下一步：`AGENT_TASK` → multi-slot inventory OR pickup polish（Roy continuous auto-advance；skip HIT-FEEL wait）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -150,8 +151,8 @@ buildPlayerMech(cfg)
 |---|---|---|
 | locomotion／body layer | 腿部與身體跑步；移動時跟移動方向 | `js/sprites.js` |
 | gun layer | 獨立槍械圖層；跟主要武器視覺瞄準 | `js/sprites.js` |
-| `bodyDir` | 目前身體 N/E/S/W 方向 | baked sprite `userData` |
-| `gunDir` | 目前槍層 N/E/S/W 方向 | baked sprite `userData` |
+| `bodyDir` | 目前身體方向（bake dirs；horn 8-dir） | baked sprite `userData` |
+| `gunDir` | 目前槍層 8-dir（N/NE/E/SE/S/SW/W/NW） | baked sprite `userData` |
 | hurt layer | 受傷 tint／overlay，不切走跑步動畫 | `syncBakedPlayerSprite()` |
 | death | 顯示死亡格並隱藏槍層 | `syncBakedPlayerSprite()` |
 
@@ -230,7 +231,7 @@ assets/mechs/horn/sheets/
 規則：
 
 - folder／file 用 lowercase ASCII、underscore，不用空格。
-- 方向先做 `n/e/s/w`；只有 4-dir 實際玩過並確定有需要，才擴展 8-dir。
+- 方向：horn 已擴展 **8-dir**（v0.9.27）；其他機體仍可先 4-dir，有需要再擴。
 - frame index 用兩位數：`00`、`01`……。
 - foot baseline、pivot、muzzle 要一致，並寫入 anchors；不可只目測 PNG 對位。
 - 修改模型、材質、比例、武器掛點或 muzzle 後，要重新 bake 並檢查 atlas／anchors。
@@ -337,7 +338,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 - 改善臨時 blocky 模型、甲片層次、材質與燈光；保留單角、青色人格核心、不對稱肩甲、中型步槍等身份線索。
 - 重新 bake 後檢查 4-dir idle/run/gun/hurt/death、foot baseline、槍口與跑步反向射擊。
 - 維持邊跑邊射、受傷不打斷、secondary 不搶 body aim。
-- 四方向槍層若明顯跳向，可先評估 8-dir 或真正 continuous gun pivot；未完成前不得宣稱 360° 平滑。
+- 8-dir gun（v0.9.27）已落地；若仍明顯跳向再評估 continuous gun pivot；**不得**宣稱 360° 平滑直至真做 continuous。
 - 在真 GPU 桌面與目標手機做 200-enemy stress；先量測再優化。
 
 **出閘：** Roy 實機玩過，跑步／射擊／受傷／死亡與槍口都順；主角素材品質獲接受；效能量測有真機數據。
@@ -453,7 +454,9 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.26（PHASE3-ELITE-COMMANDER-001；HEAD 以 `main`／live `?v=0.9.26` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
+**目前基準 v0.9.27（GUN-8DIR-001；HEAD 以 `main`／live `?v=0.9.27` 為準）。** 整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
+
+- `GUN-8DIR-001` **已完成**（v0.9.27）：horn 8-dir gun bake＋runtime sector snap；muzzle／atlas／anchors 同步；legs≠aim；截圖 `tests/screenshots/gun-8dir/`；honest 非 continuous 360°。
 
 - `PHASE3-ELITE-COMMANDER-001` **已完成**（v0.9.26）：army commander tall officer-mech＋summon／attack mode telegraphs≥0.8–1.2s；beat@300＋endless rotate；截圖 `tests/screenshots/phase3-commander/`。
 - `PHASE3-ENEMY-ARTILLERY-001` **已完成**（v0.9.25）：heavy artillery big-barrel silhouette＋orange blast telegraph≥1.0s＋AoE impact；截圖 `tests/screenshots/phase3-artillery/`。
@@ -463,7 +466,11 @@ Rollback baseline:
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
 - `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；**下一項：** **HIT-FEEL-DEVICE**（needs Roy phone play）— **do not** start Phase 4／horn art lock。
+- Roy deferred phone GPU／mid-run WebGL；HIT-FEEL-DEVICE needs Roy phone（skip wait per continuous）。**下一項：** multi-slot inventory OR pickup polish — **do not** start Phase 4／horn art lock。
 - AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
 - Queue：真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish。
 - SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
+
+## 版本歷史（增量）
+
+- **v0.9.27** (`GUN-8DIR-001`) — 8-dir gun layer (sector snap, not continuous 360°). Horn 64-cell rebake; muzzle/atlas/anchors; legs≠aim. Screenshots `tests/screenshots/gun-8dir/`. Next: multi-slot inventory OR pickup polish.

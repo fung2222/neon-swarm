@@ -1,14 +1,18 @@
 {
-  "version": "0.9.21",
+  "version": "0.9.27",
   "implemented": true,
   "source": "buildPlayerMech (js/mech-builder.js)",
   "id": "horn",
   "size": 256,
   "dirs": [
     "n",
+    "ne",
     "e",
+    "se",
     "s",
-    "w"
+    "sw",
+    "w",
+    "nw"
   ],
   "frames": 4,
   "characterHeightFrac": 0.75,
@@ -46,6 +50,20 @@
         0.9685
       ]
     },
+    "ne": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.1957,
+        0.9081
+      ]
+    },
     "e": {
       "foot": [
         0.5,
@@ -58,6 +76,20 @@
       "muzzle": [
         -0.021,
         0.6061
+      ]
+    },
+    "se": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.0881,
+        0.3068
       ]
     },
     "s": {
@@ -74,6 +106,20 @@
         0.1554
       ]
     },
+    "sw": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.7319,
+        0.1893
+      ]
+    },
     "w": {
       "foot": [
         0.5,
@@ -87,6 +133,20 @@
         0.9819,
         0.4021
       ]
+    },
+    "nw": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.9835,
+        0.7271
+      ]
     }
   },
   "muzzleWorldByDir": {
@@ -95,20 +155,40 @@
       0.8796,
       0.8406
     ],
+    "ne": [
+      0.7469,
+      0.8796,
+      0.442
+    ],
     "e": [
       0.8406,
       0.8796,
       -0.2156
+    ],
+    "se": [
+      0.442,
+      0.8796,
+      -0.7469
     ],
     "s": [
       -0.2156,
       0.8796,
       -0.8406
     ],
+    "sw": [
+      -0.7469,
+      0.8796,
+      -0.442
+    ],
     "w": [
       -0.8406,
       0.8796,
       0.2156
+    ],
+    "nw": [
+      -0.442,
+      0.8796,
+      0.7469
     ]
   },
   "cells": [
@@ -321,6 +401,214 @@
       }
     },
     {
+      "dir": "ne",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_ne_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_ne_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_ne_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_ne_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_ne_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_ne_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_ne_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
+      "dir": "ne",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_ne_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1957,
+          0.9081
+        ],
+        "muzzleWorld": [
+          0.7469,
+          0.8796,
+          0.442
+        ]
+      }
+    },
+    {
       "dir": "e",
       "action": "idle",
       "frame": 0,
@@ -525,6 +813,214 @@
           0.8406,
           0.8796,
           -0.2156
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_se_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_se_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_se_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_se_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_se_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_se_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_se_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
+        ]
+      }
+    },
+    {
+      "dir": "se",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_se_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.0881,
+          0.3068
+        ],
+        "muzzleWorld": [
+          0.442,
+          0.8796,
+          -0.7469
         ]
       }
     },
@@ -737,6 +1233,214 @@
       }
     },
     {
+      "dir": "sw",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_sw_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_sw_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_sw_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_sw_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_sw_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_sw_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_sw_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
+      "dir": "sw",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_sw_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7319,
+          0.1893
+        ],
+        "muzzleWorld": [
+          -0.7469,
+          0.8796,
+          -0.442
+        ]
+      }
+    },
+    {
       "dir": "w",
       "action": "idle",
       "frame": 0,
@@ -943,18 +1647,226 @@
           0.2156
         ]
       }
+    },
+    {
+      "dir": "nw",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_nw_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_nw_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "horn_nw_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "horn_nw_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "horn_nw_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_nw_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "horn_nw_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
+    },
+    {
+      "dir": "nw",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "horn_nw_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9835,
+          0.7271
+        ],
+        "muzzleWorld": [
+          -0.442,
+          0.8796,
+          0.7469
+        ]
+      }
     }
   ],
   "outDir": "assets/mechs/horn/sheets",
-  "generatedAt": "2026-10-26T12:45:25.397Z",
+  "generatedAt": "2026-10-26T13:43:32.610Z",
   "fallbackPng": true,
   "layers": {
     "body": "lower+torso locomotion / idle / hurt / death",
     "gun": "independent aim layer (upper+rifle)"
   },
   "usage": {
-    "moveDir": "select body run/idle by movement yaw → n/e/s/w",
-    "aimDir": "select gun layer by visualAim yaw → n/e/s/w",
+    "moveDir": "select body run/idle by movement yaw → n/ne/e/se/s/sw/w/nw (8-dir)",
+    "aimDir": "select gun layer by visualAim yaw → n/ne/e/se/s/sw/w/nw (8-dir snap; not continuous 360°)",
     "hurt": "overlay hurt cell OR tint; do not cancel run",
     "muzzle": "anchors.muzzle normalized; scale by sprite world size"
   }

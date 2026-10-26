@@ -23,13 +23,20 @@ import { buildPlayerMech } from '../js/mech-builder.js';
 import { MECH_BY_ID } from '../js/config.js';
 
 const DIRS4 = ['n', 'e', 's', 'w'];
+const DIRS8 = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
 // Mech default rifle points +Z; camera sits on +Z looking at origin → yaw 0 = front (n).
-const DIR_YAW = { n: 0, e: -Math.PI / 2, s: Math.PI, w: Math.PI / 2 };
+// Bake yaw turns silhouette toward camera (opposite sense from gameplay FACE_YAW on E/W).
+const DIR_YAW = {
+  n: 0, ne: -Math.PI / 4, e: -Math.PI / 2, se: -3 * Math.PI / 4,
+  s: Math.PI, sw: 3 * Math.PI / 4, w: Math.PI / 2, nw: Math.PI / 4,
+};
 
 const params = new URLSearchParams(location.search);
 const SIZE = Math.max(64, Number(params.get('size') || 256));
 const ID = params.get('id') || 'horn';
 const FRAMES = Math.max(1, Number(params.get('frames') || 4));
+const DIR_COUNT = Number(params.get('dirs') || 4) === 8 ? 8 : 4;
+const DIRS = DIR_COUNT === 8 ? DIRS8 : DIRS4;
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -197,7 +204,10 @@ function muzzleAnchorNorm() {
  * Bake yaw turns the silhouette toward the fixed camera.
  * Face yaw aims the rifle the way gameplay does (+Z=n, +X=e) for muzzleWorld.
  */
-const FACE_YAW = { n: 0, e: Math.PI / 2, s: Math.PI, w: -Math.PI / 2 };
+const FACE_YAW = {
+  n: 0, ne: Math.PI / 4, e: Math.PI / 2, se: 3 * Math.PI / 4,
+  s: Math.PI, sw: -3 * Math.PI / 4, w: -Math.PI / 2, nw: -Math.PI / 4,
+};
 
 function poseGunAim() {
   setLayer('gun');
@@ -262,7 +272,7 @@ async function bakeAll() {
   const cells = [];
   const anchorsByDir = {};
   const muzzleWorldByDir = {};
-  for (const dir of DIRS4) {
+  for (const dir of DIRS) {
     const a = projectMuzzle(dir);
     anchorsByDir[dir] = { foot: a.foot, pivot: a.pivot, muzzle: a.muzzle };
     muzzleWorldByDir[dir] = a.muzzleWorld;
@@ -279,8 +289,8 @@ async function bakeAll() {
     });
   }
 
-  // Body: idle + run + hurt + death per dir
-  for (const dir of DIRS4) {
+  // Body: idle + run + hurt + death per dir (+ independent gun layer)
+  for (const dir of DIRS) {
     resetMech();
     mech.rotation.y = DIR_YAW[dir];
     setLayer('body');
@@ -321,12 +331,12 @@ async function bakeAll() {
   
 
   window.__BAKE_RESULT__ = {
-    version: '0.9.21',
+    version: '0.9.27',
     implemented: true,
     source: 'buildPlayerMech (js/mech-builder.js)',
     id: ID,
     size: SIZE,
-    dirs: DIRS4,
+    dirs: DIRS,
     frames: FRAMES,
     characterHeightFrac: 0.75,
     camera: { elevationDeg: 60, fov: 28, dist },
