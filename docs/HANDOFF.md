@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.38 Phase 6 kill-streak lite（連殺 toast feedback-only；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `fc61ddc`）  
+> **建議承接基準：** v0.9.38 Phase 6 kill-streak lite（連殺 toast feedback-only；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -14,7 +14,7 @@
 
 ## 0. 先讀這一段：目前狀態與證據等級
 
-本文件狀態段：Phase 0 = **v0.9.6 / `fc61ddc`**；本輪 Phase 1 horn bake = **v0.9.7**（見下）。產品方向與架構說明仍以本文件後段為準；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
+本文件狀態段：Phase 0 = **v0.9.6 / `ec12087`**；本輪 Phase 1 horn bake = **v0.9.7**（見下）。產品方向與架構說明仍以本文件後段為準；舊版 `HANDOFF.md` 停留在 v0.6.2，不應再用作目前架構摘要。
 
 ### 角色分工與協作規則（2026-10-26 鎖定）
 
@@ -30,10 +30,10 @@
 **同時開工：** 唔改同一批檔；小範圍分開 commit。  
 **每次改完必記：** 作者、Task ID、版本、SHA、改了甚麼、測試、截圖、未驗證、下一步（見 §10）。
 
-### 已核對（相對舊建議基準 `fc61ddc` / v0.9.3）
+### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.36`**（safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `fc61ddc`；Phase 0 baseline SHA `fc61ddc`（v0.9.6）。
-- **Done since `fc61ddc`：**
+- 目前 `main`／live cache-bust：**`?v=0.9.36`**（safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
   - v0.9.6 — 更強手機 GPU 減壓（pools／PR／bloom kick／ordinary-kill FX 等；不改平衡）。
@@ -336,7 +336,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 - 對齊目前 `main` 與 live；重跑 headless＋v0.9.3 browser suite。
 - 看 desktop／mobile 截圖，確認 selection 沒有出界或被 cards 遮住。
-- 若 `main` 已超過 `fc61ddc`，先記錄差異，不要強行回退新工作。
+- 若 `main` 已超過 `6ddc483`，先記錄差異，不要強行回退新工作。
 
 **出閘：** 有可重現的開發基準、測試結果與未驗證清單。
 
@@ -465,11 +465,11 @@ Rollback baseline:
 
 **目前基準 v0.9.38（PHASE6-KILL-STREAK-LITE-001；HEAD 以 `main`／live `?v=0.9.38` 為準）。** Roy continue（「未用得」）still on — safe UX only。**Honesty：** streak is feedback-only — **no** DPS／XP／score multiplier。整局對照仍見 `docs/AUDIT-v0.9.19.md`（AIM 層；穩定項另見本段）。
 
-- `PHASE6-SAFE-AREA-001` **已完成**（v0.9.36 / `fc61ddc`）：safe-area tokens＋HUD／stick／slots／panels／xp L/R；截圖 `tests/screenshots/phase6-safe-area/`。
-- `PHASE6-MUTE-PERSIST-001` **已完成**（v0.9.35 / `fc61ddc`）：mute persist harden＋menu chrome＋cold-load；截圖 `tests/screenshots/phase6-mute-persist/`。
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` **已完成**（v0.9.34 / `fc61ddc`）：hit／heal／hurt floats；截圖 `tests/screenshots/phase6-damage-numbers/`。
-- `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33 / `fc61ddc`）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
-- `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `fc61ddc`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
+- `PHASE6-SAFE-AREA-001` **已完成**（v0.9.36 / `eee063e`）：safe-area tokens＋HUD／stick／slots／panels／xp L/R；截圖 `tests/screenshots/phase6-safe-area/`。
+- `PHASE6-MUTE-PERSIST-001` **已完成**（v0.9.35 / `a026e1e`）：mute persist harden＋menu chrome＋cold-load；截圖 `tests/screenshots/phase6-mute-persist/`。
+- `PHASE6-DAMAGE-NUMBERS-LITE-001` **已完成**（v0.9.34 / `3da3007`）：hit／heal／hurt floats；截圖 `tests/screenshots/phase6-damage-numbers/`。
+- `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33 / `7db11c0`）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
+- `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `e578bae`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
 - `PHASE6-LEVELUP-CARD-UX-001` **已完成**（v0.9.31）：升級卡 UX／tap／stack／slot hint；截圖 `tests/screenshots/phase6-levelup-ux/`。
 - `PHASE6-DROP-READABILITY-001` **已完成**（v0.9.30）：XP shards／heal pack／magnet disc／weapon board；截圖 `tests/screenshots/phase6-drop-readability/`。
 - `PHASE6-PICKUP-POLISH-001` **已完成**（v0.9.29）：slot-fire sync＋pickup UX polish；截圖 `tests/screenshots/phase6-pickup-polish/`。
@@ -493,9 +493,9 @@ Rollback baseline:
 ## 版本歷史（增量）
 
 - **v0.9.38** / `fc61ddc` (`PHASE6-KILL-STREAK-LITE-001`) — Soft kill-streak toast「連殺 ×N」at 5/10/15 (2.2s window; reset on hurt/timeout); **feedback only — no DPS/XP economy**; skips while early toast busy; kickFx at 10+. Screenshots `tests/screenshots/phase6-kill-streak/`. Next: RESULT-SHARE then pause invention / HIT-FEEL on phone (still ban Phase 4).
-- **v0.9.37** / `fc61ddc` (`PHASE6-EARLY-FEEDBACK-001`) — Once-per-run first-kill toast「首殺」／FIRST BLOOD + first level-up chime/XP pulse/glow + soft first-heal micro-toast; coach-defer; `#early-toast` non-blocking. Screenshots `tests/screenshots/phase6-early-feedback/`. Next: KILL-STREAK-LITE or RESULT-SHARE; HIT-FEEL when Roy phones (still ban Phase 4).
-- **v0.9.36** / `fc61ddc` (`PHASE6-SAFE-AREA-001`) — Notch/home-bar safe-area: `--sa-*` tokens, HUD L/R, mute/pause, stick, weapon-slots, xp L/R, beat/coach width, pause/over/level/gfx panel padding, cheap landscape. Screenshots `tests/screenshots/phase6-safe-area/` (simulated insets). Next: PHASE6-EARLY-FEEDBACK-001 or HIT-FEEL-DEVICE (still ban Phase 4).
-- **v0.9.35** / `fc61ddc` (`PHASE6-MUTE-PERSIST-001`) — Mute preference survives reload/next visit; early-paint + menu mute chrome + zh-HK aria; kit store already had persist — harden only. Screenshots `tests/screenshots/phase6-mute-persist/`.
+- **v0.9.37** / `ea04be7` (`PHASE6-EARLY-FEEDBACK-001`) — Once-per-run first-kill toast「首殺」／FIRST BLOOD + first level-up chime/XP pulse/glow + soft first-heal micro-toast; coach-defer; `#early-toast` non-blocking. Screenshots `tests/screenshots/phase6-early-feedback/`. Next: KILL-STREAK-LITE or RESULT-SHARE; HIT-FEEL when Roy phones (still ban Phase 4).
+- **v0.9.36** / `eee063e` (`PHASE6-SAFE-AREA-001`) — Notch/home-bar safe-area: `--sa-*` tokens, HUD L/R, mute/pause, stick, weapon-slots, xp L/R, beat/coach width, pause/over/level/gfx panel padding, cheap landscape. Screenshots `tests/screenshots/phase6-safe-area/` (simulated insets). Next: PHASE6-EARLY-FEEDBACK-001 or HIT-FEEL-DEVICE (still ban Phase 4).
+- **v0.9.35** / `a026e1e` (`PHASE6-MUTE-PERSIST-001`) — Mute preference survives reload/next visit; early-paint + menu mute chrome + zh-HK aria; kit store already had persist — harden only. Screenshots `tests/screenshots/phase6-mute-persist/`.
 - **v0.9.34** (`PHASE6-DAMAGE-NUMBERS-LITE-001`) — Floating hit/heal/hurt digits (DOM pool, throttle, mobile-light). Screenshots `tests/screenshots/phase6-damage-numbers/`.
 - **v0.9.33** (`PHASE6-RUN-LOOP-UX-001`) — First-run coach tip, hurt vignette, XP bar punch, over zone+loadout. Screenshots `tests/screenshots/phase6-run-loop-ux/`.
 - **v0.9.32** (`PHASE6-BANNER-TIMING-001`) — Banner short priority queue + min display; timings zone1400/elite1600/boss2600/phase900; pause zh-HK + no-auto-resume hint. Screenshots `tests/screenshots/phase6-banner-timing/`.
