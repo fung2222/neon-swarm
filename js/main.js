@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.34 damage numbers lite; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.35 mute persist; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -20,6 +20,10 @@ import {
   createDamageFloatPool, ndcToCss,
   DMG_FLOAT_MAX_DESKTOP, DMG_FLOAT_MAX_MOBILE,
 } from './damage-numbers.js';
+import {
+  applyMuteUi, applyMutePreference, writeMutedToStore, readMutedFromStore, muteTipFor,
+  MUTE_STORE_KEY, MUTE_LS_KEY,
+} from './mute-persist.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -164,7 +168,34 @@ function kickFx(o) {
   fx.kick(m);
 }
 const audio = new SwarmAudio(store);
-ui.setMuted(audio.muted);
+// Mirror alias key so early-paint script + smoke tests stay aligned with kit store.
+writeMutedToStore(store, !!audio.muted);
+function muteButtons() {
+  return [$('btn-mute'), $('btn-mute-menu')].filter(Boolean);
+}
+function syncMuteChrome() {
+  const menuBtn = $('btn-mute-menu');
+  // Kit tidyTopRight hides non-menu-icon-btn children; keep mute discoverable on home.
+  if (menuBtn) {
+    menuBtn.classList.add('menu-icon-btn', 'menu-mute');
+    menuBtn.classList.remove('ck-bar-hide');
+    menuBtn.style.removeProperty('display');
+    const right = menuBtn.parentElement;
+    const howto = right && right.querySelector('#btn-howto');
+    if (right && howto && menuBtn.compareDocumentPosition(howto) & Node.DOCUMENT_POSITION_PRECEDING) {
+      right.insertBefore(menuBtn, howto);
+    }
+  }
+  applyMuteUi(!!audio.muted, muteButtons(), { isZh: i18n.isZh() });
+  ui.setMuted(audio.muted);
+}
+function toggleMutePersist() {
+  audio.toggleMute();
+  writeMutedToStore(store, !!audio.muted);
+  syncMuteChrome();
+  return audio.muted;
+}
+syncMuteChrome();
 const ads = createAds({ gameId: GAME_ID, ...ADS, flags: AD_FLAGS, onAdOpen: (on) => audio.duckAll(on) });
 
 const S = {
@@ -554,6 +585,10 @@ S.spawnCombatFloat = spawnCombatFloat;
 S.dmgFloats = dmgFloats;
 S._bannerCtl = _bannerCtl;
 S.BANNER_MS = BANNER_MS;
+S.syncMuteChrome = syncMuteChrome;
+S.toggleMutePersist = toggleMutePersist;
+S.MUTE_LS_KEY = MUTE_LS_KEY;
+S.audio = audio;
 
 function updateBossHp() {
   const bar = $('boss-hp');
@@ -981,7 +1016,7 @@ window.addEventListener('keydown', (e) => {
     if (S.state === 'play') pauseRun();
     else if (S.state === 'pause') { S.state = 'play'; ui.show(null); }
   }
-  if (e.code === 'KeyM') { audio.toggleMute(); ui.setMuted(audio.muted); }
+  if (e.code === 'KeyM') { toggleMutePersist(); }
   // Mild zoom shortcuts
   if (e.code === 'Equal' || e.code === 'NumpadAdd') {
     pView.zoom *= 0.94; clampView(pView, viewPitch, viewExt, ZOOM_LIM);
@@ -1000,7 +1035,8 @@ $('btn-restart')?.addEventListener('click', () => startRun());
 $('btn-quit')?.addEventListener('click', () => showMenu());
 $('btn-retry')?.addEventListener('click', () => startRun());
 $('btn-menu')?.addEventListener('click', () => showMenu());
-$('btn-mute')?.addEventListener('click', () => { audio.toggleMute(); ui.setMuted(audio.muted); });
+$('btn-mute')?.addEventListener('click', () => { toggleMutePersist(); });
+$('btn-mute-menu')?.addEventListener('click', () => { try { audio.init(); } catch (_) {} toggleMutePersist(); });
 
 if (shouldShowArcadeMenu(HUB)) {
   const b = $('btn-arcade-menu');
@@ -1318,7 +1354,14 @@ else if (ev.type === 'xp') {
 
 async function boot() {
   if (document.fonts) await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]);
-  if (flags.mute) { audio.muted = true; ui.setMuted(true); }
+  if (flags.mute) {
+    // Session override (?mute=1) — do not rewrite saved preference
+    applyMutePreference(audio, muteButtons(), true, { persist: false, isZh: i18n.isZh() });
+    ui.setMuted(true);
+  } else {
+    // Re-sync after async fonts / i18n so icon + aria match store (no unmuted flash)
+    syncMuteChrome();
+  }
   showMenu();
   ui.loaded();
   if (S.demo || flags.autostart) startRun();

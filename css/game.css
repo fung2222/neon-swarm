@@ -846,3 +846,30 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .dmg-float.dmg-heavy { font-size: 20px; }
   .dmg-float.dmg-heal, .dmg-float.dmg-hurt { font-size: 16px; }
 }
+
+
+/* ---- v0.9.35 mute persist: menu mute chrome (menu-icon-btn so kit tidyTopRight keeps it) ---- */
+.menu-top-right { display: flex; align-items: center; gap: 8px; }
+.menu-mute.menu-icon-btn {
+  color: var(--c1, #00e5ff);
+  border-color: color-mix(in srgb, var(--c1, #00e5ff) 55%, transparent);
+}
+.menu-mute.menu-icon-btn .ico-off { display: none; }
+.menu-mute.menu-icon-btn .ico-on { display: block; }
+.menu-mute.menu-icon-btn.muted .ico-on { display: none; }
+.menu-mute.menu-icon-btn.muted .ico-off { display: block; }
+.menu-mute.menu-icon-btn.muted {
+  color: #ff4d6d;
+  border-color: rgba(255, 77, 109, 0.55);
+}
+.menu-mute.menu-icon-btn.muted svg,
+.menu-mute.menu-icon-btn.muted svg * {
+  fill: #ff4d6d !important;
+  stroke: #ff4d6d !important;
+  filter: drop-shadow(0 0 3px #ff4d6d);
+}
+.menu-mute.menu-icon-btn:not(.muted) svg,
+.menu-mute.menu-icon-btn:not(.muted) svg * {
+  fill: var(--c1, #00e5ff);
+  stroke: var(--c1, #00e5ff);
+}

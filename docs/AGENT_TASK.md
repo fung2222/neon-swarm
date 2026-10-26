@@ -28,24 +28,25 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ---
 
-## 狀態：PHASE6-DAMAGE-NUMBERS-LITE-001 → **complete**（v0.9.34 / `3da3007`）
+## 狀態：PHASE6-MUTE-PERSIST-001 → **complete**（v0.9.35）
 
 **ROY（2026-10-26 ~22:22 HKT）ROY_OVERRIDE／continue：** 「好你繼續做落去佢未用得」— still on；safe usability only. Do NOT start Phase 4／horn art lock／phone GPU.
 
 ### Active this turn
 
-**none** — last shipped: `PHASE6-DAMAGE-NUMBERS-LITE-001` → **`?v=0.9.34`**.
+**none** — last shipped: `PHASE6-MUTE-PERSIST-001` → **`?v=0.9.35`**.
 
 **Shipped behavior：**
-- Hit／heal／hurt floating digits via DOM pool（`#dmg-floats`）；desktop max 16／mobile 10
-- `hit` events carry `dmg`（post-mitigation）；`hurt` carries `amount`；heal `+N` green
-- Per-enemy throttle ~100ms；heavy larger／yellow；frontBlock grey／「擋」；rise+fade ~0.58s
-- Under HUD z-index；no DPS／xpToLevel／balance change
-- Screenshots `tests/screenshots/phase6-damage-numbers/`
+- Honest baseline: kit `SynthAudio` already persisted `cyber.neon-swarm.muted` via store — this ship **hardens** cold-load／UI／menu／tests（not invent dual sliders）
+- Namespaced kit key + alias `neon-swarm-mute`；early inline LS paint（no unmuted flash）
+- Menu `#btn-mute-menu` as `menu-icon-btn`（kit `tidyTopRight` no longer hides it）；HUD mute＋KeyM＋menu sync
+- zh-HK aria／title：靜音／取消靜音；`aria-pressed`；`?mute=1` session override without rewriting store
+- Ad ducking unchanged；music／SFX design unchanged
+- Screenshots `tests/screenshots/phase6-mute-persist/`；tests `tests/mute-persist.test.mjs`
 
 ### Queue（recommended next — safe usability, no Phase 4）
 
-1. **PHASE6-MUTE-PERSIST-001** OR **PHASE6-SAFE-AREA-001** — preferred next usability
+1. **PHASE6-SAFE-AREA-001** — preferred next
 2. HIT-FEEL-DEVICE（Roy 真機）— keep queued
 3. Phone GPU／horn art lock — deferred／only after Roy OK
 
@@ -53,6 +54,7 @@ Google Play 多遊戲 app；暴走機甲＝星級旗艦。體驗：**快速入�
 
 ### Recently completed（do not re-implement）
 
+- `PHASE6-MUTE-PERSIST-001` → **v0.9.35**.
 - `PHASE6-DAMAGE-NUMBERS-LITE-001` → **v0.9.34** (`3da3007`).
 - `PHASE6-RUN-LOOP-UX-001` → **v0.9.33** (`7db11c0`).
 - `PHASE6-BANNER-TIMING-001` → **v0.9.32** (`e578bae`).

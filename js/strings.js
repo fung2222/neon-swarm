@@ -50,6 +50,7 @@ i18n.add({
   menu: ['主畫面', 'MENU'],
   menuS: ['HOME', 'HOME'],
   muteTip: ['靜音', 'Mute'],
+  unmuteTip: ['取消靜音', 'Unmute'],
   pauseTip: ['暫停', 'Pause'],
   newRecord: ['新紀錄！', 'NEW RECORD!'],
   kills: ['擊殺', 'KILLS'],

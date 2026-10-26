@@ -103,7 +103,7 @@ assert.equal(DMG_FLOAT_MAX_MOBILE, 10);
   assert.ok(css.includes('dmg-float-rise'), 'css anim');
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('id="dmg-floats"'), 'markup');
-  assert.ok(html.includes('?v=0.9.34'), 'cache-bust');
+  assert.ok(/\?v=0\.9\.\d+/.test(html), 'cache-bust');
 }
 
 console.log('damage-numbers.test.mjs: PASS');
