@@ -1,20 +1,27 @@
 /**
- * Phase 3 beats — SENTINEL PRIME + SWARM CORE boss.
+ * Phase 3 beats — SENTINEL PRIME + HUNTER RAID + SWARM CORE boss.
  * Run: node tests/beats.test.mjs
  */
 import assert from 'assert';
 import { Game } from '../js/logic.js';
-import { ELITE, BOSS, BEATS, ENEMIES, TRIAL } from '../js/config.js';
+import { ELITE, BOSS, BEATS, ENEMIES, TRIAL, eliteCfg } from '../js/config.js';
 
 assert.ok(ENEMIES.sentinel, 'sentinel enemy def');
+assert.ok(ENEMIES.hunter, 'hunter enemy def');
 assert.ok(ENEMIES.swarm_core, 'swarm_core enemy def');
 assert.ok(ELITE.telegraphSec >= 1.0, 'telegraphSec >= 1s');
+assert.ok(eliteCfg('hunter').telegraphSec >= 1.2, 'hunter telegraph >= 1.2s');
+assert.ok(eliteCfg('hunter').comboSegs >= 2, 'hunter multi-segment');
 assert.ok(BOSS.volleyTelegraphSec >= 0.8, 'volley telegraph >= 0.8s');
 assert.equal(BEATS[0].at, 120);
 assert.equal(BEATS[0].kind, 'elite');
-assert.equal(BEATS[1].at, 360);
-assert.equal(BEATS[1].kind, 'boss');
-assert.equal(BEATS[1].id, 'swarm_core');
+assert.equal(BEATS[0].id, 'sentinel');
+assert.equal(BEATS[1].at, 240);
+assert.equal(BEATS[1].kind, 'elite');
+assert.equal(BEATS[1].id, 'hunter');
+assert.equal(BEATS[2].at, 360);
+assert.equal(BEATS[2].kind, 'boss');
+assert.equal(BEATS[2].id, 'swarm_core');
 assert.equal(BOSS.cardChoices, 3);
 assert.equal(TRIAL.surviveSec, 480);
 
@@ -75,6 +82,7 @@ const dt = 1 / 30;
   g2.hp = 20;
   g2.t = 120;
   g2._beatsFired['120:sentinel'] = true;
+  g2._beatsFired['240:hunter'] = true;
   g2._spawnPauseUntil = 0;
   const evs = [];
   const e2 = g2._spawnElite({ at: 120, kind: 'elite', id: 'sentinel' }, evs);
@@ -131,6 +139,7 @@ const dt = 1 / 30;
   g.invuln = 999;
   g.t = 359;
   g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
   let sawBoss = false;
   let boss = null;
   while (g.t < 362 && g.alive) {
@@ -157,6 +166,7 @@ const dt = 1 / 30;
   g.invuln = 999;
   g.t = 360;
   g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const evs = [];
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, evs);
@@ -183,6 +193,7 @@ const dt = 1 / 30;
   g.hp = 30;
   g.t = 360;
   g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, []);
   boss.hp = boss.maxHp * 0.5; // force volley
@@ -254,6 +265,7 @@ const dt = 1 / 30;
   g.invuln = 999;
   g.t = 360;
   g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, []);
   const scoreBefore = g.score;
@@ -274,6 +286,7 @@ const dt = 1 / 30;
   g.invuln = 999;
   g.t = TRIAL.surviveSec - 0.5;
   g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
   g._beatsFired['360:swarm_core'] = true;
   const boss = g._spawnBoss({ at: 360, kind: 'boss', id: 'swarm_core' }, []);
   assert.ok(boss);
@@ -290,9 +303,116 @@ const dt = 1 / 30;
   assert.equal(TRIAL.surviveSec, 480);
 }
 
+// ---------- Elite #2 HUNTER RAID @240 — multi-segment ----------
+{
+  const g = new Game({ seed: 42 });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  g.t = 239;
+  g._beatsFired['120:sentinel'] = true;
+  let sawHunter = false;
+  let hunter = null;
+  while (g.t < 242 && g.alive) {
+    if (g.pausedForLevel && g.pendingCards) g.applyCard(g.pendingCards[0]);
+    g.stopMove();
+    const { events } = g.step(dt);
+    for (const ev of events) {
+      if (ev.type === 'beat' && ev.kind === 'elite' && ev.id === 'hunter') sawHunter = true;
+      if (ev.type === 'eliteIn' && ev.nameEn === 'HUNTER RAID') sawHunter = true;
+    }
+    if (!hunter) hunter = g.enemies.find((e) => e.elite && e.type === 'hunter') || null;
+  }
+  assert.ok(sawHunter, 'hunter beat should fire near t=240');
+  assert.ok(hunter, 'hunter entity should exist');
+  assert.equal(hunter.type, 'hunter');
+  assert.equal(hunter.comboSegs, 2, 'hunter has 2 combo segments');
+  assert.equal(g.enemies.filter((e) => e.elite).length, 1, 'max one elite at hunter spawn');
+}
+
+// Multi-segment: two telegraphs ≥1.2s each before charge damage; still max one elite
+{
+  const g = new Game({ seed: 55 });
+  g.enemies.length = 0;
+  g.invuln = 0;
+  g.hp = 30;
+  g.t = 240;
+  g._beatsFired['120:sentinel'] = true;
+  g._beatsFired['240:hunter'] = true;
+  g._spawnPauseUntil = 0;
+  const hCfg = eliteCfg('hunter');
+  const e = g._spawnElite({ at: 240, kind: 'elite', id: 'hunter' }, []);
+  assert.ok(e);
+  assert.equal(e.comboSegs, 2);
+  e.x = g.px + 4;
+  e.z = g.pz;
+  e.phase = 'walk';
+  e.phaseT = 0.01;
+  const teleDurations = [];
+  const chargeSegs = [];
+  let hurtInTele = false;
+  let guard = 0;
+  while (guard++ < 8000 && g.alive && teleDurations.length < 2) {
+    if (g.pausedForLevel && g.pendingCards) g.applyCard(g.pendingCards[0]);
+    g.stopMove();
+    const el = g.enemies.find((x) => x.elite);
+    if (!el) break;
+    // Keep alive; park near player so charge contact is possible after telegraph
+    el.hp = Math.max(el.hp, 40);
+    if (el.phase === 'telegraph') {
+      el.x = g.px;
+      el.z = g.pz;
+    }
+    const { events } = g.step(dt);
+    for (const ev of events) {
+      if (ev.type === 'telegraph') teleDurations.push(ev.duration);
+      if (ev.type === 'eliteCharge') chargeSegs.push(ev.segment);
+      if (ev.type === 'hurt' && el.phase === 'telegraph') hurtInTele = true;
+    }
+    assert.equal(g.enemies.filter((x) => x.elite).length, 1, 'still max one elite during combo');
+  }
+  assert.ok(teleDurations.length >= 2, 'two telegraphs in combo, got ' + teleDurations.length);
+  assert.ok(teleDurations[0] >= 1.2, 'seg0 telegraph ≥1.2s');
+  assert.ok(teleDurations[1] >= 1.2, 'seg1 telegraph ≥1.2s');
+  assert.equal(hurtInTele, false, 'no hurt during either telegraph');
+  assert.ok(chargeSegs.length >= 1, 'at least one charge after telegraph');
+  // Force second charge contact damage after both telegraphs completed
+  const el = g.enemies.find((x) => x.elite);
+  assert.ok(el, 'hunter still alive after multi-seg');
+  el.phase = 'charge';
+  el.phaseT = hCfg.chargeSec;
+  el.chargeDx = 0;
+  el.chargeDz = 1;
+  el.x = g.px;
+  el.z = g.pz;
+  g.invuln = 0;
+  const hpBefore = g.hp;
+  const { events: cev } = g.step(dt);
+  assert.ok(cev.some((ev) => ev.type === 'hurt') || g.hp < hpBefore, 'charge deals damage after telegraphs');
+}
+
+// Max one elite: sentinel alive blocks hunter beat (beat marked fired, no second elite)
+{
+  const g = new Game({ seed: 61 });
+  g.enemies.length = 0;
+  g.invuln = 999;
+  g.t = 120;
+  g._beatsFired = {};
+  g._spawnPauseUntil = 0;
+  const s = g._spawnElite({ at: 120, kind: 'elite', id: 'sentinel' }, []);
+  assert.ok(s);
+  g._beatsFired['120:sentinel'] = true;
+  g.t = 240;
+  const { events } = g.step(dt);
+  assert.equal(g.enemies.filter((e) => e.elite).length, 1, 'max one elite when hunter would fire');
+  assert.ok(g._beatsFired['240:hunter'], 'hunter beat marked even if skipped');
+  assert.ok(!g.enemies.some((e) => e.type === 'hunter'), 'no hunter while sentinel alive');
+}
+
 console.log('beats OK', {
   eliteAt: BEATS[0].at,
-  bossAt: BEATS[1].at,
+  elite2At: BEATS[1].at,
+  bossAt: BEATS[2].at,
+  hunterComboSegs: eliteCfg('hunter').comboSegs,
   volleyTelegraphSec: BOSS.volleyTelegraphSec,
   cardChoices: BOSS.cardChoices,
   trialSurviveSec: TRIAL.surviveSec,

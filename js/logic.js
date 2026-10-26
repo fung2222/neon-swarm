@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, buildWeaponPickupOffer } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, buildWeaponPickupOffer, eliteCfg } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -127,7 +127,7 @@ export function closeMuzzlePos(px, pz, mwX, mwZ, aimX, aimZ, targetDist, targetR
 function isPunchKill(e, heavyWeapon = false) {
   if (heavyWeapon) return true;
   const k = e && e.kind;
-  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || k === 'swarm_core' || !!(e && (e.elite || e.boss));
+  return k === 'chief' || k === 'mech' || k === 'walker' || k === 'officer' || k === 'sentinel' || k === 'hunter' || k === 'swarm_core' || !!(e && (e.elite || e.boss));
 }
 
 function mulberry32(a) {
@@ -322,7 +322,7 @@ export class Game {
     });
   }
 
-  /** Fire named beats (elite @120, boss @360). Spawns pause briefly before arrival. */
+  /** Fire named beats (elite @120/@240, boss @360). Spawns pause briefly before arrival. */
   _beatCheck(events) {
     for (const beat of BEATS) {
       const key = String(beat.at) + ':' + (beat.id || beat.kind);
@@ -354,12 +354,13 @@ export class Game {
     const type = beat.id || ELITE.type || 'sentinel';
     const def = ENEMIES[type];
     if (!def) return null;
+    const cfg = eliteCfg(type);
     const ang = this.rng() * Math.PI * 2;
     const dist = ARENA.spawnNear + 2 + this.rng() * 3;
     const c = this._softClamp(this.px + Math.cos(ang) * dist, this.pz + Math.sin(ang) * dist, def.radius);
     const { hpMul, speedMul } = swarmPressure(this.t);
-    const walkMin = ELITE.walkSecMin;
-    const walkMax = ELITE.walkSecMax;
+    const walkMin = cfg.walkSecMin;
+    const walkMax = cfg.walkSecMax;
     const e = {
       id: this._nextEid++,
       type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
@@ -374,11 +375,15 @@ export class Game {
       elite: true,
       phase: 'walk',
       phaseT: walkMin + this.rng() * (walkMax - walkMin),
-      telegraphDur: ELITE.telegraphSec,
+      telegraphDur: cfg.telegraphSec,
       telegraphAt: 0,
       damageAt: 0,
       chargeDx: 0,
       chargeDz: 1,
+      comboSeg: 0,
+      comboSegs: Math.max(1, cfg.comboSegs || 1),
+      dualLane: !!cfg.dualLane,
+      _comboContinue: false,
     };
     this.enemies.push(e);
     events.push({
@@ -391,11 +396,38 @@ export class Game {
     return e;
   }
 
+  _beginEliteTelegraph(e, events, cfg) {
+    e.phase = 'telegraph';
+    e.phaseT = cfg.telegraphSec;
+    e.telegraphDur = cfg.telegraphSec;
+    e.telegraphAt = this.t;
+    e.damageAt = this.t + cfg.telegraphSec;
+    const adx = this.px - e.x, adz = this.pz - e.z;
+    const al = Math.hypot(adx, adz) || 1;
+    e.chargeDx = adx / al;
+    e.chargeDz = adz / al;
+    e.vx = 0; e.vz = 0;
+    events.push({
+      type: 'telegraph',
+      eliteId: e.id,
+      eliteType: e.type,
+      segment: e.comboSeg || 0,
+      segments: e.comboSegs || 1,
+      x: e.x, z: e.z,
+      dx: e.chargeDx, dz: e.chargeDz,
+      duration: cfg.telegraphSec,
+      damageAt: e.damageAt,
+      dualLane: !!e.dualLane,
+    });
+  }
+
   /**
-   * Elite state machine: walk → telegraph (≥1.2s, no contact dmg ramp) → charge → recover.
-   * Damage from charge contact only after telegraph completes (telegraphAt → damageAt).
+   * Elite state machine (per-type via eliteCfg):
+   * walk → telegraph (≥1.2s) → charge → [short recover → telegraph → charge]×(comboSegs-1) → recover.
+   * Contact damage only during charge after telegraph completes.
    */
   _tickElite(e, dt, events) {
+    const cfg = eliteCfg(e.type);
     e.phaseT -= dt;
     if (e.hit > 0) e.hit -= dt;
     if (e.slow > 0) e.slow -= dt;
@@ -404,7 +436,7 @@ export class Game {
     if (e.phase === 'walk') {
       const dx = this.px - e.x, dz = this.pz - e.z;
       const len = Math.hypot(dx, dz) || 1;
-      const spd = e.speed * e.chase * ELITE.walkSpeedMul * slowMul;
+      const spd = e.speed * e.chase * cfg.walkSpeedMul * slowMul;
       e.vx = (dx / len) * spd;
       e.vz = (dz / len) * spd;
       e.x += e.vx * dt;
@@ -413,35 +445,20 @@ export class Game {
       e.x = ec.x; e.z = ec.z;
       e.animPhase = (e.animPhase || 0) + Math.max(6, spd * 5) * dt;
       if (e.phaseT <= 0) {
-        e.phase = 'telegraph';
-        e.phaseT = ELITE.telegraphSec;
-        e.telegraphDur = ELITE.telegraphSec;
-        e.telegraphAt = this.t;
-        e.damageAt = this.t + ELITE.telegraphSec;
-        const adx = this.px - e.x, adz = this.pz - e.z;
-        const al = Math.hypot(adx, adz) || 1;
-        e.chargeDx = adx / al;
-        e.chargeDz = adz / al;
-        e.vx = 0; e.vz = 0;
-        events.push({
-          type: 'telegraph',
-          eliteId: e.id,
-          x: e.x, z: e.z,
-          dx: e.chargeDx, dz: e.chargeDz,
-          duration: ELITE.telegraphSec,
-          damageAt: e.damageAt,
-        });
+        e.comboSeg = 0;
+        e._comboContinue = false;
+        this._beginEliteTelegraph(e, events, cfg);
       }
     } else if (e.phase === 'telegraph') {
       e.vx = 0; e.vz = 0;
       // Hold aim lock; no charge damage yet
       if (e.phaseT <= 0) {
         e.phase = 'charge';
-        e.phaseT = ELITE.chargeSec;
-        events.push({ type: 'eliteCharge', eliteId: e.id });
+        e.phaseT = cfg.chargeSec;
+        events.push({ type: 'eliteCharge', eliteId: e.id, segment: e.comboSeg || 0 });
       }
     } else if (e.phase === 'charge') {
-      const spd = ELITE.chargeSpeed * slowMul;
+      const spd = cfg.chargeSpeed * slowMul;
       e.vx = e.chargeDx * spd;
       e.vz = e.chargeDz * spd;
       e.x += e.vx * dt;
@@ -451,7 +468,7 @@ export class Game {
       e.animPhase = (e.animPhase || 0) + 14 * dt;
       // Contact damage only during charge (after telegraph)
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-        const dmg = ELITE.chargeDamage != null ? ELITE.chargeDamage : (e.damage || 3);
+        const dmg = cfg.chargeDamage != null ? cfg.chargeDamage : (e.damage || 3);
         const taken = Math.max(1, dmg - (this.armor || 0));
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
@@ -467,15 +484,24 @@ export class Game {
         }
       }
       if (e.phaseT <= 0) {
+        e.comboSeg = (e.comboSeg || 0) + 1;
+        const more = e.comboSeg < (e.comboSegs || 1);
         e.phase = 'recover';
-        e.phaseT = ELITE.recoverSec;
+        e.phaseT = more ? (cfg.recoverShortSec || 0.5) : cfg.recoverSec;
+        e._comboContinue = more;
         e.vx = 0; e.vz = 0;
       }
     } else if (e.phase === 'recover') {
       e.vx = 0; e.vz = 0;
       if (e.phaseT <= 0) {
-        e.phase = 'walk';
-        e.phaseT = ELITE.walkSecMin + this.rng() * (ELITE.walkSecMax - ELITE.walkSecMin);
+        if (e._comboContinue) {
+          e._comboContinue = false;
+          this._beginEliteTelegraph(e, events, cfg);
+        } else {
+          e.comboSeg = 0;
+          e.phase = 'walk';
+          e.phaseT = cfg.walkSecMin + this.rng() * (cfg.walkSecMax - cfg.walkSecMin);
+        }
       }
     } else {
       e.phase = 'walk';

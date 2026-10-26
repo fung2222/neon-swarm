@@ -377,6 +377,85 @@ function eliteMesh() {
   return g;
 }
 
+/** Phase 3 elite #2: low hunter-mech — quadruped + dual blade pods (cyan/steel, no red). */
+function hunterMesh() {
+  const cyan = 0x3de0ff;
+  const steel = 0x6a7a8c;
+  const g = new THREE.Group();
+  const metal = new THREE.MeshStandardMaterial({
+    color: 0x2a3440, emissive: 0x152028, emissiveIntensity: 0.55, roughness: 0.42, metalness: 0.72,
+  });
+  const plate = new THREE.MeshStandardMaterial({
+    color: 0x1a222c, emissive: 0x0e141a, emissiveIntensity: 0.4, roughness: 0.48, metalness: 0.78,
+  });
+  const trim = new THREE.MeshStandardMaterial({
+    color: cyan, emissive: cyan, emissiveIntensity: 0.95, roughness: 0.28, metalness: 0.35,
+  });
+  const bladeM = new THREE.MeshStandardMaterial({
+    color: steel, emissive: cyan, emissiveIntensity: 0.55, roughness: 0.25, metalness: 0.85,
+  });
+  const ringM = new THREE.MeshBasicMaterial({ color: cyan, transparent: true, opacity: 0.85 });
+
+  // Low elongated torso (quadruped silhouette — distinct from tall SENTINEL biped)
+  const torso = slab(0.62, 0.48, 0.32, 0.85, metal);
+  torso.position.set(0, 0.42, 0);
+  const chest = box(0.36, 0.16, 0.1, trim, 0, 0.5, 0.38);
+  const head = box(0.26, 0.18, 0.3, plate, 0, 0.58, 0.52, 0.12);
+  const vis = box(0.22, 0.05, 0.04, trim, 0, 0.6, 0.68);
+  g.add(torso, chest, head, vis);
+
+  // Four legs (front + rear pairs)
+  const legs = [];
+  const places = [
+    [-0.26, 0.22, 0.28],
+    [0.26, 0.22, 0.28],
+    [-0.24, 0.22, -0.32],
+    [0.24, 0.22, -0.32],
+  ];
+  for (const [lx, ly, lz] of places) {
+    const leg = new THREE.Group();
+    leg.position.set(lx, ly, lz);
+    const thigh = slab(0.12, 0.14, 0.22, 0.14, metal);
+    thigh.position.set(0, -0.12, 0);
+    const shin = slab(0.1, 0.12, 0.2, 0.12, plate);
+    shin.position.set(0, -0.32, 0.02);
+    const foot = slab(0.12, 0.16, 0.07, 0.2, plate);
+    foot.position.set(0, -0.44, 0.04);
+    leg.add(thigh, shin, foot);
+    g.add(leg);
+    legs.push(leg);
+  }
+
+  // Dual blade / pod weapons on hips (reads as hunter, not cannon sentinel)
+  for (const side of [-1, 1]) {
+    const pod = slab(0.14, 0.18, 0.16, 0.28, metal);
+    pod.position.set(side * 0.4, 0.48, 0.05);
+    const blade = box(0.05, 0.08, 0.55, bladeM, side * 0.48, 0.46, 0.42, 0.02);
+    blade.rotation.y = side * 0.12;
+    const tip = box(0.04, 0.05, 0.12, trim, side * 0.5, 0.46, 0.72, 0.01);
+    g.add(pod, blade, tip);
+  }
+
+  // Dorsal fin / sensor mast — unique read vs SENTINEL shoulder cannons
+  const mast = box(0.08, 0.28, 0.12, plate, 0, 0.72, -0.1);
+  const mastGlow = box(0.06, 0.08, 0.06, trim, 0, 0.88, -0.1);
+  g.add(mast, mastGlow);
+
+  const eliteRing = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.032, 8, 36), ringM);
+  eliteRing.rotation.x = -Math.PI / 2;
+  eliteRing.position.y = 0.06;
+  eliteRing.userData.eliteRing = true;
+  g.add(eliteRing);
+  g.add(unitRing(cyan, 0.55, 0.42));
+
+  g.scale.setScalar(1.45);
+  g.userData.legs = legs;
+  g.userData.eliteRing = eliteRing;
+  g.userData.type = 'hunter';
+  g.userData.elite = true;
+  return g;
+}
+
 /** Ground warning lane: thin additive strip elite → player during telegraph. */
 function warningLane() {
   const g = new THREE.Group();
@@ -479,6 +558,7 @@ function enemyMeshFor(type) {
     return supportMesh('drone', def.color || 0x00e5ff);
   }
   if (type === 'sentinel') return eliteMesh();
+  if (type === 'hunter') return hunterMesh();
   if (type === 'swarm_core') return bossMesh();
   // Remaining types keep approved colour-coded PNG billboards.
   return buildEnemySprite(type);
@@ -935,9 +1015,12 @@ export class View {
     this.novaRing.visible = false;
     this.group.add(this.novaRing);
 
-    // Phase 3: elite charge telegraph lane (synced from enemy.phase === 'telegraph')
+    // Phase 3: elite charge telegraph lane(s) — hunter uses twin lanes (dual blades)
     this.warnLane = warningLane();
     this.group.add(this.warnLane);
+    this.warnLane2 = warningLane();
+    if (this.warnLane2.userData.mat) this.warnLane2.userData.mat.color.setHex(0x7dffef);
+    this.group.add(this.warnLane2);
     // Boss volley lanes (up to 6) + orbit floor ring
     this.bossLanes = [];
     for (let i = 0; i < 6; i++) {
@@ -1411,7 +1494,7 @@ export class View {
     this._recycle(this._ePool, this.enemyG);
     for (const e of game.enemies) {
       const m = this._take(this._ePool, this.enemyG, () => enemyMeshFor(e.type));
-      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'swarm_core');
+      const wantProc = (e.type === 'staffer' || e.type === 'guard' || e.type === 'drone' || e.type === 'sentinel' || e.type === 'hunter' || e.type === 'swarm_core');
       const haveProc = !m.userData.isSprite;
       if (m.userData.type !== e.type || wantProc !== haveProc) {
         // Never retarget a PNG sprite into a procedural lab type (or the reverse) —
@@ -1683,6 +1766,7 @@ export class View {
   /** Draw ground warning strip from elite → locked charge aim while telegraphing. */
   _syncWarnLane(game) {
     const lane = this.warnLane;
+    const lane2 = this.warnLane2;
     if (!lane) return;
     let elite = null;
     for (const e of game.enemies) {
@@ -1690,25 +1774,37 @@ export class View {
     }
     if (!elite) {
       lane.visible = false;
+      if (lane2) lane2.visible = false;
       return;
     }
     const dx = elite.chargeDx != null ? elite.chargeDx : (game.px - elite.x);
     const dz = elite.chargeDz != null ? elite.chargeDz : (game.pz - elite.z);
     const len = Math.hypot(dx, dz) || 1;
     const ndx = dx / len, ndz = dz / len;
-    // Lane length: toward player lock distance, clamped
+    // Perpendicular for twin-lane offset (hunter dual blades)
+    const pdx = -ndz, pdz = ndx;
     const dist = Math.min(14, Math.max(3.5, Math.hypot(game.px - elite.x, game.pz - elite.z)));
-    const mx = elite.x + ndx * dist * 0.5;
-    const mz = elite.z + ndz * dist * 0.5;
-    lane.visible = true;
-    lane.position.set(mx, 0, mz);
-    lane.rotation.y = Math.atan2(ndx, ndz);
-    const quad = lane.userData.quad;
-    const mat = lane.userData.mat;
-    if (quad) quad.scale.set(1.1, dist, 1);
-    if (mat) {
-      const u = Math.max(0, Math.min(1, 1 - (elite.phaseT || 0) / Math.max(0.01, elite.telegraphDur || 1.2)));
-      mat.opacity = 0.35 + u * 0.45;
+    const u = Math.max(0, Math.min(1, 1 - (elite.phaseT || 0) / Math.max(0.01, elite.telegraphDur || 1.2)));
+    const yaw = Math.atan2(ndx, ndz);
+    const place = (ln, ox, oz, width) => {
+      if (!ln) return;
+      const mx = elite.x + ndx * dist * 0.5 + ox;
+      const mz = elite.z + ndz * dist * 0.5 + oz;
+      ln.visible = true;
+      ln.position.set(mx, 0, mz);
+      ln.rotation.y = yaw;
+      const quad = ln.userData.quad;
+      const mat = ln.userData.mat;
+      if (quad) quad.scale.set(width, dist, 1);
+      if (mat) mat.opacity = 0.35 + u * 0.45;
+    };
+    if (elite.dualLane || elite.type === 'hunter') {
+      const off = 0.55;
+      place(lane, pdx * off, pdz * off, 0.85);
+      place(lane2, -pdx * off, -pdz * off, 0.85);
+    } else {
+      place(lane, 0, 0, 1.1);
+      if (lane2) lane2.visible = false;
     }
   }
 
@@ -1891,6 +1987,7 @@ if (typeof window !== 'undefined') {
     humanMesh,
     supportMesh,
     eliteMesh,
+    hunterMesh,
     bossMesh,
     warningLane,
     enemyMeshFor,

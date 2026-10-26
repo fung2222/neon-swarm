@@ -5,7 +5,7 @@
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
 > **文件日期：** 2026-10-26（Asia/Hong_Kong）  
-> **建議承接基準：** v0.9.12 aim/hit fast rushers（pickup = v0.9.11；boss = v0.9.10；elite = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
+> **建議承接基準：** v0.9.13 Phase 3 elite #2 HUNTER RAID（aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；elite#1 = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）  
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -16,7 +16,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.12`**（aim/hit：swept collision + lead）；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.13`**（elite #2 HUNTER RAID @240）；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -27,6 +27,7 @@
   - v0.9.10 — Phase 3 boss beat：洪流核心 SWARM CORE @t=360；Orbit／Volley／Frenzy HP 三分相位；volley lanes ≥0.8s telegraph；頂部細血條＋雙語橫幅；擊殺＝3 卡選擇＋分數加成 `5000×(1+t/60)`；截圖 `tests/screenshots/phase3-boss/`。
   - v0.9.11 — Phase 6 weapon pickup：地面 `kind:'weapon'` crate 暫停並開 level-cards 風格選擇（未擁有＝獲得／保留；已擁有＝升級疊層／保留；滿級＝兌換修復／保留）；`weaponOffer` + `levelup from:'pickup'`；經同一 `taken`／`applyCard` 路徑；禁止靜靜覆蓋；截圖 `tests/screenshots/phase6-pickup/`。
   - v0.9.12 — aim/hit fast rushers：子彈掃掠碰撞（segment→circle）；MG／laser 等直射輕量 lead（clamp ~0.30s）；近距縮短 muzzle spawn；測試 `tests/aim-hit-fast.test.mjs`。未改 bulletDmg／HP 表。Box＝SwiftShader，非真機驗收。
+  - v0.9.13 — Phase 3 elite #2：獵殺機甲 HUNTER RAID @t≈240；cyan/steel 四足／低剪影＋雙刃；walk→telegraph≥1.2s→charge→短 recover→第二段 telegraph≥1.2s→charge→recover；雙 warning lane；max one elite；擊殺同 elite#1（XP＋2 卡）；截圖 `tests/screenshots/phase3-elite2/`。Box＝SwiftShader，非真機驗收。
   - PERF-200 初測（Roy 桌面 GTX 1070 Ti）：見 `docs/PERF-BASELINE.md`（text baseline；大 dumps 在 `tests/performance-results/` 預設不提交）。
 - 2026-10-26 Phase 0 重跑 headless regression：`logic`、`levelup`、`health`、`balance`、`grenade-aim`、`bake-player`、`muzzle`、`milestone-a`、`smoke_files` — **全部 PASS**。
 - `horn` 烘焙素材確實有 **32 張 PNG**：4 方向 ×（idle 1＋run 4＋gun 1＋hurt 1＋death 1），另有 atlas／anchors JSON。
@@ -45,7 +46,7 @@
 - PERF-200 僅有桌面 GTX 1070 Ti 初測；**手機真機 200 敵效能未驗收**。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
 - Phase 2 敵人光圈：grunt rings 已 dim（v0.9.4），戰鬥可讀性其餘工作未完。
-- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss beat（v0.9.10）＋ Phase 6 武器拾取選擇（v0.9.11）＋ aim/hit fast（v0.9.12）已落地；完整五區地圖、elite #2 仍未完成。Boss 仍係 lab 地圖上的 landmark beat，唔係 endless 五區節奏。武器模型仍係 `taken` 疊層（無多槽庫存）。
+- Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）已落地；完整五區地圖、endless 90s elites 仍未完成。Boss／elite 仍係 lab 地圖上的 landmark beat。武器模型仍係 `taken` 疊層（無多槽庫存）。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
 **開始前仍然要確認 `main` 目前 HEAD 與 live 部署版本；不要把本文件的日期當成即時倉庫狀態。**
@@ -342,7 +343,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 6 — 武器、拾取、地圖分區與內容擴展
 
-> **部分完成（v0.9.11）：** 武器地面拾取選擇器 — 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。未做：多槽庫存、新武器數值大改、地圖分區、elite #2。
+> **部分完成（v0.9.11）：** 武器地面拾取選擇器 — 撿到 weapon crate 時暫停並用 level-cards UI 提供獲得／升級疊層／保留／滿級兌換修復；事件 `weaponOffer`／`levelup from:'pickup'`；單元測試 `tests/weapon-pickup.test.mjs`；截圖 `tests/screenshots/phase6-pickup/`。未做：多槽庫存、新武器數值大改、地圖分區、endless elites。elite #2 已於 v0.9.13。
 
 - 武器拾取遇到已有裝備時，要提供替換／保留／槽位選擇；**不可靜靜覆蓋裝備**。（v0.9.11：以疊層升級／保留實作；現有架構無多槽。）
 - 新武器必須遵守 primary visual aim 與 per-fire-event aim 分工。
@@ -408,4 +409,4 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**Phase 0 baseline（本輪）應對齊 v0.9.6 / `ec12087`。** 不要立即開發 Precision 或 Morph，也不要在未授權下再開手機 GPU 減壓。下一步建議：**Phase 1 — horn bake 畫質**（模型／材質／燈光／重新 bake；do not start in the same turn as Phase 0）。手機 mid-run context loss 屬 deferred gap。若 Roy 已指定其他優先項，仍沿用本文件的小步修改、測試、截圖與如實交接流程。
+**目前基準 v0.9.13（elite #2 HUNTER）。** Active task 見 `docs/AGENT_TASK.md`（本輪 PHASE3-ELITE2-001）。不要開 Precision／Morph、horn bake、手機 GPU、五區地圖重做。Recommended next（do not start）：下一地圖區／endless beats。SwiftShader ≠ 真機驗收。

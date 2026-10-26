@@ -187,6 +187,12 @@ export const ENEMIES = {
     hp: 90, speed: 1.15, radius: 0.72, xp: 18, score: 400, chase: 0.85, damage: 3,
     color: 0xb44dff, elite: true,
   },
+  // ---- Phase 3 elite #2 (HUNTER RAID) — multi-segment telegraph ----
+  hunter: {
+    zh: '獵殺機甲', en: 'HUNTER RAID', family: 'support', kind: 'hunter', tier: 5,
+    hp: 95, speed: 1.35, radius: 0.68, xp: 18, score: 420, chase: 0.95, damage: 3,
+    color: 0x3de0ff, elite: true,
+  },
   // ---- Phase 3 boss beat (SWARM CORE) ----
   swarm_core: {
     zh: '洪流核心', en: 'SWARM CORE', family: 'support', kind: 'swarm_core', tier: 6,
@@ -197,19 +203,47 @@ export const ENEMIES = {
 
 export const ENEMY_BY_ID = ENEMIES;
 
-/** Simplified SENTINEL PRIME (BEATS-PLAN) — one elite beat with readable telegraph. */
+/**
+ * Elite defaults (SENTINEL) + per-type overrides (BEATS-PLAN elite #2 = more segments).
+ * Use eliteCfg(type) so _spawnElite / _tickElite stay shared.
+ */
 export const ELITE = {
   type: 'sentinel',
   telegraphSec: 1.2,
   chargeSpeed: 9.5,
   chargeSec: 0.55,
   recoverSec: 2.0,
+  recoverShortSec: 0.5,
   walkSecMin: 1.6,
   walkSecMax: 2.8,
   spawnPauseSec: 1.5,
   walkSpeedMul: 0.85,
   chargeDamage: 3,
+  comboSegs: 1,
+  byType: {
+    sentinel: { comboSegs: 1 },
+    hunter: {
+      telegraphSec: 1.25,
+      chargeSpeed: 10.8,
+      chargeSec: 0.48,
+      recoverSec: 1.8,
+      recoverShortSec: 0.55,
+      walkSecMin: 1.2,
+      walkSecMax: 2.2,
+      walkSpeedMul: 1.05,
+      chargeDamage: 3,
+      comboSegs: 2,
+      dualLane: true,
+    },
+  },
 };
+
+/** Merge ELITE defaults with per-type overrides (no byType nesting in result). */
+export function eliteCfg(type) {
+  const over = (ELITE.byType && type && ELITE.byType[type]) || {};
+  const { byType, ...base } = ELITE;
+  return { ...base, ...over };
+}
 
 /**
  * SWARM CORE boss (BEATS-PLAN §3) — HP-third phases: Orbit → Volley → Frenzy.
@@ -242,9 +276,10 @@ export const BOSS = {
   podCount: 8,
 };
 
-/** Named run beats: elite #1 @2:00, boss @6:00 (inside trial window). */
+/** Named run beats: elite #1 @2:00, elite #2 @4:00, boss @6:00 (inside trial window). */
 export const BEATS = [
   { at: 120, kind: 'elite', id: 'sentinel' },
+  { at: 240, kind: 'elite', id: 'hunter' },
   { at: 360, kind: 'boss', id: 'swarm_core' },
 ];
 

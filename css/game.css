@@ -425,7 +425,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   font-weight: 600;
 }
 
-/* ---- v0.9.12 aim-hit-fast; v0.9.11 Phase 6: weapon pickup reuses .level-cards (title via #level-title) ---- */
+/* ---- v0.9.13 elite#2 hunter; v0.9.12 aim-hit-fast; v0.9.11 Phase 6 pickup ---- */
 /* ---- v0.9.10 Phase 3: boss HP strip under top HUD ---- */
 .boss-hp {
   position: absolute;
