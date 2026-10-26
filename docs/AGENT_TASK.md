@@ -30,7 +30,7 @@
 
 ### Recently completed（do not re-implement）
 
-- `PHASE6-PERIODIC-DANGER-001` → **v0.9.41** (`PENDING`)
+- `PHASE6-PERIODIC-DANGER-001` → **v0.9.41** (`3040b5e`)
 - `PHASE3-ENEMY-BOMBER-001` → **v0.9.40** (`2ab9dbb`)
 - `PHASE6-RESULT-SHARE-001` → **v0.9.39** (`87eb03a`)
 
