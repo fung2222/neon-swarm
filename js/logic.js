@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, DANGER_PULSE, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, DANGER_PULSE, ZONE_PRESSURE, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -334,6 +334,11 @@ export class Game {
     this.dangerPulses = [];
     this._nextDangerPulseAt = null;
     this._nextDangerPulseId = 1;
+    // Phase 6 shrinking safe zone (v0.9.42)
+    this.zonePressureActive = false;
+    this.safeR = ZONE_PRESSURE.startR != null ? ZONE_PRESSURE.startR : 30;
+    this._zonePressureTickAcc = 0;
+    this._zonePressureStarted = false;
     for (let i = 0; i < 10; i++) this._spawn();
   }
 
@@ -2722,6 +2727,78 @@ export class Game {
     });
   }
 
+  /**
+   * Shrinking / pollution safe zone (PHASE6-ZONE-PRESSURE-001).
+   * After startAfter, safeR lerps startR→endR; outside → tick DoT. Skip when paused/dead (caller).
+   */
+  _tickZonePressure(dt, events) {
+    const cfg = ZONE_PRESSURE;
+    const startR = cfg.startR != null ? cfg.startR : 30;
+    const endR = cfg.endR != null ? cfg.endR : 16;
+    const shrinkSec = Math.max(1, cfg.shrinkSec != null ? cfg.shrinkSec : 200);
+    const startAfter = cfg.startAfter != null ? cfg.startAfter : 110;
+
+    if (this.t < startAfter) {
+      this.zonePressureActive = false;
+      this.safeR = startR;
+      return;
+    }
+
+    if (!this._zonePressureStarted) {
+      this._zonePressureStarted = true;
+      this.zonePressureActive = true;
+      this.safeR = startR;
+      this._zonePressureTickAcc = 0;
+      events.push({
+        type: 'zonePressure',
+        phase: 'start',
+        safeR: this.safeR,
+        startR,
+        endR,
+      });
+    }
+
+    this.zonePressureActive = true;
+    const u = Math.max(0, Math.min(1, (this.t - startAfter) / shrinkSec));
+    this.safeR = startR + (endR - startR) * u;
+
+    if (!this.alive) return;
+
+    const dist = Math.hypot(this.px, this.pz);
+    const outside = dist > this.safeR + (typeof PLAYER !== 'undefined' ? PLAYER.radius * 0.25 : 0);
+    if (!outside) {
+      this._zonePressureTickAcc = 0;
+      return;
+    }
+
+    const tickSec = cfg.tickSec != null ? cfg.tickSec : 0.5;
+    const dmgPerSec = cfg.dmgPerSec != null ? cfg.dmgPerSec : 1.0;
+    this._zonePressureTickAcc += dt;
+    while (this._zonePressureTickAcc >= tickSec) {
+      this._zonePressureTickAcc -= tickSec;
+      if (this.invuln > 0) continue;
+      const raw = dmgPerSec * tickSec;
+      const taken = Math.max(0.15, raw - (this.armor || 0) * 0.15);
+      this.hp -= taken;
+      this.hitFlash = Math.max(this.hitFlash, 0.22);
+      events.push({
+        type: 'hurt',
+        by: 'zonePressure',
+        nameZh: '污染區',
+        nameEn: 'Pollution Zone',
+        zonePressure: true,
+        amount: taken,
+      });
+      if (this.hp <= 0) {
+        this.alive = false;
+        this.hp = 0;
+        this.killer = { kind: 'zonePressure', zh: '污染區', en: 'Pollution Zone' };
+        events.push({ type: 'dead' });
+        break;
+      }
+    }
+  }
+
   step(dt) {
     if (!this.alive || this.pausedForLevel) return { events: [] };
     const events = [];
@@ -2811,6 +2888,7 @@ export class Game {
 
     this._tickBossHazards(dt, events);
     this._tickDangerPulses(dt, events);
+    this._tickZonePressure(dt, events);
 
     for (let i = this.gems.length - 1; i >= 0; i--) {
       const g = this.gems[i];

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
-import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, DANGER_PULSE } from './config.js';
+import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -959,6 +959,32 @@ function artilleryBlastRing() {
   return g;
 }
 
+
+/** Cyan/acid safe-zone edge ring (PHASE6-ZONE-PRESSURE-001; ≠ red danger pulse / bomber). */
+function zonePressureRing() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x3dffc8, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide,
+  });
+  // Unit ring — scaled to safeR at sync time
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.97, 1.02, 96), mat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.08;
+  // Mild outer pollution wash (inner = safe edge, outer grows with scale vs ARENA)
+  const washMat = new THREE.MeshBasicMaterial({
+    color: 0x1a8060, transparent: true, opacity: 0.07, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const wash = new THREE.Mesh(new THREE.RingGeometry(1.0, 1.35, 64), washMat);
+  wash.rotation.x = -Math.PI / 2;
+  wash.position.y = 0.045;
+  g.add(wash, ring);
+  g.userData.ring = ring;
+  g.userData.wash = wash;
+  g.userData.mat = mat;
+  g.userData.washMat = washMat;
+  g.visible = false;
+  return g;
+}
 
 /** Red ground blast circle/ring for bomber telegraph (danger red = must-dodge self-AoE; ≠ artillery orange). */
 function bomberBlastRing() {
@@ -2121,6 +2147,9 @@ export class View {
       this.group.add(ring);
       this.dangerPulseRings.push(ring);
     }
+    // Phase 6 zone pressure: cyan/acid shrinking safe-edge ring
+    this.zonePressureEdge = zonePressureRing();
+    this.group.add(this.zonePressureEdge);
     // Phase 3 commander: up to 6 orange/red summon drop marks
     this.commanderSummonRings = [];
     for (let i = 0; i < 6; i++) {
@@ -2728,6 +2757,7 @@ export class View {
     this._syncArtilleryBlast(game);
     this._syncBomberBlast(game);
     this._syncDangerPulses(game);
+    this._syncZonePressure(game);
     this._syncCommanderSummon(game);
     this._syncBossHazards(game);
 
@@ -3055,6 +3085,29 @@ export class View {
     }
   }
 
+  /** Cyan/acid shrinking safe-edge (PHASE6-ZONE-PRESSURE-001; persistent boundary ≠ red pulse). */
+  _syncZonePressure(game) {
+    const edge = this.zonePressureEdge;
+    if (!edge) return;
+    const active = !!(game && game.zonePressureActive);
+    if (!active) {
+      edge.visible = false;
+      return;
+    }
+    const r = Math.max(1, game.safeR != null ? game.safeR : (ZONE_PRESSURE.startR || 30));
+    edge.visible = true;
+    edge.position.set(0, 0, 0);
+    edge.scale.setScalar(r);
+    // Mild breath so edge stays readable without bloom wash
+    const pulse = 1 + Math.sin((game.t || 0) * 2.4) * 0.008;
+    edge.scale.setScalar(r * pulse);
+    const mat = edge.userData.mat;
+    const washMat = edge.userData.washMat;
+    const outside = Math.hypot(game.px || 0, game.pz || 0) > r;
+    if (mat) mat.opacity = outside ? 0.88 : 0.62;
+    if (washMat) washMat.opacity = outside ? 0.12 : 0.055;
+  }
+
   /** Orange/red drop marks while commander is in summon telegraph. */
   _syncCommanderSummon(game) {
     const rings = this.commanderSummonRings || [];
@@ -3307,6 +3360,7 @@ if (typeof window !== 'undefined') {
     artilleryBlastRing,
     bomberMesh,
     bomberBlastRing,
+    zonePressureRing,
     supportMesh,
     eliteMesh,
     hunterMesh,

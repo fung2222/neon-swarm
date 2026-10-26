@@ -1563,6 +1563,13 @@ else if (ev.type === 'xp') {
         kickFx({ trauma: 0.04, fovKick: 0.01 });
       }
     }
+    else if (ev.type === 'zonePressure') {
+      // Persistent shrinking boundary start — light cue only; no toast (soft-juice DONE)
+      if (ev.phase === 'start') {
+        try { audio.wave(); } catch (_) {}
+        if (!MOBILE_GFX) kickFx({ trauma: 0.03, fovKick: 0.008 });
+      }
+    }
     else if (ev.type === 'eliteCharge') {
       // v0.9.20: mobile — trauma only, no bloomDamp
       if (MOBILE_GFX) kickFx({ trauma: 0.05, fovKick: 0.01 });

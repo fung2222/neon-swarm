@@ -316,6 +316,20 @@ export const DANGER_PULSE = {
 };
 
 /**
+ * Late-run shrinking safe zone (PHASE6-ZONE-PRESSURE-001).
+ * Persistent pollution boundary complementary to DANGER_PULSE (periodic red circles).
+ * ARENA.soft/half unchanged for early game; pressure only after startAfter.
+ */
+export const ZONE_PRESSURE = {
+  startAfter: 110,
+  shrinkSec: 200,
+  startR: 30,   // ~ARENA.soft
+  endR: 16,     // playable floor — not a point
+  dmgPerSec: 1.0,
+  tickSec: 0.5,
+};
+
+/**
  * Elite defaults (SENTINEL) + per-type overrides (BEATS-PLAN elite #2 = more segments).
  * Use eliteCfg(type) so _spawnElite / _tickElite stay shared.
  */
