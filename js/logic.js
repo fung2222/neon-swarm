@@ -113,6 +113,100 @@ export function leadAimDir(px, pz, ex, ez, evx, evz, bulletSpeed, maxLeadT = AIM
  * If the target is closer than the muzzle horizontal offset (+ enemy radius),
  * pull spawn back toward the player along aim so the bullet does not appear past the foe.
  */
+/**
+ * Continuous collision for simultaneously moving bullet + enemy (XZ).
+ * Equivalent to segment–circle in relative space: fix enemy at start, subtract
+ * enemy delta from bullet end. Same time interval for both segments.
+ */
+export function relativeSegmentHitsCircle(bx0, bz0, bx1, bz1, ex0, ez0, ex1, ez1, r) {
+  const rbx1 = bx1 - (ex1 - ex0);
+  const rbz1 = bz1 - (ez1 - ez0);
+  return segmentHitsCircle(bx0, bz0, rbx1, rbz1, ex0, ez0, r);
+}
+
+/**
+ * Quadratic intercept aim. Solves |E + V t - P| = S t for smallest t in (0, maxLeadT].
+ * Falls back to clamped linear prediction when no valid root (stationary / no solution).
+ * Unlike leadAimDir, this is a closed-form intercept — not dist/speed with a 0.30s cap alone.
+ */
+export function interceptAimDir(px, pz, ex, ez, evx, evz, bulletSpeed, maxLeadT = AIM_LEAD_MAX_T) {
+  const dx0 = ex - px, dz0 = ez - pz;
+  const dist = Math.hypot(dx0, dz0);
+  const spd = Math.max(1e-3, bulletSpeed || 1);
+  const maxT = Math.max(0, maxLeadT == null ? AIM_LEAD_MAX_T : maxLeadT);
+  const vx = evx || 0, vz = evz || 0;
+  const v2 = vx * vx + vz * vz;
+
+  // Near-stationary target → aim at current position
+  if (v2 < 1e-8) {
+    const len = dist || 1;
+    return {
+      dx: dx0 / len, dz: dz0 / len, leadT: Math.min(maxT, dist / spd),
+      dist, tx: ex, tz: ez, ok: true, exact: true,
+    };
+  }
+
+  // |D + V t|^2 = S^2 t^2  →  (V·V - S^2) t^2 + 2 D·V t + D·D = 0
+  const a = v2 - spd * spd;
+  const b = 2 * (dx0 * vx + dz0 * vz);
+  const c = dx0 * dx0 + dz0 * dz0; // == dist^2 ≥ 0
+
+  let bestT = -1;
+  if (Math.abs(a) < 1e-8) {
+    // Linear: b t + c = 0
+    if (Math.abs(b) > 1e-8) {
+      const t = -c / b;
+      if (t > 1e-6 && t <= maxT) bestT = t;
+    }
+  } else {
+    const disc = b * b - 4 * a * c;
+    if (disc >= 0) {
+      const s = Math.sqrt(disc);
+      const t0 = (-b - s) / (2 * a);
+      const t1 = (-b + s) / (2 * a);
+      for (const t of [t0, t1]) {
+        if (t > 1e-6 && t <= maxT && (bestT < 0 || t < bestT)) bestT = t;
+      }
+    }
+  }
+
+  if (bestT > 0) {
+    const tx = ex + vx * bestT;
+    const tz = ez + vz * bestT;
+    let dx = tx - px, dz = tz - pz;
+    const len = Math.hypot(dx, dz) || 1;
+    return { dx: dx / len, dz: dz / len, leadT: bestT, dist, tx, tz, ok: true, exact: true };
+  }
+
+  // No positive root within maxT: aim at predicted point at maxT (or current if maxT=0)
+  const leadT = maxT;
+  const tx = ex + vx * leadT;
+  const tz = ez + vz * leadT;
+  let dx = tx - px, dz = tz - pz;
+  const len = Math.hypot(dx, dz) || 1;
+  return { dx: dx / len, dz: dz / len, leadT, dist, tx, tz, ok: false, exact: false };
+}
+
+/**
+ * Two-stage intercept from player then actual muzzle (cardinal offset).
+ * Provisional dir → muzzleWorld → re-solve from muzzle; one extra pass if dir snap changes.
+ */
+export function muzzleInterceptAimDir(px, pz, ex, ez, evx, evz, bulletSpeed, maxLeadT = AIM_LEAD_MAX_T) {
+  let lead = interceptAimDir(px, pz, ex, ez, evx, evz, bulletSpeed, maxLeadT);
+  const mw1 = muzzleWorld(px, pz, lead.dx, lead.dz);
+  const muzzleHoriz = Math.hypot(mw1.x - px, mw1.z - pz);
+  const tDist = Math.hypot(ex - px, ez - pz);
+  // Inside muzzle reach: keep player-origin aim (closeMuzzlePos shortens spawn).
+  // Re-solving from a muzzle that sits past the foe produces backward wild shots.
+  if (tDist < muzzleHoriz + 0.35) return lead;
+  lead = interceptAimDir(mw1.x, mw1.z, ex, ez, evx, evz, bulletSpeed, maxLeadT);
+  const mw2 = muzzleWorld(px, pz, lead.dx, lead.dz);
+  if (mw2.dir !== mw1.dir) {
+    lead = interceptAimDir(mw2.x, mw2.z, ex, ez, evx, evz, bulletSpeed, maxLeadT);
+  }
+  return lead;
+}
+
 export function closeMuzzlePos(px, pz, mwX, mwZ, aimX, aimZ, targetDist, targetR = 0.3) {
   const muzzleHoriz = Math.hypot(mwX - px, mwZ - pz);
   if (!(targetDist < muzzleHoriz + (targetR || 0))) {
@@ -314,7 +408,7 @@ export class Game {
     this.enemies.push({
       id: this._nextEid++,
       type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
-      x: c.x, z: c.z, vx: 0, vz: 0,
+      x: c.x, z: c.z, prevX: c.x, prevZ: c.z, vx: 0, vz: 0,
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
@@ -417,7 +511,7 @@ export class Game {
     const e = {
       id: this._nextEid++,
       type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
-      x: c.x, z: c.z, vx: 0, vz: 0,
+      x: c.x, z: c.z, prevX: c.x, prevZ: c.z, vx: 0, vz: 0,
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
@@ -580,7 +674,7 @@ export class Game {
     const e = {
       id: this._nextEid++,
       type, kind: def.kind, family: def.family, nameZh: def.zh, nameEn: def.en,
-      x: c.x, z: c.z, vx: 0, vz: 0,
+      x: c.x, z: c.z, prevX: c.x, prevZ: c.z, vx: 0, vz: 0,
       hp: def.hp * hpMul, maxHp: def.hp * hpMul,
       speed: def.speed * speedMul, r: def.radius,
       xp: def.xp, score: def.score, color: def.color, chase: def.chase,
@@ -1095,14 +1189,14 @@ export class Game {
     if (!targets.length) return false;
     let primary = null;
     let primaryDx = 0, primaryDz = 1;
+    // Logic bullets: no random angle jitter (visual tracer scatter can stay elsewhere).
+    const maxT = Math.max(AIM_LEAD_MAX_T, this.bulletLife || PLAYER.bulletLife);
     for (const best of targets) {
-      const lead = leadAimDir(
+      const lead = muzzleInterceptAimDir(
         this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
-        this.bulletSpeed, AIM_LEAD_MAX_T
+        this.bulletSpeed, maxT
       );
-      const base = Math.atan2(lead.dz, lead.dx);
-      const jitter = (this.rng() - 0.5) * 0.08;
-      const dx = Math.cos(base + jitter), dz = Math.sin(base + jitter);
+      const dx = lead.dx, dz = lead.dz;
       const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
       const b = this._emitBullet(dx, dz, {
         weapon: 'mg',
@@ -1126,9 +1220,9 @@ export class Game {
     const best = targets[0];
     const stacks = this.laser;
     const speed = 38;
-    const lead = leadAimDir(
+    const lead = muzzleInterceptAimDir(
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
-      speed, AIM_LEAD_MAX_T
+      speed, Math.max(AIM_LEAD_MAX_T, 0.28)
     );
     const dx = lead.dx, dz = lead.dz;
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
@@ -1153,9 +1247,9 @@ export class Game {
     const best = targets[0];
     const stacks = this.shotgun;
     const speed = 16 + stacks;
-    const lead = leadAimDir(
+    const lead = muzzleInterceptAimDir(
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
-      speed, AIM_LEAD_MAX_T
+      speed, Math.max(AIM_LEAD_MAX_T, 0.22)
     );
     const base = Math.atan2(lead.dz, lead.dx);
     const n = 5 + stacks;
@@ -1189,9 +1283,9 @@ export class Game {
     const best = targets[0];
     const stacks = this.rocket;
     const speed = 7.5 + stacks * 0.8;
-    const lead = leadAimDir(
+    const lead = muzzleInterceptAimDir(
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
-      speed, AIM_LEAD_MAX_T
+      speed, Math.max(AIM_LEAD_MAX_T, 1.6)
     );
     const dx = lead.dx, dz = lead.dz;
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
@@ -1251,9 +1345,9 @@ export class Game {
     const best = targets[0];
     const stacks = this.plasma;
     const speed = 9;
-    const lead = leadAimDir(
+    const lead = muzzleInterceptAimDir(
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
-      speed, AIM_LEAD_MAX_T
+      speed, Math.max(AIM_LEAD_MAX_T, 0.9)
     );
     const dx = lead.dx, dz = lead.dz;
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
@@ -1426,6 +1520,133 @@ export class Game {
     return fired;
   }
 
+
+  /**
+   * Advance all enemies one dt, recording prevX/prevZ at the start of the interval.
+   * Contact damage / elite / boss AI stay here (same as pre-reorder).
+   */
+  _moveEnemies(dt, events) {
+    for (const e of this.enemies) {
+      e.prevX = e.x;
+      e.prevZ = e.z;
+      if (e.boss) {
+        this._tickBoss(e, dt, events);
+        continue;
+      }
+      if (e.elite) {
+        this._tickElite(e, dt, events);
+        continue;
+      }
+      if (e.hit > 0) e.hit -= dt;
+      if (e.slow > 0) e.slow -= dt;
+      const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
+      const dx = this.px - e.x, dz = this.pz - e.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const toward = e.panic ? -1 : 1;
+      const stepX = (dx / len) * toward * e.speed * e.chase * slowMul * dt;
+      const stepZ = (dz / len) * toward * e.speed * e.chase * slowMul * dt;
+      e.vx = stepX / Math.max(dt, 1e-6);
+      e.vz = stepZ / Math.max(dt, 1e-6);
+      e.x += stepX;
+      e.z += stepZ;
+      const moving = Math.hypot(e.vx, e.vz) > 0.05;
+      e.animPhase = (e.animPhase || 0) + (moving ? Math.max(8, Math.hypot(e.vx, e.vz) * 6.5) * dt : 0);
+      const ec = this._softClamp(e.x, e.z, e.r);
+      e.x = ec.x; e.z = ec.z;
+      if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
+        const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+        this.hp -= taken;
+        this.invuln = 0.85 + (this.deflect || 0);
+        this.hitFlash = 0.28;
+        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
+        e.x -= (dx / len) * toward * 0.9;
+        e.z -= (dz / len) * toward * 0.9;
+        if (this.hp <= 0) {
+          this.alive = false;
+          this.hp = 0;
+          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
+          events.push({ type: 'dead' });
+        }
+      }
+    }
+  }
+
+  /**
+   * Move projectiles and collide with enemies using relative continuous sweep
+   * (bullet prev→curr + enemy prev→curr over the same dt).
+   */
+  _stepProjectiles(dt, events) {
+    for (let i = this.bullets.length - 1; i >= 0; i--) {
+      const b = this.bullets[i];
+      if (b.grav) {
+        b.vy -= b.grav * dt;
+        b.y += b.vy * dt;
+        if (b.y < 0.05) { b.y = 0.05; b.vy = 0; }
+      }
+      const prevX = b.x, prevZ = b.z;
+      b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
+      if (b.fuse > 0) {
+        b.fuse -= dt;
+        if (b.fuse <= 0) {
+          this._aoeAt(b.x, b.z, b.aoe || 1.8, b.aoeDmg || b.dmg, events, b.weapon);
+          this.bullets.splice(i, 1);
+          continue;
+        }
+      }
+      const br = Math.hypot(b.x - this.px, b.z - this.pz);
+      if (b.life <= 0 || br > ARENA.spawnFar + 12) {
+        if (b.aoe && !b.fuse && (b.weapon === 'rocket' || b.weapon === 'grenade')) {
+          this._aoeAt(b.x, b.z, b.aoe, b.aoeDmg || b.dmg, events, b.weapon);
+        }
+        if (b.puddle) {
+          this.zones.push({
+            x: b.x, z: b.z, r: b.puddle, life: 2.4 + (this.plasma || 0) * 0.4,
+            dps: b.aoeDmg || 1, kind: 'plasma',
+          });
+          events.push({ type: 'puddle', x: b.x, z: b.z, r: b.puddle });
+        }
+        this.bullets.splice(i, 1);
+        continue;
+      }
+      if (b.noHit) continue;
+      let consumed = false;
+      for (let j = this.enemies.length - 1; j >= 0; j--) {
+        const e = this.enemies[j];
+        if (b.hitIds.has(e)) continue;
+        const er = b.r + e.r;
+        const ex0 = e.prevX != null ? e.prevX : e.x;
+        const ez0 = e.prevZ != null ? e.prevZ : e.z;
+        // Relative continuous: bullet segment + enemy segment over same interval.
+        if (relativeSegmentHitsCircle(prevX, prevZ, b.x, b.z, ex0, ez0, e.x, e.z, er)) {
+          e.hp -= b.dmg * (1 - (e.shield || 0));
+          e.hit = 0.12;
+          b.hitIds.add(e);
+          const heavy = b.weapon === 'rocket' || b.weapon === 'laser' || b.weapon === 'grenade';
+          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy });
+          if (e.hp <= 0) {
+            this._kill(e, j, events);
+            const punch = isPunchKill(e, heavy);
+            events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
+          }
+          if (b.aoe && (b.weapon === 'rocket' || b.weapon === 'plasma')) {
+            this._aoeAt(b.x, b.z, b.aoe || b.puddle || 1.2, b.aoeDmg || b.dmg * 0.6, events, b.weapon);
+            if (b.puddle) {
+              this.zones.push({
+                x: b.x, z: b.z, r: b.puddle, life: 2.2, dps: b.aoeDmg || 1, kind: 'plasma',
+              });
+            }
+            this.bullets.splice(i, 1);
+            consumed = true;
+            break;
+          }
+          if (b.pierce > 0) { b.pierce -= 1; }
+          else { this.bullets.splice(i, 1); consumed = true; break; }
+        }
+      }
+      if (consumed) continue;
+    }
+  }
+
   step(dt) {
     if (!this.alive || this.pausedForLevel) return { events: [] };
     const events = [];
@@ -1467,74 +1688,11 @@ export class Game {
       }
     }
 
-    // ---- projectiles
-    for (let i = this.bullets.length - 1; i >= 0; i--) {
-      const b = this.bullets[i];
-      if (b.grav) {
-        b.vy -= b.grav * dt;
-        b.y += b.vy * dt;
-        if (b.y < 0.05) { b.y = 0.05; b.vy = 0; }
-      }
-      const prevX = b.x, prevZ = b.z;
-      b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
-      if (b.fuse > 0) {
-        b.fuse -= dt;
-        if (b.fuse <= 0) {
-          this._aoeAt(b.x, b.z, b.aoe || 1.8, b.aoeDmg || b.dmg, events, b.weapon);
-          this.bullets.splice(i, 1);
-          continue;
-        }
-      }
-      const br = Math.hypot(b.x - this.px, b.z - this.pz);
-      if (b.life <= 0 || br > ARENA.spawnFar + 12) {
-        if (b.aoe && !b.fuse && (b.weapon === 'rocket' || b.weapon === 'grenade')) {
-          this._aoeAt(b.x, b.z, b.aoe, b.aoeDmg || b.dmg, events, b.weapon);
-        }
-        if (b.puddle) {
-          this.zones.push({
-            x: b.x, z: b.z, r: b.puddle, life: 2.4 + (this.plasma || 0) * 0.4,
-            dps: b.aoeDmg || 1, kind: 'plasma',
-          });
-          events.push({ type: 'puddle', x: b.x, z: b.z, r: b.puddle });
-        }
-        this.bullets.splice(i, 1);
-        continue;
-      }
-      if (b.noHit) continue;
-      let consumed = false;
-      for (let j = this.enemies.length - 1; j >= 0; j--) {
-        const e = this.enemies[j];
-        if (b.hitIds.has(e)) continue;
-        const er = b.r + e.r;
-        // Swept: previous → new position vs enemy circle (catches tunneling at large dt).
-        if (segmentHitsCircle(prevX, prevZ, b.x, b.z, e.x, e.z, er)) {
-          e.hp -= b.dmg * (1 - (e.shield || 0));
-          e.hit = 0.12;
-          b.hitIds.add(e);
-          const heavy = b.weapon === 'rocket' || b.weapon === 'laser' || b.weapon === 'grenade';
-          events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, heavy });
-          if (e.hp <= 0) {
-            this._kill(e, j, events);
-            const punch = isPunchKill(e, heavy);
-            events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
-          }
-          if (b.aoe && (b.weapon === 'rocket' || b.weapon === 'plasma')) {
-            this._aoeAt(b.x, b.z, b.aoe || b.puddle || 1.2, b.aoeDmg || b.dmg * 0.6, events, b.weapon);
-            if (b.puddle) {
-              this.zones.push({
-                x: b.x, z: b.z, r: b.puddle, life: 2.2, dps: b.aoeDmg || 1, kind: 'plasma',
-              });
-            }
-            this.bullets.splice(i, 1);
-            consumed = true;
-            break;
-          }
-          if (b.pierce > 0) { b.pierce -= 1; }
-          else { this.bullets.splice(i, 1); consumed = true; break; }
-        }
-      }
-      if (consumed) continue;
-    }
+    // Enemies move first (recording prev), then projectiles collide with relative sweep
+    // over the same dt. Fire already used pre-move positions/velocities above.
+    this._moveEnemies(dt, events);
+
+    this._stepProjectiles(dt, events);
 
     // ---- lingering zones (acid / plasma)
     for (let i = this.zones.length - 1; i >= 0; i--) {
@@ -1548,7 +1706,7 @@ export class Game {
           e.hit = Math.max(e.hit, 0.05);
           if (e.hp <= 0) {
             this._kill(e, j, events);
-            const punch = isPunchKill(e, true); // lingering acid still reads as special
+            const punch = isPunchKill(e, true);
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
           }
         }
@@ -1573,50 +1731,6 @@ export class Game {
               events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
             }
           }
-        }
-      }
-    }
-
-    for (const e of this.enemies) {
-      if (e.boss) {
-        this._tickBoss(e, dt, events);
-        continue;
-      }
-      if (e.elite) {
-        this._tickElite(e, dt, events);
-        continue;
-      }
-      if (e.hit > 0) e.hit -= dt;
-      if (e.slow > 0) e.slow -= dt;
-      const slowMul = e.slow > 0 ? Math.max(0.35, 1 - Math.min(0.55, 0.4)) : 1;
-      const dx = this.px - e.x, dz = this.pz - e.z;
-      const len = Math.hypot(dx, dz) || 1;
-      // Staffer panic: retreat (negative chase) for scientist-coat flee feel
-      const toward = e.panic ? -1 : 1;
-      const stepX = (dx / len) * toward * e.speed * e.chase * slowMul * dt;
-      const stepZ = (dz / len) * toward * e.speed * e.chase * slowMul * dt;
-      e.vx = stepX / Math.max(dt, 1e-6);
-      e.vz = stepZ / Math.max(dt, 1e-6);
-      e.x += stepX;
-      e.z += stepZ;
-      const moving = Math.hypot(e.vx, e.vz) > 0.05;
-      e.animPhase = (e.animPhase || 0) + (moving ? Math.max(8, Math.hypot(e.vx, e.vz) * 6.5) * dt : 0);
-      const ec = this._softClamp(e.x, e.z, e.r);
-      e.x = ec.x; e.z = ec.z;
-      // Fleeing staffers still hurt on contact if player corners them
-      if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-        const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
-        this.hp -= taken;
-        this.invuln = 0.85 + (this.deflect || 0);
-        this.hitFlash = 0.28;
-        events.push({ type: 'hurt', by: e.kind, nameZh: e.nameZh, nameEn: e.nameEn });
-        e.x -= (dx / len) * toward * 0.9;
-        e.z -= (dz / len) * toward * 0.9;
-        if (this.hp <= 0) {
-          this.alive = false;
-          this.hp = 0;
-          this.killer = { kind: e.kind, zh: e.nameZh, en: e.nameEn };
-          events.push({ type: 'dead' });
         }
       }
     }

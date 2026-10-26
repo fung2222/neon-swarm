@@ -1,0 +1,12 @@
+OLD-CODE perpendicular MG evidence (windowed bullets only)
+{"speed":4,"radius":0.3,"hz":60,"shots":5,"hits":4,"remaining":0}
+{"speed":9.5,"radius":0.3,"hz":60,"shots":5,"hits":3,"remaining":0}
+{"speed":10.8,"radius":0.3,"hz":60,"shots":5,"hits":3,"remaining":0}
+{"speed":14,"radius":0.3,"hz":60,"shots":5,"hits":2,"remaining":0}
+{"speed":10.8,"radius":0.24,"hz":60,"shots":5,"hits":3,"remaining":0}
+{"speed":10.8,"radius":0.24,"hz":30,"shots":5,"hits":3,"remaining":0}
+{"speed":10.8,"radius":0.68,"hz":60,"shots":5,"hits":5,"remaining":0}
+{"speed":10.8,"radius":0.68,"hz":30,"shots":5,"hits":5,"remaining":0}
+{"speed":14,"radius":0.24,"hz":60,"shots":5,"hits":2,"remaining":0}
+{"speed":14,"radius":0.24,"hz":30,"shots":5,"hits":2,"remaining":0}
+jitter {"shots":8,"hits":4,"remaining":0}

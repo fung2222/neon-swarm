@@ -1,0 +1,11 @@
+{
+  "shots": 5,
+  "hits": 5,
+  "versionHint": "http://127.0.0.1:36815/js/main.js?v=0.9.19",
+  "hasSplit": true,
+  "hasIntercept": true,
+  "bulletCount": 0,
+  "enemyCount": 1,
+  "pageErrors": [],
+  "ver": "0.9.19"
+}

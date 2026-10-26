@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.18 Phase 6 endless elites after boss
+// RAMPAGE MECH 暴走機甲 — v0.9.19 AIM-HIT-FAST-002 (precise intercept + relative sweep); was v0.9.18 Phase 6 endless elites after boss
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
