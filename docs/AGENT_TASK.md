@@ -3,29 +3,31 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：Active = **HIT-FEEL-DEVICE**（waiting Roy phone notes）· live `?v=0.9.44`
+## 狀態：Active = **PHASE3-ENEMY-FLANKER-001**（目標 `?v=0.9.45`）
 
-**ROY（2026-10-27 ~06:18 HKT）：** will phone-test 近身射殺／跑射／受傷手感 on live. Any unpushed third-party patch — **not found** on `main`／PR／uploads（already at `f52e205`／docs `1b64af0`）；Grok waits for paste／attach before apply.
-
-Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent new systems or soft-juice polish； wait for Roy hit-feel notes or a named Active.
+**ROY（2026-10-27 ~07:16 HKT）ROY_OVERRIDE／continue：** 「好繼續去」— HIT-FEEL notes skip；resume safe content. Do NOT start Phase 4／horn art lock／phone GPU；do NOT invent toast／streak／coach polish.
 
 ### Active
 
-**HIT-FEEL-DEVICE** — Roy on phone：close-range kills, run-and-gun, hurt feedback. Report／fix only after his notes（no speculative retune）.
+**PHASE3-ENEMY-FLANKER-001** — ordinary **側襲單位／Flanker** that forces run-and-gun＋close-range aim（fits Roy phone themes 近身／跑射）.
 
-### Just shipped（product beat — still on live）
+Scope:
+- `ENEMIES.flanker` + `FLANKER` config：distinct procedural silhouette（lean runner／asymmetric blades／side vents — **≠** soldier／bomber／hunter／drone recolor）；palette steel＋violet／cyan trim（**no red hull**）
+- AI：arc approach → short **cyan／danger** dash telegraph ≥0.85s（ground lane or dash wedge）→ dash contact damage → recover → re-angle flank
+- Events `telegraph kind:flanker` + `flankerDash`；killed mid-telegraph = no dash dmg
+- `waveMix`：no early lab；light mid-late lab＋assembly／blockade／rooftop；reactor rare
+- View telegraph draw；zh-HK name in strings if needed
+- Tests `tests/flanker.test.mjs` + screenshots `tests/screenshots/phase3-flanker/`
+- Bump `?v=0.9.45`；stamp AGENT_TASK＋HANDOFF；commit＋push `main`
 
-- **v0.9.44** `PHASE6-SCORE-POSITION-001` (`f52e205`)
-- **v0.9.43** `PHASE6-TRADEOFF-CARDS-001` (`d44af7a`)
-- **v0.9.42** `PHASE6-ZONE-PRESSURE-001` (`ddf39c4`)
-- **v0.9.41** `PHASE6-PERIODIC-DANGER-001` (`3040b5e`)
-- **v0.9.40** `PHASE3-ENEMY-BOMBER-001` (`2ab9dbb`)
+**Out of scope：** Phase 4；horn；phone GPU；soft-juice；weapon DPS／XP／CARDS number edits；elite／boss new silhouette；swarmPressure retune.
 
-### Soft-juice → still **DONE**
+### Soft-juice → **DONE** · Product beat 0.9.40–44 shipped · HIT-FEEL deferred（Roy continue）
 
-### Do NOT start
+### Recently completed
 
-Phase 4／horn／§9／phone GPU／balance overhaul／soft-juice invent／auto next elite without Active.
+- `PHASE6-SCORE-POSITION-001` → **v0.9.44** (`f52e205`)
+- `PHASE6-TRADEOFF-CARDS-001` → **v0.9.43** (`d44af7a`)
 
 ---
 
