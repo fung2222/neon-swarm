@@ -8,7 +8,7 @@
 **Opened:** 2026-10-28 Asia/Hong_Kong — Roy phone「地板轉有顏色地全黑好難玩，控可連按螢幕2下轉副，連3下投；副連射≤3自動回主；壯態方塊統一；武器欄細D最下排；標題完整；平衡？」([pt226u])  
 **Closed → HOLD:** 2026-10-28 Asia/Hong_Kong — Grok bot ship floor+taps+burst+HUD then HOLD.
 
-**Author:** Grok bot · **Shipped:** v0.9.59 · **SHA:** `(pending push)`  
+**Author:** Grok bot · **Shipped:** v0.9.59 · **SHA:** `56acaa6`  
 **Prior:** v0.9.58 legacy purge · Spec: `docs/WEAPONS.md`
 
 ### Shipped this beat
