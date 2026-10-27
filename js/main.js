@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.55 WEAPONS-BRANCH-KITS-001; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
+// RAMPAGE MECH 暴走機甲 — v0.9.56 WEAPONS-FEEL-FX-001; kits v0.9.55; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -45,6 +45,10 @@ import {
   MUTE_STORE_KEY, MUTE_LS_KEY,
 } from './mute-persist.js';
 import { slotIndexForWeapon, SLOT_FIRE_PULSE_MS } from './slot-fire-pulse.js';
+import {
+  muzzleFeelFx, explodeFeelFx, chargeFeelFx, stickFeelFx, frostHitFeelFx,
+  slowFieldFeelFx, deployDronesFeelFx, blackholeFeelFx, flashFeelFx, puddleFeelFx,
+} from './weapons-feel-fx.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -69,6 +73,31 @@ const PARTICLE_POOL = MOBILE_GFX ? 1600 : 5200; // v0.9.54: raise mobile baselin
 const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
 const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.54 prettier baseline
+/** Apply feel-FX recipe steps through existing Particles / Shockwaves pools. */
+function applyFeelBursts(pos, steps, { waves: wavesApi = waves } = {}) {
+  if (!steps || !steps.length) return;
+  for (const s of steps) {
+    const n = burstN(s.n);
+    particles.burst(pos, new THREE.Color(s.color), n, {
+      speed: s.speed, up: s.up, life: s.life, size: s.size, bright: s.bright,
+    });
+    if (s.ring && !MOBILE_GFX) {
+      particles.ring(pos, new THREE.Color(s.color), s.ring.n || 10, s.ring.speed || 5, s.ring.life || 0.22);
+    }
+    if (s.wave && wavesApi) {
+      wavesApi.spawn(pos, new THREE.Color(s.color), s.wave);
+    }
+    if (s.flashMs) {
+      const flash = $('fx-flash');
+      if (flash) {
+        flash.classList.add('on');
+        clearTimeout(flash._t);
+        flash._t = setTimeout(() => flash.classList.remove('on'), s.flashMs);
+      }
+    }
+  }
+}
+
 
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
 
@@ -1560,11 +1589,54 @@ function tick(dt) {
       const my = ev.muzzleY != null ? ev.muzzleY : 0.95;
       const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
       const muzzle = new THREE.Vector3(mx, my, mz);
-      particles.burst(muzzle, new THREE.Color(0x00e5ff), burstN(3), { speed: 2.4, up: 0.3, life: 0.2, size: 0.32, bright: 1.0 });
-      // v0.9.20: skip muzzle secondary burst on mobile (pool pressure)
-      if (!MOBILE_GFX) {
-        particles.burst(muzzle, new THREE.Color(0x7ad7ff), burstN(2), { speed: 1.2, up: 0.5, life: 0.16, size: 0.26, bright: 0.9 });
-      }
+      // v0.9.56 WEAPONS-FEEL-FX-001 — per-weapon muzzle / trail spark (pool-respecting)
+      applyFeelBursts(muzzle, muzzleFeelFx(ev.weapon, { mobile: !!MOBILE_GFX }));
+    }
+    else if (ev.type === 'weaponCharge') {
+      const mx = ev.muzzleX != null ? ev.muzzleX : S.game.px;
+      const my = ev.muzzleY != null ? ev.muzzleY : 0.95;
+      const mz = ev.muzzleZ != null ? ev.muzzleZ : S.game.pz;
+      applyFeelBursts(
+        new THREE.Vector3(mx, my, mz),
+        chargeFeelFx(ev.weapon || 'ion_beam', ev.progress || 0.5, { mobile: !!MOBILE_GFX }),
+      );
+    }
+    else if (ev.type === 'stick') {
+      applyFeelBursts(
+        new THREE.Vector3(ev.x, 0.7, ev.z),
+        stickFeelFx({ mobile: !!MOBILE_GFX }),
+      );
+    }
+    else if (ev.type === 'frostHit' || ev.type === 'frostBurst') {
+      applyFeelBursts(
+        new THREE.Vector3(ev.x, 0.55, ev.z),
+        frostHitFeelFx({ mobile: !!MOBILE_GFX }),
+      );
+    }
+    else if (ev.type === 'slowField') {
+      applyFeelBursts(
+        new THREE.Vector3(ev.x, 0.15, ev.z),
+        slowFieldFeelFx({ mobile: !!MOBILE_GFX }),
+      );
+    }
+    else if (ev.type === 'deployDrones') {
+      applyFeelBursts(
+        new THREE.Vector3(S.game.px, 0.9, S.game.pz),
+        deployDronesFeelFx({ mobile: !!MOBILE_GFX }),
+      );
+    }
+    else if (ev.type === 'blackhole') {
+      applyFeelBursts(
+        new THREE.Vector3(ev.x, 0.2, ev.z),
+        blackholeFeelFx(ev.r || 3.4, { mobile: !!MOBILE_GFX }),
+      );
+    }
+    else if (ev.type === 'flash') {
+      applyFeelBursts(
+        new THREE.Vector3(ev.x, 0.4, ev.z),
+        flashFeelFx({ mobile: !!MOBILE_GFX }),
+      );
+      try { audio.nova(); } catch (_) {}
     }
         else if (ev.type === 'hit') {
       audio.hit();
@@ -1636,15 +1708,16 @@ function tick(dt) {
     else if (ev.type === 'explode') {
       audio.nova();
       const pos = new THREE.Vector3(ev.x, 0.2, ev.z);
-      const col = new THREE.Color(ev.tag === 'plasma' ? 0xb8ff3a : 0x00e5ff);
-      particles.burst(pos, col, burstN(12), { speed: 4.5, up: 1.8, life: 0.4, size: 0.55, bright: 1.0 });
-      // boss color merged; v0.9.20: skip explode ring on mobile
-      if (!MOBILE_GFX) particles.ring(pos, col, 12, 7, 0.28);
-      waves.spawn(pos, col, { r0: 0.35, r1: (ev.r || 1.6) * 1.1, dur: 0.4, a: 0.8 });
+      // v0.9.56: distinct frag/chill/flash/gravity/tracking/acid bursts
+      applyFeelBursts(pos, explodeFeelFx(ev.tag, { mobile: !!MOBILE_GFX, radius: ev.r || 1.6 }));
       if (view.burstGore) view.burstGore(ev.x, ev.z, 0x8a93a8);
       kickFx({ trauma: 0.1, slowmo: 0.04, fovKick: 0.03, bloomDamp: 0.9 });
     }
     else if (ev.type === 'puddle') {
+      applyFeelBursts(
+        new THREE.Vector3(ev.x, 0.12, ev.z),
+        puddleFeelFx({ mobile: !!MOBILE_GFX }),
+      );
       if (!MOBILE_GFX) particles.ring(new THREE.Vector3(ev.x, 0.08, ev.z), new THREE.Color(0xb8ff3a), 8, 4, 0.18);
     }
 else if (ev.type === 'xp') {

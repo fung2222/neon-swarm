@@ -2074,7 +2074,7 @@ export class Game {
       targetDist: tDist,
       targetR: best.r || 0.3,
     });
-    this._pushFire(events, 'laser', dx, dz, b, best);
+    this._pushFire(events, 'ion_beam', dx, dz, b, best);
     return true;
   }
 
@@ -2105,7 +2105,7 @@ export class Game {
       targetDist: tDist,
       targetR: best.r || 0.3,
     });
-    this._pushFire(events, 'laser', dx, dz, b, best);
+    this._pushFire(events, 'zero_laser', dx, dz, b, best);
     return true;
   }
 
@@ -2179,7 +2179,7 @@ export class Game {
       targetDist: tDist,
       targetR: best.r || 0.3,
     });
-    this._pushFire(events, 'plasma', dx, dz, b, best);
+    this._pushFire(events, 'acid_gun', dx, dz, b, best);
     return true;
   }
 
@@ -2204,7 +2204,7 @@ export class Game {
       x, z, r: aoe, life: slow, dps: 0, kind: 'slow',
     });
     events.push({ type: 'slowField', x, z, r: aoe, dur: slow });
-    this._pushFire(events, 'plasma', fwd.x, fwd.z, null, targets[0] || null);
+    this._pushFire(events, 'slow_gun', fwd.x, fwd.z, null, targets[0] || null);
     return true;
   }
 
@@ -2219,7 +2219,7 @@ export class Game {
     }
     events.push({ type: 'deployDrones', count: n, life });
     const fwd = this.primaryForward();
-    this._pushFire(events, 'plasma', fwd.x, fwd.z, null, null);
+    this._pushFire(events, 'attack_drone', fwd.x, fwd.z, null, null);
     return true;
   }
 
@@ -2237,7 +2237,7 @@ export class Game {
     if (!this._pullFields) this._pullFields = [];
     this._pullFields.push({ x, z, r: aoe, pull, life: dur, dmgAcc: 0, dmg: hit / Math.max(0.4, dur) });
     events.push({ type: 'blackhole', x, z, r: aoe, dur });
-    this._pushFire(events, 'plasma', fwd.x, fwd.z, null, targets[0] || null);
+    this._pushFire(events, 'blackhole', fwd.x, fwd.z, null, targets[0] || null);
     return true;
   }
 
@@ -2613,8 +2613,23 @@ export class Game {
       if (this._ionPhase === 'charge') {
         this._ionChargeT = (this._ionChargeT || 0) + dt;
         const need = Math.max(0.18, ((base.charge || 0.55) * (mods.chargeMul || 1)) - stacks * 0.04);
+        // v0.9.56: charge glow cue (throttled; no soft-juice toast)
+        const prog = Math.min(1, this._ionChargeT / Math.max(0.01, need * jamMul));
+        if (!this._ionChargeFxT || this._ionChargeFxT <= 0) {
+          this._ionChargeFxT = 0.08;
+          const fwd = this.primaryForward ? this.primaryForward() : { x: 0, z: 1 };
+          events.push({
+            type: 'weaponCharge', weapon: 'ion_beam', progress: prog,
+            muzzleX: this.px + (fwd.x || 0) * 0.9,
+            muzzleY: 0.95,
+            muzzleZ: this.pz + (fwd.z || 0) * 0.9,
+          });
+        } else {
+          this._ionChargeFxT -= dt;
+        }
         if (this._ionChargeT < need * jamMul) return false;
         this._ionChargeT = 0;
+        this._ionChargeFxT = 0;
         this._ionPhase = 'fire';
       }
       if (this._ionPhase === 'fire') {
@@ -4202,7 +4217,10 @@ export class Game {
             const punch = isPunchKill(e, heavy);
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
           }
-          if (b.chill) e.slow = Math.max(e.slow || 0, b.chill);
+          if (b.chill) {
+            e.slow = Math.max(e.slow || 0, b.chill);
+            events.push({ type: 'frostHit', x: e.x, z: e.z, weapon: b.weapon || 'zero_laser' });
+          }
           if (b.burn > 0) {
             e.burnDps = Math.max(e.burnDps || 0, b.burn);
             e.burnT = Math.max(e.burnT || 0, b.burnDur || 1.4);
@@ -4219,6 +4237,8 @@ export class Game {
             b.fuse = b.stickFuse || 0.35;
             b.vx = 0; b.vz = 0;
             b.noHit = true;
+            // v0.9.56: stick spark before pop
+            events.push({ type: 'stick', weapon: b.weapon || 'tracking_bomb', x: e.x, z: e.z });
             consumed = true;
             break;
           }

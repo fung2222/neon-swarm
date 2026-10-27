@@ -1,0 +1,15 @@
+{
+  "ver": "0.9.56",
+  "meta": {
+    "armed": [
+      "gatling",
+      "vulcan",
+      "acid_gun",
+      "shotgun",
+      "frag",
+      "chill"
+    ],
+    "enemies": 8
+  },
+  "errs": []
+}
