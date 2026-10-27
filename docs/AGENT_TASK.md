@@ -8,7 +8,7 @@
 **Opened:** 2026-10-28 Asia/Hong_Kong — Roy「搞多啲步驟流程」after v0.9.55 HOLD（polish later; keep advancing process）.  
 **Closed → HOLD:** 2026-10-28 Asia/Hong_Kong — Grok bot ship two sequential slices then HOLD.
 
-**Author:** Grok bot · **Shipped:** v0.9.57 · **SHA:** _(fill on push)_  
+**Author:** Grok bot · **Shipped:** v0.9.57 · **SHA:** `0fdc8a4`  
 **Prior:** v0.9.56 feel FX · v0.9.55 branch kits · Spec: `docs/WEAPONS.md`
 
 ### Shipped this beat
