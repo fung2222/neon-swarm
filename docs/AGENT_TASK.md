@@ -8,7 +8,7 @@
 **Opened:** 2026-10-28 Asia/Hong_Kong — Roy phone screenshot「遊玩時，所有介面及狀態列出重㬪，要重排」([pt227u]) — floating `#weapon-status` over XP + 時間/分數.  
 **Closed → HOLD:** 2026-10-28 Asia/Hong_Kong — Grok bot ship HUD vertical rhythm then HOLD.
 
-**Author:** Grok bot · **Shipped:** v0.9.60 · **SHA:** _(fill on commit)_  
+**Author:** Grok bot · **Shipped:** v0.9.60 · **SHA:** `b85203f`  
 **Prior:** v0.9.59 HUD/controls/floor · Spec: `docs/WEAPONS.md`
 
 ### Shipped this beat
