@@ -8,7 +8,7 @@
 **Opened:** 2026-10-27 Asia/Hong_Kong — Roy full weapon redesign.  
 **Closed → HOLD:** 2026-10-27 Asia/Hong_Kong — Grok bot ship 1.
 
-**Author:** Grok bot · **Shipped:** v0.9.53  
+**Author:** Grok bot · **Shipped:** v0.9.53 · **SHA:** `bf1bae3`  
 **Spec:** `docs/WEAPONS.md`
 
 ### Shipped this beat
