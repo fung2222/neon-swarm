@@ -11,7 +11,7 @@
 
 **Live:** https://fung2222.github.io/neon-swarm/?v=0.9.52  
 
-**Author:** Grok bot · **SHA:** (see `git log -1` on `main` after push)
+**Author:** Grok bot · **SHA:** `6abb2c0`
 
 ### What shipped
 
