@@ -1,6 +1,6 @@
 /**
- * WEAPONS-REDESIGN-001 (v0.9.53) — catalog, loadout 2P+2S+2T, normalize, balance stubs.
- * Spec: docs/WEAPONS.md. Branch/ult = data stubs only this beat.
+ * WEAPONS-REDESIGN-001 (v0.9.53) + WEAPONS-BRANCH-PICK-001 (v0.9.54).
+ * Spec: docs/WEAPONS.md. Branch/ult pick UI playable at Lv3 / Lv5.
  */
 
 export const LOADOUT_CAPS = Object.freeze({
@@ -356,4 +356,172 @@ export function ultimateIdStubs(weaponId) {
     }
   }
   return out;
+}
+
+/* —— WEAPONS-BRANCH-PICK-001 (v0.9.54) —— */
+
+/** Unlock branch pick after this weapon level (design). */
+export const BRANCH_UNLOCK_LV = 3;
+/** Primary only: unlock ult pick after this level (needs branch first). */
+export const ULT_UNLOCK_LV = 5;
+
+export function branchLetter(index) {
+  return String.fromCharCode(65 + (index | 0));
+}
+
+export function branchIndex(letter) {
+  if (!letter || typeof letter !== 'string') return -1;
+  const c = letter.toUpperCase().charCodeAt(0) - 65;
+  return c >= 0 && c < 26 ? c : -1;
+}
+
+/** List branch options for a catalog weapon. */
+export function branchOptions(weaponId) {
+  const d = weaponDef(weaponId);
+  if (!d) return [];
+  const names = d.branchNames || [];
+  const n = d.branches || names.length || 0;
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const letter = branchLetter(i);
+    const zh = names[i] || `分支 ${letter}`;
+    out.push({
+      letter,
+      index: i,
+      zh,
+      en: `PATH ${letter}`,
+      descZh: `鎖定「${d.zh}」· ${zh}`,
+      descEn: `Lock ${d.en} · ${letter}`,
+    });
+  }
+  return out;
+}
+
+/** Ult options for a primary after branch is chosen. */
+export const ULT_STUB_LABELS = Object.freeze({
+  U1: { zh: '形態一', en: 'FORM I' },
+  U2: { zh: '形態二', en: 'FORM II' },
+});
+
+export function ultOptions(weaponId, branch) {
+  const d = weaponDef(weaponId);
+  if (!d || d.category !== 'primary' || !d.ultsPerBranch) return [];
+  const bi = branchIndex(branch);
+  if (bi < 0 || bi >= d.branches) return [];
+  const letter = branchLetter(bi);
+  const bName = (d.branchNames && d.branchNames[bi]) || letter;
+  const out = [];
+  for (let u = 1; u <= d.ultsPerBranch; u++) {
+    const key = `U${u}`;
+    const stub = ULT_STUB_LABELS[key] || { zh: key, en: key };
+    out.push({
+      key,
+      id: `${d.id}_${letter}_${key}`,
+      letter,
+      zh: `${bName} · ${stub.zh}`,
+      en: `${letter} · ${stub.en}`,
+      descZh: `大招 ${key}（數值加成；完整招式後續）`,
+      descEn: `Ultimate ${key} (stat bonus; full kit later)`,
+    });
+  }
+  return out;
+}
+
+/**
+ * Light playable stat mods for a chosen branch (+ optional ult).
+ * Keep small — full unique behaviors later.
+ */
+export function branchStatMods(weaponId, branch, ult) {
+  const d = weaponDef(weaponId);
+  const mods = { dmgMul: 1, cdMul: 1, pierceAdd: 0 };
+  if (!d || !branch) return mods;
+  const letter = String(branch).toUpperCase();
+  const cat = d.category;
+
+  // Generic by letter — readable in try without inventing whole kits
+  if (cat === 'primary') {
+    if (letter === 'A') { mods.cdMul = 0.88; mods.dmgMul = 1.05; }
+    else if (letter === 'B') { mods.dmgMul = 1.18; mods.pierceAdd = 1; }
+    else if (letter === 'C') { mods.dmgMul = 0.92; mods.cdMul = 0.94; } // spray / utility bias
+  } else if (cat === 'secondary' || cat === 'throw') {
+    if (letter === 'A') { mods.dmgMul = 1.12; }
+    else if (letter === 'B') { mods.cdMul = 0.88; }
+  }
+
+  if (ult === 'U1') mods.dmgMul *= 1.2;
+  else if (ult === 'U2') mods.cdMul *= 0.85;
+
+  return mods;
+}
+
+/** Synthetic level-card choices for branch pick UI. */
+export function buildBranchOfferCards(weaponId) {
+  const d = weaponDef(weaponId);
+  if (!d) return null;
+  const opts = branchOptions(weaponId);
+  if (!opts.length) return null;
+  return {
+    kind: 'branch',
+    weaponId: d.id,
+    choices: opts.map((o) => ({
+      id: `_branch_${d.id}_${o.letter}`,
+      weaponId: d.id,
+      branch: o.letter,
+      pickupAction: 'branch',
+      kind: 'weapon',
+      zh: `${o.letter} · ${o.zh}`,
+      en: o.en,
+      descZh: o.descZh,
+      descEn: o.descEn,
+      icon: d.icon,
+      apply() { /* applied via Game.applyCard branch action */ },
+    })),
+  };
+}
+
+/** Synthetic level-card choices for ult pick UI (primary). */
+export function buildUltOfferCards(weaponId, branch) {
+  const d = weaponDef(weaponId);
+  if (!d || d.category !== 'primary') return null;
+  const opts = ultOptions(weaponId, branch);
+  if (!opts.length) return null;
+  return {
+    kind: 'ult',
+    weaponId: d.id,
+    branch: String(branch).toUpperCase(),
+    choices: opts.map((o) => ({
+      id: `_ult_${o.id}`,
+      weaponId: d.id,
+      branch: o.letter,
+      ult: o.key,
+      ultId: o.id,
+      pickupAction: 'ult',
+      kind: 'weapon',
+      zh: o.zh,
+      en: o.en,
+      descZh: o.descZh,
+      descEn: o.descEn,
+      icon: d.icon,
+      apply() { /* applied via Game.applyCard ult action */ },
+    })),
+  };
+}
+
+/** Whether weapon lv crossed unlock and still needs a branch pick. */
+export function needsBranchPick(weaponId, taken, branchesMap) {
+  const d = weaponDef(weaponId);
+  if (!d) return false;
+  const id = d.id;
+  if (branchesMap && branchesMap[id]) return false;
+  return weaponLevel(id, taken) >= BRANCH_UNLOCK_LV;
+}
+
+/** Whether primary needs an ult pick. */
+export function needsUltPick(weaponId, taken, branchesMap, ultsMap) {
+  const d = weaponDef(weaponId);
+  if (!d || d.category !== 'primary' || !d.ultsPerBranch) return false;
+  const id = d.id;
+  if (!branchesMap || !branchesMap[id]) return false;
+  if (ultsMap && ultsMap[id]) return false;
+  return weaponLevel(id, taken) >= ULT_UNLOCK_LV;
 }

@@ -1,5 +1,5 @@
 /**
- * WEAPONS-REDESIGN-001 HUD hooks (v0.9.53).
+ * WEAPONS-REDESIGN-001 HUD hooks (v0.9.54).
  */
 import assert from 'assert';
 import { readFileSync } from 'fs';
@@ -8,7 +8,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const weapons = readFileSync(new URL('../docs/WEAPONS.md', import.meta.url), 'utf8');
 
-assert.match(html, /\?v=0\.9\.53/);
+assert.match(html, /\?v=0\.9\.54/);
 assert.ok(html.includes('id="weapon-status"'));
 assert.ok(html.includes('id="weapon-rail"'));
 assert.ok(html.includes('id="wstat-mode"'));

@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID, normalizeWeaponId, weaponDef, starterLoadout, flattenLoadout, loadoutFromFlat, addToLoadout, swapLoadoutSlot, findInLoadout, isArmedInLoadout, initialResource, categoryOf, LOADOUT_CAPS } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID, normalizeWeaponId, weaponDef, starterLoadout, flattenLoadout, loadoutFromFlat, addToLoadout, swapLoadoutSlot, findInLoadout, isArmedInLoadout, initialResource, categoryOf, LOADOUT_CAPS, weaponLevel, buildBranchOfferCards, buildUltOfferCards, needsBranchPick, needsUltPick, branchStatMods } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -280,6 +280,10 @@ export class Game {
     this.weaponResources = Object.create(null); // id → { type, current, max }
     this.throwCdT = Object.create(null); // id → remaining cd
     this._throwRequest = null; // id requested by HUD tap this frame
+    // v0.9.54 branch / ult picks (playable stubs)
+    this.weaponBranches = Object.create(null); // id → 'A'|'B'|'C'
+    this.weaponUlts = Object.create(null); // id → 'U1'|'U2'
+    this.pendingPathOffer = null; // { kind, weaponId, choices } queued behind levelup/pickup
 
     this.px = 0; this.pz = 0;
     this.vx = 0; this.vz = 0;
@@ -404,6 +408,30 @@ export class Game {
   applyCard(card) {
     if (!card) return;
     const action = card.pickupAction;
+    // v0.9.54: branch / ult path picks (no taken stack)
+    if (action === 'branch') {
+      const wid = normalizeWeaponId(card.weaponId) || card.weaponId;
+      if (!this.weaponBranches) this.weaponBranches = Object.create(null);
+      if (wid && card.branch) this.weaponBranches[wid] = String(card.branch).toUpperCase();
+      this.pendingCards = null;
+      this.pausedForLevel = false;
+      this.pendingFrom = null;
+      this._queueWeaponPathOffers(wid);
+      if (this.xp >= this.xpNeed) this._levelUp();
+      else this._flushPathOffer();
+      return;
+    }
+    if (action === 'ult') {
+      const wid = normalizeWeaponId(card.weaponId) || card.weaponId;
+      if (!this.weaponUlts) this.weaponUlts = Object.create(null);
+      if (wid && card.ult) this.weaponUlts[wid] = String(card.ult).toUpperCase();
+      this.pendingCards = null;
+      this.pausedForLevel = false;
+      this.pendingFrom = null;
+      if (this.xp >= this.xpNeed) this._levelUp();
+      else this._flushPathOffer();
+      return;
+    }
     const synthetic = action === 'keep' || action === 'convertHeal';
     if (!this.taken) this.taken = {};
     if (!this.loadout) this.loadout = starterLoadout();
@@ -444,7 +472,56 @@ export class Game {
     this.pendingCards = null;
     this.pausedForLevel = false;
     this.pendingFrom = null;
+    // Queue branch/ult if this weapon just crossed unlock lv
+    if (!synthetic && isSlotWeapon(card.id)) this._queueWeaponPathOffers(nid);
     if (this.xp >= this.xpNeed) this._levelUp();
+    else this._flushPathOffer();
+  }
+
+  /** Light dmg/cd/pierce mods from chosen branch (+ ult). */
+  _weaponMods(weaponId) {
+    const nid = normalizeWeaponId(weaponId) || weaponId;
+    if (!nid) return { dmgMul: 1, cdMul: 1, pierceAdd: 0 };
+    const br = this.weaponBranches && this.weaponBranches[nid];
+    const ult = this.weaponUlts && this.weaponUlts[nid];
+    return branchStatMods(nid, br, ult);
+  }
+
+  /**
+   * Queue branch (Lv3+) or ult (primary Lv5+) offer behind current pause.
+   * Prefer branch before ult; does not overwrite a pending offer for another weapon.
+   */
+  _queueWeaponPathOffers(weaponId) {
+    const nid = normalizeWeaponId(weaponId) || weaponId;
+    if (!nid || !weaponDef(nid)) return;
+    if (!this.weaponBranches) this.weaponBranches = Object.create(null);
+    if (!this.weaponUlts) this.weaponUlts = Object.create(null);
+    if (!this.taken) this.taken = {};
+    // Keep existing queued offer unless it is for this same weapon (refresh)
+    if (this.pendingPathOffer && this.pendingPathOffer.weaponId !== nid) return;
+    if (needsBranchPick(nid, this.taken, this.weaponBranches)) {
+      const offer = buildBranchOfferCards(nid);
+      if (offer) this.pendingPathOffer = offer;
+      return;
+    }
+    if (needsUltPick(nid, this.taken, this.weaponBranches, this.weaponUlts)) {
+      const offer = buildUltOfferCards(nid, this.weaponBranches[nid]);
+      if (offer) this.pendingPathOffer = offer;
+    }
+  }
+
+  /** Open queued branch/ult as pendingCards pause. Returns true if opened. */
+  _flushPathOffer() {
+    if (!this.pendingPathOffer || !this.pendingPathOffer.choices || !this.pendingPathOffer.choices.length) {
+      return false;
+    }
+    if (this.pausedForLevel && this.pendingCards && this.pendingCards.length) return false;
+    const offer = this.pendingPathOffer;
+    this.pendingPathOffer = null;
+    this.pendingCards = offer.choices;
+    this.pausedForLevel = true;
+    this.pendingFrom = offer.kind; // 'branch' | 'ult'
+    return true;
   }
 
   /** v0.9.29/v0.9.53: HUD loadout is the only fireable set — drop orphan stacks. */
@@ -1730,7 +1807,7 @@ export class Game {
       const b = this._emitBullet(dx, dz, {
         weapon: tag,
         dmg: this.bulletDmg * (opts.dmgMul || 1),
-        pierce: this.pierce,
+        pierce: (this.pierce || 0) + (opts.pierceAdd || 0),
         life: this.bulletLife,
         speed,
         r: opts.laserFeel ? 0.09 : 0.1,
@@ -2384,8 +2461,9 @@ export class Game {
     if (behavior === 'mg') {
       this.fireT -= dt;
       if (this.fireT > 0) return false;
-      if (this._fireMg(events, { weaponTag: 'gatling', laserFeel: true })) {
-        this.fireT = (base.cd || this.fireCd || 0.1) * jamMul;
+      const mods = this._weaponMods(nid);
+      if (this._fireMg(events, { weaponTag: 'gatling', laserFeel: true, dmgMul: mods.dmgMul, pierceAdd: mods.pierceAdd })) {
+        this.fireT = (base.cd || this.fireCd || 0.1) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.08; this.aimHold = 0.42;
         return true;
       }
@@ -2401,8 +2479,9 @@ export class Game {
       if (this.fireT > 0) return false;
       const spin = this._vulcanSpin || 0;
       const cd = Math.max(0.035, (base.cd || 0.045) * (1.55 - 0.55 * spin));
-      if (this._fireMg(events, { weaponTag: 'vulcan', range: base.range || 10, dmgMul: 0.7 })) {
-        this.fireT = cd * jamMul;
+      const mods = this._weaponMods(nid);
+      if (this._fireMg(events, { weaponTag: 'vulcan', range: base.range || 10, dmgMul: 0.7 * (mods.dmgMul || 1), pierceAdd: mods.pierceAdd })) {
+        this.fireT = cd * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.06; this.aimHold = 0.35;
         return true;
       }
@@ -2423,10 +2502,12 @@ export class Game {
         this._ionPhase = 'fire';
       }
       if (this._ionPhase === 'fire') {
-        if (this._fireIonBeam(events, stacks, base)) {
+        const mods = this._weaponMods(nid);
+        const base2 = { ...base, hit: (base.hit || 3.6) * (mods.dmgMul || 1), pierce: (base.pierce || 0) + (mods.pierceAdd || 0) };
+        if (this._fireIonBeam(events, stacks, base2)) {
           this.muzzle = 0.18; this.aimHold = 0.55;
           this._ionPhase = 'charge';
-          this.laserT = (base.cd || 0.12) * jamMul;
+          this.laserT = (base.cd || 0.12) * jamMul * (mods.cdMul || 1);
           return true;
         }
         return false;

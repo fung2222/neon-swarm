@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.53 WEAPONS-REDESIGN-001 2P+2S+2T loadout + left rail; UI layout v0.9.52; phone guard v0.9.51
+// RAMPAGE MECH 暴走機甲 — v0.9.54 WEAPONS-BRANCH-PICK-001; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -65,10 +65,10 @@ const MOBILE_GFX = (() => {
   } catch (_) { return false; }
 })();
 // v0.9.20: pool 1200→800 on mobile (further mid-run GPU pressure cut; desktop unchanged)
-const PARTICLE_POOL = MOBILE_GFX ? 1600 : 5200; // v0.9.53: raise mobile baseline (was 800)
+const PARTICLE_POOL = MOBILE_GFX ? 1600 : 5200; // v0.9.54: raise mobile baseline (was 800)
 const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
-const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.53 prettier baseline
+const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.54 prettier baseline
 
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
 
@@ -104,7 +104,7 @@ function showGfxRecover(kind = 'lost') {
 const stage = createStage({
   canvas: $('scene'),
   // v0.9.20: permanently lower bloom on MOBILE_GFX (desktop keeps 0.22)
-  bloom: MOBILE_GFX ? 0.15 : 0.22, bloomRadius: 0.28, bloomThreshold: MOBILE_GFX ? 0.95 : 0.94, // v0.9.53 mobile prettier
+  bloom: MOBILE_GFX ? 0.15 : 0.22, bloomRadius: 0.28, bloomThreshold: MOBILE_GFX ? 0.95 : 0.94, // v0.9.54 mobile prettier
   fov: 42, exposure: 0.88,
   glow: 'low',
   glowLevels: { low: { strength: MOBILE_GFX ? 0.15 : 0.22, radius: 0.35, threshold: 0.25 } },
@@ -117,7 +117,7 @@ stage.setGlow('low'); // v0.8.5: force low glow (ignore shared high from other g
 // v0.9.20: clamp bloom base after setGlow so mobile stays low even if prefs flip
 if (MOBILE_GFX) {
   try {
-    stage.bloomBase = Math.min(stage.bloomBase ?? 0.15, 0.15); // v0.9.53
+    stage.bloomBase = Math.min(stage.bloomBase ?? 0.15, 0.15); // v0.9.54
     if (stage.bloomPass) stage.bloomPass.strength = stage.bloomBase;
   } catch (_) {}
 }
@@ -144,7 +144,7 @@ stage.onResize((w, h, pr) => {
   // Keep menu mech framing in sync on resize / orientation change (not only first setMenuMech).
   if (view.menuMech) view.updateMenuLayout(w, h);
 });
-const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 16 : 24); // v0.9.53
+const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 16 : 24); // v0.9.54
 const fx = new FxState();
 
 // v0.9.34: DOM floating damage / heal / hurt digits (mobile-light pool)
@@ -193,7 +193,7 @@ function spawnCombatFloat(opts) {
 function kickFx(o) {
   if (!MOBILE_GFX) { fx.kick(o); return; }
   const m = { ...o };
-  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.22); // v0.9.53 less crushed
+  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.22); // v0.9.54 less crushed
   if (m.trauma != null) m.trauma *= 0.5;
   if (m.slowmo != null) m.slowmo *= 0.5;
   fx.kick(m);
@@ -553,7 +553,16 @@ function updateWeaponStatusHUD(g) {
   const def = weaponDef(id);
   modeEl.textContent = secondary ? (zh ? '副' : 'SEC') : (zh ? '主' : 'PRI');
   nameEl.textContent = def ? (zh ? def.zh : def.en) : (id || '—');
-  lvEl.textContent = id ? `Lv${_slotLv(g, id)}` : '';
+  if (id) {
+    const br = g.weaponBranches && g.weaponBranches[id];
+    const ult = g.weaponUlts && g.weaponUlts[id];
+    let s = `Lv${_slotLv(g, id)}`;
+    if (br) s += `·${br}`;
+    if (ult) s += ult.replace('U', '');
+    lvEl.textContent = s;
+  } else {
+    lvEl.textContent = '';
+  }
   if (resEl) {
     const res = id && g.weaponResources && g.weaponResources[id];
     if (secondary && res) {
@@ -638,11 +647,16 @@ function updateWeaponRailHUD(g) {
     }
     btn.disabled = false;
     const lv = _slotLv(g, id);
+    const br = g.weaponBranches && g.weaponBranches[id];
+    const ult = g.weaponUlts && g.weaponUlts[id];
     const ico = SLOT_ICON[id] || def.icon || '◆';
+    let lvTxt = `Lv${lv}`;
+    if (br) lvTxt += `·${br}`;
+    if (ult) lvTxt += ult.replace('U', '');
     btn.innerHTML =
       `<span class="wslot-ico" aria-hidden="true">${ico}</span>` +
-      `<span class="wslot-lv">Lv${lv}</span>`;
-    btn.title = `${zh ? def.zh : def.en} Lv${lv}`;
+      `<span class="wslot-lv">${lvTxt}</span>`;
+    btn.title = `${zh ? def.zh : def.en} ${lvTxt}`;
   });
 }
 
@@ -838,6 +852,11 @@ function resumeAfterCardPick() {
     showLevelCards(S.game.pendingCards, { from: S.game.pendingFrom || 'level' });
     return;
   }
+  // v0.9.54: branch / ult offer queued behind level-up / pickup
+  if (S.game && typeof S.game._flushPathOffer === 'function' && S.game._flushPathOffer()) {
+    showLevelCards(S.game.pendingCards, { from: S.game.pendingFrom || 'branch' });
+    return;
+  }
   ui.show(null);
   S.state = 'play';
   // Stick stays hidden until press — drag-anywhere reveals it under the finger.
@@ -870,15 +889,24 @@ function showLevelCards(cards, opts = {}) {
   const title = $('level-title');
   const isSwap = from === 'pickup' && cards.some((c) => c.pickupAction === 'swap');
   const isPickup = from === 'pickup';
+  const isBranch = from === 'branch';
+  const isUlt = from === 'ult';
   if (title) {
     title.textContent = isSwap
       ? t('pickup.swap')
-      : (isPickup ? t('pickup.title') : t('levelUp'));
+      : isPickup
+        ? t('pickup.title')
+        : isBranch
+          ? (i18n.isZh() ? '選擇分支' : 'CHOOSE BRANCH')
+          : isUlt
+            ? (i18n.isZh() ? '選擇大招' : 'CHOOSE ULTIMATE')
+            : t('levelUp');
   }
   const box = $('level-cards');
   box.innerHTML = '';
   box.classList.toggle('pickup-offer', isPickup);
   box.classList.toggle('pickup-swap', isSwap);
+  box.classList.toggle('branch-offer', isBranch || isUlt);
   clearSwapSlotHighlights();
   if (isSwap && S.game) {
     // Soft hint on every swappable (non-mg) filled slot while choosing.
@@ -902,7 +930,11 @@ function showLevelCards(cards, opts = {}) {
       + (action === 'swap' ? ' has-swap' : '');
     b.type = 'button';
     if (action === 'swap' && c.swapIndex != null) b.dataset.swapIndex = String(c.swapIndex);
-    const kind = c.kind === 'armor'
+    const kind = action === 'branch'
+      ? (i18n.isZh() ? '分支' : 'BRANCH')
+      : action === 'ult'
+        ? (i18n.isZh() ? '大招' : 'ULT')
+        : c.kind === 'armor'
       ? (i18n.isZh() ? '裝甲' : 'ARMOR')
       : c.kind === 'weapon'
         ? (i18n.isZh() ? '武器' : 'WEAPON')
@@ -988,6 +1020,7 @@ function showLevelCards(cards, opts = {}) {
 }
 
 S.showLevelCards = showLevelCards;
+S.syncWeaponHud = () => { if (S.game) updateWeaponSlotsHUD(S.game); };
 
 /** v0.9.37 early-run toast — pointer-events none; never steals stick. */
 function isCoachVisible() {

@@ -1,5 +1,5 @@
 /**
- * Phase 6 multi-slot inventory → v0.9.53 WEAPONS-REDESIGN-001 (2P+2S+2T).
+ * Phase 6 multi-slot inventory → v0.9.54 WEAPONS-REDESIGN-001 (2P+2S+2T).
  * Run: node tests/inventory.test.mjs
  */
 import assert from 'assert';

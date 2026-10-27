@@ -1,5 +1,5 @@
 /**
- * WEAPONS-REDESIGN-001 (v0.9.53) — left rail + status HUD screenshots.
+ * WEAPONS-REDESIGN-001 (v0.9.54) — left rail + status HUD screenshots.
  * Run: node tests/weapons-redesign-shots.mjs
  */
 import http from 'http';
@@ -13,7 +13,7 @@ const SHOT_DIR = join(ROOT, 'tests', 'screenshots', 'weapons-redesign');
 mkdirSync(SHOT_DIR, { recursive: true });
 const CHROME = process.env.CHROME_PATH
   || (existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' : '/usr/bin/google-chrome');
-const VER = '0.9.53';
+const VER = '0.9.54';
 const WAIT = { timeout: 45000, polling: 250 };
 
 const MIME = {

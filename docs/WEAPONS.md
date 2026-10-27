@@ -87,7 +87,7 @@ IDs are stable English snake keys used in code / saves. zh-HK names are product 
 | `flash` | flash interrupt | Short fuse; breaks aim / telegraph |
 | `gravity` | gravity pull → crush | Pull then damage |
 
-Branch/ult UI still stubs; feel is encoded in `WEAPON_CATALOG[].feel` + `behavior` and Game tick paths.
+Branch/ult UI **playable as of v0.9.54** (level-card offers + light stat mods; ult kits still light). Feel is encoded in `WEAPON_CATALOG[].feel` + `behavior` and Game tick paths.
 
 ---
 ## Level / branch / ultimate schema
@@ -107,7 +107,9 @@ Weapon
 | `ultsPerBranch` | 2 | 0 (no 大招 this beat) | 0 |
 | Resource | none (auto) | `ammo` or `energy` | charge / CD |
 
-**v0.9.53 ship:** full catalog IDs/names/feel/counters; branch/ult **data stubs** (no branch UI). All 14 wired with feel-matched behaviors (exemplars fully tuned; stubs share projectile helpers).
+**v0.9.53 ship:** full catalog IDs/names/feel/counters; branch/ult **data stubs**. All 14 wired with feel-matched behaviors.
+
+**v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods` (cd/dmg/pierce/spread). Ult forms still **not** full unique kits.
 
 ### Branch naming stubs (primary)
 
@@ -119,11 +121,11 @@ Weapon
 | vulcan | 彈幕風暴 | 燒夷彈 | 機槍堡壘 |
 | zero_laser | 絕對零度 | 霜爆裂縫 | 寒晶護盾 |
 
-Ult forms = `{branch}U1` / `{branch}U2` ids reserved (`gatling_A_U1`, …) — not selectable in v0.9.53.
+Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light stat bump only; not full kits).
 
 ---
 
-## Balance tables (Grok-owned · v0.9.53 baseline)
+## Balance tables (Grok-owned · v0.9.54 baseline; numbers same as v0.9.53 + light branch mods)
 
 Numbers are **fair first pass** vs current enemy HP (~soldier 3–5 · walker/mech higher · elites/boss separate). Tune only in a named balance ship.
 
@@ -260,7 +262,9 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 | Secondary ammo/energy → auto primary | **live** (shotgun, acid_gun) |
 | Throw tap (frag) | **live** |
 | Other catalog fire | **stub** shared placeholder / remapped legacy |
-| Branch pick UI / ultimates | **stub data only** |
+| Branch pick UI (Lv3) | **live** level-cards + apply |
+| Ult pick UI (Lv5 primary) | **live** light mods — full kits still stub |
+| Branch deep kits / unique fire | **stub** light mods only |
 | Real art icons | **placeholder** — Roy art pipeline above |
 | Full balance pass vs all elites | **baseline tables** — tune later |
 
@@ -270,5 +274,7 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 
 - `tests/weapons-loadout.test.mjs` — capacity, normalize, mode switch, empty→primary  
 - `tests/weapons-catalog.test.mjs` — full roster presence  
-- Screenshots: `tests/screenshots/weapons-redesign/` (mobile 390 + desktop 1280)  
+- `tests/weapons-branch-pick.test.mjs` — unlock gates, offers, Game apply branch/ult  
+- `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
+- Screenshots: `tests/screenshots/weapons-redesign/` (v0.9.53) + `weapons-branch/` (v0.9.54)  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push

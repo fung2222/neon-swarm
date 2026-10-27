@@ -1175,7 +1175,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 
-/* ===== WEAPONS-REDESIGN-001 v0.9.53 — top status + left icon rail ===== */
+/* ===== WEAPONS-REDESIGN-001 + BRANCH-PICK v0.9.54 — top status + left icon rail ===== */
 .weapon-status {
   position: absolute;
   left: 50%;
@@ -1285,4 +1285,22 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 420px) {
   .wrail-tile { width: 46px; height: 46px; }
   .weapon-status { font-size: 11px; top: calc(34px + var(--sa-top)); }
+}
+
+
+/* ===== WEAPONS-BRANCH-PICK-001 v0.9.54 ===== */
+.level-cards.branch-offer .level-card {
+  border-color: rgba(255, 230, 0, 0.45);
+}
+.level-cards.branch-offer .level-card .card-kind {
+  color: #ffe600;
+}
+.level-cards.branch-offer .level-card.action-ult {
+  border-color: rgba(255, 43, 214, 0.55);
+}
+.level-cards.branch-offer .level-card.action-ult .card-kind {
+  color: #ff2bd6;
+}
+.wstat-lv {
+  font-variant-numeric: tabular-nums;
 }

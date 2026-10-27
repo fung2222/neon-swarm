@@ -1,0 +1,19 @@
+{
+  "ver": "0.9.54",
+  "meta": {
+    "pendingFrom": "branch",
+    "choiceN": 3,
+    "titles": [
+      "A · 過熱連射",
+      "B · 穿甲芯",
+      "C · 散射網"
+    ],
+    "paused": true
+  },
+  "after": {
+    "branch": "B",
+    "lvText": "Lv3·B",
+    "state": "play"
+  },
+  "errs": []
+}
