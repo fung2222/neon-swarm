@@ -5,7 +5,7 @@
 
 **試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.50 · **狀態 Status:** v0.9.50 elite lane read
 
-> **Phone hit-feel Active:** see [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md)（Roy playtest checklist · live `?v=0.9.50`）。
+> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27 phone · live `?v=0.9.50`）。**Active = HOLD**.
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  

@@ -124,7 +124,7 @@ Untracked local extras（**not** committed）：`menu-*.png` at screenshots root
 
 | Pillar | Status |
 | --- | --- |
-| **命中可靠 hit** | Code＋headless／SwiftShader **tested** for AIM-HIT-FAST-002；**device verified = no**（await Roy HIT-FEEL-DEVICE） |
+| **命中可靠 hit** | Code＋headless／SwiftShader **tested** for AIM-HIT-FAST-002；**device verified = yes**（Roy HIT-FEEL-DEVICE「Ok」2026-10-27 · live v0.9.50） |
 | **手機穩定 stable** | Recover overlay **implemented**；mid-run loss **still open**（user reported）；further GPU cuts deferred |
 | **主角好看 look** | horn 32 sheets **implemented**；silhouette／art lock **not** done；blocky interim remains |
 | **內容 content** | Beats＋five zones＋endless＋pickup **implemented／tested**；heavy／prototype locked；Play packaging **not started**；Phase 4 **do not start** |
@@ -133,7 +133,7 @@ Untracked local extras（**not** committed）：`menu-*.png` at screenshots root
 
 ## 7. Open gaps / not verified（device）
 
-- Roy phone：高速橫向命中手感（HIT-FEEL-DEVICE）
+- Roy phone：高速橫向命中手感（HIT-FEEL-DEVICE）— **Complete**／pass 2026-10-27
 - Roy phone：mid-run「繪圖暫時中斷」frequency after v0.9.6
 - Roy phone：200-enemy PERF（desktop GTX baseline only）
 - horn 最終剪影方向（needs Roy eyes）
@@ -150,7 +150,7 @@ Aligns with `AGENT_TASK` queue after Kimi clears AIM-HIT-FAST-002 HOLD:
 
 1. **PHONE-STABLE-FOLLOWUP** — evidence／options for mid-run WebGL；stability over fake power cuts  
 2. **HORN-SILHOUETTE-DIRECTION** — Roy art direction before polish  
-3. **HIT-FEEL-DEVICE** — Roy device confirmation of v0.9.19 aim  
+3. **HIT-FEEL-DEVICE** — Roy device confirmation of v0.9.19 aim — **Complete**／`device verified`（Roy「Ok」2026-10-27）  
 4. **PERF-REBASELINE** — desktop＋phone if available  
 5. **CONTENT-AFTER-PILLARS** — only after hit／stable／look  
 

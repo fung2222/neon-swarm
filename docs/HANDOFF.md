@@ -4,7 +4,7 @@
 >
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
-> **文件日期：** 2026-10-26（Asia/Hong_Kong）  
+> **文件日期：** 2026-10-27（Asia/Hong_Kong；HIT-FEEL-DEVICE Complete）  
 > **建議承接基準：** v0.9.50 elite lane read（slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
@@ -56,7 +56,7 @@
   - v0.9.22 — PHASE2-COMBAT-READABILITY-002（Roy「繼續出去啦繼續流程」；horn visual HOLD cleared for pipeline；silhouette interim OK-to-continue）：ordinary enemy ground rings off；elite／boss／danger rings kept／stronger；floor／ambient darker；elite telegraph → danger orange；pickup halos punchier；ordinary kill FX declutter（no ring／wave）；sticky aim mild hold tweak；screenshots `tests/screenshots/phase2-readability/`。未改平衡表／horn mesh／Phase 4／phone GPU；mobile v0.9.20 cuts untouched。
   - v0.9.23 — PHASE3-ENEMY-SNIPER-001：`ENEMIES.sniper` 狙擊單位／Sniper Unit；olive＋crimson；long-rifle procedural mesh（≠ soldier／officer recolor）；`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan；events `telegraph kind:sniper`＋`sniperShot`；waveMix mid-late lab＋reactor／blockade／rooftop／assembly lightly；截圖 `tests/screenshots/phase3-sniper/`；測試 `tests/sniper.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.24 — PHASE3-ENEMY-SHIELD-001：`ENEMIES.shield` 盾衛／Shield Guard；steel＋cyan-blue；large front-plate procedural mesh（≠ soldier／walker recolor）；`_tickShield` slow chase＋face player；frontal mitigation only（`face · normalize(src−enemy) ≥ 0.5` → ×0.15 dmg；flank／rear full）；bash = short **red** contact telegraph；waveMix assembly／blockade ~0.12、lab after ~65s light、**no** early lab；截圖 `tests/screenshots/phase3-shield/`；測試 `tests/shield.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
-  - v0.9.50 — PHASE6-ELITE-LANE-READ-001：精英衝鋒 warning lane 加粗／加亮（`js/elite-lane-read.js` `ELITE_LANE`）；唔係新精英／唔係 Morph；截圖 `tests/screenshots/phase6-elite-lane-read/`；測試 `tests/elite-lane-read.test.mjs`。**HOLD for Roy try**。未做：Phase 4／horn art lock／phone GPU。
+  - v0.9.50 — PHASE6-ELITE-LANE-READ-001：精英衝鋒 warning lane 加粗／加亮（`js/elite-lane-read.js` `ELITE_LANE`）；唔係新精英／唔係 Morph；截圖 `tests/screenshots/phase6-elite-lane-read/`；測試 `tests/elite-lane-read.test.mjs`。**HIT-FEEL-DEVICE Complete**（Roy「Ok」2026-10-27）。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.49 — PHASE6-SLOT-FIRE-PULSE-001：開火時對應 `#weapon-slots` 格短暫黃閃（~140ms）；`js/slot-fire-pulse.js`；截圖 `tests/screenshots/phase6-slot-fire-pulse/`；測試 `tests/slot-fire-pulse.test.mjs`。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.48 — PHASE6-ZONE-HUD-CHIP-001：`#hud-zone` 持久區域晶片（zh-HK＋EN 細字；accent 跟區）；`zoneEnter`／HUD 更新；pointer-events none；截圖 `tests/screenshots/phase6-zone-hud-chip/`；測試 `tests/zone-hud-chip.test.mjs`。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.47 — PHASE3-ENEMY-JAMMER-001：`ENEMIES.jammer` 干擾單位／Signal Jammer；dark steel＋magenta／violet dish／mast／emitter pods（≠ drone／medic／artillery／flanker recolor；**no red hull**）；mid-range → **violet** jam telegraph≥0.85s（`JAMMER.telegraphSec`）→ fireCd mul ×1.35 ~2.5s（stack cap 1；refresh OK）→ recover／reposition；events `telegraph kind:jammer`＋`jammerPulse`；kill mid-telegraph = no apply；visual reuse `#fx-flash` magenta — **no** new toast；waveMix no early lab＋light mid-late／reactor／blockade／rooftop、assembly rare；截圖 `tests/screenshots/phase3-jammer/`；測試 `tests/jammer.test.mjs`。未做：Phase 4／horn art lock／phone GPU。
@@ -95,7 +95,7 @@
 - 槍層 **v0.9.27 起為 8-dir sector snap**（N/NE/E/SE/S/SW/W/NW）；**仍非**平滑 360° continuous turret。
 - PERF-REBASELINE 已更新桌面 GTX 1070 Ti／v0.9.20（≈58–60 FPS）；**手機真機 200 敵效能仍未驗收**（Roy deferred phone GPU）。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
-- Phase 2 戰鬥可讀性：**v0.9.22 follow-up completed**（grunt rings off；elite／danger／pickups／floor／FX）；真機 hit-feel 仍待 Roy。
+- Phase 2 戰鬥可讀性：**v0.9.22 follow-up completed**（grunt rings off；elite／danger／pickups／floor／FX）；**HIT-FEEL-DEVICE Complete**／`device verified`（Roy「Ok」2026-10-27 phone · v0.9.50）。
 - Phase 3 lab slice（v0.9.9）＋ SWARM CORE boss（v0.9.10）＋ Phase 6 pickup（v0.9.11）＋ aim/hit（v0.9.12）＋ elite #2 HUNTER（v0.9.13）＋ assembly bay zone（v0.9.14）＋ reactor zone（v0.9.15）＋ blockade zone（v0.9.16）＋ rooftop zone（v0.9.17，五區敘事齊）＋ endless elites／boss cadence（v0.9.18）＋ AIM-HIT-FAST-002（v0.9.19）＋ **PHONE-STABLE-FOLLOWUP（v0.9.20）**＋ horn silhouette interim（v0.9.21）＋ **PHASE2-COMBAT-READABILITY-002（v0.9.22）**＋ **PHASE3-ENEMY-SNIPER-001（v0.9.23）**＋ **PHASE3-ENEMY-SHIELD-001（v0.9.24）**＋ **PHASE3-ENEMY-ARTILLERY-001（v0.9.25）**＋ **PHASE3-ELITE-COMMANDER-001（v0.9.26）**＋ **GUN-8DIR-001（v0.9.27）** 已落地。Boss／elite landmark 仍喺同一 arena。武器模型＝`taken` stacks＋**v0.9.28 `weaponSlots`×4 HUD**＋**v0.9.29 slot-fire sync（HUD≡shots）**＋**v0.9.30 drop silhouettes（XP／heal／magnet／weapon）**。下一步：`AGENT_TASK` → pause／zone banner timing QOL，之後 sync before Phase 4（Roy continuous；skip HIT-FEEL wait）。Horn silhouette interim OK-to-continue；**唔**再自動 polish horn／art lock。PERF desktop rebaseline 已做。Phase 4 Precision — **do not start** until pillars。文案直寫 GitHub。
 - 文件、測試或 TODO 存在，不代表對應玩法已可玩。
 
@@ -365,7 +365,7 @@ v0.9.3 browser suite 固定使用 SwiftShader WebGL，適合自動化功能與�
 
 ### Phase 2 — 戰鬥可讀性與敵人光圈減噪
 
-> **完成（v0.9.22 follow-up）：** v0.9.4 grunt dim → **v0.9.22 ordinary rings off**；**v0.9.8 floor**＋v0.9.22 darker ambient；elite／boss／danger telegraphs＋pickups punchier；ordinary kill FX declutter；nearest／sticky confirmed（mild hold tweak）。截圖 `tests/screenshots/phase2-readability/`＋既有 `phase2-floor/`。真機 hit-feel 仍屬 HIT-FEEL-DEVICE。
+> **完成（v0.9.22 follow-up）：** v0.9.4 grunt dim → **v0.9.22 ordinary rings off**；**v0.9.8 floor**＋v0.9.22 darker ambient；elite／boss／danger telegraphs＋pickups punchier；ordinary kill FX declutter；nearest／sticky confirmed（mild hold tweak）。截圖 `tests/screenshots/phase2-readability/`＋既有 `phase2-floor/`。**HIT-FEEL-DEVICE Complete**／`device verified`（Roy「Ok」2026-10-27）。
 
 - 普通敵人不應每個都有大光圈；保留給精英、危險攻擊或必要身份提示。 ✅
 - 地板與 ambient 要比敵人、子彈、拾取物暗；warning red／orange／acid 不被裝飾搶用。 ✅（elite telegraph = danger orange；boss = acid）
@@ -474,9 +474,11 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.50（PHASE6-ELITE-LANE-READ-001；HEAD 以 `main`／live `?v=0.9.50` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**（zone chip／slot fire pulse／elite lane read）。
+**目前基準 v0.9.50（PHASE6-ELITE-LANE-READ-001；HEAD 以 `main`／live `?v=0.9.50` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**（zone chip／slot fire pulse／elite lane read）。**HIT-FEEL-DEVICE Complete**／`device verified`（Roy phone「Ok」2026-10-27 · A/B/C/D pass · live `?v=0.9.50`；含 AIM-HIT-FAST-002 device gate）。
 
-**Active = `HIT-FEEL-DEVICE`**（Roy 2026-10-27「跟流程去」on phone）— checklist `docs/HIT-FEEL-DEVICE.md`；live `?v=0.9.50`。Grok box = headless pre-check only；**HOLD for Roy phone notes**。Do **not** invent a 4th priority enemy／toast／streak／coach；**do not** auto-start Phase 4／horn art lock／phone GPU／soft-juice invent。
+**Active = HOLD**（none）— pass rule = HOLD or Roy-named next；safe auto-queue ≈0。Do **not** invent a 4th priority enemy／toast／streak／coach；**do not** auto-start Phase 4／Morph／horn art lock／phone GPU／soft-juice invent。
+
+**Options for Roy（Grok waits）：** (1) phone GPU／mid-run WebGL focused pass（still deferred／not accepted） (2) horn art lock／silhouette only if Roy names direction (3) Phase 4 Precision only if Roy clears／names it (4) Roy-named narrow polish (5) stay HOLD on live v0.9.50。
 
 - `PHASE3-ENEMY-JAMMER-001` **已完成**（v0.9.47）：干擾單位 violet jam telegraph≥0.85s＋fireCd mul debuff；截圖 `tests/screenshots/phase3-jammer/`；測試 `tests/jammer.test.mjs`。
 - `PHASE3-ENEMY-MEDIC-001` **已完成**（v0.9.46）：醫療支援 lime heal telegraph≥0.7s＋ordinary ally heal pulse；截圖 `tests/screenshots/phase3-medic/`；測試 `tests/medic.test.mjs`。
@@ -507,14 +509,14 @@ Rollback baseline:
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
 - `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；**soft-juice usability queue DONE**；jammer shipped v0.9.47（flanker→medic→jammer beat）。**下一項：Active `HIT-FEEL-DEVICE`**（checklist `docs/HIT-FEEL-DEVICE.md`；wait Roy phone notes）— do **not** invent a 4th enemy／toast／streak／coach polish。still **ban Phase 4**／horn art lock／phone GPU。
-- AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
-- Queue：真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish。
-- SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
+- Roy deferred phone GPU／mid-run WebGL；**soft-juice usability queue DONE**；jammer shipped v0.9.47（flanker→medic→jammer beat）。**HIT-FEEL-DEVICE Complete**（Roy「Ok」2026-10-27）— do **not** invent a 4th enemy／toast／streak／coach polish。**Active = HOLD**；still **ban** auto Phase 4／horn art lock／phone GPU。
+- AIM-HIT-FAST-002：**device verified** via HIT-FEEL；仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
+- Queue：命中可靠真機閘 **passed** → 其餘支柱（手機穩定／主角好看）仍要 Roy 點名；**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish／Morph。
+- SwiftShader ≠ 真機；手機 mid-run WebGL／GPU deep **仍未**裝置驗收（HIT-FEEL D 只係輕記 pass，唔當 GPU acceptance）。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
 
 ## 版本歷史（增量）
 
-- **v0.9.50** (`PHASE6-ELITE-LANE-READ-001`) — Elite charge warning lanes thicker／brighter for phone read (`ELITE_LANE` dual≈1.28／single≈1.62；opacity floor 0.58；brighter orange；y=0.09). Not a new elite／not Morph. Screenshots `tests/screenshots/phase6-elite-lane-read/`. Tests `tests/elite-lane-read.test.mjs`. **HOLD for Roy try** (still ban Phase 4／4th enemy／soft-juice invent).
+- **v0.9.50** (`PHASE6-ELITE-LANE-READ-001`) — Elite charge warning lanes thicker／brighter for phone read (`ELITE_LANE` dual≈1.28／single≈1.62；opacity floor 0.58；brighter orange；y=0.09). Not a new elite／not Morph. Screenshots `tests/screenshots/phase6-elite-lane-read/`. Tests `tests/elite-lane-read.test.mjs`. **HIT-FEEL-DEVICE Complete**／Roy phone OK 2026-10-27 (still ban Phase 4／4th enemy／soft-juice invent；Active=HOLD).
 
 - **v0.9.49** (`PHASE6-SLOT-FIRE-PULSE-001`) — Weapon-slot brief yellow `.fire-pulse` (~140ms) when that weapon fires; maps `ev.weapon` → HUD index via `slotIndexForWeapon`; no toast／balance change. Screenshots `tests/screenshots/phase6-slot-fire-pulse/`. Tests `tests/slot-fire-pulse.test.mjs`. Next: ELITE-LANE-READ (still ban Phase 4／4th enemy／soft-juice invent).
 
