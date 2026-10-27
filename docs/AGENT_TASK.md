@@ -3,30 +3,46 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：**HOLD** · Active → **none**（clarity beat Complete · wait Roy try）
+## 狀態：**Active** → **HIT-FEEL-DEVICE**（Roy phone playtest · HOLD for notes）
 
-**Clarity beat DONE**（zone chip → slot fire pulse → elite lane read）。Soft-juice DONE；priority enemies 0.9.45–47 done。
+**Opened:** 2026-10-27 ~08:28 HKT — Roy「跟流程去」on phone after clarity beat HOLD；safe auto-queue ≈0；documented next = HIT-FEEL-DEVICE.
 
-### Clarity beat（shipped）
+**Live to play:** https://fung2222.github.io/neon-swarm/?v=0.9.50  
+**Baseline HEAD:** `933a414`（v0.9.50 elite lane read；no code change this task）  
+**Checklist doc:** `docs/HIT-FEEL-DEVICE.md`
 
-| # | Task | Status |
-|---|---|---|
-| 1 | **PHASE6-ZONE-HUD-CHIP-001** `?v=0.9.48` | **Complete** |
-| 2 | **PHASE6-SLOT-FIRE-PULSE-001** `?v=0.9.49` | **Complete** |
-| 3 | **PHASE6-ELITE-LANE-READ-001** `?v=0.9.50` | **Complete** — thicker/brighter elite charge lanes |
+### Scope（this Active only）
 
-**Do NOT auto-start：** Phase 4／horn art lock／phone GPU／soft-juice invent／4th priority enemy／balance overhaul／second beat。
+- Roy **device** verification of hit feel／close-range／run-and-gun／hurt feedback on live `?v=0.9.50`.
+- Includes AIM-HIT-FAST-002 (v0.9.19) still **not device-verified**.
+- **NOT** Phase 4／Morph／horn art lock／phone GPU deep cuts／soft-juice invent／new game systems.
 
-### Just shipped
+### Grok box pre-check（2026-10-27 ~08:28 HKT）
 
-- **v0.9.50** `PHASE6-ELITE-LANE-READ-001` — elite warn lanes thicker／brighter（`ELITE_LANE`）；截圖 `tests/screenshots/phase6-elite-lane-read/`；測試 `tests/elite-lane-read.test.mjs`。
-- **v0.9.49** slot fire pulse · **v0.9.48** zone HUD chip。
+| Check | Result |
+|---|---|
+| `tests/aim-hit-fast.test.mjs`（legacy + 002） | **PASS** |
+| Live cache-bust `index.html` `?v=` | **0.9.50** |
+| SwiftShader / box GPU feel | **not** device evidence — do **not** claim hit-feel verified |
 
-### Next（wait Roy）
+### What needs Roy phone（blockers for Complete）
 
-1. **HOLD for Roy try**（live `?v=0.9.50`）
-2. OR HIT-FEEL-DEVICE when Roy phones
-3. OR Roy-named Active／「繼續」only
+See full checklist in `docs/HIT-FEEL-DEVICE.md`. Short:
+
+1. **命中** — strafe／fast lateral enemies；close range；reverse run-and-gun
+2. **手感** — hurt tint 唔斷跑；stick aim／auto-fire 順；gun 8-dir 唔跳到煩
+3. **可讀** — elite lanes／danger／pickups 手機直向仍睇得清（clarity beat spot-check）
+4. **穩定（輕記）** — 短局有無「繪圖暫時中斷」；**唔**當本 task 去深入 GPU
+
+### After Roy notes
+
+- Pass → mark HIT-FEEL-DEVICE **Complete**／`device verified`；HOLD or Roy-named next
+- Fail → narrow bug task（aim／hurt／input）— still ban Phase 4／GPU invent
+- Grok：**HOLD** — do not auto-queue new content while Active is HIT-FEEL-DEVICE
+
+### Do NOT auto-start
+
+Phase 4／horn art lock／phone GPU／soft-juice invent／4th priority enemy／balance overhaul／Morph.
 
 ---
 

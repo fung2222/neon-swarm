@@ -474,7 +474,9 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.50（PHASE6-ELITE-LANE-READ-001；HEAD 以 `main`／live `?v=0.9.50` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**（zone chip／slot fire pulse／elite lane read）— **HOLD for Roy try**。Do **not** invent a 4th priority enemy／toast／streak／coach；**do not** auto-start Phase 4。
+**目前基準 v0.9.50（PHASE6-ELITE-LANE-READ-001；HEAD 以 `main`／live `?v=0.9.50` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**（zone chip／slot fire pulse／elite lane read）。
+
+**Active = `HIT-FEEL-DEVICE`**（Roy 2026-10-27「跟流程去」on phone）— checklist `docs/HIT-FEEL-DEVICE.md`；live `?v=0.9.50`。Grok box = headless pre-check only；**HOLD for Roy phone notes**。Do **not** invent a 4th priority enemy／toast／streak／coach；**do not** auto-start Phase 4／horn art lock／phone GPU／soft-juice invent。
 
 - `PHASE3-ENEMY-JAMMER-001` **已完成**（v0.9.47）：干擾單位 violet jam telegraph≥0.85s＋fireCd mul debuff；截圖 `tests/screenshots/phase3-jammer/`；測試 `tests/jammer.test.mjs`。
 - `PHASE3-ENEMY-MEDIC-001` **已完成**（v0.9.46）：醫療支援 lime heal telegraph≥0.7s＋ordinary ally heal pulse；截圖 `tests/screenshots/phase3-medic/`；測試 `tests/medic.test.mjs`。
@@ -505,7 +507,7 @@ Rollback baseline:
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
 - `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；**soft-juice usability queue DONE**；jammer shipped v0.9.47（flanker→medic→jammer beat）。**下一項：HOLD for Roy try** — do **not** invent a 4th enemy／toast／streak／coach polish。still **ban Phase 4**／horn art lock／phone GPU。OR **HIT-FEEL-DEVICE when Roy phones**.
+- Roy deferred phone GPU／mid-run WebGL；**soft-juice usability queue DONE**；jammer shipped v0.9.47（flanker→medic→jammer beat）。**下一項：Active `HIT-FEEL-DEVICE`**（checklist `docs/HIT-FEEL-DEVICE.md`；wait Roy phone notes）— do **not** invent a 4th enemy／toast／streak／coach polish。still **ban Phase 4**／horn art lock／phone GPU。
 - AIM-HIT-FAST-002 仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
 - Queue：真機 hit feel → 先支柱再內容 bulk。**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish。
 - SwiftShader ≠ 真機；手機 mid-run WebGL **未**裝置驗收。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
