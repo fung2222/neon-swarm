@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.56 WEAPONS-FEEL-FX-001; kits v0.9.55; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
+// RAMPAGE MECH 暴走機甲 — v0.9.57 WEAPONS-ICON-PLACEHOLDERS-001; feel FX v0.9.56; kits v0.9.55; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -49,6 +49,7 @@ import {
   muzzleFeelFx, explodeFeelFx, chargeFeelFx, stickFeelFx, frostHitFeelFx,
   slowFieldFeelFx, deployDronesFeelFx, blackholeFeelFx, flashFeelFx, puddleFeelFx,
 } from './weapons-feel-fx.js';
+import { weaponIconHtml, WEAPON_ICON_SRC } from './weapons-icons.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -400,6 +401,8 @@ new ViewInput($('scene'), {
 }, { oneFingerOrbit: false });
 
 window.__swarm = S;
+S.weaponIconHtml = weaponIconHtml;
+S.WEAPON_ICON_SRC = WEAPON_ICON_SRC;
 S.view = view;
 S._coachSessionShown = false;
 S._coachTimer = 0;
@@ -550,15 +553,14 @@ function updateWeaponSlotsHUD(g) {
     el.classList.toggle('filled', !!id);
     el.classList.toggle('primary', !!(def && def.category === 'primary'));
     if (!id) {
-      el.innerHTML = '<span class="wslot-ico" aria-hidden="true">·</span><span class="wslot-lv"></span>';
+      el.innerHTML = '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 22 }) + '</span><span class="wslot-lv"></span>';
       el.title = i18n.isZh() ? '空武器格' : 'Empty slot';
       continue;
     }
     const lv = _slotLv(g, id);
     const lab = SLOT_LABEL[id] || (def ? def.en.split(' ')[0].slice(0, 5) : id.toUpperCase());
-    const ico = SLOT_ICON[id] || (def && def.icon) || '◆';
     el.innerHTML =
-      `<span class="wslot-ico" aria-hidden="true">${ico}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 22 })}</span>` +
       `<span class="wslot-name">${lab}</span>` +
       `<span class="wslot-lv">Lv${lv}</span>`;
     el.title = `${def ? (i18n.isZh() ? def.zh : def.en) : lab} Lv${lv}`;
@@ -580,6 +582,10 @@ function updateWeaponStatusHUD(g) {
     ? (typeof g.activeSecondaryId === 'function' ? g.activeSecondaryId() : null)
     : (typeof g.activePrimaryId === 'function' ? g.activePrimaryId() : 'gatling');
   const def = weaponDef(id);
+  const icoEl = $('wstat-ico');
+  if (icoEl) {
+    icoEl.innerHTML = id ? weaponIconHtml(id, { size: 22 }) : weaponIconHtml(null, { empty: true, size: 22 });
+  }
   modeEl.textContent = secondary ? (zh ? '副' : 'SEC') : (zh ? '主' : 'PRI');
   nameEl.textContent = def ? (zh ? def.zh : def.en) : (id || '—');
   if (id) {
@@ -669,7 +675,7 @@ function updateWeaponRailHUD(g) {
     );
     btn.classList.toggle('active', isActive);
     if (!id) {
-      btn.innerHTML = '<span class="wslot-ico" aria-hidden="true">·</span>';
+      btn.innerHTML = '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 36 }) + '</span>';
       btn.title = zh ? '空' : 'Empty';
       btn.disabled = true;
       return;
@@ -678,12 +684,11 @@ function updateWeaponRailHUD(g) {
     const lv = _slotLv(g, id);
     const br = g.weaponBranches && g.weaponBranches[id];
     const ult = g.weaponUlts && g.weaponUlts[id];
-    const ico = SLOT_ICON[id] || def.icon || '◆';
     let lvTxt = `Lv${lv}`;
     if (br) lvTxt += `·${br}`;
     if (ult) lvTxt += ult.replace('U', '');
     btn.innerHTML =
-      `<span class="wslot-ico" aria-hidden="true">${ico}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 36 })}</span>` +
       `<span class="wslot-lv">${lvTxt}</span>`;
     btn.title = `${zh ? def.zh : def.en} ${lvTxt}`;
   });

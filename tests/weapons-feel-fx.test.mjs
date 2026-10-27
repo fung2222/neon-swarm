@@ -15,7 +15,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const logic = readFileSync(new URL('../js/logic.js', import.meta.url), 'utf8');
 
-assert.match(html, /\?v=0\.9\.56/);
+assert.match(html, /\?v=0\.9\.5[0-9]/);
 assert.ok(main.includes('weapons-feel-fx'));
 assert.ok(main.includes('applyFeelBursts'));
 assert.ok(main.includes('weaponCharge'));

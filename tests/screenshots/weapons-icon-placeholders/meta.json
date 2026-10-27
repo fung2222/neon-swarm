@@ -1,0 +1,14 @@
+{
+  "ver": "0.9.57",
+  "task": "WEAPONS-ICON-PLACEHOLDERS-001",
+  "meta": {
+    "hasIconSrc": true,
+    "svgCount": 6,
+    "statusHasSvg": true,
+    "emptyCount": 1,
+    "filledCount": 5,
+    "emojiLeft": false
+  },
+  "errs": [],
+  "at": "2026-10-27T16:41:45.647Z"
+}

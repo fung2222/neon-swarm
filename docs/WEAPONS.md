@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.55 `WEAPONS-BRANCH-KITS-001`  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.57 `WEAPONS-ICON-PLACEHOLDERS-001` (feel FX = v0.9.56)  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -89,6 +89,10 @@ IDs are stable English snake keys used in code / saves. zh-HK names are product 
 
 Branch/ult UI playable as of v0.9.54; **deep branch kits as of v0.9.55** (A/B/C distinct fire deltas). Ult kits still light amp only. Feel + kits in `WEAPON_CATALOG` / `branchStatMods` + Game ticks.
 
+**v0.9.56 ship (`WEAPONS-FEEL-FX-001`):** per-weapon muzzle/trail/burst FX recipes in `js/weapons-feel-fx.js` — gatling bolts, ion charge→punch, tracking stick→pop, vulcan spin sparks, zero chill+frost, acid mist, shotgun flash, slow rush ring, drone deploy puff, blackhole swirl, distinct throw bursts. MOBILE_GFX / webgl-guard respectful (shed rings; reuse pools). Screenshots `tests/screenshots/weapons-feel-fx/`.
+
+**v0.9.57 ship (`WEAPONS-ICON-PLACEHOLDERS-001`):** neon SVG square tiles (dark plate + glyph; cyan primary / magenta secondary / amber throw) replace bare emoji on left rail + top status. `WEAPON_ICON_SRC` maps each id → `assets/weapons/{id}.png` for later Roy art swap. Empty + muted states. Not Roy final art. Screenshots `tests/screenshots/weapons-icon-placeholders/`.
+
 ---
 ## Level / branch / ultimate schema
 
@@ -112,6 +116,10 @@ Weapon
 **v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
 
 **v0.9.55 ship (`WEAPONS-BRANCH-KITS-001`):** deep A/B/C branch kits — distinct fire/behavior (not only % bumps). Ult U1/U2 still **light amplifiers** only (no full unique ult fire paths).
+
+**v0.9.56 ship (`WEAPONS-FEEL-FX-001`):** combat feel FX polish (see Feel specs + `js/weapons-feel-fx.js`).
+
+**v0.9.57 ship (`WEAPONS-ICON-PLACEHOLDERS-001`):** neon SVG placeholder icons + `WEAPON_ICON_SRC` PNG hooks.
 
 ### Branch naming stubs (primary)
 
@@ -292,5 +300,5 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 - `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
 - `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
-- Screenshots: redesign (v0.9.53) + branch (v0.9.54) + kits (v0.9.55)  
+- Screenshots: redesign (v0.9.53) + branch (v0.9.54) + kits (v0.9.55) + feel-fx (v0.9.56) + icon-placeholders (v0.9.57)  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push

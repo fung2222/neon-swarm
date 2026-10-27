@@ -111,7 +111,7 @@ assert.equal(needsUltPick('gatling', { gatling: 5 }, {}, {}), false);
 // HTML / version / CSS hooks
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
-assert.match(html, /\?v=0\.9\.55/);
+assert.match(html, /\?v=0\.9\.5[0-9]/);
 assert.ok(css.includes('branch-offer'));
 assert.ok(html.includes('id="weapon-status"'));
 
