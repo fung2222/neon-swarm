@@ -58,7 +58,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 560px) {
   .hud-zone {
     left: calc(8px + var(--sa-left)); transform: none;
-    top: calc(84px + var(--sa-top));
+    top: calc(134px + var(--sa-top));
     padding: 2px 10px 3px; font-size: 9px;
     align-items: flex-start;
   }
@@ -82,19 +82,21 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .hud-buttons.top { top: calc(8px + var(--sa-top)); right: calc(8px + var(--sa-right)); }
   .hud-goal {
     top: auto; bottom: auto; margin-top: 0;
-    top: calc(58px + var(--sa-top));
+    top: calc(108px + var(--sa-top));
     left: calc(8px + var(--sa-left)); transform: none;
     font-size: 10px; padding: 3px 10px;
   }
 }
 #hud .hud-panel, #hud .xp-bar, #hud .demo-tag, #hud .fps { pointer-events: none; }
 /* v0.9.33 XP bar punch — readable mid-fight */
+/* v0.9.52: XP bar at TOP so thumbs don't cover it (was bottom) */
 .xp-bar {
   position: absolute;
   left: max(10%, calc(12px + var(--sa-left)));
   right: max(10%, calc(12px + var(--sa-right)));
-  bottom: calc(16px + var(--sa-bottom));
-  height: 10px; border-radius: 99px;
+  top: calc(52px + var(--sa-top));
+  bottom: auto;
+  height: 8px; border-radius: 99px;
   background: rgba(6, 4, 16, 0.85); border: 1px solid rgba(0, 229, 255, 0.55);
   z-index: 5; overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.18), inset 0 0 6px rgba(0,0,0,0.45);
@@ -342,35 +344,39 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .xp-bar {
     left: max(6%, calc(12px + var(--sa-left)));
     right: max(6%, calc(12px + var(--sa-right)));
-    height: 11px;
+    height: 7px;
   }
 }
 
 /* ---- frame picker (three selectable mechs on the home screen) ---- */
-.mech-pick { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; width: 100%; }
+/* v0.9.52: shrink cards, less empty space, closer to Start */
+.mech-pick { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; width: 100%; }
 .mech-head {
-  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
   color: #7ad7ff; opacity: .85; text-align: center;
 }
-.mech-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mech-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .mech-card {
   appearance: none; cursor: pointer; text-align: left; font: inherit;
-  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-  padding: 10px 10px 9px; border-radius: 10px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: 6px 8px 5px; border-radius: 8px;
   border: 1px solid #2a3560; background: #08051acc; color: #e8e4ff;
-  transition: border-color .15s, box-shadow .15s, transform .1s;
+  transition: border-color .15s, box-shadow .15s, transform .1s, opacity .15s;
 }
 .mech-card .mech-swatch {
-  width: 100%; height: 6px; border-radius: 99px; margin-bottom: 6px;
+  width: 100%; height: 4px; border-radius: 99px; margin-bottom: 3px;
   background: linear-gradient(90deg, var(--a), var(--t));
   box-shadow: 0 0 10px var(--a);
 }
-.mech-card b { font-size: 13px; letter-spacing: .5px; }
-.mech-card small { font-size: 10px; line-height: 1.3; color: #9c96c4; }
+.mech-card b { font-size: 11px; letter-spacing: .4px; line-height: 1.2; }
+.mech-card small { font-size: 9px; line-height: 1.2; color: #9c96c4; }
 .mech-card.on {
   border-color: var(--t, #7cff3a);
-  box-shadow: 0 0 0 1px var(--t, #7cff3a) inset, 0 0 16px #7cff3a33;
+  box-shadow: 0 0 0 1px var(--t, #7cff3a) inset, 0 0 20px #7cff3a55, 0 0 28px color-mix(in srgb, var(--t, #7cff3a) 35%, transparent);
+  transform: translateY(-2px) scale(1.04);
+  z-index: 1;
 }
+.mech-card:not(.on) { opacity: 0.78; }
 .mech-card:active { transform: translateY(1px); }
 .mech-card.coming {
   opacity: 0.72;
@@ -452,17 +458,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .mech-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3px 6px;
+  gap: 2px 4px;
   width: 100%;
-  margin-top: 6px;
+  margin-top: 3px;
 }
 .mech-stat {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 9px; letter-spacing: 0.5px; color: #8a84b0;
+  display: flex; align-items: center; gap: 3px;
+  font-size: 8px; letter-spacing: 0.4px; color: #8a84b0;
 }
-.mech-stat i { font-style: normal; width: 22px; flex: 0 0 auto; }
+.mech-stat i { font-style: normal; width: 18px; flex: 0 0 auto; }
 .mech-stat b {
-  flex: 1; height: 4px; border-radius: 99px;
+  flex: 1; height: 3px; border-radius: 99px;
   background: #1a1435;
   position: relative; overflow: hidden;
   font-size: 0;
@@ -480,7 +486,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 760px) {
   #screen-start .menu-mid {
     --menu-brand-top: max(56px, calc(var(--sa-top) + 10vh));
-    --menu-cta-bottom: max(96px, calc(var(--sa-bottom) + 80px));
+    --menu-cta-bottom: max(52px, calc(var(--sa-bottom) + 36px));
     padding-left: 12px;
     padding-right: 12px;
   }
@@ -507,7 +513,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-height: 560px) and (orientation: landscape) {
   #screen-start .menu-mid {
     --menu-brand-top: max(28px, var(--sa-top));
-    --menu-cta-bottom: max(48px, calc(var(--sa-bottom) + 36px));
+    --menu-cta-bottom: max(28px, calc(var(--sa-bottom) + 20px));
     flex-direction: row;
     align-items: flex-end;
     justify-content: flex-start;
@@ -533,7 +539,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   #screen-start .menu-mid {
     width: min(32vw, 400px);
     --menu-brand-top: max(40px, calc(var(--sa-top) + 4vh));
-    --menu-cta-bottom: max(72px, calc(var(--sa-bottom) + 56px));
+    --menu-cta-bottom: max(40px, calc(var(--sa-bottom) + 28px));
   }
   #screen-start .menu-brand .title {
     font-size: clamp(36px, 4vw, 52px);
@@ -543,8 +549,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     font-size: 12px;
     line-height: 1.25;
   }
-  #screen-start .menu-cta { gap: 8px; }
-  #screen-start .mech-pick { margin-bottom: 4px; }
+  #screen-start .menu-cta { gap: 6px; }
+  #screen-start .mech-pick { margin-bottom: 2px; }
   #screen-start .menu-brand .tagline { -webkit-line-clamp: 2; max-height: 2.8em; overflow: hidden; }
 }
 
@@ -553,7 +559,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   #screen-start .menu-mid {
     --menu-brand-top: max(36px, calc(var(--sa-top) + 2vh));
     /* Push CTA (cards+Start) lower so the mid void can hold the centered 3D mech. */
-    --menu-cta-bottom: max(72px, calc(var(--sa-bottom) + 56px));
+    --menu-cta-bottom: max(40px, calc(var(--sa-bottom) + 28px));
   }
   #screen-start .menu-brand .title {
     font-size: clamp(28px, 8vw, 44px);
@@ -564,9 +570,9 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     max-height: 2.6em;
     overflow: hidden;
   }
-  #screen-start .mech-card { padding: 8px 10px; }
+  #screen-start .mech-card { padding: 5px 7px; }
   #screen-start .mech-card small { display: none; }
-  #screen-start .mech-pick { margin-bottom: 6px; }
+  #screen-start .mech-pick { margin-bottom: 4px; }
 }
 
 
@@ -600,7 +606,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* v0.9.32 banner timing: sit under goal HUD / above combat mid — avoid weapon-slots + HP */
 .beat-banner {
   position: fixed;
-  top: max(12%, calc(72px + var(--sa-top)));
+  /* v0.9.52: clear top XP + weapon-slots */
+  top: max(16%, calc(128px + var(--sa-top)));
   left: 50%;
   transform: translateX(-50%);
   z-index: 28;
@@ -636,7 +643,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* ---- v0.9.10 Phase 3: boss HP strip under top HUD ---- */
 .boss-hp {
   position: absolute;
-  top: calc(52px + var(--sa-top));
+  /* v0.9.52: below top XP bar + weapon-slots */
+  top: calc(118px + var(--sa-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;
@@ -692,7 +700,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   text-shadow: 0 0 12px rgba(184, 255, 58, 0.55);
 }
 @media (max-width: 520px) {
-  .boss-hp { top: calc(48px + var(--sa-top)); width: min(340px, calc(86vw - var(--sa-left) - var(--sa-right))); }
+  .boss-hp { top: calc(88px + var(--sa-top)); width: min(340px, calc(86vw - var(--sa-left) - var(--sa-right))); }
   .beat-banner {
     top: max(10%, calc(64px + var(--sa-top)));
     padding: 9px 16px;
@@ -733,12 +741,13 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 #screen-pause .neon-btn { min-height: 48px; }
 
 
-/* Phase 6 multi-slot weapon bar (v0.9.28) */
+/* Phase 6 multi-slot weapon bar (v0.9.28) — v0.9.52 moved to TOP (thumb clear) */
 .weapon-slots {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(18px + var(--sa-bottom));
+  top: calc(64px + var(--sa-top));
+  bottom: auto;
   z-index: 6;
   display: flex;
   gap: 8px;
@@ -837,12 +846,16 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 @media (max-width: 480px) {
+  .xp-bar {
+    top: calc(48px + var(--sa-top));
+    height: 7px;
+  }
   .weapon-slots {
-    bottom: calc(96px + var(--sa-bottom)); /* above virtual stick */
+    top: calc(58px + var(--sa-top)); /* below HUD row; thumbs free at bottom */
     gap: 6px;
   }
-  .wslot { width: 48px; height: 48px; border-radius: 8px; }
-  .wslot-ico { font-size: 15px; }
+  .wslot { width: 44px; height: 44px; border-radius: 8px; }
+  .wslot-ico { font-size: 14px; }
   .wslot-name { font-size: 8px; }
   .wslot-lv { font-size: 9px; }
 }
@@ -942,10 +955,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     width: 110px; height: 110px;
   }
   .weapon-slots {
-    bottom: calc(12px + var(--sa-bottom));
+    top: calc(44px + var(--sa-top));
+    bottom: auto;
   }
-  .xp-bar { bottom: calc(8px + var(--sa-bottom)); height: 8px; }
-  .beat-banner { top: max(8%, calc(48px + var(--sa-top))); }
+  .xp-bar { top: calc(34px + var(--sa-top)); bottom: auto; height: 6px; }
+  .beat-banner { top: max(14%, calc(96px + var(--sa-top))); }
 }
 
 
@@ -1121,3 +1135,41 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   opacity: 0.92;
 }
 .interrupt-note.hidden { display: none; }
+
+
+/* ---- v0.9.52 UI-LAYOUT-HOME-HUD-001: bottom CTA cluster + mid mech stage ---- */
+#screen-start.menu-home .menu-cta {
+  gap: 6px;
+}
+#screen-start .mech-lock-note {
+  margin-top: 4px;
+  min-height: 0;
+  font-size: 11px;
+}
+/* Keep brand higher; leave mid band for 3D mech; CTA hugs bottom meta */
+@media (max-width: 760px) {
+  #screen-start .menu-mid {
+    --menu-brand-top: max(40px, calc(var(--sa-top) + 4vh));
+  }
+  #screen-start .menu-brand .tagline {
+    -webkit-line-clamp: 2;
+    max-height: 2.6em;
+  }
+  #screen-start .menu-meta {
+    bottom: max(6px, var(--sa-bottom));
+  }
+}
+@media (min-width: 761px) {
+  #screen-start .menu-mid {
+    --menu-cta-bottom: max(36px, calc(var(--sa-bottom) + 24px));
+  }
+}
+/* Mobile: nudge goal/zone under top slots */
+@media (max-width: 560px) {
+  .hud-goal {
+    top: calc(108px + var(--sa-top));
+  }
+  .hud-zone {
+    top: calc(134px + var(--sa-top));
+  }
+}

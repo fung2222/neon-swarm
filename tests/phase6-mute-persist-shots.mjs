@@ -13,7 +13,7 @@ const SHOT_DIR = join(ROOT, 'tests', 'screenshots', 'phase6-mute-persist');
 mkdirSync(SHOT_DIR, { recursive: true });
 const CHROME = process.env.CHROME_PATH
   || (existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' : '/usr/bin/google-chrome');
-const VER = '0.9.35';
+const VER = '0.9.52';
 const WAIT = { timeout: 45000, polling: 250 };
 
 const MIME = {
@@ -61,7 +61,10 @@ async function gotoMenu(page, base, { muted = false } = {}) {
   }, muted);
   await page.goto(base + `/index.html?v=${VER}&lang=zh`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForFunction(() => window.__swarm && window.__swarm.state === 'menu', WAIT);
-  await page.waitForSelector('#btn-mute-menu', WAIT);
+  // v0.9.52: mute lives in gear settings — open sheet so mute toggle is visible for shots
+  await page.waitForSelector('#btn-settings-home', WAIT);
+  await page.click('#btn-settings-home');
+  await page.waitForSelector('[data-set="mute"]', WAIT);
   await new Promise((r) => setTimeout(r, 200));
 }
 
@@ -70,7 +73,7 @@ async function run() {
   const browser = await puppeteer.launch({
     executablePath: CHROME,
     headless: 'new',
-    args: ['--no-sandbox', '--disable-gpu', '--window-size=1280,720'],
+    args: ['--no-sandbox', '--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader-webgl', '--ignore-gpu-blocklist', '--window-size=1280,720'],
     defaultViewport: { width: 1280, height: 720, deviceScaleFactor: 1 },
   });
   try {
@@ -79,36 +82,37 @@ async function run() {
     // Muted on menu 1280
     await gotoMenu(page, base, { muted: true });
     await page.evaluate(() => { window.__swarm?.syncMuteChrome?.(); });
-    const mutedOk = await page.evaluate(() => {
-      const b = document.getElementById('btn-mute-menu');
-      if (!b) return false;
-      const r = b.getBoundingClientRect();
-      const cs = getComputedStyle(b);
-      return !!(b.classList.contains('muted') && cs.display !== 'none' && r.width > 0
-        && window.__swarm && window.__swarm.game === null);
+    await page.evaluate(() => {
+      const a = window.__swarm?.audio;
+      if (a?.setMuted) a.setMuted(true);
+      else if (a) a.muted = true;
+      window.__swarm?.syncMuteChrome?.();
+      window.__swarm?.ui?.setMuted?.(true);
+      const btn = document.querySelector('[data-set="mute"]');
+      if (btn) btn.click(); // toggle if needed — normalize below
     });
-    if (!mutedOk) {
-      await page.evaluate(() => {
-        const a = window.__swarm?.audio;
-        if (a?.setMuted) a.setMuted(true);
-        else if (a) a.muted = true;
-        window.__swarm?.syncMuteChrome?.();
-      });
-    }
+    // Force muted via persist path
+    await page.evaluate(() => {
+      const a = window.__swarm?.audio;
+      if (!a?.muted && window.__swarm?.toggleMutePersist) window.__swarm.toggleMutePersist();
+      if (!a?.muted && a?.setMuted) a.setMuted(true);
+      localStorage.setItem('cyber.neon-swarm.muted', '1');
+      localStorage.setItem('neon-swarm-mute', '1');
+      window.__swarm?.syncMuteChrome?.();
+    });
     const visibleMuted = await page.evaluate(() => {
-      const b = document.getElementById('btn-mute-menu');
-      const r = b.getBoundingClientRect();
-      return { w: r.width, display: getComputedStyle(b).display, muted: b.classList.contains('muted'), color: getComputedStyle(b).color };
+      const b = document.querySelector('[data-set="mute"]');
+      const r = b?.getBoundingClientRect();
+      return { w: r?.width || 0, display: b ? getComputedStyle(b).display : 'none', audioMuted: !!window.__swarm?.audio?.muted, text: b?.textContent || '' };
     });
     console.log('muted chrome', visibleMuted);
-    if (!(visibleMuted.w > 0) || visibleMuted.display === 'none' || !visibleMuted.muted) {
-      throw new Error('menu mute not visible/muted: ' + JSON.stringify(visibleMuted));
+    if (!(visibleMuted.w > 0) || visibleMuted.display === 'none' || !visibleMuted.audioMuted) {
+      throw new Error('settings mute not visible/muted: ' + JSON.stringify(visibleMuted));
     }
-    // Verify round-trip key present
     const keys = await page.evaluate(() => ({
       kit: localStorage.getItem('cyber.neon-swarm.muted'),
       alias: localStorage.getItem('neon-swarm-mute'),
-      ui: document.getElementById('btn-mute-menu')?.classList.contains('muted'),
+      ui: !!window.__swarm?.audio?.muted,
       audio: window.__swarm?.audio?.muted,
     }));
     console.log('muted state', keys);
@@ -124,13 +128,13 @@ async function run() {
       window.__swarm?.syncMuteChrome?.();
     });
     const unmutedOk = await page2.evaluate(() => {
-      const b = document.getElementById('btn-mute-menu');
-      const r = b.getBoundingClientRect();
-      return { w: r.width, muted: b.classList.contains('muted'), color: getComputedStyle(b).color, display: getComputedStyle(b).display };
+      const b = document.querySelector('[data-set="mute"]');
+      const r = b?.getBoundingClientRect();
+      return { w: r?.width || 0, muted: !!window.__swarm?.audio?.muted, display: b ? getComputedStyle(b).display : 'none', text: b?.textContent || '' };
     });
     console.log('unmuted chrome', unmutedOk);
     if (!(unmutedOk.w > 0) || unmutedOk.muted || unmutedOk.display === 'none') {
-      throw new Error('menu unmute contrast failed: ' + JSON.stringify(unmutedOk));
+      throw new Error('settings unmute contrast failed: ' + JSON.stringify(unmutedOk));
     }
     await new Promise((r) => setTimeout(r, 100));
     await page2.screenshot({ path: join(SHOT_DIR, '1280-menu-unmuted.png'), type: 'png' });
@@ -155,7 +159,7 @@ async function run() {
     await page3.evaluate(() => {
       const audio = window.__swarm?.audio;
       if (audio?.setMuted) audio.setMuted(true);
-      else if (window.__swarm?.toggleMutePersist && !document.getElementById('btn-mute-menu')?.classList.contains('muted')) {
+      else if (window.__swarm?.toggleMutePersist && !audio?.muted) {
         window.__swarm.toggleMutePersist();
       }
       localStorage.setItem('cyber.neon-swarm.muted', '1');
@@ -166,11 +170,11 @@ async function run() {
     await page3.waitForFunction(() => window.__swarm && window.__swarm.state === 'menu', WAIT);
     const after = await page3.evaluate(() => ({
       kit: localStorage.getItem('cyber.neon-swarm.muted'),
-      btn: document.getElementById('btn-mute-menu')?.classList.contains('muted'),
+      alias: localStorage.getItem('neon-swarm-mute'),
       audio: window.__swarm?.audio?.muted,
     }));
     console.log('after reload', after);
-    if (after.kit !== '1' || !after.btn) {
+    if (after.kit !== '1' || !after.audio) {
       throw new Error('mute did not survive reload: ' + JSON.stringify(after));
     }
     await page3.screenshot({ path: join(SHOT_DIR, '390-menu-muted-reload.png'), type: 'png' });

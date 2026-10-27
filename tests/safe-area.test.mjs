@@ -1,5 +1,5 @@
 /**
- * Safe-area tokens + chrome coverage (v0.9.37 / PHASE6-SAFE-AREA-001).
+ * Safe-area tokens + chrome coverage (v0.9.37 / PHASE6-SAFE-AREA-001; v0.9.52 top XP/slots).
  * Run: node tests/safe-area.test.mjs
  */
 import assert from 'assert';
@@ -26,10 +26,10 @@ const mustUse = [
   ['.hud-left {', 'var(--sa-left)'],
   ['.hud-buttons.top', 'var(--sa-right)'],
   ['.hud-goal {', 'var(--sa-top)'],
-  ['.xp-bar {\n', 'var(--sa-bottom)'],
+  ['.xp-bar {\n', 'var(--sa-top)'],
   ['.stick {\n', 'var(--sa-left)'],
   ['.stick {\n', 'var(--sa-bottom)'],
-  ['.weapon-slots {', 'var(--sa-bottom)'],
+  ['.weapon-slots {', 'var(--sa-top)'],
   ['.beat-banner {', 'var(--sa-top)'],
   ['#screen-pause,', 'var(--sa-top)'],
   ['#screen-over,', 'var(--sa-bottom)'],

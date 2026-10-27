@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.51 PHONE-STABLE-CONTEXT-001 mid-run WebGL guard; elite lane read; horn interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.52 UI-LAYOUT-HOME-HUD-001 home gear settings + top XP/slots; phone guard v0.9.51
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -202,21 +202,10 @@ const audio = new SwarmAudio(store);
 // Mirror alias key so early-paint script + smoke tests stay aligned with kit store.
 writeMutedToStore(store, !!audio.muted);
 function muteButtons() {
-  return [$('btn-mute'), $('btn-mute-menu')].filter(Boolean);
+  // v0.9.52: home mute lives in gear settings sheet — only in-run #btn-mute stays as chrome.
+  return [$('btn-mute')].filter(Boolean);
 }
 function syncMuteChrome() {
-  const menuBtn = $('btn-mute-menu');
-  // Kit tidyTopRight hides non-menu-icon-btn children; keep mute discoverable on home.
-  if (menuBtn) {
-    menuBtn.classList.add('menu-icon-btn', 'menu-mute');
-    menuBtn.classList.remove('ck-bar-hide');
-    menuBtn.style.removeProperty('display');
-    const right = menuBtn.parentElement;
-    const howto = right && right.querySelector('#btn-howto');
-    if (right && howto && menuBtn.compareDocumentPosition(howto) & Node.DOCUMENT_POSITION_PRECEDING) {
-      right.insertBefore(menuBtn, howto);
-    }
-  }
   applyMuteUi(!!audio.muted, muteButtons(), { isZh: i18n.isZh() });
   ui.setMuted(audio.muted);
 }
@@ -1318,7 +1307,6 @@ $('btn-retry')?.addEventListener('click', () => startRun());
 $('btn-share')?.addEventListener('click', () => { onShareRun().catch(() => {}); });
 $('btn-menu')?.addEventListener('click', () => showMenu());
 $('btn-mute')?.addEventListener('click', () => { toggleMutePersist(); });
-$('btn-mute-menu')?.addEventListener('click', () => { try { audio.init(); } catch (_) {} toggleMutePersist(); });
 
 if (shouldShowArcadeMenu(HUB)) {
   const b = $('btn-arcade-menu');
@@ -1340,8 +1328,16 @@ ui.mountHowto({
     ],
   }),
 });
+// v0.9.52: settings sheet owns mute/volume/lang — wrap so mute still hits toggleMutePersist (alias + HUD sync).
 ui.mountSettings({
-  audio, stage,
+  audio: {
+    get muted() { return !!audio.muted; },
+    init: () => { try { audio.init(); } catch (_) {} },
+    toggleMute: () => { toggleMutePersist(); },
+    setVolume: (v, ch) => (typeof audio.setVolume === 'function' ? audio.setVolume(v, ch) : undefined),
+    getVolumes: () => (typeof audio.getVolumes === 'function' ? audio.getVolumes() : { master: 1 }),
+  },
+  stage,
   onOpen: () => { try { audio.click(); } catch (_) {} },
 });
 

@@ -109,13 +109,15 @@ assert.equal(muteTipFor(true, false), 'Unmute');
   assert.ok(main.includes('toggleMutePersist'), 'toggle wired');
   assert.ok(main.includes('syncMuteChrome'), 'sync wired');
   assert.ok(main.includes('writeMutedToStore'), 'alias mirror');
-  assert.ok(main.includes('btn-mute-menu'), 'menu mute');
+  // v0.9.52: loose menu mute removed — gear settings sheet owns mute/volume
+  assert.ok(main.includes('ui.mountSettings'), 'gear settings mount');
+  assert.ok(main.includes('toggleMutePersist()'), 'settings mute hits persist');
+  assert.ok(!main.includes('btn-mute-menu'), 'no loose menu mute handler');
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.ok(html.includes('id="btn-mute-menu"'), 'menu markup');
+  assert.ok(!html.includes('id="btn-mute-menu"'), 'no loose menu mute markup');
+  assert.ok(html.includes('id="btn-mute"'), 'in-run mute remains');
   assert.ok(html.includes('cyber.neon-swarm.muted'), 'early paint');
   assert.ok(/\?v=0\.9\.\d+/.test(html), 'cache-bust');
-  const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
-  assert.ok(css.includes('.menu-mute'), 'menu mute css');
   const audio = readFileSync(new URL('../js/audio.js', import.meta.url), 'utf8');
   assert.ok(audio.includes('SynthAudio'), 'still uses kit SynthAudio persist');
   const synth = readFileSync(new URL('../vendor/cyber-kit/audio/synth.js', import.meta.url), 'utf8');
@@ -124,4 +126,4 @@ assert.equal(muteTipFor(true, false), 'Unmute');
 }
 
 console.log('mute-persist.test.mjs: PASS');
-console.log('NOTE: kit SynthAudio already persisted cyber.neon-swarm.muted; this ship hardens UI/early-paint/aria/menu + tests.');
+console.log('NOTE: kit SynthAudio already persisted cyber.neon-swarm.muted; this ship hardens UI/early-paint/aria + gear settings mute (v0.9.52) + tests.');

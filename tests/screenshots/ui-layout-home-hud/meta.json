@@ -1,0 +1,59 @@
+{
+  "ver": "0.9.52",
+  "results": [
+    {
+      "name": "menu-desktop-1280x800.png",
+      "meta": {
+        "hasLooseMute": false,
+        "hasGear": true,
+        "ctaBottom": 36,
+        "selected": "覺醒突擊型",
+        "cardCount": 3
+      },
+      "errs": []
+    },
+    {
+      "name": "menu-mobile-390x844.png",
+      "meta": {
+        "hasLooseMute": false,
+        "hasGear": true,
+        "ctaBottom": 40,
+        "selected": "覺醒突擊型",
+        "cardCount": 3
+      },
+      "errs": []
+    },
+    {
+      "name": "settings-mobile-390x844.png",
+      "meta": {
+        "settingsOpen": true,
+        "hasMuteToggle": true
+      },
+      "errs": []
+    },
+    {
+      "name": "play-desktop-1280x800.png",
+      "meta": {
+        "xpTop": 52,
+        "xpBottom": 60,
+        "slotsTop": 64,
+        "slotsBottom": 122,
+        "xpAboveMid": true,
+        "slotsAboveMid": true
+      },
+      "errs": []
+    },
+    {
+      "name": "play-mobile-390x844.png",
+      "meta": {
+        "xpTop": 48,
+        "xpBottom": 55,
+        "slotsTop": 58,
+        "slotsBottom": 102,
+        "xpAboveMid": true,
+        "slotsAboveMid": true
+      },
+      "errs": []
+    }
+  ]
+}

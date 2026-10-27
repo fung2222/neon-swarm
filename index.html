@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.9.51">
+<link rel="stylesheet" href="./css/game.css?v=0.9.52">
 <script type="importmap">
 {
   "imports": {
@@ -80,10 +80,7 @@
   <div class="menu-top">
     <div class="menu-top-left"><button type="button" class="menu-icon-btn hidden" id="btn-arcade-menu" data-i18n-attr="title:kit.arcadeMenu,aria-label:kit.arcadeMenu"></button></div>
     <div class="menu-top-right">
-      <button type="button" id="btn-mute-menu" class="menu-icon-btn menu-mute" data-i18n-attr="title:muteTip,aria-label:muteTip" aria-pressed="false">
-        <svg class="ico-on menu-ico" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke-width="2"/></svg>
-        <svg class="ico-off menu-ico" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke-width="2"/></svg>
-      </button>
+      <!-- mute/volume/lang → gear settings panel (ui.mountSettings); no loose settings chrome -->
     </div>
   </div>
   <div class="menu-body">
@@ -169,7 +166,7 @@
 
 
 <script>
-/* v0.9.35: paint mute icons from localStorage before module boot (no unmuted flash) */
+/* v0.9.35/v0.9.52: paint in-run mute from localStorage before module boot (menu mute lives in gear) */
 (function () {
   try {
     var muted = false;
@@ -178,7 +175,7 @@
     else if (kit === '0') muted = false;
     else if (localStorage.getItem('neon-swarm-mute') === '1') muted = true;
     if (!muted) return;
-    var ids = ['btn-mute', 'btn-mute-menu'];
+    var ids = ['btn-mute'];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el) {
@@ -191,6 +188,6 @@
   } catch (e) { /* private mode */ }
 })();
 </script>
-<script type="module" src="./js/main.js?v=0.9.51"></script>
+<script type="module" src="./js/main.js?v=0.9.52"></script>
 </body>
 </html>
