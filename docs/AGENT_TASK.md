@@ -8,7 +8,7 @@
 **Opened:** 2026-10-28 Asia/Hong_Kong — Roy「有D舊武器名及強化，其實係咪可以del, 宜家有新」([pt224u]) after icons/feel HOLD.  
 **Closed → HOLD:** 2026-10-28 Asia/Hong_Kong — Grok bot purge player-facing legacy weapon cards/names then HOLD.
 
-**Author:** Grok bot · **Shipped:** v0.9.58 · **SHA:** _(fill after push)_  
+**Author:** Grok bot · **Shipped:** v0.9.58 · **SHA:** `6e73b53`  
 **Prior:** v0.9.57 icon placeholders · v0.9.56 feel FX · Spec: `docs/WEAPONS.md`
 
 ### Shipped this beat
