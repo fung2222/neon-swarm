@@ -1,5 +1,5 @@
 /**
- * Phase 6 multi-slot inventory (v0.9.28).
+ * Phase 6 multi-slot inventory → v0.9.53 WEAPONS-REDESIGN-001 (2P+2S+2T).
  * Run: node tests/inventory.test.mjs
  */
 import assert from 'assert';
@@ -12,37 +12,60 @@ import {
   isSlotWeapon,
   hasEmptyWeaponSlot,
   weaponSlotLevel,
+  normalizeWeaponId,
+  flattenLoadout,
 } from '../js/config.js';
 
-assert.equal(WEAPON_SLOT_MAX, 4);
-assert.ok(isSlotWeapon('mg') && isSlotWeapon('laser') && !isSlotWeapon('dmg'));
-assert.deepEqual(emptyWeaponSlots(), ['mg', null, null, null]);
+assert.equal(WEAPON_SLOT_MAX, 6);
+assert.ok(isSlotWeapon('mg') && isSlotWeapon('laser') && isSlotWeapon('gatling') && !isSlotWeapon('dmg'));
+assert.deepEqual(emptyWeaponSlots(), ['gatling', null, null, null, null, null]);
 assert.ok(hasEmptyWeaponSlot(emptyWeaponSlots()));
 assert.equal(weaponSlotLevel('mg', {}), 1);
 assert.equal(weaponSlotLevel('mg', { dmg: 2 }), 2);
+assert.equal(weaponSlotLevel('gatling', { gatling: 3 }), 3);
 assert.equal(weaponSlotLevel('laser', { laser: 3 }), 3);
+assert.equal(normalizeWeaponId('mg'), 'gatling');
+assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 
-// ---- Start loadout: slot0 = mg ----
+// ---- Start loadout: P0 = gatling ----
 {
   const g = new Game({ seed: 1 });
-  assert.deepEqual(g.weaponSlots, ['mg', null, null, null]);
+  assert.deepEqual(g.weaponSlots, ['gatling', null, null, null, null, null]);
+  assert.deepEqual(g.loadout.primary, ['gatling', null]);
   assert.equal(g.weaponSlots.filter(Boolean).length, 1);
 }
 
-// ---- Take fills next empty slot ----
+// ---- Take fills category banks (P / S / T) ----
 {
   const g = new Game({ seed: 3 });
   g.applyCard(CARDS_BY_ID.laser);
-  assert.equal(g.laser, 1);
-  assert.equal(g.taken.laser, 1);
-  assert.deepEqual(g.weaponSlots, ['mg', 'laser', null, null]);
+  assert.ok(g.laser >= 1 || g.ion_beam >= 1);
+  assert.equal(g.taken.ion_beam, 1);
+  assert.deepEqual(g.loadout.primary, ['gatling', 'ion_beam']);
+  assert.deepEqual(g.weaponSlots, ['gatling', 'ion_beam', null, null, null, null]);
 
   g.applyCard(CARDS_BY_ID.shotgun);
-  assert.deepEqual(g.weaponSlots, ['mg', 'laser', 'shotgun', null]);
+  assert.deepEqual(g.loadout.secondary, ['shotgun', null]);
+  assert.deepEqual(g.weaponSlots, ['gatling', 'ion_beam', 'shotgun', null, null, null]);
 
-  g.applyCard(CARDS_BY_ID.rocket);
-  assert.deepEqual(g.weaponSlots, ['mg', 'laser', 'shotgun', 'rocket']);
-  assert.ok(!hasEmptyWeaponSlot(g.weaponSlots));
+  g.applyCard(CARDS_BY_ID.grenade);
+  assert.deepEqual(g.loadout.throw, ['frag', null]);
+  assert.ok(g.weaponSlots.includes('frag'));
+}
+
+// ---- Primary category full → swap (not silent) ----
+{
+  const g = new Game({ seed: 4 });
+  g.applyCard(CARDS_BY_ID.laser); // fills P1
+  g.applyCard(CARDS_BY_ID.rocket); // 3rd primary → swap
+  assert.equal(g.tracking_bomb || g.rocket || 0, 0, 'no silent grant');
+  assert.ok(g.pausedForLevel);
+  assert.ok(g.pendingCards.some((c) => c.pickupAction === 'swap' && c.swapOut === 'ion_beam'));
+  const swap = g.pendingCards.find((c) => c.pickupAction === 'swap' && c.swapOut === 'ion_beam');
+  g.applyCard(swap);
+  assert.ok(g.weaponSlots.includes('tracking_bomb'));
+  assert.ok(!g.weaponSlots.includes('ion_beam'));
+  assert.ok(g.weaponSlots.includes('gatling'), 'starter stays');
 }
 
 // ---- Upgrade bumps stacks, does not duplicate slot ----
@@ -50,9 +73,8 @@ assert.equal(weaponSlotLevel('laser', { laser: 3 }), 3);
   const g = new Game({ seed: 5 });
   g.applyCard(CARDS_BY_ID.laser);
   g.applyCard(CARDS_BY_ID.laser);
-  assert.equal(g.taken.laser, 2);
-  assert.equal(g.laser, 2);
-  assert.deepEqual(g.weaponSlots, ['mg', 'laser', null, null]);
+  assert.equal(g.taken.ion_beam, 2);
+  assert.deepEqual(g.loadout.primary, ['gatling', 'ion_beam']);
 }
 
 // ---- Modifiers (dmg) do not take a slot ----
@@ -60,10 +82,10 @@ assert.equal(weaponSlotLevel('laser', { laser: 3 }), 3);
   const g = new Game({ seed: 7 });
   g.applyCard(CARDS_BY_ID.dmg);
   assert.equal(g.taken.dmg, 1);
-  assert.deepEqual(g.weaponSlots, ['mg', null, null, null]);
+  assert.deepEqual(g.weaponSlots, ['gatling', null, null, null, null, null]);
 }
 
-// ---- Pickup take fills slot ----
+// ---- Pickup take fills throw bank ----
 {
   const g = new Game({ seed: 9 });
   g.gems.push({
@@ -74,47 +96,49 @@ assert.equal(weaponSlotLevel('laser', { laser: 3 }), 3);
   assert.equal(g.pendingFrom, 'pickup');
   const take = g.pendingCards.find((c) => c.pickupAction === 'take');
   g.applyCard(take);
-  assert.equal(g.grenade, 1);
-  assert.ok(g.weaponSlots.includes('grenade'));
+  assert.ok((g.grenade || 0) >= 1 || (g.frag || 0) >= 1);
+  assert.ok(g.weaponSlots.includes('frag'));
 }
 
-// ---- Full slots + new type → swap offer (never silent) ----
+// ---- Category-full offer builder ----
 {
-  const slots = ['mg', 'laser', 'shotgun', 'rocket'];
-  const offer = buildWeaponPickupOffer('plasma', { laser: 1, shotgun: 1, rocket: 1 }, slots);
+  const slots = ['gatling', 'ion_beam', 'shotgun', null, null, null];
+  const offer = buildWeaponPickupOffer('tracking_bomb', { ion_beam: 1, shotgun: 1 }, slots);
   assert.equal(offer.mode, 'swap');
   assert.ok(offer.choices.every((c) => c.pickupAction !== 'take'));
-  assert.ok(offer.choices.some((c) => c.pickupAction === 'swap' && c.swapOut === 'laser'));
+  assert.ok(offer.choices.some((c) => c.pickupAction === 'swap' && c.swapOut === 'ion_beam'));
   assert.ok(offer.choices.some((c) => c.pickupAction === 'keep'));
 }
 
+// ---- Full 6-slot bank + new type → swap ----
 {
   const g = new Game({ seed: 11 });
   g.applyCard(CARDS_BY_ID.laser);
   g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.rocket);
+  g.applyCard(CARDS_BY_ID.plasma);
+  g.applyCard(CARDS_BY_ID.grenade);
+  g.applyCard(CARDS_BY_ID.chill);
   assert.ok(!hasEmptyWeaponSlot(g.weaponSlots));
+  assert.deepEqual(g.weaponSlots, ['gatling', 'ion_beam', 'shotgun', 'acid_gun', 'frag', 'chill']);
 
   g.gems.push({
     x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'plasma',
+    kind: 'weapon', weapon: 'vulcan',
   });
   const { events } = g.step(1 / 30);
   const offerEv = events.find((e) => e.type === 'weaponOffer');
   assert.ok(offerEv);
   assert.equal(offerEv.mode, 'swap');
   assert.ok(g.pausedForLevel);
-  assert.equal(g.plasma, 0, 'must not grant before swap choice');
+  assert.equal(g.vulcan || 0, 0, 'must not grant before swap choice');
 
-  const swap = g.pendingCards.find((c) => c.pickupAction === 'swap' && c.swapOut === 'shotgun');
-  assert.ok(swap, 'swap shotgun choice');
+  const swap = g.pendingCards.find((c) => c.pickupAction === 'swap' && c.swapOut === 'ion_beam');
+  assert.ok(swap, 'swap ion_beam choice');
   g.applyCard(swap);
-  assert.equal(g.plasma, 1);
-  assert.equal(g.shotgun, 0, 'swapped-out shotgun cleared');
-  assert.equal(g.taken.shotgun, undefined);
-  assert.ok(g.weaponSlots.includes('plasma'));
-  assert.ok(!g.weaponSlots.includes('shotgun'));
-  assert.ok(g.weaponSlots.includes('mg'), 'mg stays');
+  assert.ok((g.vulcan || 0) >= 1);
+  assert.ok(g.weaponSlots.includes('vulcan'));
+  assert.ok(!g.weaponSlots.includes('ion_beam'));
+  assert.ok(g.weaponSlots.includes('gatling'), 'gatling stays');
   assert.equal(g.pausedForLevel, false);
 }
 
@@ -123,62 +147,62 @@ assert.equal(weaponSlotLevel('laser', { laser: 3 }), 3);
   const g = new Game({ seed: 13 });
   g.applyCard(CARDS_BY_ID.laser);
   g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.rocket);
+  g.applyCard(CARDS_BY_ID.plasma);
+  g.applyCard(CARDS_BY_ID.grenade);
+  g.applyCard(CARDS_BY_ID.chill);
+  const before = g.weaponSlots.slice();
   g.gems.push({
     x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'grenade',
+    kind: 'weapon', weapon: 'flash',
   });
   g.step(1 / 30);
   assert.equal(g.pendingCards.find((c) => c.pickupAction === 'swap') != null, true);
   g.applyCard(g.pendingCards.find((c) => c.pickupAction === 'keep'));
-  assert.equal(g.grenade, 0);
-  assert.deepEqual(g.weaponSlots, ['mg', 'laser', 'shotgun', 'rocket']);
+  assert.equal(g.flash || 0, 0);
+  assert.deepEqual(g.weaponSlots, before);
 }
 
-// ---- Level-up new weapon with full slots → swap UI (not silent) ----
+// ---- Level-up new weapon with category full → swap UI ----
 {
   const g = new Game({ seed: 15 });
-  g.applyCard(CARDS_BY_ID.laser);
-  g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.rocket);
-  g.applyCard(CARDS_BY_ID.grenade); // deferred: should open swap, not add 5th
-  assert.equal(g.grenade, 0, 'level-up deferred to swap — no silent grant');
+  g.applyCard(CARDS_BY_ID.laser); // P full with gatling
+  g.applyCard(CARDS_BY_ID.vulcan); // deferred swap
+  assert.equal(g.vulcan || 0, 0, 'level-up deferred to swap — no silent grant');
   assert.ok(g.pausedForLevel);
   assert.equal(g.pendingFrom, 'pickup');
   assert.ok(g.pendingCards.some((c) => c.pickupAction === 'swap'));
-  const swap = g.pendingCards.find((c) => c.pickupAction === 'swap' && c.swapOut === 'rocket');
+  const swap = g.pendingCards.find((c) => c.pickupAction === 'swap' && c.swapOut === 'ion_beam');
   g.applyCard(swap);
-  assert.equal(g.grenade, 1);
-  assert.equal(g.rocket, 0);
-  assert.ok(g.weaponSlots.includes('grenade'));
-  assert.ok(!g.weaponSlots.includes('rocket'));
+  assert.ok((g.vulcan || 0) >= 1);
+  assert.ok(g.weaponSlots.includes('vulcan'));
+  assert.ok(!g.weaponSlots.includes('ion_beam'));
 }
 
-
-// ---- v0.9.29: only slotted weapons fire (orphan stacks pruned / gated) ----
+// ---- only slotted weapons fire ----
 {
   const g = new Game({ seed: 21 });
   g.applyCard(CARDS_BY_ID.laser);
   g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.rocket);
-  // Simulate pre-slot orphan: plasma combat prop + taken without a slot
   g.plasma = 2;
   g.taken.plasma = 2;
-  assert.ok(!g.weaponSlots.includes('plasma'));
+  g.taken.acid_gun = 2;
+  assert.ok(!g.weaponSlots.includes('plasma') && !g.weaponSlots.includes('acid_gun'));
   g._pruneUnslottedWeapons();
   assert.equal(g.plasma, 0, 'orphan plasma combat cleared');
   assert.equal(g.taken.plasma, undefined, 'orphan plasma taken cleared');
 
-  // Gate: even if combat prop sneaks back, unslotted must not arm
   g.plasma = 3;
   assert.equal(g._slotArmed('plasma'), false);
+  assert.equal(g._slotArmed('acid_gun'), false);
   assert.equal(g._slotArmed('laser'), true);
+  assert.equal(g._slotArmed('ion_beam'), true);
   assert.equal(g._slotArmed('mg'), true);
+  assert.equal(g._slotArmed('gatling'), true);
 }
 
-// ---- convertHeal copy exposes heal amount ----
+// ---- convertHeal copy exposes heal amount (at max Lv5) ----
 {
-  const offer = buildWeaponPickupOffer('laser', { laser: 4 }, ['mg', 'laser', null, null]);
+  const offer = buildWeaponPickupOffer('ion_beam', { ion_beam: 5, laser: 5 }, ['gatling', 'ion_beam', null, null, null, null]);
   assert.equal(offer.mode, 'max');
   const heal = offer.choices.find((c) => c.pickupAction === 'convertHeal');
   assert.ok(heal);

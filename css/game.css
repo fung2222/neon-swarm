@@ -1173,3 +1173,116 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     top: calc(134px + var(--sa-top));
   }
 }
+
+
+/* ===== WEAPONS-REDESIGN-001 v0.9.53 — top status + left icon rail ===== */
+.weapon-status {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(36px + var(--sa-top));
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(5, 1, 15, 0.72);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: #c8f7ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  max-width: calc(100vw - 24px - var(--sa-left) - var(--sa-right));
+  white-space: nowrap;
+}
+.wstat-mode {
+  color: #ffe600;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.wstat-name { color: #e8fbff; }
+.wstat-lv { color: #ffe600; }
+.wstat-res { color: #7dffb3; font-variant-numeric: tabular-nums; }
+.wstat-res:empty { display: none; }
+
+/* Legacy top chips: hide — selection is left rail; active read-out is #weapon-status */
+.weapon-slots {
+  display: none !important;
+}
+
+/* Left stacked square tiles — primary / secondary / throw groups */
+.weapon-rail {
+  position: absolute;
+  left: calc(8px + var(--sa-left));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  max-height: min(70vh, 520px);
+  overflow: visible;
+}
+.weapon-rail .wrail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.18);
+}
+.weapon-rail .wrail-group:last-child { border-bottom: none; padding-bottom: 0; }
+.weapon-rail .wrail-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #7aa8b8;
+  text-transform: uppercase;
+  padding-left: 2px;
+  pointer-events: none;
+}
+.wrail-tile {
+  width: 52px;
+  height: 52px;
+  border: 1.5px solid rgba(0, 229, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(5, 1, 15, 0.78);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.16), inset 0 0 10px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  color: #c8f7ff;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+  font: inherit;
+}
+.wrail-tile.primary { border-color: rgba(0, 229, 255, 0.85); }
+.wrail-tile.secondary { border-color: rgba(255, 43, 214, 0.65); }
+.wrail-tile.throw { border-color: rgba(255, 180, 40, 0.7); }
+.wrail-tile.empty {
+  opacity: 0.4;
+  border-style: dashed;
+  border-color: rgba(180, 200, 220, 0.35);
+  color: #6a7a88;
+  cursor: default;
+}
+.wrail-tile.active {
+  box-shadow: 0 0 18px rgba(255, 230, 0, 0.45), inset 0 0 12px rgba(255, 230, 0, 0.12);
+  border-color: #ffe600;
+  transform: scale(1.04);
+}
+.wrail-tile .wslot-ico { font-size: 18px; line-height: 1; pointer-events: none; }
+.wrail-tile .wslot-lv { font-size: 9px; color: #ffe600; font-weight: 700; pointer-events: none; }
+.wrail-tile.fire-pulse {
+  animation: wslot-fire-pulse 140ms ease-out;
+}
+
+@media (max-width: 420px) {
+  .wrail-tile { width: 46px; height: 46px; }
+  .weapon-status { font-size: 11px; top: calc(34px + var(--sa-top)); }
+}

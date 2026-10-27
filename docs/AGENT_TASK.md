@@ -3,38 +3,39 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：**HOLD**（Active = none）— UI-LAYOUT-HOME-HUD-001 **shipped**／await Roy try
+## 狀態：**HOLD** — `WEAPONS-REDESIGN-001` shipped as **v0.9.53**（try on phone）
 
-**Opened:** 2026-10-27 — Roy phone: Active UI layout **before** weapon details（home gear settings／mech cards／bottom CTA／top XP+slots）。
+**Opened:** 2026-10-27 Asia/Hong_Kong — Roy full weapon redesign.  
+**Closed → HOLD:** 2026-10-27 Asia/Hong_Kong — Grok bot ship 1.
 
-**Shipped:** 2026-10-27 Asia/Hong_Kong — **v0.9.52** `UI-LAYOUT-HOME-HUD-001`
+**Author:** Grok bot · **Shipped:** v0.9.53  
+**Spec:** `docs/WEAPONS.md`
 
-**Live:** https://fung2222.github.io/neon-swarm/?v=0.9.52  
+### Shipped this beat
 
-**Author:** Grok bot · **SHA:** `6abb2c0`
+1. Docs — `WEAPONS.md` roster／counter／Lv-branch-ult／feel specs／art pipeline.
+2. Loadout — max **2P+2S+2T**；migrate from `weaponSlots×4`（flatten 6 HUD cells）.
+3. Catalog — 5+5+4 IDs；feel-matched fire helpers（gatling laser-bolts／ion charge-fire／tracking stick／vulcan／zero bolts／acid 10-shot／shotgun／slow rush／drones／blackhole／throws）.
+4. HUD — top `#weapon-status`；left `#weapon-rail` stacked squares；legacy top chips **hidden**.
+5. Play — primary continuous；secondary ammo/energy → auto primary；throw tap.
+6. Mobile GFX baseline raise（post-MOBILE_GFX shed）：prettier PR／bloom defaults；cool-pause／contextlost **kept**.
+7. Tests + screenshots `tests/screenshots/weapons-redesign/`；`?v=0.9.53`.
 
-### What shipped
+### Stub vs live（honest）
 
-1. **Home settings → gear only** — removed loose `#btn-mute-menu`; mute／volume／lang／glow stay in `ui.mountSettings` sheet；settings mute wrapped through `toggleMutePersist`（alias＋HUD sync）。Top-right = howto book＋gear only。
-2. **Mech cards** — tighter padding／stats／gaps；selected `.mech-card.on` scale＋glow；unselected dimmed。
-3. **CTA down** — lowered `--menu-cta-bottom` floors so Start／endless hug bottom meta；brand stays high；mid band for 3D mech。
-4. **In-run HUD** — `.xp-bar`＋`.weapon-slots` moved to **TOP**（`var(--sa-top)`）；goal／zone／boss-hp／banners nudged clear；stick stays bottom for thumbs。
-5. Tests：`tests/ui-layout-home-hud.test.mjs`；updated `safe-area`／`mute-persist`；shots `tests/screenshots/ui-layout-home-hud/`。
-6. **Not touched:** weapon system／Phase 4／horn art lock／soft-juice／phone GPU shed（v0.9.51）。
+| Area | Live | Stub |
+|------|------|------|
+| Gatling / shotgun / frag | fire paths live | — |
+| Ion charge / tracking stick / vulcan / zero / acid / slow / drones / blackhole / chill / flash / gravity | helpers + projectile fields live | branch UI / ults / polish FX |
+| Icons | emoji placeholders | Roy art pipeline |
+| Branch / ult | data stubs in catalog | playable UI |
 
-### Honest gaps
+### Out of scope (still)
 
-- Box＝SwiftShader screenshots ≠ Roy phone／desktop try。
-- Selected mech card still leftmost when only horn unlocked（highlight＋mid 3D stage；not reorder invent）。
-- In-run mute／pause remain top-right chrome（Roy asked home settings into gear；in-run keep reachable）。
+- Phase 4 Precision · horn art lock · soft-juice invent · deep phone GPU reopen
 
-### Process next（do NOT auto-start）
+### Next（after Roy try）
 
-**HOLD for Roy try** on live `?v=0.9.52`（menu layout＋in-run top XP／slots on phone＋desktop）。  
-**Ban** auto Phase 4／Morph／horn art lock／soft-juice invent／weapon-details invent／reopen phone GPU deep without Roy。
-
-**Options after Roy reply：** tweak layout／weapon details if named／phone GPU verify still open／HOLD。
-
----
+- Art icons · balance tune · branch pick UI · any phone gfx feedback
 
 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。

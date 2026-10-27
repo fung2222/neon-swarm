@@ -12,7 +12,7 @@ const css = readFileSync(join(ROOT, 'css/game.css'), 'utf8');
 const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
 const main = readFileSync(join(ROOT, 'js/main.js'), 'utf8');
 
-assert.match(html, /\?v=0\.9\.52/);
+assert.match(html, /\?v=0\.9\.53/);
 assert.ok(!html.includes('id="btn-mute-menu"'), 'home mute must live in gear, not loose chrome');
 assert.ok(html.includes('id="btn-mute"'), 'in-run mute remains');
 assert.ok(html.includes('id="xp-bar"') || html.includes('class="xp-bar"') || css.includes('.xp-bar'), 'xp bar present');

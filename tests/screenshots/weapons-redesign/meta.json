@@ -1,0 +1,25 @@
+{
+  "ver": "0.9.53",
+  "meta": {
+    "tileCount": 6,
+    "filled": 4,
+    "railLeft": 8,
+    "railTop": 240,
+    "statusTop": 34,
+    "modeText": "主",
+    "fireMode": "primary",
+    "loadout": {
+      "p": [
+        "gatling",
+        "ion_beam"
+      ],
+      "s": [
+        "shotgun"
+      ],
+      "t": [
+        "frag"
+      ]
+    }
+  },
+  "errs": []
+}

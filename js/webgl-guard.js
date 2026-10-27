@@ -70,20 +70,21 @@ export function computeShedLevel(o) {
  * @param {number} [baseMax=1]
  */
 export function pixelRatioForShed(level, baseMax = 1) {
+  // v0.9.53: keep cool-pause safety but don't crush PR as hard at shed 1
   const base = Math.max(0.75, Math.min(baseMax || 1, 2));
-  if (level >= 2) return Math.min(base, 0.75);
-  if (level >= 1) return Math.min(base, 0.85);
+  if (level >= 2) return Math.min(base, 0.80);
+  if (level >= 1) return Math.min(base, 0.92);
   return base;
 }
 
 /**
  * Bloom strength for shed (mobile baseline already ~0.10).
  * @param {number} level
- * @param {number} [mobileBase=0.10]
+ * @param {number} [mobileBase=0.15] v0.9.53 prettier mobile baseline
  */
-export function bloomStrengthForShed(level, mobileBase = 0.10) {
-  if (level >= 2) return 0;
-  if (level >= 1) return Math.min(mobileBase, 0.05);
+export function bloomStrengthForShed(level, mobileBase = 0.15) {
+  if (level >= 2) return Math.min(mobileBase, 0.04); // keep faint glow; cool-pause still protects
+  if (level >= 1) return Math.min(mobileBase, 0.09);
   return mobileBase;
 }
 

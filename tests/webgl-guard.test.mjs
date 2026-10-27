@@ -30,12 +30,12 @@ import {
 
 {
   assert.equal(pixelRatioForShed(0, 1), 1);
-  assert.equal(pixelRatioForShed(1, 1), 0.85);
-  assert.equal(pixelRatioForShed(2, 1), 0.75);
-  assert.equal(pixelRatioForShed(2, 0.9), 0.75);
-  assert.equal(bloomStrengthForShed(0, 0.10), 0.10);
-  assert.equal(bloomStrengthForShed(1, 0.10), 0.05);
-  assert.equal(bloomStrengthForShed(2, 0.10), 0);
+  assert.equal(pixelRatioForShed(1, 1), 0.92);
+  assert.equal(pixelRatioForShed(2, 1), 0.80);
+  assert.equal(pixelRatioForShed(2, 0.9), 0.80);
+  assert.equal(bloomStrengthForShed(0, 0.15), 0.15);
+  assert.equal(bloomStrengthForShed(1, 0.15), 0.09);
+  assert.equal(bloomStrengthForShed(2, 0.15), 0.04);
 }
 
 {

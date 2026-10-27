@@ -1,4 +1,4 @@
-import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID } from './config.js';
+import { ARENA, PLAYER, ENEMIES, DROP, xpToLevel, swarmPressure, pickCards, pickEnemyType, MECH_BY_ID, WEAPON_ICONS, shotTier, resolveMechCombat, ELITE, BOSS, BEATS, ENDLESS, buildWeaponPickupOffer, eliteCfg, MAP_ZONE, SNIPER, SHIELD_GUARD, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE, SCORE_POS, SLOT_WEAPONS, WEAPON_SLOT_MAX, isSlotWeapon, emptyWeaponSlots, hasEmptyWeaponSlot, weaponSlotLevel, MAGNET_DROP_CHANCE, CARDS_BY_ID, normalizeWeaponId, weaponDef, starterLoadout, flattenLoadout, loadoutFromFlat, addToLoadout, swapLoadoutSlot, findInLoadout, isArmedInLoadout, initialResource, categoryOf, LOADOUT_CAPS } from './config.js';
 import { muzzleWorld } from './muzzle.js';
 
 const WEAPON_IDS = Object.keys(WEAPON_ICONS);
@@ -6,15 +6,28 @@ const WEAPON_IDS = Object.keys(WEAPON_ICONS);
 /** Per-weapon muzzle distance (along aim) + height. Used by _emitBullet + fire VFX. */
 const MUZZLE_BY_WEAPON = {
   mg: { dist: 0.72, y: 0.95 },
+  gatling: { dist: 0.72, y: 0.95 },
+  vulcan: { dist: 0.68, y: 0.92 },
   laser: { dist: 0.90, y: 1.05 },
+  ion_beam: { dist: 0.90, y: 1.05 },
+  zero_laser: { dist: 0.88, y: 1.02 },
   shotgun: { dist: 0.62, y: 0.88 },
   rocket: { dist: 0.78, y: 1.10 },
+  tracking_bomb: { dist: 0.78, y: 1.10 },
   grenade: { dist: 0.55, y: 0.75 },
+  frag: { dist: 0.55, y: 0.75 },
+  chill: { dist: 0.55, y: 0.75 },
+  flash: { dist: 0.55, y: 0.75 },
+  gravity: { dist: 0.55, y: 0.75 },
   plasma: { dist: 0.70, y: 0.98 },
+  acid_gun: { dist: 0.70, y: 0.98 },
+  slow_gun: { dist: 0.66, y: 0.94 },
+  attack_drone: { dist: 0.50, y: 1.20 },
+  blackhole: { dist: 0.80, y: 1.05 },
 };
 
 /** Weapons that update body visual facing (primary). Secondaries keep their own fire-event aim. */
-const PRIMARY_VISUAL_WEAPONS = new Set(['mg', 'laser']);
+const PRIMARY_VISUAL_WEAPONS = new Set(['mg', 'gatling', 'vulcan', 'laser', 'ion_beam', 'zero_laser', 'tracking_bomb', 'rocket']);
 
 /** ~120° forward fan: cos(60°) = 0.5 */
 export const GRENADE_FAN_DOT = 0.5;
@@ -258,8 +271,15 @@ export class Game {
     this.pendingCards = null;
     this.pausedForLevel = false;
     this.taken = {};
-    // Phase 6 multi-slot inventory (v0.9.28): visible ownership; stacks still in `taken`.
-    this.weaponSlots = emptyWeaponSlots();
+    // v0.9.53 loadout 2P+2S+2T; weaponSlots = flatten for HUD/pickup compat.
+    this.loadout = starterLoadout();
+    this.weaponSlots = flattenLoadout(this.loadout);
+    this.fireMode = 'primary'; // 'primary' | 'secondary' — throw never holds mode
+    this.activePrimaryIndex = 0;
+    this.activeSecondaryIndex = 0;
+    this.weaponResources = Object.create(null); // id → { type, current, max }
+    this.throwCdT = Object.create(null); // id → remaining cd
+    this._throwRequest = null; // id requested by HUD tap this frame
 
     this.px = 0; this.pz = 0;
     this.vx = 0; this.vz = 0;
@@ -293,11 +313,29 @@ export class Game {
     this.rocket = 0;
     this.grenade = 0;
     this.plasma = 0;
+    this.gatling = 1;
+    this.ion_beam = 0;
+    this.tracking_bomb = 0;
+    this.vulcan = 0;
+    this.zero_laser = 0;
+    this.acid_gun = 0;
+    this.slow_gun = 0;
+    this.attack_drone = 0;
+    this.blackhole = 0;
+    this.frag = 0;
+    this.chill = 0;
+    this.flash = 0;
+    this.gravity = 0;
     this.laserT = 0;
     this.shotgunT = 0;
     this.rocketT = 0;
     this.grenadeT = 0;
     this.plasmaT = 0;
+    this.vulcanT = 0;
+    this.zeroLaserT = 0;
+    this.slowGunT = 0;
+    this.droneT = 0;
+    this.blackholeT = 0;
     this.invuln = 1.5;
 
     this.enemies = [];
@@ -357,31 +395,48 @@ export class Game {
   }
   stopMove() { this.vx = 0; this.vz = 0; }
 
+  /** Sync flat weaponSlots from structured loadout (HUD / pickup compat). */
+  _syncSlotsFromLoadout() {
+    if (!this.loadout) this.loadout = starterLoadout();
+    this.weaponSlots = flattenLoadout(this.loadout);
+  }
+
   applyCard(card) {
     if (!card) return;
     const action = card.pickupAction;
     const synthetic = action === 'keep' || action === 'convertHeal';
     if (!this.taken) this.taken = {};
-    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    if (!this.loadout) this.loadout = starterLoadout();
+    this._syncSlotsFromLoadout();
 
-    // Level-up pick of a NEW slot weapon when inventory is full → open swap offer (never silent).
-    if (!synthetic && action !== 'swap' && isSlotWeapon(card.id)
-        && !this.weaponSlots.includes(card.id) && !hasEmptyWeaponSlot(this.weaponSlots)) {
-      this._openSwapOffer(card.id, card);
-      return;
+    const nid = normalizeWeaponId(card.id) || card.id;
+    const already = isArmedInLoadout(this.loadout, nid) || isArmedInLoadout(this.loadout, card.id);
+
+    // Category-full OR total-full → swap offer (never silent).
+    if (!synthetic && action !== 'swap' && isSlotWeapon(card.id) && !already) {
+      const def = weaponDef(nid);
+      const catFull = def && this.loadout[def.category]
+        && !this.loadout[def.category].some((x) => x == null)
+        && !this.loadout[def.category].includes(nid);
+      if (catFull || !hasEmptyWeaponSlot(this.weaponSlots)) {
+        this._openSwapOffer(nid, card);
+        return;
+      }
     }
 
     if (action === 'swap') {
-      this._swapWeaponSlot(card.swapIndex, card.id);
+      this._swapWeaponSlot(card.swapIndex, nid);
       if (typeof card.apply === 'function') card.apply(this);
-      this.taken[card.id] = (this.taken[card.id] || 0) + 1;
+      this.taken[nid] = (this.taken[nid] || 0) + 1;
+      if (card.id !== nid) this.taken[card.id] = (this.taken[card.id] || 0) + 1;
     } else {
       if (action !== 'keep') card.apply(this);
-      // Real take/upgrade (and normal level-up cards) go through `taken` stacks.
-      // Synthetic keep / heal consolation must not pollute the card pool.
-      if (!synthetic) this.taken[card.id] = (this.taken[card.id] || 0) + 1;
-      if (!synthetic && isSlotWeapon(card.id) && !this.weaponSlots.includes(card.id)) {
-        this._fillWeaponSlot(card.id);
+      if (!synthetic) {
+        this.taken[nid] = (this.taken[nid] || 0) + 1;
+        if (card.id !== nid) this.taken[card.id] = (this.taken[card.id] || 0) + 1;
+      }
+      if (!synthetic && isSlotWeapon(card.id) && !already) {
+        this._fillWeaponSlot(nid);
       }
     }
 
@@ -389,59 +444,184 @@ export class Game {
     this.pendingCards = null;
     this.pausedForLevel = false;
     this.pendingFrom = null;
-    // XP may have banked past threshold while a pickup offer was open — open level-up now.
     if (this.xp >= this.xpNeed) this._levelUp();
   }
 
-  /** v0.9.29: HUD slots are the only fireable set — drop orphan slot-weapon stacks. */
+  /** v0.9.29/v0.9.53: HUD loadout is the only fireable set — drop orphan stacks. */
   _pruneUnslottedWeapons() {
-    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    this._syncSlotsFromLoadout();
     for (const id of SLOT_WEAPONS) {
-      if (id === 'mg') continue; // starter always reserved / never fully stripped here
-      if (!this.weaponSlots.includes(id)) this._clearSlotWeaponState(id);
+      if (id === 'gatling' || id === 'mg') continue;
+      if (!isArmedInLoadout(this.loadout, id)) this._clearSlotWeaponState(id);
     }
   }
 
-  /** True if this slot weapon is on the bar (and therefore allowed to fire). */
+  /** True if this weapon is in the loadout (and therefore allowed to fire when selected). */
   _slotArmed(weaponId) {
     if (!weaponId) return false;
-    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
-    return this.weaponSlots.includes(weaponId);
+    if (!this.loadout) this.loadout = starterLoadout();
+    const nid = normalizeWeaponId(weaponId) || weaponId;
+    return isArmedInLoadout(this.loadout, nid) || isArmedInLoadout(this.loadout, weaponId);
   }
 
   _fillWeaponSlot(weaponId) {
-    if (!isSlotWeapon(weaponId)) return false;
-    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
-    if (this.weaponSlots.includes(weaponId)) return false;
-    const i = this.weaponSlots.findIndex((s) => s == null);
+    const nid = normalizeWeaponId(weaponId) || weaponId;
+    if (!isSlotWeapon(nid) && !isSlotWeapon(weaponId)) return false;
+    if (!this.loadout) this.loadout = starterLoadout();
+    if (isArmedInLoadout(this.loadout, nid)) {
+      this._syncSlotsFromLoadout();
+      return false;
+    }
+    const i = addToLoadout(this.loadout, nid);
     if (i < 0) return false;
-    this.weaponSlots[i] = weaponId;
+    const def = weaponDef(nid);
+    if (def && def.category === 'secondary') {
+      this.weaponResources[nid] = initialResource(nid);
+    }
+    this._syncSlotsFromLoadout();
     return true;
   }
 
   /** Zero combat stacks for a slot weapon removed from the bar. */
   _clearSlotWeaponState(weaponId) {
-    if (!weaponId || weaponId === 'mg') return; // mg stays as base fire; never fully stripped here
-    if (this.taken) delete this.taken[weaponId];
-    if (weaponId === 'laser') { this.laser = 0; this.laserT = 0; }
-    else if (weaponId === 'shotgun') { this.shotgun = 0; this.shotgunT = 0; }
-    else if (weaponId === 'rocket') { this.rocket = 0; this.rocketT = 0; }
-    else if (weaponId === 'grenade') { this.grenade = 0; this.grenadeT = 0; }
-    else if (weaponId === 'plasma') { this.plasma = 0; this.plasmaT = 0; }
+    const nid = normalizeWeaponId(weaponId) || weaponId;
+    if (!nid || nid === 'gatling' || nid === 'mg') return;
+    if (this.taken) {
+      delete this.taken[nid];
+      delete this.taken[weaponId];
+      // Drop legacy alias keys (mg/laser/rocket/grenade/plasma)
+      for (const [legacy, neu] of Object.entries({
+        mg: 'gatling', laser: 'ion_beam', rocket: 'tracking_bomb',
+        grenade: 'frag', plasma: 'acid_gun',
+      })) {
+        if (neu === nid) delete this.taken[legacy];
+      }
+    }
+    if (this.weaponResources) delete this.weaponResources[nid];
+    if (nid === 'laser' || nid === 'ion_beam') { this.laser = 0; this.ion_beam = 0; this.laserT = 0; }
+    else if (nid === 'shotgun') { this.shotgun = 0; this.shotgunT = 0; }
+    else if (nid === 'rocket' || nid === 'tracking_bomb') { this.rocket = 0; this.tracking_bomb = 0; this.rocketT = 0; }
+    else if (nid === 'grenade' || nid === 'frag') { this.grenade = 0; this.frag = 0; this.grenadeT = 0; }
+    else if (nid === 'plasma' || nid === 'acid_gun') { this.plasma = 0; this.acid_gun = 0; this.plasmaT = 0; }
+    else if (nid === 'vulcan') { this.vulcan = 0; this.vulcanT = 0; }
+    else if (nid === 'zero_laser') { this.zero_laser = 0; this.zeroLaserT = 0; }
+    else if (nid === 'slow_gun') { this.slow_gun = 0; this.slowGunT = 0; }
+    else if (nid === 'attack_drone') { this.attack_drone = 0; this.droneT = 0; }
+    else if (nid === 'blackhole') { this.blackhole = 0; this.blackholeT = 0; }
+    else if (nid === 'chill') { this.chill = 0; }
+    else if (nid === 'flash') { this.flash = 0; }
+    else if (nid === 'gravity') { this.gravity = 0; }
   }
 
   _swapWeaponSlot(index, newId) {
-    if (!this.weaponSlots) this.weaponSlots = emptyWeaponSlots();
+    if (!this.loadout) this.loadout = starterLoadout();
+    this._syncSlotsFromLoadout();
+    const nid = normalizeWeaponId(newId) || newId;
     if (index == null || index < 0 || index >= this.weaponSlots.length) return false;
-    if (!isSlotWeapon(newId)) return false;
-    const old = this.weaponSlots[index];
-    if (old && old !== newId) this._clearSlotWeaponState(old);
-    // Drop duplicate if newId already sat in another slot
-    for (let i = 0; i < this.weaponSlots.length; i++) {
-      if (i !== index && this.weaponSlots[i] === newId) this.weaponSlots[i] = null;
+    if (!isSlotWeapon(nid) && !isSlotWeapon(newId)) return false;
+    const cats = ['primary', 'primary', 'secondary', 'secondary', 'throw', 'throw'];
+    const idxs = [0, 1, 0, 1, 0, 1];
+    const cat = cats[index];
+    const ci = idxs[index];
+    const old = this.loadout[cat][ci];
+    if (old && old !== nid) this._clearSlotWeaponState(old);
+    // Clear duplicate of nid elsewhere
+    for (const c of ['primary', 'secondary', 'throw']) {
+      for (let i = 0; i < this.loadout[c].length; i++) {
+        if (this.loadout[c][i] === nid) this.loadout[c][i] = null;
+      }
     }
-    this.weaponSlots[index] = newId;
+    this.loadout[cat][ci] = nid;
+    if (weaponDef(nid)?.category === 'secondary') {
+      this.weaponResources[nid] = initialResource(nid);
+    }
+    this._syncSlotsFromLoadout();
     return true;
+  }
+
+  /** HUD: select primary/secondary tile. Throw tiles call requestThrow instead. */
+  selectWeaponTile(flatIndex) {
+    if (!this.loadout) this.loadout = starterLoadout();
+    this._syncSlotsFromLoadout();
+    const id = this.weaponSlots[flatIndex];
+    if (!id) return false;
+    const def = weaponDef(id);
+    if (!def) return false;
+    if (def.category === 'primary') {
+      this.activePrimaryIndex = flatIndex; // 0 or 1
+      this.fireMode = 'primary';
+      return true;
+    }
+    if (def.category === 'secondary') {
+      this.activeSecondaryIndex = flatIndex - 2; // 0 or 1 in secondary arr
+      this.fireMode = 'secondary';
+      const res = this.weaponResources[id] || initialResource(id);
+      this.weaponResources[id] = res;
+      if (res && res.current <= 0) {
+        this.fireMode = 'primary';
+        return false;
+      }
+      return true;
+    }
+    if (def.category === 'throw') {
+      this.requestThrow(id);
+      return true;
+    }
+    return false;
+  }
+
+  requestThrow(weaponId) {
+    const nid = normalizeWeaponId(weaponId) || weaponId;
+    if (!this._slotArmed(nid)) return false;
+    const cd = (this.throwCdT && this.throwCdT[nid]) || 0;
+    if (cd > 0) return false;
+    this._throwRequest = nid;
+    return true;
+  }
+
+  activePrimaryId() {
+    if (!this.loadout) return 'gatling';
+    const id = this.loadout.primary[this.activePrimaryIndex] || this.loadout.primary[0];
+    return id || 'gatling';
+  }
+
+  activeSecondaryId() {
+    if (!this.loadout) return null;
+    return this.loadout.secondary[this.activeSecondaryIndex] || this.loadout.secondary[0] || null;
+  }
+
+  _consumeSecondary(id, amount = 1) {
+    const res = this.weaponResources[id];
+    if (!res) return true;
+    res.current = Math.max(0, res.current - amount);
+    if (res.current <= 0) {
+      this.fireMode = 'primary';
+      return false;
+    }
+    return true;
+  }
+
+  _regenSecondary(dt) {
+    if (!this.weaponResources) return;
+    const inCombat = (this.enemies || []).length > 0;
+    for (const id of Object.keys(this.weaponResources)) {
+      const def = weaponDef(id);
+      if (!def || !def.base) continue;
+      const res = this.weaponResources[id];
+      if (!res || res.current >= res.max) continue;
+      const rate = inCombat ? (def.base.regenIn || 0) : (def.base.regenOut || 0);
+      if (def.resource === 'ammo' || def.resource === 'charges') {
+        // discrete reload timer stored on res._acc
+        res._acc = (res._acc || 0) + dt;
+        const need = def.base.reload || 1.4;
+        if (res._acc >= need) {
+          res._acc = 0;
+          res.current = Math.min(res.max, res.current + 1);
+        }
+      } else if (rate > 0) {
+        res.current = Math.min(res.max, res.current + rate * dt);
+      }
+    }
   }
 
   _openSwapOffer(weaponId, pendingCard = null) {
@@ -1450,14 +1630,17 @@ export class Game {
       this.visualAimZ = az;
     }
     if (!events) return;
+    const mx = bullet ? bullet.x : this.px + ax * 0.9;
+    const my = bullet && bullet.y != null ? bullet.y : 0.95;
+    const mz = bullet ? bullet.z : this.pz + az * 0.9;
     events.push({
       type: 'fire',
       weapon,
       aimX: ax,
       aimZ: az,
-      muzzleX: bullet.x,
-      muzzleY: bullet.y != null ? bullet.y : 0.95,
-      muzzleZ: bullet.z,
+      muzzleX: mx,
+      muzzleY: my,
+      muzzleZ: mz,
       targetId: target && target.id != null ? target.id : null,
       updateVisual,
     });
@@ -1527,34 +1710,37 @@ export class Game {
     return b;
   }
 
-  /** Continuous cyan MG — excitement from volume. */
-  _fireMg(events) {
-    const targets = this._targetsForWeapon(this.multi || 1, this.fireRange);
+  /** Continuous cyan MG / gatling laser-feel bolts / vulcan spray. */
+  _fireMg(events, opts = {}) {
+    const range = opts.range || this.fireRange;
+    const targets = this._targetsForWeapon(this.multi || 1, range);
     if (!targets.length) return false;
     let primary = null;
     let primaryDx = 0, primaryDz = 1;
-    // Logic bullets: no random angle jitter (visual tracer scatter can stay elsewhere).
     const maxT = Math.max(AIM_LEAD_MAX_T, this.bulletLife || PLAYER.bulletLife);
+    const tag = opts.weaponTag || 'mg';
+    const speed = opts.laserFeel ? (this.bulletSpeed * 1.15) : this.bulletSpeed;
     for (const best of targets) {
       const lead = muzzleInterceptAimDir(
         this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
-        this.bulletSpeed, maxT
+        speed, maxT
       );
       const dx = lead.dx, dz = lead.dz;
       const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
       const b = this._emitBullet(dx, dz, {
-        weapon: 'mg',
-        dmg: this.bulletDmg,
+        weapon: tag,
+        dmg: this.bulletDmg * (opts.dmgMul || 1),
         pierce: this.pierce,
         life: this.bulletLife,
-        speed: this.bulletSpeed,
-        r: 0.1,
+        speed,
+        r: opts.laserFeel ? 0.09 : 0.1,
+        laserFeel: !!opts.laserFeel,
         targetDist: tDist,
         targetR: best.r || 0.3,
       });
       if (!primary) { primary = { b, best, dx, dz }; primaryDx = dx; primaryDz = dz; }
     }
-    this._pushFire(events, 'mg', primaryDx, primaryDz, primary.b, primary.best);
+    this._pushFire(events, tag === 'gatling' ? 'mg' : tag, primaryDx, primaryDz, primary.b, primary.best);
     return true;
   }
 
@@ -1585,8 +1771,9 @@ export class Game {
     return true;
   }
 
-  _fireShotgun(events) {
-    const targets = this._targetsForWeapon(1, 6.5);
+  _fireShotgun(events, opts = {}) {
+    const range = opts.range || 6.5;
+    const targets = this._targetsForWeapon(1, range);
     if (!targets.length) return false;
     const best = targets[0];
     const stacks = this.shotgun;
@@ -1595,21 +1782,22 @@ export class Game {
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
       speed, Math.max(AIM_LEAD_MAX_T, 0.22)
     );
-    const base = Math.atan2(lead.dz, lead.dx);
-    const n = 5 + stacks;
-    const spread = 0.55 + stacks * 0.08;
+    const ang = Math.atan2(lead.dz, lead.dx);
+    const n = opts.pellets || (5 + stacks);
+    const spread = opts.heavy ? (0.62 + stacks * 0.09) : (0.55 + stacks * 0.08);
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
     let primary = null;
+    const dmg = (opts.heavy ? 0.7 : 0.55) + stacks * 0.22;
     for (let i = 0; i < n; i++) {
       const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
-      const a = base + t * spread;
+      const a = ang + t * spread;
       const dx = Math.cos(a), dz = Math.sin(a);
       const b = this._emitBullet(dx, dz, {
         weapon: 'shotgun',
-        dmg: 0.55 + stacks * 0.2,
-        life: 0.22,
+        dmg,
+        life: 0.20,
         speed,
-        r: 0.14,
+        r: opts.heavy ? 0.15 : 0.14,
         pierce: 0,
         tierStacks: stacks,
         targetDist: tDist,
@@ -1650,9 +1838,7 @@ export class Game {
     return true;
   }
 
-  _fireGrenade(events) {
-    // Forward-only ~120° fan (dot >= 0.5). Never pick nearest behind.
-    // No legal front target → fixed-distance throw along primary forward (same dir for aim/arc/impact).
+  _fireGrenade(events, opts = {}) {
     const fwd = this.primaryForward();
     const throwAim = resolveGrenadeThrow(
       this.px, this.pz, fwd.x, fwd.z, this.enemies, this.fireRange
@@ -1660,26 +1846,30 @@ export class Game {
     const dx = throwAim.dx, dz = throwAim.dz;
     const dist = throwAim.dist;
     const best = throwAim.target;
-    const stacks = this.grenade;
+    const stacks = Math.max(this.grenade || 0, this.frag || 0, 1);
     const speed = 6.5 + stacks * 0.5;
+    const fuse = (opts.fuse != null ? opts.fuse : 0.75) - stacks * 0.05;
+    const aoe = (opts.aoe != null ? opts.aoe : 1.9) + stacks * 0.35;
+    const aoeDmg = (opts.hit != null ? opts.hit : 3.2) + stacks * 1.4;
     const b = this._emitBullet(dx, dz, {
-      weapon: 'grenade',
+      weapon: opts.weaponTag || 'grenade',
       dmg: 0.4,
       life: 1.1,
       speed,
       r: 0.22,
       pierce: 99,
-      fuse: 0.75 - stacks * 0.05,
+      fuse: Math.max(0.25, fuse),
       grav: 14,
       vy: 7.5 + Math.min(4, dist * 0.25),
-      aoe: 1.9 + stacks * 0.4,
-      aoeDmg: 3.2 + stacks * 1.4,
+      aoe,
+      aoeDmg,
+      shards: opts.shards || 0,
       tierStacks: stacks,
       hitIds: new Set(),
     });
     b.noHit = true;
     b.grenadeMode = throwAim.mode;
-    this._pushFire(events, 'grenade', dx, dz, b, best, { updateVisual: false });
+    this._pushFire(events, opts.weaponTag || 'grenade', dx, dz, b, best, { updateVisual: false });
     return true;
   }
 
@@ -1709,6 +1899,225 @@ export class Game {
       targetR: best.r || 0.3,
     });
     this._pushFire(events, 'plasma', dx, dz, b, best);
+    return true;
+  }
+
+  /** ion_beam: charge-fire high damage pierce shot */
+  _fireIonBeam(events, stacks, base = {}) {
+    const targets = this._targetsForWeapon(1, this.fireRange + 5);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const speed = 42;
+    const lead = muzzleInterceptAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, Math.max(AIM_LEAD_MAX_T, 0.3)
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
+    const b = this._emitBullet(dx, dz, {
+      weapon: 'ion_beam',
+      dmg: (base.hit || 3.6) + stacks * 0.7,
+      pierce: (base.pierce || 3) + stacks,
+      life: 0.32,
+      speed,
+      r: 0.18,
+      tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
+    });
+    this._pushFire(events, 'laser', dx, dz, b, best);
+    return true;
+  }
+
+  /** zero_laser: discrete chill bolts */
+  _fireZeroBolt(events, stacks, base = {}) {
+    const targets = this._targetsForWeapon(1, this.fireRange + 2);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const speed = base.speed || 32;
+    const lead = muzzleInterceptAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, Math.max(AIM_LEAD_MAX_T, 0.35)
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
+    const b = this._emitBullet(dx, dz, {
+      weapon: 'zero_laser',
+      dmg: (base.hit || 1.5) + stacks * 0.35,
+      pierce: base.pierce || 1,
+      life: 0.45,
+      speed,
+      r: 0.11,
+      chill: base.chill || 0.7,
+      tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
+    });
+    this._pushFire(events, 'laser', dx, dz, b, best);
+    return true;
+  }
+
+  /** tracking_bomb: homing → stick → quick explode */
+  _fireTrackingBomb(events, stacks, base = {}) {
+    const targets = this._targetsForWeapon(1, this.fireRange + 3);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const speed = 9 + stacks * 0.6;
+    const lead = muzzleInterceptAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, Math.max(AIM_LEAD_MAX_T, 1.2)
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
+    const b = this._emitBullet(dx, dz, {
+      weapon: 'tracking_bomb',
+      dmg: (base.hit || 2.4) + stacks * 0.9,
+      life: 2.2,
+      speed,
+      r: 0.26,
+      pierce: 0,
+      aoe: base.aoe || 1.6,
+      aoeDmg: (base.hit || 2.4) + stacks * 0.9,
+      homing: base.homing || 14,
+      homeTarget: best,
+      stickOnHit: true,
+      stickFuse: base.stick || 0.35,
+      tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
+    });
+    this._pushFire(events, 'rocket', dx, dz, b, best);
+    return true;
+  }
+
+  /** acid_gun: rapid dissolving stream shot */
+  _fireAcidStream(events, stacks, base = {}) {
+    const targets = this._targetsForWeapon(1, this.fireRange);
+    if (!targets.length) return false;
+    const best = targets[0];
+    const speed = 14;
+    const lead = muzzleInterceptAimDir(
+      this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
+      speed, Math.max(AIM_LEAD_MAX_T, 0.5)
+    );
+    const dx = lead.dx, dz = lead.dz;
+    const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
+    const b = this._emitBullet(dx, dz, {
+      weapon: 'acid_gun',
+      dmg: (base.hit || 0.85) + stacks * 0.25,
+      life: 0.55,
+      speed,
+      r: 0.14,
+      pierce: 1,
+      puddle: (base.dissolve || 1.4) * 0.55,
+      aoeDmg: 0.55 + stacks * 0.2,
+      tierStacks: stacks,
+      targetDist: tDist,
+      targetR: best.r || 0.3,
+    });
+    this._pushFire(events, 'plasma', dx, dz, b, best);
+    return true;
+  }
+
+  /** slow_gun: rush feel + AoE slow field near aim point */
+  _fireSlowRush(events, stacks, base = {}) {
+    const targets = this._targetsForWeapon(1, (base.rush || 14));
+    const fwd = this.primaryForward();
+    let x = this.px + fwd.x * 4;
+    let z = this.pz + fwd.z * 4;
+    if (targets.length) {
+      x = targets[0].x; z = targets[0].z;
+    }
+    const aoe = base.aoe || 2.4;
+    const slow = base.slow || 1.6;
+    const hit = (base.hit || 0.6) + stacks * 0.15;
+    for (const e of this.enemies) {
+      if (Math.hypot(e.x - x, e.z - z) > aoe + e.r) continue;
+      this._applyEnemyDamage(e, hit, this.px, this.pz, events, { hitTime: 0.1 });
+      e.slow = Math.max(e.slow || 0, slow);
+    }
+    this.zones.push({
+      x, z, r: aoe, life: slow, dps: 0, kind: 'slow',
+    });
+    events.push({ type: 'slowField', x, z, r: aoe, dur: slow });
+    this._pushFire(events, 'plasma', fwd.x, fwd.z, null, targets[0] || null);
+    return true;
+  }
+
+  /** attack_drone: deploy 2 escort drones (orbit stacks + timed helpers) */
+  _deployAttackDrones(events, stacks, base = {}) {
+    const n = base.drones || 2;
+    this.orbits = Math.min(6, (this.orbits || 0) + n);
+    if (!this._drones) this._drones = [];
+    const life = (base.life || 8) + stacks;
+    for (let i = 0; i < n; i++) {
+      this._drones.push({ life, dmg: (base.hit || 0.7) + stacks * 0.15, cd: 0 });
+    }
+    events.push({ type: 'deployDrones', count: n, life });
+    const fwd = this.primaryForward();
+    this._pushFire(events, 'plasma', fwd.x, fwd.z, null, null);
+    return true;
+  }
+
+  /** blackhole: AoE pull then crush */
+  _fireBlackhole(events, stacks, base = {}) {
+    const targets = this._targetsForWeapon(1, this.fireRange + 1);
+    const fwd = this.primaryForward();
+    let x = this.px + fwd.x * 5;
+    let z = this.pz + fwd.z * 5;
+    if (targets.length) { x = targets[0].x; z = targets[0].z; }
+    const aoe = (base.aoe || 3.4) + stacks * 0.2;
+    const pull = base.pull || 9;
+    const dur = base.duration || 1.2;
+    const hit = (base.hit || 2.2) + stacks * 0.5;
+    if (!this._pullFields) this._pullFields = [];
+    this._pullFields.push({ x, z, r: aoe, pull, life: dur, dmgAcc: 0, dmg: hit / Math.max(0.4, dur) });
+    events.push({ type: 'blackhole', x, z, r: aoe, dur });
+    this._pushFire(events, 'plasma', fwd.x, fwd.z, null, targets[0] || null);
+    return true;
+  }
+
+  _fireChillBomb(events, stacks, base = {}) {
+    const ok = this._fireGrenade(events, {
+      weaponTag: 'chill', fuse: base.fuse || 0.35, aoe: base.aoe || 2.8, hit: base.hit || 1.0,
+    });
+    if (!ok) return false;
+    const b = this.bullets[this.bullets.length - 1];
+    if (b) {
+      b.chillField = true;
+      b.slow = base.slow || 1.8;
+      b.fieldDur = base.duration || 2.2;
+      b.aoeDmg = (base.hit || 1.0) + stacks * 0.4;
+    }
+    return true;
+  }
+
+  _fireFlashbang(events, stacks, base = {}) {
+    const ok = this._fireGrenade(events, {
+      weaponTag: 'flash', fuse: base.fuse || 0.12, aoe: base.aoe || 3.2, hit: base.hit || 0.25,
+    });
+    if (!ok) return false;
+    const b = this.bullets[this.bullets.length - 1];
+    if (b) {
+      b.flashbang = true;
+      b.stun = base.stun || 0.9;
+      b.aoeDmg = (base.hit || 0.25) + stacks * 0.1;
+    }
+    return true;
+  }
+
+  _fireGravityBomb(events, stacks, base = {}) {
+    const ok = this._fireGrenade(events, {
+      weaponTag: 'gravity', fuse: base.fuse || 0.45, aoe: base.aoe || 3.2, hit: base.hit || 2.8,
+    });
+    if (!ok) return false;
+    const b = this.bullets[this.bullets.length - 1];
+    if (b) {
+      b.gravityPull = true;
+      b.pull = base.pull || 11;
+      b.fieldDur = base.duration || 0.9;
+      b.aoeDmg = (base.hit || 2.8) + stacks * 0.8;
+    }
     return true;
   }
 
@@ -1862,64 +2271,291 @@ export class Game {
     }
   }
 
+
+  /** v0.9.53: blackhole pull fields + attack drones DPS + orbit decay. */
+  _tickWeaponFields(dt, events) {
+    if (this._pullFields && this._pullFields.length) {
+      for (let i = this._pullFields.length - 1; i >= 0; i--) {
+        const f = this._pullFields[i];
+        f.life -= dt;
+        for (const e of this.enemies) {
+          const dx = f.x - e.x, dz = f.z - e.z;
+          const d = Math.hypot(dx, dz) || 0.001;
+          if (d > f.r + e.r) continue;
+          const pull = (f.pull || 8) * dt * (1 - d / (f.r + 0.01));
+          e.x += (dx / d) * pull;
+          e.z += (dz / d) * pull;
+          const dead = this._applyEnemyDamage(e, (f.dmg || 1) * dt, f.x, f.z, events, { hitTime: 0.05, pushHit: false });
+          if (dead) {
+            const j = this.enemies.indexOf(e);
+            if (j >= 0) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: true }); }
+          }
+        }
+        if (f.life <= 0) this._pullFields.splice(i, 1);
+      }
+    }
+    if (this._drones && this._drones.length) {
+      for (let i = this._drones.length - 1; i >= 0; i--) {
+        const d = this._drones[i];
+        d.life -= dt;
+        d.cd = (d.cd || 0) - dt;
+        if (d.cd <= 0) {
+          d.cd = 0.45;
+          const targets = this._targetsForWeapon(1, this.fireRange);
+          if (targets.length) {
+            const e = targets[0];
+            const dead = this._applyEnemyDamage(e, d.dmg || 0.7, this.px, this.pz, events, { hitTime: 0.08 });
+            events.push({ type: 'hit', x: e.x, z: e.z, color: e.color, kind: e.kind, dmg: d.dmg, id: e.id });
+            if (dead) {
+              const j = this.enemies.indexOf(e);
+              if (j >= 0) { this._kill(e, j, events); events.push({ type: 'kill', enemy: e, gore: false }); }
+            }
+          }
+        }
+        if (d.life <= 0) {
+          this._drones.splice(i, 1);
+          this.orbits = Math.max(0, (this.orbits || 0) - 1);
+        }
+      }
+    }
+  }
+
   _tickWeapons(dt, events) {
     let fired = false;
-    // v0.9.29: only weapons present in weaponSlots fire (HUD ≡ shots).
-    // Phase 3 jammer: temporary fireCd mul (stack cap 1) — slows RoF without changing base tables.
+    // v0.9.53: primary auto OR active secondary (resource) OR throw-on-request.
     const jamMul = (this.jamT > 0 && this.jamFireMul > 1) ? this.jamFireMul : 1;
-    // Base continuous MG — only when slotted and a foe is in range
-    this.fireT -= dt;
-    if (this.fireT <= 0) {
-      if (this._slotArmed('mg') && this._fireMg(events)) {
-        this.fireT = this.fireCd * jamMul;
-        this.muzzle = 0.08; this.aimHold = 0.42;
-        fired = true;
-      } else {
-        this.fireT = 0.05;
+    this._regenSecondary(dt);
+    if (this.throwCdT) {
+      for (const k of Object.keys(this.throwCdT)) {
+        this.throwCdT[k] = Math.max(0, this.throwCdT[k] - dt);
       }
     }
 
-    if (this.laser > 0 && this._slotArmed('laser')) {
-      this.laserT -= dt;
-      if (this.laserT <= 0 && this._fireLaser(events)) {
-        this.laserT = Math.max(0.18, 0.42 - this.laser * 0.05) * jamMul;
-        this.muzzle = 0.12; this.aimHold = 0.48;
-        fired = true;
-      }
-    }
-    if (this.shotgun > 0 && this._slotArmed('shotgun')) {
-      this.shotgunT -= dt;
-      if (this.shotgunT <= 0 && this._fireShotgun(events)) {
-        this.shotgunT = Math.max(0.35, 0.85 - this.shotgun * 0.1) * jamMul;
+    if (this._throwRequest) {
+      const tid = this._throwRequest;
+      this._throwRequest = null;
+      if (this._slotArmed(tid) && this._fireThrow(tid, events)) {
+        const def = weaponDef(tid);
+        const cd = (def && def.base && def.base.cd) || 1.7;
+        if (!this.throwCdT) this.throwCdT = Object.create(null);
+        this.throwCdT[tid] = cd * jamMul;
         this.muzzle = 0.14; this.aimHold = 0.48;
         fired = true;
       }
     }
-    if (this.rocket > 0 && this._slotArmed('rocket')) {
-      this.rocketT -= dt;
-      if (this.rocketT <= 0 && this._fireRocket(events)) {
-        this.rocketT = Math.max(0.9, 2.1 - this.rocket * 0.25) * jamMul;
-        this.muzzle = 0.16; this.aimHold = 0.48;
-        fired = true;
+
+    if (this.fireMode === 'secondary') {
+      const sid = this.activeSecondaryId();
+      const def = weaponDef(sid);
+      if (!sid || !this._slotArmed(sid) || !def) {
+        this.fireMode = 'primary';
+      } else {
+        const res = this.weaponResources[sid] || initialResource(sid);
+        this.weaponResources[sid] = res;
+        if (!res || res.current <= 0) {
+          this.fireMode = 'primary';
+        } else {
+          const stacks = Math.max((this.taken && this.taken[sid]) || 0, this[sid] || 0, 1);
+          if (this._tickSecondary(sid, def.behavior || 'shotgun', stacks, events, jamMul, dt)) {
+            fired = true;
+          }
+        }
       }
     }
-    if (this.grenade > 0 && this._slotArmed('grenade')) {
-      this.grenadeT -= dt;
-      if (this.grenadeT <= 0 && this._fireGrenade(events)) {
-        this.grenadeT = Math.max(0.85, 1.9 - this.grenade * 0.2) * jamMul;
-        this.muzzle = 0.14; this.aimHold = 0.48;
-        fired = true;
-      }
-    }
-    if (this.plasma > 0 && this._slotArmed('plasma')) {
-      this.plasmaT -= dt;
-      if (this.plasmaT <= 0 && this._firePlasma(events)) {
-        this.plasmaT = Math.max(0.55, 1.35 - this.plasma * 0.15) * jamMul;
-        this.muzzle = 0.12; this.aimHold = 0.48;
-        fired = true;
-      }
+
+    if (this.fireMode === 'primary') {
+      if (this._tickPrimary(dt, events, jamMul)) fired = true;
     }
     return fired;
+  }
+
+  _tickPrimary(dt, events, jamMul) {
+    const nid = this.activePrimaryId();
+    if (!this._slotArmed(nid) && nid !== 'gatling') {
+      if (!this.loadout) this.loadout = starterLoadout();
+      if (!this.loadout.primary[0]) this.loadout.primary[0] = 'gatling';
+      this._syncSlotsFromLoadout();
+    }
+    const def = weaponDef(nid);
+    const behavior = (def && def.behavior) || 'mg';
+    const base = (def && def.base) || {};
+
+    // gatling: laser-feel flying bolts (legacy MG path, tagged)
+    if (behavior === 'mg') {
+      this.fireT -= dt;
+      if (this.fireT > 0) return false;
+      if (this._fireMg(events, { weaponTag: 'gatling', laserFeel: true })) {
+        this.fireT = (base.cd || this.fireCd || 0.1) * jamMul;
+        this.muzzle = 0.08; this.aimHold = 0.42;
+        return true;
+      }
+      this.fireT = 0.05;
+      return false;
+    }
+
+    // vulcan: minigun spray with spin-up
+    if (behavior === 'vulcan' || behavior === 'mg_fast') {
+      if ((this.vulcan || 0) < 1 && nid === 'vulcan') this.vulcan = Math.max(this.vulcan || 0, 1);
+      this._vulcanSpin = Math.min(1, (this._vulcanSpin || 0) + dt / (base.spinUp || 0.4));
+      this.fireT -= dt;
+      if (this.fireT > 0) return false;
+      const spin = this._vulcanSpin || 0;
+      const cd = Math.max(0.035, (base.cd || 0.045) * (1.55 - 0.55 * spin));
+      if (this._fireMg(events, { weaponTag: 'vulcan', range: base.range || 10, dmgMul: 0.7 })) {
+        this.fireT = cd * jamMul;
+        this.muzzle = 0.06; this.aimHold = 0.35;
+        return true;
+      }
+      this.fireT = 0.04;
+      return false;
+    }
+
+    // ion_beam: charge → fire → charge (very high dmg/shot)
+    if (behavior === 'ion_charge' || behavior === 'laser') {
+      const stacks = Math.max(this.laser || 0, this.ion_beam || 0, 1);
+      if ((this.laser || 0) < 1 && (this.ion_beam || 0) < 1) this.laser = 1;
+      if (this._ionPhase == null) this._ionPhase = 'charge';
+      if (this._ionPhase === 'charge') {
+        this._ionChargeT = (this._ionChargeT || 0) + dt;
+        const need = Math.max(0.28, (base.charge || 0.55) - stacks * 0.04);
+        if (this._ionChargeT < need * jamMul) return false;
+        this._ionChargeT = 0;
+        this._ionPhase = 'fire';
+      }
+      if (this._ionPhase === 'fire') {
+        if (this._fireIonBeam(events, stacks, base)) {
+          this.muzzle = 0.18; this.aimHold = 0.55;
+          this._ionPhase = 'charge';
+          this.laserT = (base.cd || 0.12) * jamMul;
+          return true;
+        }
+        return false;
+      }
+      return false;
+    }
+
+    // zero_laser: discrete chill bolts one-by-one
+    if (behavior === 'zero_bolts' || behavior === 'laser_chill') {
+      const stacks = Math.max(this.zero_laser || 0, this.laser || 0, 1);
+      if ((this.zero_laser || 0) < 1) this.zero_laser = 1;
+      this.laserT -= dt;
+      if (this.laserT > 0) return false;
+      if (this._fireZeroBolt(events, stacks, base)) {
+        this.laserT = Math.max(0.16, (base.cd || 0.28) - stacks * 0.02) * jamMul;
+        this.muzzle = 0.1; this.aimHold = 0.45;
+        return true;
+      }
+      return false;
+    }
+
+    // tracking_bomb: track → stick → quick explode (small AoE)
+    if (behavior === 'track_stick' || behavior === 'rocket') {
+      const stacks = Math.max(this.rocket || 0, this.tracking_bomb || 0, 1);
+      if ((this.rocket || 0) < 1 && (this.tracking_bomb || 0) < 1) this.rocket = 1;
+      this.rocketT -= dt;
+      if (this.rocketT > 0) return false;
+      if (this._fireTrackingBomb(events, stacks, base)) {
+        this.rocketT = Math.max(0.7, (base.cd || 1.5) - stacks * 0.12) * jamMul;
+        this.muzzle = 0.16; this.aimHold = 0.48;
+        return true;
+      }
+      return false;
+    }
+
+    this.fireT -= dt;
+    if (this.fireT > 0) return false;
+    if (this._fireMg(events)) {
+      this.fireT = 0.14 * jamMul;
+      this.muzzle = 0.08; this.aimHold = 0.35;
+      return true;
+    }
+    this.fireT = 0.05;
+    return false;
+  }
+
+  _tickSecondary(sid, behavior, stacks, events, jamMul, dt) {
+    const def = weaponDef(sid);
+    const base = (def && def.base) || {};
+
+    if (behavior === 'shotgun') {
+      if ((this.shotgun || 0) < 1) this.shotgun = 1;
+      this.shotgunT -= dt;
+      if (this.shotgunT > 0) return false;
+      if (this._fireShotgun(events, { heavy: true, pellets: base.pellets || 10, range: base.range || 7 })) {
+        this.shotgunT = Math.max(0.35, (base.cd || 0.7) - stacks * 0.08) * jamMul;
+        this.muzzle = 0.14; this.aimHold = 0.48;
+        this._consumeSecondary(sid, 1);
+        return true;
+      }
+      return false;
+    }
+
+    // acid: 10 continuous dissolving shots
+    if (behavior === 'acid_stream' || behavior === 'plasma') {
+      if ((this.plasma || 0) < 1 && (this.acid_gun || 0) < 1) this.plasma = 1;
+      this.plasmaT -= dt;
+      if (this.plasmaT > 0) return false;
+      if (this._fireAcidStream(events, stacks, base)) {
+        this.plasmaT = Math.max(0.08, (base.cd || 0.12) - stacks * 0.01) * jamMul;
+        this.muzzle = 0.1; this.aimHold = 0.4;
+        this._consumeSecondary(sid, 1);
+        return true;
+      }
+      return false;
+    }
+
+    // slow_gun: rush → AoE stop/slow
+    if (behavior === 'slow_rush' || behavior === 'slow_stub') {
+      this.plasmaT -= dt;
+      if (this.plasmaT > 0) return false;
+      if (this._fireSlowRush(events, stacks, base)) {
+        this.plasmaT = Math.max(0.6, (base.cd || 1.1) - stacks * 0.08) * jamMul;
+        this.muzzle = 0.16; this.aimHold = 0.5;
+        this._consumeSecondary(sid, 1);
+        return true;
+      }
+      return false;
+    }
+
+    // attack_drone: deploy 2 drones
+    if (behavior === 'deploy_drones' || behavior === 'drone_stub') {
+      this.plasmaT -= dt;
+      if (this.plasmaT > 0) return false;
+      if (this._deployAttackDrones(events, stacks, base)) {
+        this.plasmaT = Math.max(3.5, (base.cd || 5.5) - stacks * 0.4) * jamMul;
+        this.muzzle = 0.12; this.aimHold = 0.4;
+        this._consumeSecondary(sid, 1);
+        return true;
+      }
+      return false;
+    }
+
+    // blackhole: AoE pull to center
+    if (behavior === 'blackhole_pull' || behavior === 'blackhole_stub') {
+      this.plasmaT -= dt;
+      if (this.plasmaT > 0) return false;
+      if (this._fireBlackhole(events, stacks, base)) {
+        this.plasmaT = Math.max(1.6, (base.cd || 2.6) - stacks * 0.15) * jamMul;
+        this.muzzle = 0.18; this.aimHold = 0.55;
+        this._consumeSecondary(sid, 1);
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  _fireThrow(tid, events) {
+    const def = weaponDef(tid);
+    const behavior = (def && def.behavior) || 'grenade';
+    const stacks = Math.max((this.taken && this.taken[tid]) || 0, this[tid] || 0, this.grenade || 0, 1);
+    const base = (def && def.base) || {};
+    if ((this.grenade || 0) < 1 && (this.frag || 0) < 1) this.grenade = 1;
+    if (behavior === 'grenade' || tid === 'frag') return this._fireGrenade(events, { ...base, weaponTag: 'frag' });
+    if (behavior === 'chill_field' || tid === 'chill') return this._fireChillBomb(events, stacks, base);
+    if (behavior === 'flashbang' || tid === 'flash') return this._fireFlashbang(events, stacks, base);
+    if (behavior === 'gravity_pull' || tid === 'gravity') return this._fireGravityBomb(events, stacks, base);
+    return this._fireGrenade(events);
   }
 
 
@@ -3209,17 +3845,59 @@ export class Game {
   _stepProjectiles(dt, events) {
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const b = this.bullets[i];
+      // Homing toward homeTarget (tracking bomb)
+      if (b.homing && b.homeTarget && this.enemies.includes(b.homeTarget) && b.homeTarget.hp > 0 && !b.stuck) {
+        const tx = b.homeTarget.x - b.x, tz = b.homeTarget.z - b.z;
+        const tl = Math.hypot(tx, tz) || 1;
+        const spd = Math.hypot(b.vx, b.vz) || 8;
+        const turn = Math.min(1, (b.homing * dt) / spd);
+        b.vx = b.vx * (1 - turn) + (tx / tl) * spd * turn;
+        b.vz = b.vz * (1 - turn) + (tz / tl) * spd * turn;
+      }
+      // Stuck bomb rides on enemy then fuses
+      if (b.stuck && b.stickEnemy) {
+        if (this.enemies.includes(b.stickEnemy) && b.stickEnemy.hp > 0) {
+          b.x = b.stickEnemy.x; b.z = b.stickEnemy.z; b.y = 0.7;
+          b.vx = 0; b.vz = 0;
+        } else {
+          b.stuck = false; b.stickEnemy = null;
+        }
+      }
       if (b.grav) {
         b.vy -= b.grav * dt;
         b.y += b.vy * dt;
         if (b.y < 0.05) { b.y = 0.05; b.vy = 0; }
       }
       const prevX = b.x, prevZ = b.z;
-      b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
+      if (!b.stuck) { b.x += b.vx * dt; b.z += b.vz * dt; }
+      b.life -= dt;
       if (b.fuse > 0) {
         b.fuse -= dt;
         if (b.fuse <= 0) {
           this._aoeAt(b.x, b.z, b.aoe || 1.8, b.aoeDmg || b.dmg, events, b.weapon);
+          if (b.chillField) {
+            for (const e of this.enemies) {
+              if (Math.hypot(e.x - b.x, e.z - b.z) <= (b.aoe || 2.8) + e.r) e.slow = Math.max(e.slow || 0, b.slow || 1.8);
+            }
+            this.zones.push({ x: b.x, z: b.z, r: b.aoe || 2.8, life: b.fieldDur || 2.2, dps: 0, kind: 'chill' });
+          }
+          if (b.flashbang) {
+            for (const e of this.enemies) {
+              if (Math.hypot(e.x - b.x, e.z - b.z) <= (b.aoe || 3.2) + e.r) {
+                e.slow = Math.max(e.slow || 0, b.stun || 0.9);
+                if (e.aimT != null) e.aimT = Math.min(e.aimT, 0.05);
+                if (e.telegraphT != null) e.telegraphT = 0;
+              }
+            }
+            events.push({ type: 'flash', x: b.x, z: b.z, r: b.aoe || 3.2 });
+          }
+          if (b.gravityPull) {
+            if (!this._pullFields) this._pullFields = [];
+            this._pullFields.push({
+              x: b.x, z: b.z, r: b.aoe || 3.2, pull: b.pull || 11,
+              life: b.fieldDur || 0.9, dmgAcc: 0, dmg: (b.aoeDmg || b.dmg) / Math.max(0.4, b.fieldDur || 0.9),
+            });
+          }
           this.bullets.splice(i, 1);
           continue;
         }
@@ -3263,7 +3941,17 @@ export class Game {
             const punch = isPunchKill(e, heavy);
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
           }
-          if (b.aoe && (b.weapon === 'rocket' || b.weapon === 'plasma')) {
+          if (b.chill) e.slow = Math.max(e.slow || 0, b.chill);
+          if (b.stickOnHit && !b.stuck) {
+            b.stuck = true;
+            b.stickEnemy = e;
+            b.fuse = b.stickFuse || 0.35;
+            b.vx = 0; b.vz = 0;
+            b.noHit = true;
+            consumed = true;
+            break;
+          }
+          if (b.aoe && (b.weapon === 'rocket' || b.weapon === 'plasma' || b.weapon === 'tracking_bomb' || b.weapon === 'acid_gun')) {
             this._aoeAt(b.x, b.z, b.aoe || b.puddle || 1.2, b.aoeDmg || b.dmg * 0.6, events, b.weapon);
             if (b.puddle) {
               this.zones.push({
@@ -3496,6 +4184,7 @@ export class Game {
     if (Math.hypot(this.vx || 0, this.vz || 0) > 0.12) this._lastMovedAt = this.t;
 
     this._tickWeapons(dt, events);
+    this._tickWeaponFields(dt, events);
 
     if (this.nova > 0) {
       this.novaT -= dt;

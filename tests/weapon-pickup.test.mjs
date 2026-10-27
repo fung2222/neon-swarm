@@ -7,7 +7,7 @@ import { Game } from '../js/logic.js';
 import { CARDS, CARDS_BY_ID, buildWeaponPickupOffer, cardExhausted } from '../js/config.js';
 
 const laser = CARDS_BY_ID.laser;
-assert.ok(laser && laser.max === 4, 'laser card');
+assert.ok(laser && laser.max === 5, 'laser card');
 
 // ---- Helper: pure offer builder ----
 {
@@ -23,7 +23,7 @@ assert.ok(laser && laser.max === 4, 'laser card');
   assert.ok(owned.choices.some((c) => c.pickupAction === 'upgrade'));
   assert.ok(owned.choices.some((c) => c.pickupAction === 'keep'));
 
-  const atMax = buildWeaponPickupOffer('laser', { laser: 4 });
+  const atMax = buildWeaponPickupOffer('laser', { laser: 5 });
   assert.equal(atMax.mode, 'max');
   assert.ok(atMax.atMax);
   assert.ok(atMax.choices.some((c) => c.pickupAction === 'convertHeal'));
@@ -102,7 +102,7 @@ assert.ok(laser && laser.max === 4, 'laser card');
 {
   const g = new Game({ seed: 13 });
   for (let i = 0; i < laser.max; i++) g.applyCard(laser);
-  assert.equal(g.taken.laser, 4);
+  assert.equal(g.taken.laser, laser.max);
   assert.ok(cardExhausted(laser, g.taken));
   g.hp = Math.max(1, g.maxHp - 4);
   const hpBefore = g.hp;
@@ -114,11 +114,11 @@ assert.ok(laser && laser.max === 4, 'laser card');
   const offer = events.find((e) => e.type === 'weaponOffer');
   assert.equal(offer.mode, 'max');
   assert.ok(g.pausedForLevel, 'at-max still pauses with UI');
-  assert.equal(g.taken.laser, 4, 'no silent stack bump');
+  assert.equal(g.taken.laser, laser.max, 'no silent stack bump');
 
   const heal = g.pendingCards.find((c) => c.pickupAction === 'convertHeal');
   g.applyCard(heal);
-  assert.equal(g.taken.laser, 4);
+  assert.equal(g.taken.laser, laser.max);
   assert.equal(g.taken._pickup_heal, undefined);
   assert.equal(g.hp, Math.min(g.maxHp, hpBefore + 2));
   assert.equal(g.pausedForLevel, false);
@@ -134,7 +134,7 @@ assert.ok(laser && laser.max === 4, 'laser card');
   g.step(1 / 30);
   const keep = g.pendingCards.find((c) => c.pickupAction === 'keep');
   g.applyCard(keep);
-  assert.equal(g.taken.laser, 4);
+  assert.equal(g.taken.laser, laser.max);
   assert.equal(g.pausedForLevel, false);
 }
 

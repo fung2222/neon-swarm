@@ -1,3 +1,22 @@
+import {
+  WEAPON_CATALOG, LOADOUT_CAPS, WEAPON_ID_ALIASES, normalizeWeaponId, weaponDef,
+  PRIMARY_IDS, SECONDARY_IDS, THROW_IDS, ALL_WEAPON_IDS,
+  emptyLoadout, starterLoadout, flattenLoadout, loadoutFromFlat,
+  addToLoadout, swapLoadoutSlot, findInLoadout, isArmedInLoadout,
+  weaponLevel, initialResource, ultimateIdStubs, categoryOf, hasEmptyInCategory, slotCountFilled,
+  SLOT_WEAPONS as WEAPONS_SLOT_LIST, WEAPON_SLOT_MAX as WEAPONS_SLOT_MAX,
+  emptyWeaponSlots as weaponsEmptySlots, isSlotWeapon as weaponsIsSlot,
+  hasEmptyWeaponSlot as weaponsHasEmpty, weaponSlotLevel as weaponsSlotLevel,
+  WEAPON_ICON, WEAPON_LABEL,
+} from './weapons.js';
+export {
+  WEAPON_CATALOG, LOADOUT_CAPS, WEAPON_ID_ALIASES, normalizeWeaponId, weaponDef,
+  PRIMARY_IDS, SECONDARY_IDS, THROW_IDS, ALL_WEAPON_IDS,
+  emptyLoadout, starterLoadout, flattenLoadout, loadoutFromFlat,
+  addToLoadout, swapLoadoutSlot, findInLoadout, isArmedInLoadout,
+  weaponLevel, initialResource, ultimateIdStubs, WEAPON_ICON, WEAPON_LABEL,
+  categoryOf, hasEmptyInCategory, slotCountFilled,
+} from './weapons.js';
 export const GAME_ID = 'neon-swarm';
 export const KIT = '0.3.16';
 export const TRIAL = { runsPerDay: 3, surviveSec: 480 };
@@ -584,21 +603,21 @@ export const CARDS = [
   { id: 'rate', kind: 'weapon', icon: '⏱', shape: 'clock', max: 6,
     zh: '連射超頻', en: 'RAPID FIRE', descZh: '機槍射速 +18%（最多 6）', descEn: 'MG rate +18% (max 6)',
     apply: (s) => { s.fireCd = Math.max(0.045, s.fireCd * 0.82); } },
-  { id: 'laser', kind: 'weapon', icon: '═', shape: 'rail', max: 4,
-    zh: '鐳射炮', en: 'LASER', descZh: '解鎖／強化穿透鐳射束（最多 4）', descEn: 'Unlock/upgrade piercing laser (max 4)',
-    apply: (s) => { s.laser = Math.min(4, (s.laser || 0) + 1); } },
-  { id: 'shotgun', kind: 'weapon', icon: '✴', shape: 'spread', max: 4,
-    zh: '散彈槍', en: 'SHOTGUN', descZh: '近距扇形散彈（最多 4）', descEn: 'Close-range pellet cone (max 4)',
-    apply: (s) => { s.shotgun = Math.min(4, (s.shotgun || 0) + 1); } },
-  { id: 'rocket', kind: 'weapon', icon: '🚀', shape: 'nova', max: 3,
+  { id: 'laser', kind: 'weapon', icon: '═', shape: 'rail', max: 5,
+    zh: '鐳射炮', en: 'LASER', descZh: '解鎖／強化穿透鐳射束（最多 5）', descEn: 'Unlock/upgrade piercing laser (max 5)',
+    apply: (s) => { s.laser = Math.min(5, (s.laser || 0) + 1); s.ion_beam = Math.min(5, (s.ion_beam || 0) + 1); } },
+  { id: 'shotgun', kind: 'weapon', icon: '✴', shape: 'spread', max: 5,
+    zh: '散彈槍', en: 'SHOTGUN', descZh: '近距扇形散彈（最多 5）', descEn: 'Close-range pellet cone (max 5)',
+    apply: (s) => { s.shotgun = Math.min(5, (s.shotgun || 0) + 1); } },
+  { id: 'rocket', kind: 'weapon', icon: '🚀', shape: 'nova', max: 5,
     zh: '火箭炮', en: 'ROCKET', descZh: '慢速火箭＋範圍爆炸（最多 3）', descEn: 'Slow rocket + AoE blast (max 3)',
-    apply: (s) => { s.rocket = Math.min(3, (s.rocket || 0) + 1); } },
-  { id: 'grenade', kind: 'weapon', icon: '💣', shape: 'orb', max: 3,
+    apply: (s) => { s.rocket = Math.min(5, (s.rocket || 0) + 1); } },
+  { id: 'grenade', kind: 'weapon', icon: '💣', shape: 'orb', max: 5,
     zh: '手榴彈／迫擊砲', en: 'GRENADE / MORTAR', descZh: '拋射延遲爆破（最多 3）', descEn: 'Lobbed delayed blast (max 3)',
-    apply: (s) => { s.grenade = Math.min(3, (s.grenade || 0) + 1); } },
-  { id: 'plasma', kind: 'weapon', icon: '☢', shape: 'frost', max: 3,
+    apply: (s) => { s.grenade = Math.min(5, (s.grenade || 0) + 1); } },
+  { id: 'plasma', kind: 'weapon', icon: '☢', shape: 'frost', max: 5,
     zh: '電漿／鏹水', en: 'PLASMA / ACID', descZh: '電漿團＋殘留毒池（最多 3）', descEn: 'Plasma blob + lingering puddle (max 3)',
-    apply: (s) => { s.plasma = Math.min(3, (s.plasma || 0) + 1); } },
+    apply: (s) => { s.plasma = Math.min(5, (s.plasma || 0) + 1); } },
   { id: 'multi', kind: 'weapon', icon: '◎', shape: 'lock', max: 3,
     zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '機槍同時鎖定 +1（最多 4）', descEn: 'MG locks +1 foe (max 4)',
     apply: (s) => { s.multi = Math.min(4, (s.multi || 1) + 1); } },
@@ -629,6 +648,46 @@ export const CARDS = [
   { id: 'hp', kind: 'armor', icon: '♥', shape: 'heart',
     zh: '護盾芯', en: 'SHIELD CORE', descZh: '最大 HP +1 並回滿', descEn: 'Max HP +1 & heal',
     apply: (s) => { s.maxHp += 1; s.hp = s.maxHp; } },
+  // v0.9.53 WEAPONS-REDESIGN-001 — new catalog cards (legacy laser/shotgun/… still valid via aliases)
+  { id: 'gatling', kind: 'weapon', icon: '⚡', shape: 'bolt', max: 5,
+    zh: '機關雷射炮', en: 'GATLING LASER', descZh: '主武器·持續自動射擊（最多 5）', descEn: 'Primary auto-fire (max 5)',
+    apply: (s) => { s.gatling = Math.min(5, (s.gatling || 0) + 1); s.bulletDmg = (s.bulletDmg || 1) + 0.18; } },
+  { id: 'ion_beam', kind: 'weapon', icon: '═', shape: 'rail', max: 5,
+    zh: '離子光束', en: 'ION BEAM', descZh: '主武器·穿透離子束（最多 5）', descEn: 'Primary piercing beam (max 5)',
+    apply: (s) => { s.ion_beam = Math.min(5, (s.ion_beam || 0) + 1); s.laser = Math.min(5, (s.laser || 0) + 1); } },
+  { id: 'tracking_bomb', kind: 'weapon', icon: '🚀', shape: 'nova', max: 5,
+    zh: '追蹤爆彈', en: 'TRACKING BOMB', descZh: '主武器·追蹤爆炸彈（最多 5）', descEn: 'Primary homing bomb (max 5)',
+    apply: (s) => { s.tracking_bomb = Math.min(5, (s.tracking_bomb || 0) + 1); s.rocket = Math.min(5, (s.rocket || 0) + 1); } },
+  { id: 'vulcan', kind: 'weapon', icon: '☢', shape: 'bolt', max: 5,
+    zh: '火神', en: 'VULCAN', descZh: '主武器·超高射速近距（最多 5）', descEn: 'Primary ultra-RoF shred (max 5)',
+    apply: (s) => { s.vulcan = Math.min(5, (s.vulcan || 0) + 1); } },
+  { id: 'zero_laser', kind: 'weapon', icon: '❄', shape: 'frost', max: 5,
+    zh: '零度激光', en: 'ZERO LASER', descZh: '主武器·寒冰穿透激光（最多 5）', descEn: 'Primary chill pierce laser (max 5)',
+    apply: (s) => { s.zero_laser = Math.min(5, (s.zero_laser || 0) + 1); } },
+  { id: 'acid_gun', kind: 'weapon', icon: '☣', shape: 'frost', max: 5,
+    zh: '硫酸槍', en: 'ACID GUN', descZh: '副武器·溶甲酸液（能源；最多 5）', descEn: 'Secondary acid (energy; max 5)',
+    apply: (s) => { s.acid_gun = Math.min(5, (s.acid_gun || 0) + 1); s.plasma = Math.min(5, (s.plasma || 0) + 1); } },
+  { id: 'slow_gun', kind: 'weapon', icon: '🕸', shape: 'orb', max: 5,
+    zh: '緩速槍', en: 'SLOW GUN', descZh: '副武器·緩速彈（能源；最多 5）', descEn: 'Secondary slow (energy; max 5)',
+    apply: (s) => { s.slow_gun = Math.min(5, (s.slow_gun || 0) + 1); } },
+  { id: 'attack_drone', kind: 'weapon', icon: '🛸', shape: 'orbit', max: 5,
+    zh: '攻擊兵衛', en: 'ATTACK DRONE', descZh: '副武器·護衛無人機（充能；最多 5）', descEn: 'Secondary escort drone (max 5)',
+    apply: (s) => { s.attack_drone = Math.min(5, (s.attack_drone || 0) + 1); } },
+  { id: 'blackhole', kind: 'weapon', icon: '◉', shape: 'nova', max: 5,
+    zh: '黑洞炮', en: 'BLACKHOLE CANNON', descZh: '副武器·引力坍縮（充能；最多 5）', descEn: 'Secondary blackhole (max 5)',
+    apply: (s) => { s.blackhole = Math.min(5, (s.blackhole || 0) + 1); } },
+  { id: 'frag', kind: 'weapon', icon: '💣', shape: 'orb', max: 5,
+    zh: '破片榴彈', en: 'FRAG GRENADE', descZh: '投擲·破片爆破（最多 5）', descEn: 'Throw frag blast (max 5)',
+    apply: (s) => { s.frag = Math.min(5, (s.frag || 0) + 1); s.grenade = Math.min(5, (s.grenade || 0) + 1); } },
+  { id: 'chill', kind: 'weapon', icon: '❄', shape: 'frost', max: 5,
+    zh: '冷卻彈', en: 'CHILL BOMB', descZh: '投擲·緩速霜域（最多 5）', descEn: 'Throw chill field (max 5)',
+    apply: (s) => { s.chill = Math.min(5, (s.chill || 0) + 1); } },
+  { id: 'flash', kind: 'weapon', icon: '✦', shape: 'nova', max: 5,
+    zh: '閃光彈', en: 'FLASHBANG', descZh: '投擲·致盲打斷（最多 5）', descEn: 'Throw flash interrupt (max 5)',
+    apply: (s) => { s.flash = Math.min(5, (s.flash || 0) + 1); } },
+  { id: 'gravity', kind: 'weapon', icon: '◎', shape: 'magnet', max: 5,
+    zh: '重力彈', en: 'GRAVITY BOMB', descZh: '投擲·引力坍縮（最多 5）', descEn: 'Throw gravity crush (max 5)',
+    apply: (s) => { s.gravity = Math.min(5, (s.gravity || 0) + 1); } },
   // PHASE6-TRADEOFF-CARDS-001 — build depth via trade-offs (existing card numbers unchanged)
   { id: 'overclock', kind: 'weapon', icon: '⚙', shape: 'overclock', max: 3,
     zh: '超頻過載', en: 'OVERCLOCK',
@@ -661,6 +720,10 @@ export const CARDS = [
 export const WEAPON_ICONS = {
   dmg: '⚡', rate: '⏱', laser: '═', shotgun: '✴', rocket: '🚀', grenade: '💣', plasma: '☢',
   multi: '◎', pierce: '↗', orbit: '⟳', nova: '✸',
+  gatling: '⚡', ion_beam: '═', tracking_bomb: '🚀', vulcan: '☢', zero_laser: '❄',
+  acid_gun: '☣', slow_gun: '🕸', attack_drone: '🛸', blackhole: '◉',
+  frag: '💣', chill: '❄', flash: '✦', gravity: '◎',
+  ...WEAPON_ICON,
 };
 
 /** Large English labels drawn on neon pickup frames (readable at a glance). */
@@ -668,6 +731,9 @@ export const WEAPON_DROP_LABEL = {
   dmg: 'MG', rate: 'ROF', laser: 'LASER', shotgun: 'SG', rocket: 'RKT',
   grenade: 'GRN', plasma: 'PLAS', multi: 'MULTI', pierce: 'PRC',
   orbit: 'ORB', nova: 'NOVA',
+  gatling: 'GAT', ion_beam: 'ION', tracking_bomb: 'TRK', vulcan: 'VUL', zero_laser: 'ZERO',
+  acid_gun: 'ACID', slow_gun: 'SLOW', attack_drone: 'DRN', blackhole: 'BH',
+  frag: 'FRAG', chill: 'CHILL', flash: 'FLASH', gravity: 'GRAV',
 };
 
 const CARDS_BY_ID = Object.fromEntries(CARDS.map((c) => [c.id, c]));
@@ -777,17 +843,16 @@ export function pickCards(rng, n = 3, taken = null) {
  * Fireable weapon systems that occupy HUD slots. MG upgrades (dmg/rate/…) do NOT.
  * Cap 4: start with mg in slot 0; up to 3 additional specials.
  */
-export const SLOT_WEAPONS = ['mg', 'laser', 'shotgun', 'rocket', 'grenade', 'plasma'];
-export const WEAPON_SLOT_MAX = 4;
+/** Phase 6 + v0.9.53 weapons redesign — loadout 2P+2S+2T (see docs/WEAPONS.md / js/weapons.js). */
+export const SLOT_WEAPONS = WEAPONS_SLOT_LIST;
+export const WEAPON_SLOT_MAX = WEAPONS_SLOT_MAX;
 
 export function isSlotWeapon(id) {
-  return SLOT_WEAPONS.includes(id);
+  return weaponsIsSlot(id);
 }
 
 export function emptyWeaponSlots() {
-  const slots = new Array(WEAPON_SLOT_MAX).fill(null);
-  slots[0] = 'mg';
-  return slots;
+  return weaponsEmptySlots();
 }
 
 export function slotFilledCount(slots) {
@@ -795,18 +860,14 @@ export function slotFilledCount(slots) {
 }
 
 export function hasEmptyWeaponSlot(slots, max = WEAPON_SLOT_MAX) {
-  return slotFilledCount(slots) < max && (slots || []).some((s) => s == null);
+  return weaponsHasEmpty(slots);
 }
 
-/** Display level for a slot weapon (mg defaults to 1 even when not in `taken`). */
+/** Display level for a slot weapon (gatling/mg defaults to 1). */
 export function weaponSlotLevel(id, taken = {}) {
-  if (!id) return 0;
-  if (id === 'mg') {
-    const n = Math.max((taken && taken.mg) || 0, (taken && taken.dmg) || 0);
-    return Math.max(1, n);
-  }
-  return (taken && taken[id]) || 0;
+  return weaponsSlotLevel(id, taken);
 }
+
 
 /**
  * Phase 6 weapon-crate offer (v0.9.11 + v0.9.28 slots + v0.9.29 polish).
@@ -816,12 +877,16 @@ export function weaponSlotLevel(id, taken = {}) {
  * For slot weapons, "owned" means currently slotted (orphan stacks are pruned by Game).
  */
 export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
-  const base = CARDS_BY_ID[weaponId];
-  // Synthetic mg has no card — only real weapon cards are crate targets.
+  const nid = normalizeWeaponId(weaponId) || weaponId;
+  // Prefer the requested card id (legacy alias crates keep laser/plasma copy); fall back to normalized.
+  const base = CARDS_BY_ID[weaponId] || CARDS_BY_ID[nid];
+  // Synthetic starter may lack card — only real weapon cards are crate targets.
   if (!base || base.kind !== 'weapon') return null;
-  const stacks = (taken && taken[weaponId]) || 0;
-  const slotWeapon = isSlotWeapon(weaponId);
-  const inSlots = !!(slots && slotWeapon && slots.includes(weaponId));
+  const stacks = Math.max((taken && taken[nid]) || 0, (taken && taken[weaponId]) || 0);
+  const slotWeapon = isSlotWeapon(nid) || isSlotWeapon(weaponId);
+  const flat = Array.isArray(slots) ? slots : (slots && slots.primary ? flattenLoadout(slots) : slots);
+  const inSlots = !!(flat && slotWeapon && (flat.includes(nid) || flat.includes(weaponId)
+    || flat.some((s) => normalizeWeaponId(s) === nid)));
   // Slot weapons: when slots provided, owned = on the bar. slots=null → legacy stacks.
   // Non-slot cards (dmg/rate/…) always use stacks.
   const owned = slotWeapon
@@ -829,16 +894,31 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
     : stacks > 0;
   const atMax = base.max != null && stacks >= base.max
     && (slotWeapon && slots != null ? inSlots : true);
-  const slotsFull = slotWeapon && slots && !owned && !hasEmptyWeaponSlot(slots);
+  const def = weaponDef(nid);
+  const cat = def && def.category;
+  // Category indices in flat HUD: P0,P1,S0,S1,T0,T1
+  const CAT_RANGE = { primary: [0, 1], secondary: [2, 3], throw: [4, 5] };
+  const catRange = cat ? CAT_RANGE[cat] : null;
+  let categoryFull = false;
+  if (slotWeapon && flat && !owned && catRange) {
+    const filled = catRange.every((i) => {
+      const s = flat[i];
+      return !!s && normalizeWeaponId(s) !== nid;
+    });
+    categoryFull = filled;
+  }
+  const slotsFull = slotWeapon && flat && !owned && (!hasEmptyWeaponSlot(flat) || categoryFull);
   let mode = atMax ? 'max' : (owned ? 'upgrade' : (slotsFull ? 'swap' : 'take'));
   const choices = [];
   const PICKUP_HEAL = 2;
 
   if (mode === 'swap') {
-    // One swap choice per filled non-mg slot (mg stays as the always-on starter).
-    (slots || []).forEach((sid, i) => {
-      if (!sid || sid === 'mg') return;
-      const out = CARDS_BY_ID[sid];
+    // Prefer same-category swap targets when category is full (2P+2S+2T).
+    const consider = (sid, i) => {
+      const ns = normalizeWeaponId(sid) || sid;
+      if (!sid || ns === 'gatling' || sid === 'mg') return;
+      if (categoryFull && catRange && (i < catRange[0] || i > catRange[1])) return;
+      const out = CARDS_BY_ID[ns] || CARDS_BY_ID[sid];
       const outZh = out ? out.zh : sid;
       const outEn = out ? out.en : sid.toUpperCase();
       choices.push({
@@ -856,14 +936,17 @@ export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
         descZh: `第${i + 1}格 → ${base.zh} · 卸走 ${outZh}`,
         descEn: `Slot ${i + 1} → ${base.en} · drop ${outEn}`,
       });
-    });
-    // Fallback: if somehow only mg is filled but count says full, allow swapping any non-null.
+    };
+    (flat || []).forEach(consider);
+    // Fallback: if somehow only starter filled, allow any non-null (except force-keep gatling if alone).
     if (!choices.length) {
-      (slots || []).forEach((sid, i) => {
+      (flat || []).forEach((sid, i) => {
         if (!sid) return;
-        const out = CARDS_BY_ID[sid];
-        const outZh = out ? out.zh : (sid === 'mg' ? '機槍' : sid);
-        const outEn = out ? out.en : (sid === 'mg' ? 'MG' : sid.toUpperCase());
+        if (categoryFull && catRange && (i < catRange[0] || i > catRange[1])) return;
+        const ns = normalizeWeaponId(sid) || sid;
+        const out = CARDS_BY_ID[ns] || CARDS_BY_ID[sid];
+        const outZh = out ? out.zh : (ns === 'gatling' || sid === 'mg' ? '機關雷射炮' : sid);
+        const outEn = out ? out.en : (ns === 'gatling' || sid === 'mg' ? 'GATLING' : sid.toUpperCase());
         choices.push({
           id: base.id,
           kind: base.kind,

@@ -1,11 +1,11 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.52 UI-LAYOUT-HOME-HUD-001 home gear settings + top XP/slots; phone guard v0.9.51
+// RAMPAGE MECH 暴走機甲 — v0.9.53 WEAPONS-REDESIGN-001 2P+2S+2T loadout + left rail; UI layout v0.9.52; phone guard v0.9.51
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
   createAds, readHub, returnToHub as kitReturnToHub, shouldShowArcadeMenu, Particles, Shockwaves, FxState,
   ViewInput, defaultView, clampView, dampView,
 } from 'cyber-kit';
-import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot, CARDS_BY_ID } from './config.js';
+import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot, CARDS_BY_ID, weaponDef, normalizeWeaponId, WEAPON_ICON, starterLoadout, flattenLoadout, weaponLevel } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
 import { View } from './view.js';
@@ -65,10 +65,10 @@ const MOBILE_GFX = (() => {
   } catch (_) { return false; }
 })();
 // v0.9.20: pool 1200→800 on mobile (further mid-run GPU pressure cut; desktop unchanged)
-const PARTICLE_POOL = MOBILE_GFX ? 800 : 5200;
+const PARTICLE_POOL = MOBILE_GFX ? 1600 : 5200; // v0.9.53: raise mobile baseline (was 800)
 const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
-const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.4)) : n;
+const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.53 prettier baseline
 
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
 
@@ -104,10 +104,10 @@ function showGfxRecover(kind = 'lost') {
 const stage = createStage({
   canvas: $('scene'),
   // v0.9.20: permanently lower bloom on MOBILE_GFX (desktop keeps 0.22)
-  bloom: MOBILE_GFX ? 0.10 : 0.22, bloomRadius: 0.28, bloomThreshold: MOBILE_GFX ? 0.96 : 0.94,
+  bloom: MOBILE_GFX ? 0.15 : 0.22, bloomRadius: 0.28, bloomThreshold: MOBILE_GFX ? 0.95 : 0.94, // v0.9.53 mobile prettier
   fov: 42, exposure: 0.88,
   glow: 'low',
-  glowLevels: { low: { strength: MOBILE_GFX ? 0.10 : 0.22, radius: 0.35, threshold: 0.25 } },
+  glowLevels: { low: { strength: MOBILE_GFX ? 0.15 : 0.22, radius: 0.35, threshold: 0.25 } },
   maxPixelRatio: MAX_PR,
   // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
   onFatal: () => showGfxRecover('boot'),
@@ -117,7 +117,7 @@ stage.setGlow('low'); // v0.8.5: force low glow (ignore shared high from other g
 // v0.9.20: clamp bloom base after setGlow so mobile stays low even if prefs flip
 if (MOBILE_GFX) {
   try {
-    stage.bloomBase = Math.min(stage.bloomBase ?? 0.10, 0.10);
+    stage.bloomBase = Math.min(stage.bloomBase ?? 0.15, 0.15); // v0.9.53
     if (stage.bloomPass) stage.bloomPass.strength = stage.bloomBase;
   } catch (_) {}
 }
@@ -144,7 +144,7 @@ stage.onResize((w, h, pr) => {
   // Keep menu mech framing in sync on resize / orientation change (not only first setMenuMech).
   if (view.menuMech) view.updateMenuLayout(w, h);
 });
-const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 10 : 24);
+const waves = new Shockwaves(stage.scene, MOBILE_GFX ? 16 : 24); // v0.9.53
 const fx = new FxState();
 
 // v0.9.34: DOM floating damage / heal / hurt digits (mobile-light pool)
@@ -193,7 +193,7 @@ function spawnCombatFloat(opts) {
 function kickFx(o) {
   if (!MOBILE_GFX) { fx.kick(o); return; }
   const m = { ...o };
-  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.18);
+  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.22); // v0.9.53 less crushed
   if (m.trauma != null) m.trauma *= 0.5;
   if (m.slowmo != null) m.slowmo *= 0.5;
   fx.kick(m);
@@ -481,18 +481,32 @@ function updateHUD(force = false) {
 }
 
 const SLOT_LABEL = {
-  mg: 'MG', laser: 'LASER', shotgun: 'SG', rocket: 'RKT', grenade: 'GRN', plasma: 'PLAS',
+  mg: 'GAT', gatling: 'GAT', laser: 'ION', ion_beam: 'ION',
+  shotgun: 'SG', rocket: 'TRK', tracking_bomb: 'TRK',
+  grenade: 'FRAG', frag: 'FRAG', plasma: 'ACID', acid_gun: 'ACID',
+  vulcan: 'VUL', zero_laser: 'ZERO', slow_gun: 'SLOW',
+  attack_drone: 'DRN', blackhole: 'BH', chill: 'CHILL', flash: 'FLASH', gravity: 'GRAV',
 };
 const SLOT_ICON = {
-  mg: '⚡', laser: '═', shotgun: '✴', rocket: '🚀', grenade: '💣', plasma: '☢',
+  mg: '⚡', gatling: '⚡', laser: '═', ion_beam: '═',
+  shotgun: '✴', rocket: '🚀', tracking_bomb: '🚀',
+  grenade: '💣', frag: '💣', plasma: '☣', acid_gun: '☣',
+  vulcan: '☢', zero_laser: '❄', slow_gun: '🕸',
+  attack_drone: '🛸', blackhole: '◉', chill: '❄', flash: '✦', gravity: '◎',
+  ...WEAPON_ICON,
 };
+
+function _slotLv(g, id) {
+  return weaponLevel(id, g.taken || {});
+}
 
 function updateWeaponSlotsHUD(g) {
   const bar = $('weapon-slots');
   if (!bar || !g) return;
-  const slots = g.weaponSlots || ['mg', null, null, null];
+  if (g.loadout) g.weaponSlots = flattenLoadout(g.loadout);
+  const slots = g.weaponSlots || flattenLoadout(starterLoadout());
   const kids = bar.children;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     let el = kids[i];
     if (!el) {
       el = document.createElement('div');
@@ -500,29 +514,140 @@ function updateWeaponSlotsHUD(g) {
       el.setAttribute('data-i', String(i));
       bar.appendChild(el);
     }
+    // remove extras beyond 6
     const id = slots[i] || null;
+    const def = weaponDef(id);
     el.classList.toggle('empty', !id);
     el.classList.toggle('filled', !!id);
-    el.classList.toggle('primary', id === 'mg' || id === 'laser');
+    el.classList.toggle('primary', !!(def && def.category === 'primary'));
     if (!id) {
       el.innerHTML = '<span class="wslot-ico" aria-hidden="true">·</span><span class="wslot-lv"></span>';
       el.title = i18n.isZh() ? '空武器格' : 'Empty slot';
       continue;
     }
-    let lv = (g.taken && g.taken[id]) || 0;
-    if (id === 'mg') lv = Math.max(1, lv, (g.taken && g.taken.dmg) || 0);
-    const lab = SLOT_LABEL[id] || id.toUpperCase();
-    const ico = SLOT_ICON[id] || '◆';
+    const lv = _slotLv(g, id);
+    const lab = SLOT_LABEL[id] || (def ? def.en.split(' ')[0].slice(0, 5) : id.toUpperCase());
+    const ico = SLOT_ICON[id] || (def && def.icon) || '◆';
     el.innerHTML =
       `<span class="wslot-ico" aria-hidden="true">${ico}</span>` +
       `<span class="wslot-name">${lab}</span>` +
       `<span class="wslot-lv">Lv${lv}</span>`;
-    el.title = `${lab} Lv${lv}`;
+    el.title = `${def ? (i18n.isZh() ? def.zh : def.en) : lab} Lv${lv}`;
+  }
+  while (bar.children.length > 6) bar.removeChild(bar.lastChild);
+  updateWeaponStatusHUD(g);
+  updateWeaponRailHUD(g);
+}
+
+function updateWeaponStatusHUD(g) {
+  const modeEl = $('wstat-mode');
+  const nameEl = $('wstat-name');
+  const lvEl = $('wstat-lv');
+  const resEl = $('wstat-res');
+  if (!modeEl || !g) return;
+  const zh = i18n.isZh();
+  const secondary = g.fireMode === 'secondary';
+  const id = secondary
+    ? (typeof g.activeSecondaryId === 'function' ? g.activeSecondaryId() : null)
+    : (typeof g.activePrimaryId === 'function' ? g.activePrimaryId() : 'gatling');
+  const def = weaponDef(id);
+  modeEl.textContent = secondary ? (zh ? '副' : 'SEC') : (zh ? '主' : 'PRI');
+  nameEl.textContent = def ? (zh ? def.zh : def.en) : (id || '—');
+  lvEl.textContent = id ? `Lv${_slotLv(g, id)}` : '';
+  if (resEl) {
+    const res = id && g.weaponResources && g.weaponResources[id];
+    if (secondary && res) {
+      resEl.textContent = `${Math.ceil(res.current)}/${res.max}`;
+    } else {
+      resEl.textContent = '';
+    }
   }
 }
 
+function updateWeaponRailHUD(g) {
+  const rail = $('weapon-rail');
+  if (!rail || !g) return;
+  if (g.loadout) g.weaponSlots = flattenLoadout(g.loadout);
+  const slots = g.weaponSlots || flattenLoadout(starterLoadout());
+  const zh = i18n.isZh();
+  const groups = [
+    { key: 'primary', label: zh ? '主' : 'PRI', start: 0, n: 2 },
+    { key: 'secondary', label: zh ? '副' : 'SEC', start: 2, n: 2 },
+    { key: 'throw', label: zh ? '投' : 'THR', start: 4, n: 2 },
+  ];
+  const activePri = typeof g.activePrimaryId === 'function' ? g.activePrimaryId() : slots[0];
+  const activeSec = g.fireMode === 'secondary' && typeof g.activeSecondaryId === 'function'
+    ? g.activeSecondaryId() : null;
+
+  if (!rail.dataset.built) {
+    rail.innerHTML = '';
+    for (const gr of groups) {
+      const wrap = document.createElement('div');
+      wrap.className = 'wrail-group';
+      wrap.dataset.cat = gr.key;
+      const lab = document.createElement('div');
+      lab.className = 'wrail-label';
+      lab.textContent = gr.label;
+      wrap.appendChild(lab);
+      for (let k = 0; k < gr.n; k++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'wrail-tile empty';
+        btn.dataset.i = String(gr.start + k);
+        btn.addEventListener('pointerup', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const game = S.game;
+          if (!game || S.state !== 'play') return;
+          const idx = Number(btn.dataset.i);
+          game.selectWeaponTile(idx);
+          updateWeaponSlotsHUD(game);
+        });
+        wrap.appendChild(btn);
+      }
+      rail.appendChild(wrap);
+    }
+    rail.dataset.built = '1';
+  }
+
+  // refresh labels (lang may change)
+  rail.querySelectorAll('.wrail-group').forEach((wrap, gi) => {
+    const lab = wrap.querySelector('.wrail-label');
+    if (lab) lab.textContent = groups[gi].label;
+  });
+
+  const tiles = rail.querySelectorAll('.wrail-tile');
+  tiles.forEach((btn) => {
+    const i = Number(btn.dataset.i);
+    const id = slots[i] || null;
+    const def = weaponDef(id);
+    btn.classList.toggle('empty', !id);
+    btn.classList.toggle('primary', !!(def && def.category === 'primary'));
+    btn.classList.toggle('secondary', !!(def && def.category === 'secondary'));
+    btn.classList.toggle('throw', !!(def && def.category === 'throw'));
+    const isActive = !!id && (
+      (def && def.category === 'primary' && id === activePri && g.fireMode !== 'secondary')
+      || (def && def.category === 'secondary' && id === activeSec)
+    );
+    btn.classList.toggle('active', isActive);
+    if (!id) {
+      btn.innerHTML = '<span class="wslot-ico" aria-hidden="true">·</span>';
+      btn.title = zh ? '空' : 'Empty';
+      btn.disabled = true;
+      return;
+    }
+    btn.disabled = false;
+    const lv = _slotLv(g, id);
+    const ico = SLOT_ICON[id] || def.icon || '◆';
+    btn.innerHTML =
+      `<span class="wslot-ico" aria-hidden="true">${ico}</span>` +
+      `<span class="wslot-lv">Lv${lv}</span>`;
+    btn.title = `${zh ? def.zh : def.en} Lv${lv}`;
+  });
+}
+
 /** v0.9.49: brief yellow pulse on the slot that just fired (multi-bar readability). */
-const _slotPulseTimers = [null, null, null, null];
+const _slotPulseTimers = [null, null, null, null, null, null];
 function pulseWeaponSlotFire(weaponId) {
   const g = S.game;
   if (!g || !weaponId) return;
@@ -530,14 +655,18 @@ function pulseWeaponSlotFire(weaponId) {
   if (i < 0) return;
   const bar = $('weapon-slots');
   const el = bar && bar.children[i];
-  if (!el) return;
-  el.classList.remove('fire-pulse');
-  // restart CSS animation
-  void el.offsetWidth;
-  el.classList.add('fire-pulse');
+  const rail = $('weapon-rail');
+  const railEl = rail && rail.querySelector(`.wrail-tile[data-i="${i}"]`);
+  for (const node of [el, railEl]) {
+    if (!node) continue;
+    node.classList.remove('fire-pulse');
+    void node.offsetWidth;
+    node.classList.add('fire-pulse');
+  }
   if (_slotPulseTimers[i]) clearTimeout(_slotPulseTimers[i]);
   _slotPulseTimers[i] = setTimeout(() => {
-    el.classList.remove('fire-pulse');
+    if (el) el.classList.remove('fire-pulse');
+    if (railEl) railEl.classList.remove('fire-pulse');
     _slotPulseTimers[i] = null;
   }, SLOT_FIRE_PULSE_MS);
 }
@@ -1016,14 +1145,25 @@ function startRun() {
   // QA / screenshot: ?arsenal=1 fills all 4 slots at stack 1 (HUD ≡ fire; no orphan extras).
   if (flags.get('arsenal') === '1') {
     const g = S.game;
-    g.weaponSlots = ['mg', 'laser', 'shotgun', 'rocket'];
-    g.laser = Math.max(g.laser, 1);
-    g.shotgun = Math.max(g.shotgun, 1);
-    g.rocket = Math.max(g.rocket, 1);
-    g.grenade = 0;
-    g.plasma = 0;
-    g.taken = { ...(g.taken || {}), laser: 1, shotgun: 1, rocket: 1 };
-    delete g.taken.grenade;
+    g.loadout = {
+      primary: ['gatling', 'ion_beam'],
+      secondary: ['shotgun', null],
+      throw: ['frag', null],
+    };
+    g.weaponSlots = flattenLoadout(g.loadout);
+    g.shotgun = Math.max(g.shotgun || 0, 1);
+    g.laser = Math.max(g.laser || 0, 1);
+    g.ion_beam = Math.max(g.ion_beam || 0, 1);
+    g.frag = Math.max(g.frag || 0, 1);
+    g.grenade = Math.max(g.grenade || 0, 1);
+    g.weaponResources.shotgun = { type: 'ammo', current: 8, max: 8 };
+    g.taken = {
+      ...(g.taken || {}),
+      gatling: Math.max(1, (g.taken && g.taken.gatling) || 0),
+      ion_beam: 1, laser: 1,
+      shotgun: 1,
+      frag: 1, grenade: 1,
+    };
     delete g.taken.plasma;
     g._pruneUnslottedWeapons();
   }
