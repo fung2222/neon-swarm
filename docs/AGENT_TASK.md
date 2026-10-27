@@ -8,7 +8,7 @@
 **Opened:** 2026-10-27 Asia/Hong_Kong — Roy「開始」after WEAPONS-REDESIGN-001 HOLD.  
 **Closed → HOLD:** 2026-10-27 Asia/Hong_Kong — Grok bot ship.
 
-**Author:** Grok bot · **Shipped:** v0.9.54 · **SHA:** _(fill after push)_  
+**Author:** Grok bot · **Shipped:** v0.9.54 · **SHA:** `135d31c`  
 **Spec:** `docs/WEAPONS.md` · prior redesign = v0.9.53
 
 ### Shipped this beat
