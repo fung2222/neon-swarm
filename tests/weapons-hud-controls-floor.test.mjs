@@ -15,9 +15,9 @@ const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const weaponsMd = readFileSync(new URL('../docs/WEAPONS.md', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.59'), 'cache-bust 0.9.59');
+assert.ok(html.includes('?v=0.9.60'), 'cache-bust current');
 assert.ok(css.includes('--hud-chip-radius'), 'unified chip tokens');
-assert.ok(css.includes('padding-left: 108px'), 'rail clears stick');
+assert.ok(css.includes('--hud-stick-clear') || css.includes('padding-left: 108px'), 'rail/stick clear');
 assert.match(css, /\.weapon-rail\s*\{[^}]*bottom:/s);
 assert.match(css, /\.weapon-rail\s*\{[^}]*flex-direction:\s*row/s);
 assert.ok(view.includes('0x060608') || view.includes('near-black'), 'floor near-black');
@@ -26,7 +26,7 @@ assert.ok(main.includes('TAP_WINDOW_MS'), 'multi-tap window');
 assert.ok(main.includes('activateSecondaryFromTap') || main.includes('noteTap'), 'double-tap path');
 assert.ok(main.includes('activateThrowFromTap') || main.includes('n >= 3'), 'triple-tap path');
 assert.ok(weaponsMd.includes('secondaryBurst') || weaponsMd.includes('≤3') || weaponsMd.includes('burst'), 'WEAPONS burst rule');
-assert.ok(agent.includes('WEAPONS-HUD-CONTROLS-FLOOR-001') || agent.includes('0.9.59'), 'AGENT_TASK ship id');
+assert.ok(agent.includes('WEAPONS-HUD-CONTROLS-FLOOR-001') || agent.includes('0.9.59') || agent.includes('0.9.60'), 'AGENT_TASK ship id');
 
 {
   const g = new Game({ seed: 7 });

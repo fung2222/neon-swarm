@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.59 `WEAPONS-HUD-CONTROLS-FLOOR-001` (legacy purge = v0.9.58)  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.60 `WEAPONS-HUD-OVERLAP-FIX-001` (floor/controls = v0.9.59; legacy purge = v0.9.58)  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -260,6 +260,16 @@ Each weapon needs a **real square icon** (not emoji forever).
 
 ---
 
+## HUD overlap rhythm (v0.9.60)
+
+In-run portrait rhythm (tokens in `css/game.css`):
+
+1. **Row 1** — HP/LV left · TIME/SCORE · mute/pause (shared `--hud-row1-top`)
+2. **Row 2** — full-width XP (`--hud-xp-top`) alone
+3. **Row 3** — `#weapon-status` thin bar under XP (`--hud-wstat-top`); bottom rail still shows full names
+4. **Side** — goal + zone stacked left at `--hud-side-top` (never row1–2)
+5. **Bottom** — weapon rail; stick raised via `--hud-stick-clear`
+
 ## Controls / HUD / floor (v0.9.59)
 
 | Rule | Value |
@@ -302,7 +312,8 @@ Do **not** re-add player cards under legacy ids.
 |-------|--------|
 | Catalog IDs + zh/en strings | **live** (v0.9.58 player cards = catalog only) |
 | Loadout 2+2+2 model | **live** |
-| Bottom rail + unified status HUD | **live** (v0.9.59) |
+| HUD no-overlap vertical rhythm | **live** (v0.9.60) |
+| Bottom rail + unified status HUD | **live** (v0.9.59+) |
 | Near-black arena floor | **live** (v0.9.59) |
 | Multi-tap secondary / throw | **live** (v0.9.59) |
 | Secondary ≤3 burst → primary | **live** (v0.9.59) |
@@ -326,7 +337,7 @@ Do **not** re-add player cards under legacy ids.
 - `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
 - `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
-- Screenshots: … + legacy-purge (v0.9.58) + hud-controls-floor (v0.9.59)
+- Screenshots: … + legacy-purge (v0.9.58) + hud-controls-floor (v0.9.59) + hud-overlap-fix (v0.9.60)
 - `tests/weapons-legacy-purge.test.mjs` + `tests/screenshots/weapons-legacy-purge/`
 - `tests/weapons-hud-controls-floor.test.mjs` + `tests/screenshots/weapons-hud-controls-floor/`  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push

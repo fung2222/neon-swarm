@@ -1,0 +1,121 @@
+{
+  "ver": "0.9.60",
+  "task": "WEAPONS-HUD-OVERLAP-FIX-001",
+  "layout": {
+    "tokens": {
+      "row1": "calc(6px + 0px)",
+      "xp": "calc(calc(6px + 0px) + 40px + 5px)",
+      "wstat": "calc(calc(calc(6px + 0px) + 40px + 5px) + 6px + 5px)",
+      "side": "calc(calc(calc(calc(6px + 0px) + 40px + 5px) + 6px + 5px) + 24px + 5px)",
+      "stickClear": "calc(56px + 16px + 0px)"
+    },
+    "boxes": {
+      "left": {
+        "top": 6,
+        "bottom": 49,
+        "left": 8,
+        "right": 74,
+        "width": 66,
+        "height": 43
+      },
+      "right": {
+        "top": 6,
+        "bottom": 47,
+        "left": 200,
+        "right": 290,
+        "width": 90,
+        "height": 41
+      },
+      "btns": {
+        "top": 6,
+        "bottom": 46,
+        "left": 304,
+        "right": 382,
+        "width": 78,
+        "height": 40
+      },
+      "xp": {
+        "top": 51,
+        "bottom": 57,
+        "left": 23.4,
+        "right": 366.6,
+        "width": 343.2,
+        "height": 6
+      },
+      "wstat": {
+        "top": 62,
+        "bottom": 86,
+        "left": 10,
+        "right": 380,
+        "width": 370,
+        "height": 24
+      },
+      "goal": {
+        "top": 91,
+        "bottom": 115,
+        "left": 8,
+        "right": 95.6,
+        "width": 87.6,
+        "height": 24
+      },
+      "zone": {
+        "top": 119,
+        "bottom": 144.3,
+        "left": 8,
+        "right": 60,
+        "width": 52,
+        "height": 25.3
+      },
+      "rail": {
+        "top": 780,
+        "bottom": 836,
+        "left": 8,
+        "right": 382,
+        "width": 374,
+        "height": 56
+      },
+      "stick": {
+        "top": 652,
+        "bottom": 772,
+        "left": 16,
+        "right": 136,
+        "width": 120,
+        "height": 120
+      }
+    },
+    "overlaps": {
+      "wstat-vs-left": false,
+      "wstat-vs-right": false,
+      "wstat-vs-xp": false,
+      "wstat-vs-btns": false,
+      "xp-vs-left": false,
+      "xp-vs-right": false,
+      "goal-vs-xp": false,
+      "goal-vs-wstat": false,
+      "zone-vs-goal": false,
+      "zone-vs-wstat": false,
+      "rail-vs-stick": false
+    },
+    "statusName": "機關雷射炮",
+    "railNames": [
+      "機關雷射炮",
+      "離子光束",
+      "散彈槍",
+      "硫酸槍",
+      "破片榴彈",
+      "空"
+    ],
+    "viewport": {
+      "w": 390,
+      "h": 844
+    }
+  },
+  "overlapFailures": [],
+  "pageErrors": [],
+  "shots": [
+    "01-top-strip-clear.png",
+    "02-full-phone-hud.png",
+    "03-bottom-rail-stick.png",
+    "04-secondary-status-under-xp.png"
+  ]
+}

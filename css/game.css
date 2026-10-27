@@ -16,6 +16,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   --hud-chip-fs-sm: 9px;
   --hud-chip-label: #9a93bf;
   --hud-chip-value: #00e5ff;
+  /* v0.9.60 WEAPONS-HUD-OVERLAP-FIX-001 — single vertical rhythm (no shared bands) */
+  --hud-row1-top: calc(8px + var(--sa-top));
+  --hud-row1-h: 44px;
+  --hud-gap: 6px;
+  --hud-xp-top: calc(var(--hud-row1-top) + var(--hud-row1-h) + var(--hud-gap));
+  --hud-xp-h: 7px;
+  --hud-wstat-top: calc(var(--hud-xp-top) + var(--hud-xp-h) + var(--hud-gap));
+  --hud-wstat-h: 26px;
+  --hud-side-top: calc(var(--hud-wstat-top) + var(--hud-wstat-h) + var(--hud-gap));
+  --hud-rail-h: 56px;
+  --hud-stick-clear: calc(var(--hud-rail-h) + 16px + var(--sa-bottom));
 }
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #fx-flash, #scanlines { pointer-events: none; }
@@ -23,7 +34,10 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
    Layout: [HP | LV] ............ [GOAL] ............ [TIME | SCORE] [mute][pause]
    The right panel stops 112px short of the edge so the 2x44px buttons never sit on top of it. */
 .hud-panel {
-  position: absolute; top: calc(10px + var(--sa-top)); z-index: 5;
+  position: absolute; top: var(--hud-row1-top); z-index: 5;
+  display: flex; align-items: center; gap: 12px;
+  min-height: var(--hud-row1-h);
+  box-sizing: border-box;
   padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
   border-radius: var(--hud-chip-radius);
   background: var(--hud-chip-bg);
@@ -36,16 +50,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .stat .value { font-size: clamp(16px, 4.6vw, 22px); color: var(--hud-chip-value); text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
 .stat .value.big { font-size: clamp(20px, 5.6vw, 28px); color: #7ef9ff; }
 .hud-buttons.top {
-  position: absolute; top: calc(10px + var(--sa-top)); right: calc(10px + var(--sa-right));
+  position: absolute; top: var(--hud-row1-top); right: calc(10px + var(--sa-right));
   bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear or strip stretches full height */
-  display: flex; gap: 6px; z-index: 6; align-items: flex-start;
+  display: flex; gap: 6px; z-index: 6; align-items: center;
+  min-height: var(--hud-row1-h);
   pointer-events: auto;
 }
-.hud-buttons.top .icon-btn { width: 44px; height: 44px; }
+.hud-buttons.top .icon-btn { width: 40px; height: 40px; }
 /* goal line: the kills still needed for the next contract level */
 .hud-goal {
-  position: absolute; left: 50%; transform: translateX(-50%);
-  top: calc(10px + var(--sa-top));
+  position: absolute; left: calc(10px + var(--sa-left)); transform: none;
+  top: var(--hud-side-top);
   z-index: 5; pointer-events: none;
   padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
   border-radius: var(--hud-chip-radius);
@@ -58,10 +73,10 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .hud-goal.done { border-color: #7cff3a; color: #bfffb0; }
 /* v0.9.48 zone HUD chip — persistent after zoneEnter banner fades */
 .hud-zone {
-  position: absolute; left: 50%; transform: translateX(-50%);
-  top: calc(42px + var(--sa-top));
+  position: absolute; left: calc(10px + var(--sa-left)); transform: none;
+  top: calc(var(--hud-side-top) + 30px);
   z-index: 5; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
   padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
   border-radius: var(--hud-chip-radius);
   font-size: var(--hud-chip-fs-sm); letter-spacing: 1px; color: #d8f6ff;
@@ -79,7 +94,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 560px) {
   .hud-zone {
     left: calc(8px + var(--sa-left)); transform: none;
-    top: calc(134px + var(--sa-top));
+    top: calc(var(--hud-side-top) + 28px);
     padding: 2px 10px 3px; font-size: 9px;
     align-items: flex-start;
   }
@@ -91,19 +106,26 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
    row 1: [HP | LV] ..... [TIME | SCORE] [mute][pause]
    row 2: goal chip under the left panel (centred between the panels) */
 @media (max-width: 560px) {
-  .hud-panel { padding: 3px 8px; top: calc(8px + var(--sa-top)); }
+  :root {
+    --hud-row1-top: calc(6px + var(--sa-top));
+    --hud-row1-h: 40px;
+    --hud-gap: 5px;
+    --hud-xp-h: 6px;
+    --hud-wstat-h: 24px;
+  }
+  .hud-panel { padding: 3px 8px; top: var(--hud-row1-top); gap: 8px; min-height: var(--hud-row1-h); }
   .hud-left { left: calc(8px + var(--sa-left)); }
-  .hud-right { right: calc(112px + var(--sa-right)); }
+  .hud-right { right: calc(100px + var(--sa-right)); }
   .hud-panel .stat { min-width: 0; }
-  .hud-panel .stat + .stat { margin-left: 10px; }
+  .hud-panel .stat + .stat { margin-left: 0; }
   .stat .label { font-size: 9px; letter-spacing: 1px; }
   .stat .value { font-size: 15px; letter-spacing: 0; }
-  .stat .value.big { font-size: 19px; }
-  .hud-right .value.big { font-size: 17px; }
-  .hud-buttons.top { top: calc(8px + var(--sa-top)); right: calc(8px + var(--sa-right)); }
+  .stat .value.big { font-size: 18px; }
+  .hud-right .value.big { font-size: 16px; }
+  .hud-buttons.top { top: var(--hud-row1-top); right: calc(8px + var(--sa-right)); min-height: var(--hud-row1-h); }
+  .hud-buttons.top .icon-btn { width: 36px; height: 36px; }
   .hud-goal {
-    top: auto; bottom: auto; margin-top: 0;
-    top: calc(108px + var(--sa-top));
+    top: var(--hud-side-top);
     left: calc(8px + var(--sa-left)); transform: none;
     font-size: 10px; padding: 3px 10px;
   }
@@ -113,11 +135,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* v0.9.52: XP bar at TOP so thumbs don't cover it (was bottom) */
 .xp-bar {
   position: absolute;
-  left: max(10%, calc(12px + var(--sa-left)));
-  right: max(10%, calc(12px + var(--sa-right)));
-  top: calc(52px + var(--sa-top));
+  left: calc(10px + var(--sa-left));
+  right: calc(10px + var(--sa-right));
+  top: var(--hud-xp-top);
   bottom: auto;
-  height: 8px; border-radius: 99px;
+  height: var(--hud-xp-h); border-radius: 99px;
   background: rgba(6, 4, 16, 0.85); border: 1px solid rgba(0, 229, 255, 0.55);
   z-index: 5; overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.18), inset 0 0 6px rgba(0,0,0,0.45);
@@ -134,8 +156,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* Drag-anywhere stick: idle is a faint corner hint; on press it relocates under the finger.
    No opaque finger-press disc that blocks the playfield. */
 .stick {
-  position: fixed; left: calc(20px + var(--sa-left)); bottom: calc(36px + var(--sa-bottom));
-  width: 132px; height: 132px; z-index: 8; touch-action: none;
+  position: fixed; left: calc(16px + var(--sa-left)); bottom: var(--hud-stick-clear);
+  width: 120px; height: 120px; z-index: 8; touch-action: none;
   opacity: 0.28; pointer-events: none; transition: opacity .12s ease;
 }
 .stick.ready { opacity: 0.28; }
@@ -664,8 +686,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* ---- v0.9.10 Phase 3: boss HP strip under top HUD ---- */
 .boss-hp {
   position: absolute;
-  /* v0.9.52: below top XP bar + weapon-slots */
-  top: calc(118px + var(--sa-top));
+  /* v0.9.60: below row1 + XP + wstat + goal/zone stack */
+  top: calc(var(--hud-side-top) + 62px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;
@@ -721,11 +743,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   text-shadow: 0 0 12px rgba(184, 255, 58, 0.55);
 }
 @media (max-width: 520px) {
-  .boss-hp { top: calc(88px + var(--sa-top)); width: min(340px, calc(86vw - var(--sa-left) - var(--sa-right))); }
+  .boss-hp { top: calc(var(--hud-side-top) + 58px); width: min(340px, calc(86vw - var(--sa-left) - var(--sa-right))); }
   .beat-banner {
-    top: max(10%, calc(64px + var(--sa-top)));
+    top: max(18%, calc(var(--hud-side-top) + 70px));
     padding: 9px 16px;
-    /* keep clear of bottom weapon-slots on 390 */
+    /* clear top HUD rhythm + bottom rail */
     bottom: auto;
   }
   .beat-banner .beat-zh { font-size: clamp(16px, 4.6vw, 20px); }
@@ -868,11 +890,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 @media (max-width: 480px) {
   .xp-bar {
-    top: calc(48px + var(--sa-top));
-    height: 7px;
+    top: var(--hud-xp-top);
+    height: var(--hud-xp-h);
   }
   .weapon-slots {
-    top: calc(58px + var(--sa-top)); /* below HUD row; thumbs free at bottom */
+    top: var(--hud-wstat-top); /* legacy slots hidden; keep band clear */
     gap: 6px;
   }
   .wslot { width: 44px; height: 44px; border-radius: 8px; }
@@ -968,18 +990,25 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 /* Landscape phone: keep stick + slots + mute off notch sides */
 @media (orientation: landscape) and (max-height: 500px) {
-  .hud-panel { top: calc(6px + var(--sa-top)); }
-  .hud-buttons.top { top: calc(6px + var(--sa-top)); right: calc(8px + var(--sa-right)); }
+  :root {
+    --hud-row1-top: calc(4px + var(--sa-top));
+    --hud-row1-h: 34px;
+    --hud-gap: 4px;
+    --hud-xp-h: 5px;
+    --hud-wstat-h: 22px;
+  }
+  .hud-panel { top: var(--hud-row1-top); min-height: var(--hud-row1-h); }
+  .hud-buttons.top { top: var(--hud-row1-top); right: calc(8px + var(--sa-right)); }
   .stick {
     left: calc(12px + var(--sa-left));
-    bottom: calc(12px + var(--sa-bottom));
-    width: 110px; height: 110px;
+    bottom: var(--hud-stick-clear);
+    width: 100px; height: 100px;
   }
   .weapon-slots {
     top: calc(44px + var(--sa-top));
     bottom: auto;
   }
-  .xp-bar { top: calc(34px + var(--sa-top)); bottom: auto; height: 6px; }
+  .xp-bar { top: var(--hud-xp-top); bottom: auto; height: var(--hud-xp-h); }
   .beat-banner { top: max(14%, calc(96px + var(--sa-top))); }
 }
 
@@ -1188,26 +1217,30 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* Mobile: nudge goal/zone under top slots */
 @media (max-width: 560px) {
   .hud-goal {
-    top: calc(108px + var(--sa-top));
+    top: var(--hud-side-top);
   }
   .hud-zone {
-    top: calc(134px + var(--sa-top));
+    top: calc(var(--hud-side-top) + 28px);
   }
 }
 
 
-/* ===== WEAPONS-HUD-CONTROLS-FLOOR-001 v0.9.59 — unified chips + bottom weapon row ===== */
+/* ===== WEAPONS-HUD-OVERLAP-FIX-001 v0.9.60 — row rhythm; status under XP only ===== */
 .weapon-status {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: calc(36px + var(--sa-top));
-  z-index: 7;
+  left: calc(10px + var(--sa-left));
+  right: calc(10px + var(--sa-right));
+  transform: none;
+  top: var(--hud-wstat-top);
+  z-index: 5;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-height: var(--hud-wstat-h);
+  height: var(--hud-wstat-h);
+  box-sizing: border-box;
   pointer-events: none;
-  padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
+  padding: 2px var(--hud-chip-pad-x);
   border-radius: var(--hud-chip-radius);
   background: var(--hud-chip-bg);
   border: var(--hud-chip-border);
@@ -1216,7 +1249,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   font-size: var(--hud-chip-fs);
   font-weight: 700;
   letter-spacing: 0.04em;
-  max-width: calc(100vw - 24px - var(--sa-left) - var(--sa-right));
+  max-width: none;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -1230,7 +1263,9 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   color: #e8fbff;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(52vw, 220px);
+  max-width: none;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .wstat-lv { color: #ffe600; flex-shrink: 0; }
 .wstat-res { color: #7dffb3; font-variant-numeric: tabular-nums; flex-shrink: 0; }
@@ -1246,7 +1281,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   position: absolute;
   left: calc(8px + var(--sa-left));
   right: calc(8px + var(--sa-right));
-  bottom: calc(10px + var(--sa-bottom));
+  bottom: calc(8px + var(--sa-bottom));
   top: auto;
   transform: none;
   z-index: 8;
@@ -1254,12 +1289,12 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: flex-end;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 4px;
   pointer-events: auto;
-  max-height: none;
+  max-height: var(--hud-rail-h);
   overflow: visible;
-  padding-left: 108px; /* clear idle stick home — do not cover stick */
+  padding-left: 0; /* stick raised above rail band — no shared vertical band */
   box-sizing: border-box;
 }
 .weapon-rail .wrail-group {
@@ -1342,11 +1377,13 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 420px) {
   .wrail-tile { width: 40px; min-height: 48px; }
   .wrail-tile .wslot-name { font-size: 7px; max-width: 38px; }
-  .weapon-status { font-size: var(--hud-chip-fs); top: calc(34px + var(--sa-top)); }
-  .weapon-rail { padding-left: 100px; gap: 2px; }
+  .weapon-status { font-size: var(--hud-chip-fs-sm); top: var(--hud-wstat-top); }
+  .weapon-rail { gap: 2px; justify-content: flex-end; }
+  .weapon-status .wstat-ico { width: 18px; height: 18px; }
+  .weapon-status .wstat-ico .wico-svg { width: 18px; height: 18px; }
 }
 @media (min-width: 900px) {
-  .weapon-rail { padding-left: 0; justify-content: center; }
+  .weapon-rail { justify-content: center; }
   .wrail-tile { width: 48px; }
   .wrail-tile .wslot-name { font-size: 8px; max-width: 46px; }
 }
