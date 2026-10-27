@@ -478,13 +478,72 @@ export class Game {
     else this._flushPathOffer();
   }
 
-  /** Light dmg/cd/pierce mods from chosen branch (+ ult). */
+  /** Branch kit mods (deep A/B/C + light ult amp). */
   _weaponMods(weaponId) {
     const nid = normalizeWeaponId(weaponId) || weaponId;
-    if (!nid) return { dmgMul: 1, cdMul: 1, pierceAdd: 0 };
+    if (!nid) return branchStatMods(null, null, null);
     const br = this.weaponBranches && this.weaponBranches[nid];
     const ult = this.weaponUlts && this.weaponUlts[nid];
     return branchStatMods(nid, br, ult);
+  }
+
+  /** Tiny crystal shield from zero_laser C adds temporary armor while timer active. */
+  _effectiveArmor() {
+    let a = this.armor || 0;
+    if ((this._branchShieldT || 0) > 0) a += 2.4;
+    return a;
+  }
+
+  _refreshBranchShield(mods) {
+    if (!mods || !(mods.selfShield > 0)) return;
+    this._branchShieldT = Math.max(this._branchShieldT || 0, mods.selfShieldDur || 0.35);
+  }
+
+  /** Ion B: jump residual damage to nearby foes after a hit. */
+  _ionChainJump(fromEnemy, jumps, range, dmg, events) {
+    if (!jumps || jumps <= 0 || !fromEnemy) return;
+    let src = fromEnemy;
+    const hit = new Set([fromEnemy]);
+    let remain = jumps;
+    let curDmg = dmg * 0.7;
+    while (remain > 0) {
+      let best = null, bestD = range;
+      for (const e of this.enemies) {
+        if (hit.has(e) || e.hp <= 0) continue;
+        const d = Math.hypot(e.x - src.x, e.z - src.z);
+        if (d < bestD) { bestD = d; best = e; }
+      }
+      if (!best) break;
+      hit.add(best);
+      const dead = this._applyEnemyDamage(best, curDmg, src.x, src.z, events, { hitTime: 0.1, pushHit: true });
+      events.push({ type: 'chainJump', x: best.x, z: best.z, fromX: src.x, fromZ: src.z });
+      if (dead) {
+        const idx = this.enemies.indexOf(best);
+        if (idx >= 0) {
+          this._kill(best, idx, events);
+          events.push({ type: 'kill', enemy: best, gore: false });
+        }
+      }
+      src = best;
+      curDmg *= 0.75;
+      remain -= 1;
+    }
+  }
+
+  /** Frost burst AoE (zero B) around a hit/kill point. */
+  _frostBurstAt(x, z, r, dmg, chill, events) {
+    if (!(r > 0)) return;
+    for (let j = this.enemies.length - 1; j >= 0; j--) {
+      const e = this.enemies[j];
+      if (Math.hypot(e.x - x, e.z - z) > r + e.r) continue;
+      const dead = this._applyEnemyDamage(e, dmg, x, z, events, { hitTime: 0.1, pushHit: true });
+      if (chill) e.slow = Math.max(e.slow || 0, chill);
+      if (dead) {
+        this._kill(e, j, events);
+        events.push({ type: 'kill', enemy: e, gore: false });
+      }
+    }
+    events.push({ type: 'frostBurst', x, z, r });
   }
 
   /**
@@ -1028,7 +1087,7 @@ export class Game {
       // Contact damage only during charge (after telegraph)
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
         const dmg = cfg.chargeDamage != null ? cfg.chargeDamage : (e.damage || 3);
-        const taken = Math.max(1, dmg - (this.armor || 0));
+        const taken = Math.max(1, dmg - this._effectiveArmor());
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
@@ -1125,7 +1184,7 @@ export class Game {
       e.animPhase = (e.animPhase || 0) + 14 * dt;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
         const dmg = cfg.chargeDamage != null ? cfg.chargeDamage : (e.damage || 3);
-        const taken = Math.max(1, dmg - (this.armor || 0));
+        const taken = Math.max(1, dmg - this._effectiveArmor());
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
@@ -1356,7 +1415,7 @@ export class Game {
     // Contact damage (always on, readable large hitbox)
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
       const dmg = BOSS.contactDamage != null ? BOSS.contactDamage : (e.damage || 4);
-      const taken = Math.max(1, dmg - (this.armor || 0));
+      const taken = Math.max(1, dmg - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.9 + (this.deflect || 0);
       this.hitFlash = 0.28;
@@ -1527,7 +1586,7 @@ export class Game {
         h.z += h.dz * h.speed * dt;
         if (this.alive && this.invuln <= 0 &&
             Math.hypot(h.x - this.px, h.z - this.pz) < (h.r || 0.22) + PLAYER.radius) {
-          const taken = Math.max(1, (h.dmg || 2) - (this.armor || 0));
+          const taken = Math.max(1, (h.dmg || 2) - this._effectiveArmor());
           this.hp -= taken;
           this.invuln = 0.7 + (this.deflect || 0);
           this.hitFlash = 0.22;
@@ -1797,25 +1856,36 @@ export class Game {
     const maxT = Math.max(AIM_LEAD_MAX_T, this.bulletLife || PLAYER.bulletLife);
     const tag = opts.weaponTag || 'mg';
     const speed = opts.laserFeel ? (this.bulletSpeed * 1.15) : this.bulletSpeed;
+    const boltCount = Math.max(1, opts.boltCount || 1);
+    const spreadRad = opts.spreadRad || 0;
+    const burn = opts.burn || 0;
+    const burnDur = opts.burnDur || 0;
     for (const best of targets) {
       const lead = muzzleInterceptAimDir(
         this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
         speed, maxT
       );
-      const dx = lead.dx, dz = lead.dz;
+      const baseAng = Math.atan2(lead.dz, lead.dx);
       const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
-      const b = this._emitBullet(dx, dz, {
-        weapon: tag,
-        dmg: this.bulletDmg * (opts.dmgMul || 1),
-        pierce: (this.pierce || 0) + (opts.pierceAdd || 0),
-        life: this.bulletLife,
-        speed,
-        r: opts.laserFeel ? 0.09 : 0.1,
-        laserFeel: !!opts.laserFeel,
-        targetDist: tDist,
-        targetR: best.r || 0.3,
-      });
-      if (!primary) { primary = { b, best, dx, dz }; primaryDx = dx; primaryDz = dz; }
+      for (let bi = 0; bi < boltCount; bi++) {
+        const t = boltCount === 1 ? 0 : (bi / (boltCount - 1)) * 2 - 1;
+        const a = baseAng + t * spreadRad;
+        const dx = Math.cos(a), dz = Math.sin(a);
+        const b = this._emitBullet(dx, dz, {
+          weapon: tag,
+          dmg: this.bulletDmg * (opts.dmgMul || 1),
+          pierce: (this.pierce || 0) + (opts.pierceAdd || 0),
+          life: this.bulletLife,
+          speed,
+          r: opts.laserFeel ? 0.09 : 0.1,
+          laserFeel: !!opts.laserFeel,
+          burn,
+          burnDur,
+          targetDist: tDist,
+          targetR: best.r || 0.3,
+        });
+        if (!primary) { primary = { b, best, dx, dz }; primaryDx = dx; primaryDz = dz; }
+      }
     }
     this._pushFire(events, tag === 'gatling' ? 'mg' : tag, primaryDx, primaryDz, primary.b, primary.best);
     return true;
@@ -1861,10 +1931,10 @@ export class Game {
     );
     const ang = Math.atan2(lead.dz, lead.dx);
     const n = opts.pellets || (5 + stacks);
-    const spread = opts.heavy ? (0.62 + stacks * 0.09) : (0.55 + stacks * 0.08);
+    const spread = Math.max(0.08, (opts.heavy ? (0.62 + stacks * 0.09) : (0.55 + stacks * 0.08)) + (opts.spreadAdd || 0));
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
     let primary = null;
-    const dmg = (opts.heavy ? 0.7 : 0.55) + stacks * 0.22;
+    const dmg = ((opts.heavy ? 0.7 : 0.55) + stacks * 0.22) * (opts.dmgMul || 1);
     for (let i = 0; i < n; i++) {
       const t = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
       const a = ang + t * spread;
@@ -1875,7 +1945,7 @@ export class Game {
         life: 0.20,
         speed,
         r: opts.heavy ? 0.15 : 0.14,
-        pierce: 0,
+        pierce: opts.pierceAdd || 0,
         tierStacks: stacks,
         targetDist: tDist,
         targetR: best.r || 0.3,
@@ -1995,9 +2065,11 @@ export class Game {
       weapon: 'ion_beam',
       dmg: (base.hit || 3.6) + stacks * 0.7,
       pierce: (base.pierce || 3) + stacks,
-      life: 0.32,
-      speed,
-      r: 0.18,
+      life: base.slit ? 0.26 : 0.32,
+      speed: base.slit ? speed * 1.12 : speed,
+      r: base.slit ? 0.12 : 0.18,
+      chainJumps: base.chainJumps || 0,
+      chainRange: base.chainRange || 0,
       tierStacks: stacks,
       targetDist: tDist,
       targetR: best.r || 0.3,
@@ -2018,14 +2090,17 @@ export class Game {
     );
     const dx = lead.dx, dz = lead.dz;
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
+    const chill = (base.chill || 0.7) * (base.chillMul || 1);
     const b = this._emitBullet(dx, dz, {
       weapon: 'zero_laser',
       dmg: (base.hit || 1.5) + stacks * 0.35,
-      pierce: base.pierce || 1,
+      pierce: (base.pierce || 1) + (base.pierceAdd || 0),
       life: 0.45,
       speed,
       r: 0.11,
-      chill: base.chill || 0.7,
+      chill,
+      frostBurstR: base.frostBurstR || 0,
+      frostBurstDmg: base.frostBurstDmg || 0,
       tierStacks: stacks,
       targetDist: tDist,
       targetR: best.r || 0.3,
@@ -2034,36 +2109,48 @@ export class Game {
     return true;
   }
 
-  /** tracking_bomb: homing → stick → quick explode */
+  /** tracking_bomb: homing → stick → quick explode (branch kits: multi / mine / drone-seek). */
   _fireTrackingBomb(events, stacks, base = {}) {
     const targets = this._targetsForWeapon(1, this.fireRange + 3);
     if (!targets.length) return false;
     const best = targets[0];
-    const speed = 9 + stacks * 0.6;
+    const warheads = Math.max(1, base.warheads || 1);
+    const speed = (9 + stacks * 0.6) * (base.seekSpeedMul || 1);
     const lead = muzzleInterceptAimDir(
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
       speed, Math.max(AIM_LEAD_MAX_T, 1.2)
     );
-    const dx = lead.dx, dz = lead.dz;
+    const baseAng = Math.atan2(lead.dz, lead.dx);
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
-    const b = this._emitBullet(dx, dz, {
-      weapon: 'tracking_bomb',
-      dmg: (base.hit || 2.4) + stacks * 0.9,
-      life: 2.2,
-      speed,
-      r: 0.26,
-      pierce: 0,
-      aoe: base.aoe || 1.6,
-      aoeDmg: (base.hit || 2.4) + stacks * 0.9,
-      homing: base.homing || 14,
-      homeTarget: best,
-      stickOnHit: true,
-      stickFuse: base.stick || 0.35,
-      tierStacks: stacks,
-      targetDist: tDist,
-      targetR: best.r || 0.3,
-    });
-    this._pushFire(events, 'rocket', dx, dz, b, best);
+    const hit = ((base.hit || 2.4) + stacks * 0.9) * (base.dmgMul || 1);
+    const aoe = (base.aoe || 1.6) * (base.aoeMul || 1);
+    const stick = (base.stick || 0.35) * (base.stickMul || 1);
+    const homing = (base.homing || 14) * (base.homingMul || 1);
+    let primary = null;
+    for (let i = 0; i < warheads; i++) {
+      const t = warheads === 1 ? 0 : (i / (warheads - 1)) * 2 - 1;
+      const a = baseAng + t * (warheads > 1 ? 0.22 : 0);
+      const dx = Math.cos(a), dz = Math.sin(a);
+      const b = this._emitBullet(dx, dz, {
+        weapon: 'tracking_bomb',
+        dmg: hit,
+        life: 2.2,
+        speed,
+        r: warheads > 1 ? 0.18 : 0.26,
+        pierce: 0,
+        aoe,
+        aoeDmg: hit,
+        homing,
+        homeTarget: best,
+        stickOnHit: true,
+        stickFuse: stick,
+        tierStacks: stacks,
+        targetDist: tDist,
+        targetR: best.r || 0.3,
+      });
+      if (!primary) primary = { b, dx, dz };
+    }
+    this._pushFire(events, 'rocket', primary.dx, primary.dz, primary.b, best);
     return true;
   }
 
@@ -2457,13 +2544,29 @@ export class Game {
     const behavior = (def && def.behavior) || 'mg';
     const base = (def && def.base) || {};
 
-    // gatling: laser-feel flying bolts (legacy MG path, tagged)
+    // gatling: laser-feel flying bolts + deep branch kits
     if (behavior === 'mg') {
       this.fireT -= dt;
       if (this.fireT > 0) return false;
       const mods = this._weaponMods(nid);
-      if (this._fireMg(events, { weaponTag: 'gatling', laserFeel: true, dmgMul: mods.dmgMul, pierceAdd: mods.pierceAdd })) {
-        this.fireT = (base.cd || this.fireCd || 0.1) * jamMul * (mods.cdMul || 1);
+      const fired = this._fireMg(events, {
+        weaponTag: 'gatling', laserFeel: true,
+        dmgMul: mods.dmgMul, pierceAdd: mods.pierceAdd,
+        boltCount: mods.boltCount || 1, spreadRad: mods.spreadRad || 0,
+      });
+      if (fired) {
+        let cd = (base.cd || this.fireCd || 0.1) * jamMul * (mods.cdMul || 1);
+        if (mods.overheat) {
+          this._gatlingHeat = Math.min(1.35, (this._gatlingHeat || 0) + 0.085);
+          if (this._gatlingHeat >= 1) {
+            cd *= 2.4; // brief overheat stutter
+            this._gatlingHeat = 0.15;
+            events.push({ type: 'overheat', weapon: 'gatling' });
+          }
+        } else {
+          this._gatlingHeat = Math.max(0, (this._gatlingHeat || 0) - 0.02);
+        }
+        this.fireT = cd;
         this.muzzle = 0.08; this.aimHold = 0.42;
         return true;
       }
@@ -2471,39 +2574,58 @@ export class Game {
       return false;
     }
 
-    // vulcan: minigun spray with spin-up
+    // vulcan: minigun spray with spin-up + branch kits
     if (behavior === 'vulcan' || behavior === 'mg_fast') {
       if ((this.vulcan || 0) < 1 && nid === 'vulcan') this.vulcan = Math.max(this.vulcan || 0, 1);
       this._vulcanSpin = Math.min(1, (this._vulcanSpin || 0) + dt / (base.spinUp || 0.4));
       this.fireT -= dt;
       if (this.fireT > 0) return false;
       const spin = this._vulcanSpin || 0;
-      const cd = Math.max(0.035, (base.cd || 0.045) * (1.55 - 0.55 * spin));
+      const cd = Math.max(0.028, (base.cd || 0.045) * (1.55 - 0.55 * spin));
       const mods = this._weaponMods(nid);
-      if (this._fireMg(events, { weaponTag: 'vulcan', range: base.range || 10, dmgMul: 0.7 * (mods.dmgMul || 1), pierceAdd: mods.pierceAdd })) {
+      const pierceAdd = (mods.pierceAdd || 0) + (mods.fortressPierce || 0);
+      const fired = this._fireMg(events, {
+        weaponTag: 'vulcan', range: base.range || 10,
+        dmgMul: 0.7 * (mods.dmgMul || 1), pierceAdd,
+        boltCount: mods.boltCount || 1,
+        spreadRad: mods.spreadRad || 0,
+        burn: mods.burn || 0, burnDur: mods.burnDur || 0,
+      });
+      if (fired) {
         this.fireT = cd * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.06; this.aimHold = 0.35;
+        if ((mods.fortressMoveMul || 1) < 1) {
+          this._fortressT = 0.22;
+          this._fortressMoveMul = mods.fortressMoveMul;
+        }
         return true;
       }
       this.fireT = 0.04;
       return false;
     }
 
-    // ion_beam: charge → fire → charge (very high dmg/shot)
+    // ion_beam: charge → fire → charge (+ focus / chain / slit kits)
     if (behavior === 'ion_charge' || behavior === 'laser') {
       const stacks = Math.max(this.laser || 0, this.ion_beam || 0, 1);
       if ((this.laser || 0) < 1 && (this.ion_beam || 0) < 1) this.laser = 1;
+      const mods = this._weaponMods(nid);
       if (this._ionPhase == null) this._ionPhase = 'charge';
       if (this._ionPhase === 'charge') {
         this._ionChargeT = (this._ionChargeT || 0) + dt;
-        const need = Math.max(0.28, (base.charge || 0.55) - stacks * 0.04);
+        const need = Math.max(0.18, ((base.charge || 0.55) * (mods.chargeMul || 1)) - stacks * 0.04);
         if (this._ionChargeT < need * jamMul) return false;
         this._ionChargeT = 0;
         this._ionPhase = 'fire';
       }
       if (this._ionPhase === 'fire') {
-        const mods = this._weaponMods(nid);
-        const base2 = { ...base, hit: (base.hit || 3.6) * (mods.dmgMul || 1), pierce: (base.pierce || 0) + (mods.pierceAdd || 0) };
+        const base2 = {
+          ...base,
+          hit: (base.hit || 3.6) * (mods.dmgMul || 1),
+          pierce: (base.pierce || 0) + (mods.pierceAdd || 0),
+          chainJumps: mods.chainJumps || 0,
+          chainRange: mods.chainRange || 0,
+          slit: !!mods.slit,
+        };
         if (this._fireIonBeam(events, stacks, base2)) {
           this.muzzle = 0.18; this.aimHold = 0.55;
           this._ionPhase = 'charge';
@@ -2515,28 +2637,48 @@ export class Game {
       return false;
     }
 
-    // zero_laser: discrete chill bolts one-by-one
+    // zero_laser: discrete chill bolts + chill/frost/shield kits
     if (behavior === 'zero_bolts' || behavior === 'laser_chill') {
       const stacks = Math.max(this.zero_laser || 0, this.laser || 0, 1);
       if ((this.zero_laser || 0) < 1) this.zero_laser = 1;
       this.laserT -= dt;
       if (this.laserT > 0) return false;
-      if (this._fireZeroBolt(events, stacks, base)) {
-        this.laserT = Math.max(0.16, (base.cd || 0.28) - stacks * 0.02) * jamMul;
+      const mods = this._weaponMods(nid);
+      const base2 = {
+        ...base,
+        hit: (base.hit || 1.5) * (mods.dmgMul || 1),
+        chillMul: mods.chillMul || 1,
+        frostBurstR: mods.frostBurstR || 0,
+        frostBurstDmg: (mods.frostBurstDmg || 0) * (mods.dmgMul || 1),
+        pierceAdd: mods.pierceAdd || 0,
+      };
+      if (this._fireZeroBolt(events, stacks, base2)) {
+        this.laserT = Math.max(0.16, (base.cd || 0.28) - stacks * 0.02) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.1; this.aimHold = 0.45;
+        this._refreshBranchShield(mods);
         return true;
       }
       return false;
     }
 
-    // tracking_bomb: track → stick → quick explode (small AoE)
+    // tracking_bomb: track → stick → explode (+ triple / mine / drone kits)
     if (behavior === 'track_stick' || behavior === 'rocket') {
       const stacks = Math.max(this.rocket || 0, this.tracking_bomb || 0, 1);
       if ((this.rocket || 0) < 1 && (this.tracking_bomb || 0) < 1) this.rocket = 1;
       this.rocketT -= dt;
       if (this.rocketT > 0) return false;
-      if (this._fireTrackingBomb(events, stacks, base)) {
-        this.rocketT = Math.max(0.7, (base.cd || 1.5) - stacks * 0.12) * jamMul;
+      const mods = this._weaponMods(nid);
+      const base2 = {
+        ...base,
+        dmgMul: mods.dmgMul || 1,
+        aoeMul: mods.aoeMul || 1,
+        warheads: mods.warheads || 1,
+        stickMul: mods.stickMul || 1,
+        homingMul: mods.homingMul || 1,
+        seekSpeedMul: mods.seekSpeedMul || 1,
+      };
+      if (this._fireTrackingBomb(events, stacks, base2)) {
+        this.rocketT = Math.max(0.7, (base.cd || 1.5) - stacks * 0.12) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.16; this.aimHold = 0.48;
         return true;
       }
@@ -2557,13 +2699,18 @@ export class Game {
   _tickSecondary(sid, behavior, stacks, events, jamMul, dt) {
     const def = weaponDef(sid);
     const base = (def && def.base) || {};
+    const mods = this._weaponMods(sid);
 
     if (behavior === 'shotgun') {
       if ((this.shotgun || 0) < 1) this.shotgun = 1;
       this.shotgunT -= dt;
       if (this.shotgunT > 0) return false;
-      if (this._fireShotgun(events, { heavy: true, pellets: base.pellets || 10, range: base.range || 7 })) {
-        this.shotgunT = Math.max(0.35, (base.cd || 0.7) - stacks * 0.08) * jamMul;
+      const pellets = Math.max(1, (base.pellets || 10) + (mods.pelletsAdd || 0));
+      if (this._fireShotgun(events, {
+        heavy: true, pellets, range: base.range || 7,
+        spreadAdd: mods.spreadRad || 0, dmgMul: mods.dmgMul || 1, pierceAdd: mods.pierceAdd || 0,
+      })) {
+        this.shotgunT = Math.max(0.35, (base.cd || 0.7) - stacks * 0.08) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.14; this.aimHold = 0.48;
         this._consumeSecondary(sid, 1);
         return true;
@@ -2576,8 +2723,13 @@ export class Game {
       if ((this.plasma || 0) < 1 && (this.acid_gun || 0) < 1) this.plasma = 1;
       this.plasmaT -= dt;
       if (this.plasmaT > 0) return false;
-      if (this._fireAcidStream(events, stacks, base)) {
-        this.plasmaT = Math.max(0.08, (base.cd || 0.12) - stacks * 0.01) * jamMul;
+      const base2 = {
+        ...base,
+        hit: (base.hit || 0.85) * (mods.dmgMul || 1),
+        dissolve: (base.dissolve || 1.4) * (mods.dissolveMul || 1) * (mods.aoeMul || 1),
+      };
+      if (this._fireAcidStream(events, stacks, base2)) {
+        this.plasmaT = Math.max(0.08, (base.cd || 0.12) - stacks * 0.01) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.1; this.aimHold = 0.4;
         this._consumeSecondary(sid, 1);
         return true;
@@ -2589,8 +2741,14 @@ export class Game {
     if (behavior === 'slow_rush' || behavior === 'slow_stub') {
       this.plasmaT -= dt;
       if (this.plasmaT > 0) return false;
-      if (this._fireSlowRush(events, stacks, base)) {
-        this.plasmaT = Math.max(0.6, (base.cd || 1.1) - stacks * 0.08) * jamMul;
+      const base2 = {
+        ...base,
+        hit: (base.hit || 0.6) * (mods.dmgMul || 1),
+        slow: (base.slow || 1.6) * (mods.slowMul || 1),
+        aoe: (base.aoe || 2.4) * (mods.aoeMul || 1),
+      };
+      if (this._fireSlowRush(events, stacks, base2)) {
+        this.plasmaT = Math.max(0.6, (base.cd || 1.1) - stacks * 0.08) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.16; this.aimHold = 0.5;
         this._consumeSecondary(sid, 1);
         return true;
@@ -2602,8 +2760,13 @@ export class Game {
     if (behavior === 'deploy_drones' || behavior === 'drone_stub') {
       this.plasmaT -= dt;
       if (this.plasmaT > 0) return false;
-      if (this._deployAttackDrones(events, stacks, base)) {
-        this.plasmaT = Math.max(3.5, (base.cd || 5.5) - stacks * 0.4) * jamMul;
+      const base2 = {
+        ...base,
+        drones: (base.drones || 2) + (mods.droneAdd || 0),
+        hit: (base.hit || 0.7) * (mods.dmgMul || 1),
+      };
+      if (this._deployAttackDrones(events, stacks, base2)) {
+        this.plasmaT = Math.max(3.5, (base.cd || 5.5) - stacks * 0.4) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.12; this.aimHold = 0.4;
         this._consumeSecondary(sid, 1);
         return true;
@@ -2615,8 +2778,14 @@ export class Game {
     if (behavior === 'blackhole_pull' || behavior === 'blackhole_stub') {
       this.plasmaT -= dt;
       if (this.plasmaT > 0) return false;
-      if (this._fireBlackhole(events, stacks, base)) {
-        this.plasmaT = Math.max(1.6, (base.cd || 2.6) - stacks * 0.15) * jamMul;
+      const base2 = {
+        ...base,
+        hit: (base.hit || 2.2) * (mods.dmgMul || 1),
+        aoe: (base.aoe || 3.4) * (mods.aoeMul || 1),
+        pull: (base.pull || 9) * (mods.pullMul || 1),
+      };
+      if (this._fireBlackhole(events, stacks, base2)) {
+        this.plasmaT = Math.max(1.6, (base.cd || 2.6) - stacks * 0.15) * jamMul * (mods.cdMul || 1);
         this.muzzle = 0.18; this.aimHold = 0.55;
         this._consumeSecondary(sid, 1);
         return true;
@@ -2631,11 +2800,22 @@ export class Game {
     const behavior = (def && def.behavior) || 'grenade';
     const stacks = Math.max((this.taken && this.taken[tid]) || 0, this[tid] || 0, this.grenade || 0, 1);
     const base = (def && def.base) || {};
+    const mods = this._weaponMods(tid);
+    const base2 = {
+      ...base,
+      hit: (base.hit || 1) * (mods.dmgMul || 1),
+      aoe: (base.aoe || 2) * (mods.aoeMul || 1),
+      fuse: (base.fuse || 0.5) * (mods.fuseMul || 1),
+      shards: (base.shards || 0) + (mods.shardsAdd || 0),
+      slow: (base.slow || 1) * (mods.slowMul || 1),
+      stun: (base.stun || 0.9) * (mods.stunMul || 1),
+      pull: (base.pull || 11) * (mods.pullMul || 1),
+    };
     if ((this.grenade || 0) < 1 && (this.frag || 0) < 1) this.grenade = 1;
-    if (behavior === 'grenade' || tid === 'frag') return this._fireGrenade(events, { ...base, weaponTag: 'frag' });
-    if (behavior === 'chill_field' || tid === 'chill') return this._fireChillBomb(events, stacks, base);
-    if (behavior === 'flashbang' || tid === 'flash') return this._fireFlashbang(events, stacks, base);
-    if (behavior === 'gravity_pull' || tid === 'gravity') return this._fireGravityBomb(events, stacks, base);
+    if (behavior === 'grenade' || tid === 'frag') return this._fireGrenade(events, { ...base2, weaponTag: 'frag' });
+    if (behavior === 'chill_field' || tid === 'chill') return this._fireChillBomb(events, stacks, base2);
+    if (behavior === 'flashbang' || tid === 'flash') return this._fireFlashbang(events, stacks, base2);
+    if (behavior === 'gravity_pull' || tid === 'gravity') return this._fireGravityBomb(events, stacks, base2);
     return this._fireGrenade(events);
   }
 
@@ -2727,7 +2907,7 @@ export class Game {
         if (dist < (cfg.bashRange || 1.55) + PLAYER.radius) {
           hitPlayer = true;
           if (this.invuln <= 0) {
-            const taken = Math.max(1, (cfg.bashDamage || e.damage || 2) - (this.armor || 0));
+            const taken = Math.max(1, (cfg.bashDamage || e.damage || 2) - this._effectiveArmor());
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.32;
@@ -2798,7 +2978,7 @@ export class Game {
 
     // Contact body damage (separate from bash slam)
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 2) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
@@ -2855,7 +3035,7 @@ export class Game {
         if (along > 0.2 && along < range && perp < PLAYER.radius + halfW) {
           hitPlayer = true;
           if (this.invuln <= 0) {
-            const taken = Math.max(1, (cfg.shotDamage || 2) - (this.armor || 0));
+            const taken = Math.max(1, (cfg.shotDamage || 2) - this._effectiveArmor());
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.32;
@@ -2883,7 +3063,7 @@ export class Game {
         e.shotFlash = 0.18;
       }
       if (this.invuln <= 0 && dist < e.r + PLAYER.radius) {
-        const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+        const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
@@ -2947,7 +3127,7 @@ export class Game {
     }
 
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
@@ -3008,7 +3188,7 @@ export class Game {
         if (toPlayer < blastR + PLAYER.radius) {
           hitPlayer = true;
           if (this.invuln <= 0) {
-            const taken = Math.max(1, (cfg.blastDamage || 2) - (this.armor || 0));
+            const taken = Math.max(1, (cfg.blastDamage || 2) - this._effectiveArmor());
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.35;
@@ -3035,7 +3215,7 @@ export class Game {
       }
       // Contact body damage while planted
       if (this.invuln <= 0 && dist < e.r + PLAYER.radius) {
-        const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+        const taken = Math.max(1, (e.damage || 2) - this._effectiveArmor());
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
@@ -3110,7 +3290,7 @@ export class Game {
     }
 
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 2) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
@@ -3174,7 +3354,7 @@ export class Game {
         if (toPlayer < blastR + PLAYER.radius) {
           hitPlayer = true;
           if (this.invuln <= 0) {
-            const taken = Math.max(1, (cfg.blastDamage || 3) - (this.armor || 0));
+            const taken = Math.max(1, (cfg.blastDamage || 3) - this._effectiveArmor());
             this.hp -= taken;
             this.invuln = 0.85 + (this.deflect || 0);
             this.hitFlash = 0.4;
@@ -3239,7 +3419,7 @@ export class Game {
 
     // Ordinary contact while chasing (not blast) — same as grunt; telegraph path skips this
     if (this.invuln <= 0 && afterChase < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
@@ -3333,7 +3513,7 @@ export class Game {
         let hitPlayer = false;
         if (this.invuln <= 0) {
           hitPlayer = true;
-          const taken = Math.max(1, (cfg.dashDamage || 2) - (this.armor || 0));
+          const taken = Math.max(1, (cfg.dashDamage || 2) - this._effectiveArmor());
           this.hp -= taken;
           this.invuln = 0.85 + (this.deflect || 0);
           this.hitFlash = 0.32;
@@ -3435,7 +3615,7 @@ export class Game {
 
     // Ordinary body contact while flanking (not dash) — same as grunt
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.28;
@@ -3603,7 +3783,7 @@ export class Game {
       }
       // Light contact only
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-        const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+        const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.22;
@@ -3682,7 +3862,7 @@ export class Game {
 
     // Light body contact
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.22;
@@ -3818,7 +3998,7 @@ export class Game {
 
     // Light body contact
     if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-      const taken = Math.max(1, (e.damage || 1) - (this.armor || 0));
+      const taken = Math.max(1, (e.damage || 1) - this._effectiveArmor());
       this.hp -= taken;
       this.invuln = 0.85 + (this.deflect || 0);
       this.hitFlash = 0.22;
@@ -3902,7 +4082,7 @@ export class Game {
       const ec = this._softClamp(e.x, e.z, e.r);
       e.x = ec.x; e.z = ec.z;
       if (this.invuln <= 0 && Math.hypot(e.x - this.px, e.z - this.pz) < e.r + PLAYER.radius) {
-        const taken = Math.max(1, (e.damage || 2) - (this.armor || 0));
+        const taken = Math.max(1, (e.damage || 2) - this._effectiveArmor());
         this.hp -= taken;
         this.invuln = 0.85 + (this.deflect || 0);
         this.hitFlash = 0.28;
@@ -4023,6 +4203,16 @@ export class Game {
             events.push({ type: 'kill', enemy: e, gore: punch, elite: punch });
           }
           if (b.chill) e.slow = Math.max(e.slow || 0, b.chill);
+          if (b.burn > 0) {
+            e.burnDps = Math.max(e.burnDps || 0, b.burn);
+            e.burnT = Math.max(e.burnT || 0, b.burnDur || 1.4);
+          }
+          if (b.chainJumps > 0) {
+            this._ionChainJump(e, b.chainJumps, b.chainRange || 3.5, b.dmg * 0.85, events);
+          }
+          if (b.frostBurstR > 0) {
+            this._frostBurstAt(e.x, e.z, b.frostBurstR, b.frostBurstDmg || b.dmg * 0.6, (b.chill || 0.5) * 0.85, events);
+          }
           if (b.stickOnHit && !b.stuck) {
             b.stuck = true;
             b.stickEnemy = e;
@@ -4076,7 +4266,7 @@ export class Game {
       if (this.alive && toPlayer < r + PLAYER.radius) {
         hitPlayer = true;
         if (this.invuln <= 0) {
-          const taken = Math.max(1, (cfg.damage || 2) - (this.armor || 0));
+          const taken = Math.max(1, (cfg.damage || 2) - this._effectiveArmor());
           this.hp -= taken;
           this.invuln = 0.85 + (this.deflect || 0);
           this.hitFlash = 0.35;
@@ -4206,7 +4396,7 @@ export class Game {
       this._zonePressureTickAcc -= tickSec;
       if (this.invuln > 0) continue;
       const raw = dmgPerSec * tickSec;
-      const taken = Math.max(0.15, raw - (this.armor || 0) * 0.15);
+      const taken = Math.max(0.15, raw - this._effectiveArmor() * 0.15);
       this.hp -= taken;
       this.hitFlash = Math.max(this.hitFlash, 0.22);
       events.push({
@@ -4256,9 +4446,13 @@ export class Game {
     }
     if (this.muzzle > 0) this.muzzle -= dt;
     if (this.aimHold > 0) this.aimHold -= dt;
+    if (this._branchShieldT > 0) this._branchShieldT -= dt;
+    if (this._fortressT > 0) this._fortressT -= dt;
+    if (this._gatlingHeat > 0) this._gatlingHeat = Math.max(0, this._gatlingHeat - dt * 0.25);
 
-    this.px += this.vx * this.speed * dt;
-    this.pz += this.vz * this.speed * dt;
+    const moveMul = ((this._fortressT || 0) > 0) ? (this._fortressMoveMul || 0.45) : 1;
+    this.px += this.vx * this.speed * moveMul * dt;
+    this.pz += this.vz * this.speed * moveMul * dt;
     const clamped = this._softClamp(this.px, this.pz, PLAYER.radius);
     this.px = clamped.x; this.pz = clamped.z;
     // Score-pos: mark recent movement (stick input / non-trivial velocity)
@@ -4299,6 +4493,19 @@ export class Game {
         }
       }
       if (z.life <= 0) this.zones.splice(i, 1);
+    }
+
+    // Branch burn DoT (vulcan B 燒夷彈)
+    for (let j = this.enemies.length - 1; j >= 0; j--) {
+      const e = this.enemies[j];
+      if (!(e.burnT > 0) || !(e.burnDps > 0)) continue;
+      e.burnT -= dt;
+      const dead = this._applyEnemyDamage(e, e.burnDps * dt, e.x, e.z, events, { hitTime: 0.04 });
+      if (dead) {
+        this._kill(e, j, events);
+        events.push({ type: 'kill', enemy: e, gore: false, burn: true });
+      }
+      if (e.burnT <= 0) { e.burnT = 0; e.burnDps = 0; }
     }
 
     if (this.orbits > 0) {

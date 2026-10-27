@@ -1,0 +1,25 @@
+{
+  "ver": "0.9.55",
+  "meta": {
+    "pendingFrom": "branch",
+    "choiceN": 3,
+    "titles": [
+      "A · 過熱連射",
+      "B · 穿甲芯",
+      "C · 散射網"
+    ],
+    "descs": [
+      "過熱連射 — 射速↑·過熱節奏",
+      "穿甲芯 — 穿透↑·單發更硬",
+      "散射網 — 三向散射網"
+    ],
+    "paused": true
+  },
+  "after": {
+    "branch": "C",
+    "lvText": "Lv3·C",
+    "boltCount": 3,
+    "state": "play"
+  },
+  "errs": []
+}

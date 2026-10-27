@@ -1,6 +1,6 @@
 /**
- * WEAPONS-REDESIGN-001 (v0.9.53) + WEAPONS-BRANCH-PICK-001 (v0.9.54).
- * Spec: docs/WEAPONS.md. Branch/ult pick UI playable at Lv3 / Lv5.
+ * WEAPONS-REDESIGN-001 (v0.9.53) + BRANCH-PICK (v0.9.54) + BRANCH-KITS (v0.9.55).
+ * Spec: docs/WEAPONS.md. Deep A/B/C fire deltas; ult still light amp.
  */
 
 export const LOADOUT_CAPS = Object.freeze({
@@ -376,22 +376,88 @@ export function branchIndex(letter) {
 }
 
 /** List branch options for a catalog weapon. */
+const BRANCH_KIT_HINTS = Object.freeze({
+  gatling: {
+    A: { zh: '射速↑·過熱節奏', en: 'RoF↑ · heat cadence' },
+    B: { zh: '穿透↑·單發更硬', en: 'Pierce↑ · harder bolts' },
+    C: { zh: '三向散射網', en: '3-bolt cone spray' },
+  },
+  ion_beam: {
+    A: { zh: '長充能·高傷穿透', en: 'Long charge · big pierce' },
+    B: { zh: '命中後連鎖跳電', en: 'Chain jump on hit' },
+    C: { zh: '短充能裂縫切割', en: 'Fast slit · high pierce' },
+  },
+  tracking_bomb: {
+    A: { zh: '一次三枚微彈頭', en: 'Triple micro warheads' },
+    B: { zh: '長黏著地雷', en: 'Long stick mine' },
+    C: { zh: '疾速追蹤自爆', en: 'Fast seek then pop' },
+  },
+  vulcan: {
+    A: { zh: '更密彈幕', en: 'Denser spray' },
+    B: { zh: '燒夷 DoT', en: 'Incendiary DoT' },
+    C: { zh: '開火緩移·堡壘精度', en: 'Fortress slow-move aim' },
+  },
+  zero_laser: {
+    A: { zh: '更強寒緩', en: 'Stronger chill' },
+    B: { zh: '命中霜爆', en: 'Frost burst on hit' },
+    C: { zh: '開火短暫護盾', en: 'Tiny shield on fire' },
+  },
+  acid_gun: {
+    A: { zh: '溶甲更強', en: 'Stronger dissolve' },
+    B: { zh: '更大酸池', en: 'Bigger acid puddle' },
+  },
+  shotgun: {
+    A: { zh: '更寬扇面', en: 'Wider cone' },
+    B: { zh: '獨頭重彈', en: 'Slug · fewer pellets' },
+  },
+  slow_gun: {
+    A: { zh: '緩速更久', en: 'Longer slow' },
+    B: { zh: '更大緩速圈', en: 'Wider slow field' },
+  },
+  attack_drone: {
+    A: { zh: '多一機護衛', en: '+1 escort drone' },
+    B: { zh: '單機高傷', en: 'Harder drones' },
+  },
+  blackhole: {
+    A: { zh: '拉力↑', en: 'Stronger pull' },
+    B: { zh: '爆破傷害↑', en: 'Crush dmg↑' },
+  },
+  frag: {
+    A: { zh: '高爆傷害', en: 'HE blast' },
+    B: { zh: '破片雨', en: 'Shrapnel rain' },
+  },
+  chill: {
+    A: { zh: '更大霜域', en: 'Wider frost' },
+    B: { zh: '急凍高傷', en: 'Fast freeze core' },
+  },
+  flash: {
+    A: { zh: '致盲更久', en: 'Longer stun' },
+    B: { zh: '更快冷卻', en: 'Shorter CD' },
+  },
+  gravity: {
+    A: { zh: '更強引力', en: 'Stronger pull' },
+    B: { zh: '更快坍縮', en: 'Faster crush' },
+  },
+});
+
 export function branchOptions(weaponId) {
   const d = weaponDef(weaponId);
   if (!d) return [];
   const names = d.branchNames || [];
   const n = d.branches || names.length || 0;
+  const hints = BRANCH_KIT_HINTS[d.id] || {};
   const out = [];
   for (let i = 0; i < n; i++) {
     const letter = branchLetter(i);
     const zh = names[i] || `分支 ${letter}`;
+    const hint = hints[letter] || {};
     out.push({
       letter,
       index: i,
       zh,
       en: `PATH ${letter}`,
-      descZh: `鎖定「${d.zh}」· ${zh}`,
-      descEn: `Lock ${d.en} · ${letter}`,
+      descZh: hint.zh ? `${zh} — ${hint.zh}` : `鎖定「${d.zh}」· ${zh}`,
+      descEn: hint.en ? `${letter}: ${hint.en}` : `Lock ${d.en} · ${letter}`,
     });
   }
   return out;
@@ -428,26 +494,109 @@ export function ultOptions(weaponId, branch) {
 }
 
 /**
- * Light playable stat mods for a chosen branch (+ optional ult).
- * Keep small — full unique behaviors later.
+ * Deep branch kits (v0.9.55 WEAPONS-BRANCH-KITS-001).
+ * Distinct fire/behavior deltas per letter; ult stays light amplifier only.
  */
 export function branchStatMods(weaponId, branch, ult) {
   const d = weaponDef(weaponId);
-  const mods = { dmgMul: 1, cdMul: 1, pierceAdd: 0 };
+  const mods = {
+    dmgMul: 1, cdMul: 1, pierceAdd: 0,
+    // optional kit flags (0 / false = off)
+    boltCount: 1, spreadRad: 0, overheat: false,
+    chargeMul: 1, chainJumps: 0, chainRange: 0, slit: false,
+    warheads: 1, stickMul: 1, homingMul: 1, seekSpeedMul: 1,
+    sprayMul: 1, burn: 0, burnDur: 0, fortressMoveMul: 1, fortressPierce: 0,
+    chillMul: 1, frostBurstR: 0, frostBurstDmg: 0, selfShield: 0, selfShieldDur: 0,
+    pelletsAdd: 0, aoeMul: 1, poolMul: 1, slowMul: 1, fuseMul: 1, shardsAdd: 0,
+    dissolveMul: 1, droneAdd: 0, pullMul: 1, stunMul: 1,
+  };
   if (!d || !branch) return mods;
   const letter = String(branch).toUpperCase();
-  const cat = d.category;
+  const id = d.id;
 
-  // Generic by letter — readable in try without inventing whole kits
-  if (cat === 'primary') {
-    if (letter === 'A') { mods.cdMul = 0.88; mods.dmgMul = 1.05; }
-    else if (letter === 'B') { mods.dmgMul = 1.18; mods.pierceAdd = 1; }
-    else if (letter === 'C') { mods.dmgMul = 0.92; mods.cdMul = 0.94; } // spray / utility bias
-  } else if (cat === 'secondary' || cat === 'throw') {
-    if (letter === 'A') { mods.dmgMul = 1.12; }
-    else if (letter === 'B') { mods.cdMul = 0.88; }
+  // —— Primary deep kits (named branches in docs/WEAPONS.md) ——
+  if (id === 'gatling') {
+    if (letter === 'A') { // 過熱連射 — higher RoF + heat cadence
+      mods.cdMul = 0.70; mods.dmgMul = 0.98; mods.overheat = true;
+    } else if (letter === 'B') { // 穿甲芯
+      mods.dmgMul = 1.14; mods.pierceAdd = 2; mods.cdMul = 1.05;
+    } else if (letter === 'C') { // 散射網 — multi-bolt cone
+      mods.boltCount = 3; mods.spreadRad = 0.28; mods.dmgMul = 0.72; mods.cdMul = 0.95;
+    }
+  } else if (id === 'ion_beam') {
+    if (letter === 'A') { // 長焦聚焦
+      mods.chargeMul = 1.40; mods.dmgMul = 1.38; mods.pierceAdd = 2; mods.cdMul = 1.05;
+    } else if (letter === 'B') { // 連鎖跳電
+      mods.chainJumps = 2; mods.chainRange = 3.6; mods.dmgMul = 0.92; mods.cdMul = 0.95;
+    } else if (letter === 'C') { // 裂縫切割 — short charge, narrow high pierce
+      mods.chargeMul = 0.52; mods.pierceAdd = 2; mods.dmgMul = 1.08; mods.slit = true; mods.cdMul = 0.90;
+    }
+  } else if (id === 'tracking_bomb') {
+    if (letter === 'A') { // 三重彈頭
+      mods.warheads = 3; mods.dmgMul = 0.62; mods.aoeMul = 0.78; mods.cdMul = 1.05;
+    } else if (letter === 'B') { // 黏著地雷
+      mods.stickMul = 2.6; mods.aoeMul = 1.15; mods.dmgMul = 1.05; mods.cdMul = 1.08;
+    } else if (letter === 'C') { // 自殺無人機 — faster seek then pop
+      mods.homingMul = 1.85; mods.seekSpeedMul = 1.35; mods.stickMul = 0.55; mods.dmgMul = 1.08;
+    }
+  } else if (id === 'vulcan') {
+    if (letter === 'A') { // 彈幕風暴
+      mods.cdMul = 0.72; mods.dmgMul = 0.88; mods.sprayMul = 1.35; mods.boltCount = 2; mods.spreadRad = 0.18;
+    } else if (letter === 'B') { // 燒夷彈
+      mods.burn = 1.1; mods.burnDur = 1.6; mods.dmgMul = 0.95; mods.cdMul = 1.02;
+    } else if (letter === 'C') { // 機槍堡壘
+      mods.fortressMoveMul = 0.42; mods.fortressPierce = 1; mods.pierceAdd = 1;
+      mods.dmgMul = 1.22; mods.cdMul = 1.08; mods.spreadRad = -0.08;
+    }
+  } else if (id === 'zero_laser') {
+    if (letter === 'A') { // 絕對零度
+      mods.chillMul = 1.85; mods.dmgMul = 1.08; mods.cdMul = 1.02;
+    } else if (letter === 'B') { // 霜爆裂縫
+      mods.frostBurstR = 2.2; mods.frostBurstDmg = 1.4; mods.dmgMul = 0.95; mods.chillMul = 1.15;
+    } else if (letter === 'C') { // 寒晶護盾 — tiny self-shield on fire cadence
+      mods.selfShield = 1.25; mods.selfShieldDur = 0.40; mods.dmgMul = 0.96; mods.cdMul = 1.05;
+    }
+  } else if (d.category === 'secondary') {
+    // Cheap A/B deepen — distinct mods, no new weapons
+    if (id === 'acid_gun') {
+      if (letter === 'A') { mods.dissolveMul = 1.45; mods.dmgMul = 1.10; }
+      else if (letter === 'B') { mods.aoeMul = 1.40; mods.cdMul = 0.92; mods.poolMul = 0.9; }
+    } else if (id === 'shotgun') {
+      if (letter === 'A') { mods.pelletsAdd = 4; mods.spreadRad = 0.18; mods.dmgMul = 0.88; }
+      else if (letter === 'B') { mods.pelletsAdd = -5; mods.dmgMul = 1.55; mods.pierceAdd = 1; mods.spreadRad = -0.25; }
+    } else if (id === 'slow_gun') {
+      if (letter === 'A') { mods.slowMul = 1.45; mods.dmgMul = 1.05; }
+      else if (letter === 'B') { mods.aoeMul = 1.35; mods.cdMul = 0.90; }
+    } else if (id === 'attack_drone') {
+      if (letter === 'A') { mods.droneAdd = 1; mods.cdMul = 1.08; }
+      else if (letter === 'B') { mods.dmgMul = 1.35; mods.cdMul = 0.92; }
+    } else if (id === 'blackhole') {
+      if (letter === 'A') { mods.pullMul = 1.35; mods.aoeMul = 1.15; }
+      else if (letter === 'B') { mods.dmgMul = 1.30; mods.cdMul = 0.90; }
+    } else {
+      if (letter === 'A') mods.dmgMul = 1.12;
+      else if (letter === 'B') mods.cdMul = 0.88;
+    }
+  } else if (d.category === 'throw') {
+    if (id === 'frag') {
+      if (letter === 'A') { mods.dmgMul = 1.28; mods.aoeMul = 1.12; }
+      else if (letter === 'B') { mods.shardsAdd = 4; mods.aoeMul = 1.20; mods.dmgMul = 0.92; }
+    } else if (id === 'chill') {
+      if (letter === 'A') { mods.aoeMul = 1.30; mods.slowMul = 1.25; }
+      else if (letter === 'B') { mods.dmgMul = 1.35; mods.fuseMul = 0.75; mods.slowMul = 1.15; }
+    } else if (id === 'flash') {
+      if (letter === 'A') { mods.stunMul = 1.40; mods.aoeMul = 1.15; }
+      else if (letter === 'B') { mods.cdMul = 0.82; mods.stunMul = 0.9; }
+    } else if (id === 'gravity') {
+      if (letter === 'A') { mods.pullMul = 1.40; mods.aoeMul = 1.15; }
+      else if (letter === 'B') { mods.dmgMul = 1.30; mods.fuseMul = 0.80; }
+    } else {
+      if (letter === 'A') mods.dmgMul = 1.12;
+      else if (letter === 'B') mods.cdMul = 0.88;
+    }
   }
 
+  // Ult = light amplifier only (not full unique kits this beat)
   if (ult === 'U1') mods.dmgMul *= 1.2;
   else if (ult === 'U2') mods.cdMul *= 0.85;
 

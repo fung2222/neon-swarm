@@ -1175,7 +1175,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 
-/* ===== WEAPONS-REDESIGN-001 + BRANCH-PICK v0.9.54 — top status + left icon rail ===== */
+/* ===== WEAPONS-REDESIGN-001 + BRANCH-KITS v0.9.55 — top status + left icon rail ===== */
 .weapon-status {
   position: absolute;
   left: 50%;
@@ -1288,7 +1288,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 
-/* ===== WEAPONS-BRANCH-PICK-001 v0.9.54 ===== */
+/* ===== WEAPONS-BRANCH-KITS-001 v0.9.55 ===== */
 .level-cards.branch-offer .level-card {
   border-color: rgba(255, 230, 0, 0.45);
 }

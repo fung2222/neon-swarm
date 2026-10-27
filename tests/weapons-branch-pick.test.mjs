@@ -1,5 +1,5 @@
 /**
- * WEAPONS-BRANCH-PICK-001 (v0.9.54) — branch/ult offer helpers + Game apply.
+ * WEAPONS-BRANCH-PICK-001 (v0.9.55) — branch/ult offer helpers + Game apply.
  * Run: node tests/weapons-branch-pick.test.mjs
  */
 import assert from 'assert';
@@ -111,7 +111,7 @@ assert.equal(needsUltPick('gatling', { gatling: 5 }, {}, {}), false);
 // HTML / version / CSS hooks
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
-assert.match(html, /\?v=0\.9\.54/);
+assert.match(html, /\?v=0\.9\.55/);
 assert.ok(css.includes('branch-offer'));
 assert.ok(html.includes('id="weapon-status"'));
 

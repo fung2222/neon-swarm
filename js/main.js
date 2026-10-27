@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.54 WEAPONS-BRANCH-PICK-001; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
+// RAMPAGE MECH 暴走機甲 — v0.9.55 WEAPONS-BRANCH-KITS-001; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,

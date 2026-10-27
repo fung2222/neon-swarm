@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.53 `WEAPONS-REDESIGN-001`  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.55 `WEAPONS-BRANCH-KITS-001`  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -87,7 +87,7 @@ IDs are stable English snake keys used in code / saves. zh-HK names are product 
 | `flash` | flash interrupt | Short fuse; breaks aim / telegraph |
 | `gravity` | gravity pull → crush | Pull then damage |
 
-Branch/ult UI **playable as of v0.9.54** (level-card offers + light stat mods; ult kits still light). Feel is encoded in `WEAPON_CATALOG[].feel` + `behavior` and Game tick paths.
+Branch/ult UI playable as of v0.9.54; **deep branch kits as of v0.9.55** (A/B/C distinct fire deltas). Ult kits still light amp only. Feel + kits in `WEAPON_CATALOG` / `branchStatMods` + Game ticks.
 
 ---
 ## Level / branch / ultimate schema
@@ -109,7 +109,9 @@ Weapon
 
 **v0.9.53 ship:** full catalog IDs/names/feel/counters; branch/ult **data stubs**. All 14 wired with feel-matched behaviors.
 
-**v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods` (cd/dmg/pierce/spread). Ult forms still **not** full unique kits.
+**v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
+
+**v0.9.55 ship (`WEAPONS-BRANCH-KITS-001`):** deep A/B/C branch kits — distinct fire/behavior (not only % bumps). Ult U1/U2 still **light amplifiers** only (no full unique ult fire paths).
 
 ### Branch naming stubs (primary)
 
@@ -123,9 +125,21 @@ Weapon
 
 Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light stat bump only; not full kits).
 
+### Deep branch kit deltas (v0.9.55 — Grok-owned numbers)
+
+| Weapon | A | B | C |
+|--------|---|---|---|
+| gatling | 過熱連射 — RoF↑ + overheat stutter | 穿甲芯 — pierce+2 | 散射網 — 3-bolt cone |
+| ion_beam | 長焦聚焦 — longer charge, big dmg/pierce | 連鎖跳電 — chain jumps on hit | 裂縫切割 — short charge narrow slit |
+| tracking_bomb | 三重彈頭 — 3 micro warheads | 黏著地雷 — stick×2.6 | 自殺無人機 — seek↑ then pop |
+| vulcan | 彈幕風暴 — denser dual spray | 燒夷彈 — burn DoT | 機槍堡壘 — slow-move fortress + pierce |
+| zero_laser | 絕對零度 — chill×1.85 | 霜爆裂縫 — frost burst AoE | 寒晶護盾 — tiny self-shield on fire |
+
+Secondary/throw A/B: deepened mods (pellets/aoe/slow/pull/etc.) where fire path already exists.
+
 ---
 
-## Balance tables (Grok-owned · v0.9.54 baseline; numbers same as v0.9.53 + light branch mods)
+## Balance tables (Grok-owned · v0.9.55 baseline; Lv1 tables same as v0.9.53; branch kits deepen feel)
 
 Numbers are **fair first pass** vs current enemy HP (~soldier 3–5 · walker/mech higher · elites/boss separate). Tune only in a named balance ship.
 
@@ -263,8 +277,8 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 | Throw tap (frag) | **live** |
 | Other catalog fire | **stub** shared placeholder / remapped legacy |
 | Branch pick UI (Lv3) | **live** level-cards + apply |
-| Ult pick UI (Lv5 primary) | **live** light mods — full kits still stub |
-| Branch deep kits / unique fire | **stub** light mods only |
+| Ult pick UI (Lv5 primary) | **live** light amp — full unique ult kits still stub |
+| Branch deep kits A/B/C | **live** (v0.9.55) distinct fire/behavior |
 | Real art icons | **placeholder** — Roy art pipeline above |
 | Full balance pass vs all elites | **baseline tables** — tune later |
 
@@ -275,6 +289,8 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 - `tests/weapons-loadout.test.mjs` — capacity, normalize, mode switch, empty→primary  
 - `tests/weapons-catalog.test.mjs` — full roster presence  
 - `tests/weapons-branch-pick.test.mjs` — unlock gates, offers, Game apply branch/ult  
+- `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
-- Screenshots: `tests/screenshots/weapons-redesign/` (v0.9.53) + `weapons-branch/` (v0.9.54)  
+- `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
+- Screenshots: redesign (v0.9.53) + branch (v0.9.54) + kits (v0.9.55)  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push
