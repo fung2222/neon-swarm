@@ -114,7 +114,7 @@ Untracked local extras（**not** committed）：`menu-*.png` at screenshots root
 | `AGENT_TASK` feature SHA `3e3d20e` vs HEAD `fa7eee8` | none | correct：feature vs later docs commit |
 | HANDOFF §0 opening still frames「Phase 0 = v0.9.6」then lists Done through 0.9.19 | slightly confusing | intentional history；§11／Done list are current |
 | No `visibilitychange`／`pagehide` auto-pause | product gap | commute pillar；manual pause exists |
-| Mid-run WebGL loss | known open | overlay recovers via reload；not seamless |
+| Mid-run WebGL loss | open／mitigated | v0.9.51 shed＋snapshot；overlay reload；not seamless；device verify pending |
 
 **Gameplay code:** no clear 5-line regression found； **no code changes** this commit.
 
@@ -125,7 +125,7 @@ Untracked local extras（**not** committed）：`menu-*.png` at screenshots root
 | Pillar | Status |
 | --- | --- |
 | **命中可靠 hit** | Code＋headless／SwiftShader **tested** for AIM-HIT-FAST-002；**device verified = yes**（Roy HIT-FEEL-DEVICE「Ok」2026-10-27 · live v0.9.50） |
-| **手機穩定 stable** | Recover overlay **implemented**；mid-run loss **still open**（user reported）；further GPU cuts deferred |
+| **手機穩定 stable** | Recover overlay **implemented**；v0.9.20 cuts＋v0.9.51 mid-run shed／interrupt snapshot **implemented／tested**；mid-run loss **device verify open**（HOLD Roy phone on v0.9.51） |
 | **主角好看 look** | horn 32 sheets **implemented**；silhouette／art lock **not** done；blocky interim remains |
 | **內容 content** | Beats＋five zones＋endless＋pickup **implemented／tested**；heavy／prototype locked；Play packaging **not started**；Phase 4 **do not start** |
 

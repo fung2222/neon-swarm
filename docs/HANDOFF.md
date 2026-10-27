@@ -4,8 +4,8 @@
 >
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
-> **文件日期：** 2026-10-27（Asia/Hong_Kong；HIT-FEEL-DEVICE Complete）  
-> **建議承接基準：** v0.9.50 elite lane read（slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
+> **文件日期：** 2026-10-27（Asia/Hong_Kong；PHONE-STABLE-CONTEXT-001 shipped）  
+> **建議承接基準：** v0.9.51 phone WebGL mid-run guard（elite lane = v0.9.50；slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
 > **CYBER ARCADE：** Gold，`games.json` 仍為 `wip`。
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.50`**（jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；suicide bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.51`**（phone WebGL guard = v0.9.51；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；suicide bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
   - v0.9.4 — glow-ring dim：普通敵人地面光圈減噪（戰鬥可讀性初步）。
   - v0.9.5 — WebGL context-loss recover overlay（「繪圖暫時中斷」可恢復）。
@@ -56,6 +56,7 @@
   - v0.9.22 — PHASE2-COMBAT-READABILITY-002（Roy「繼續出去啦繼續流程」；horn visual HOLD cleared for pipeline；silhouette interim OK-to-continue）：ordinary enemy ground rings off；elite／boss／danger rings kept／stronger；floor／ambient darker；elite telegraph → danger orange；pickup halos punchier；ordinary kill FX declutter（no ring／wave）；sticky aim mild hold tweak；screenshots `tests/screenshots/phase2-readability/`。未改平衡表／horn mesh／Phase 4／phone GPU；mobile v0.9.20 cuts untouched。
   - v0.9.23 — PHASE3-ENEMY-SNIPER-001：`ENEMIES.sniper` 狙擊單位／Sniper Unit；olive＋crimson；long-rifle procedural mesh（≠ soldier／officer recolor）；`_tickSniper` keep-distance → red aim telegraph（`SNIPER.telegraphSec=1.0`）→ hitscan；events `telegraph kind:sniper`＋`sniperShot`；waveMix mid-late lab＋reactor／blockade／rooftop／assembly lightly；截圖 `tests/screenshots/phase3-sniper/`；測試 `tests/sniper.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.24 — PHASE3-ENEMY-SHIELD-001：`ENEMIES.shield` 盾衛／Shield Guard；steel＋cyan-blue；large front-plate procedural mesh（≠ soldier／walker recolor）；`_tickShield` slow chase＋face player；frontal mitigation only（`face · normalize(src−enemy) ≥ 0.5` → ×0.15 dmg；flank／rear full）；bash = short **red** contact telegraph；waveMix assembly／blockade ~0.12、lab after ~65s light、**no** early lab；截圖 `tests/screenshots/phase3-shield/`；測試 `tests/shield.test.mjs`。Elite／boss／player weapon tables **unchanged**。未做：Phase 4／horn art lock／phone GPU。
+  - v0.9.51 — PHONE-STABLE-CONTEXT-001（Roy「A」Phone GPU／mid-run WebGL）：`js/webgl-guard.js` — MOBILE_GFX mid-run shed（runT／frameMs → PR／bloom／particle half-tick；sustained hot → cool-pause，no auto-resume）；`webglcontextlost` → sessionStorage interrupt snapshot；gfx overlay＋menu interrupt note after reload（**not** seamless Three restore）。測試 `tests/webgl-guard.test.mjs`。Desktop／平衡／Phase 4／horn **unchanged**。Box＝SwiftShader，**未**裝置驗收。
   - v0.9.50 — PHASE6-ELITE-LANE-READ-001：精英衝鋒 warning lane 加粗／加亮（`js/elite-lane-read.js` `ELITE_LANE`）；唔係新精英／唔係 Morph；截圖 `tests/screenshots/phase6-elite-lane-read/`；測試 `tests/elite-lane-read.test.mjs`。**HIT-FEEL-DEVICE Complete**（Roy「Ok」2026-10-27）。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.49 — PHASE6-SLOT-FIRE-PULSE-001：開火時對應 `#weapon-slots` 格短暫黃閃（~140ms）；`js/slot-fire-pulse.js`；截圖 `tests/screenshots/phase6-slot-fire-pulse/`；測試 `tests/slot-fire-pulse.test.mjs`。未做：Phase 4／horn art lock／phone GPU。
   - v0.9.48 — PHASE6-ZONE-HUD-CHIP-001：`#hud-zone` 持久區域晶片（zh-HK＋EN 細字；accent 跟區）；`zoneEnter`／HUD 更新；pointer-events none；截圖 `tests/screenshots/phase6-zone-hud-chip/`；測試 `tests/zone-hud-chip.test.mjs`。未做：Phase 4／horn art lock／phone GPU。
@@ -91,7 +92,7 @@
 ### Open gaps／仍未完成
 
 - `horn` 已做 **v0.9.7 bake quality**＋**v0.9.21 mecha silhouette**（Roy direction＝機甲；塊狀 rejected）。**interim silhouette accepted for pipeline**（Roy 2026-10-26 continue）；仍 **非** final art lock／device-final（唔標 §9 locked）；**唔**再自動 polish horn。
-- **手機 mid-run WebGL context loss 仍可能發生**（Roy 實機曾回報「繪圖暫時中斷」）；v0.9.5 overlay、v0.9.6＋**v0.9.20** 再減壓＋commute bg auto-pause 已落地，但 **真機 mid-run 穩定性仍未驗收**（Box＝SwiftShader ≠ device）。
+- **手機 mid-run WebGL context loss 仍可能發生**（Roy 實機曾回報「繪圖暫時中斷」）；v0.9.5 overlay、v0.9.6＋**v0.9.20** 減壓＋bg pause、**v0.9.51** mid-run shed＋interrupt snapshot 已落地，但 **真機 mid-run 穩定性仍未驗收**（Box＝SwiftShader ≠ device；HOLD for Roy phone verify on `?v=0.9.51`）。
 - 槍層 **v0.9.27 起為 8-dir sector snap**（N/NE/E/SE/S/SW/W/NW）；**仍非**平滑 360° continuous turret。
 - PERF-REBASELINE 已更新桌面 GTX 1070 Ti／v0.9.20（≈58–60 FPS）；**手機真機 200 敵效能仍未驗收**（Roy deferred phone GPU）。
 - `heavy`（Precision）及 `prototype`（Morph）仍是不可開局的 showcase stubs。
@@ -474,11 +475,11 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.50（PHASE6-ELITE-LANE-READ-001；HEAD 以 `main`／live `?v=0.9.50` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**（zone chip／slot fire pulse／elite lane read）。**HIT-FEEL-DEVICE Complete**／`device verified`（Roy phone「Ok」2026-10-27 · A/B/C/D pass · live `?v=0.9.50`；含 AIM-HIT-FAST-002 device gate）。
+**目前基準 v0.9.51（PHONE-STABLE-CONTEXT-001；HEAD 以 `main`／live `?v=0.9.51` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**。**HIT-FEEL-DEVICE Complete**／`device verified`（Roy「Ok」2026-10-27）。Roy picked **A＝Phone GPU／mid-run WebGL** → shipped v0.9.51.
 
-**Active = HOLD**（none）— pass rule = HOLD or Roy-named next；safe auto-queue ≈0。Do **not** invent a 4th priority enemy／toast／streak／coach；**do not** auto-start Phase 4／Morph／horn art lock／phone GPU／soft-juice invent。
+**Active = HOLD**（none）— **HOLD for Roy phone verify** mid-run WebGL on live `?v=0.9.51`。Do **not** invent soft-juice／4th enemy；**do not** auto-start Phase 4／Morph／horn art lock／further phone GPU deep without Roy.
 
-**Options for Roy（Grok waits）：** (1) phone GPU／mid-run WebGL focused pass（still deferred／not accepted） (2) horn art lock／silhouette only if Roy names direction (3) Phase 4 Precision only if Roy clears／names it (4) Roy-named narrow polish (5) stay HOLD on live v0.9.50。
+**Options for Roy after phone try：** (1) continue phone-stable slice if still breaking (2) horn art lock only if Roy names direction (3) Phase 4 Precision only if Roy clears／names it (4) Roy-named narrow polish (5) stay HOLD.
 
 - `PHASE3-ENEMY-JAMMER-001` **已完成**（v0.9.47）：干擾單位 violet jam telegraph≥0.85s＋fireCd mul debuff；截圖 `tests/screenshots/phase3-jammer/`；測試 `tests/jammer.test.mjs`。
 - `PHASE3-ENEMY-MEDIC-001` **已完成**（v0.9.46）：醫療支援 lime heal telegraph≥0.7s＋ordinary ally heal pulse；截圖 `tests/screenshots/phase3-medic/`；測試 `tests/medic.test.mjs`。
@@ -507,14 +508,17 @@ Rollback baseline:
 - `PHASE3-ENEMY-SNIPER-001` **已完成**（v0.9.23）：sniper long-rifle silhouette＋red aim telegraph≥1.0s＋hitscan；截圖 `tests/screenshots/phase3-sniper/`。
 - `PHASE2-COMBAT-READABILITY-002` **已完成**（v0.9.22）：ordinary rings off；floor／FX／telegraph／pickup readability；截圖 `tests/screenshots/phase2-readability/`。
 - `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
-- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.26。
+- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。
+- `PHONE-STABLE-CONTEXT-001` **已完成**（v0.9.51）：mid-run shed＋interrupt snapshot／overlay note；**HOLD for Roy phone verify**。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.50；**唔**自動再開更深 GPU／Phase 4。
 - `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy deferred phone GPU／mid-run WebGL；**soft-juice usability queue DONE**；jammer shipped v0.9.47（flanker→medic→jammer beat）。**HIT-FEEL-DEVICE Complete**（Roy「Ok」2026-10-27）— do **not** invent a 4th enemy／toast／streak／coach polish。**Active = HOLD**；still **ban** auto Phase 4／horn art lock／phone GPU。
+- Roy named phone GPU（「A」2026-10-27）→ **PHONE-STABLE-CONTEXT-001** shipped v0.9.51；**soft-juice DONE**；**HIT-FEEL-DEVICE Complete**。**Active = HOLD for Roy phone verify**；still **ban** auto Phase 4／horn art lock／soft-juice invent／further GPU deep without Roy。
 - AIM-HIT-FAST-002：**device verified** via HIT-FEEL；仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
 - Queue：命中可靠真機閘 **passed** → 其餘支柱（手機穩定／主角好看）仍要 Roy 點名；**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish／Morph。
-- SwiftShader ≠ 真機；手機 mid-run WebGL／GPU deep **仍未**裝置驗收（HIT-FEEL D 只係輕記 pass，唔當 GPU acceptance）。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
+- SwiftShader ≠ 真機；v0.9.51 mid-run guard **tested** headless；**仍未**裝置驗收（HOLD for Roy phone on `?v=0.9.51`）。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
 
 ## 版本歷史（增量）
+
+- **v0.9.51** (`PHONE-STABLE-CONTEXT-001`) — Mid-run WebGL guard on MOBILE_GFX: shed levels from runT/frameMs (PR/bloom/particle half-tick); sustained hot → cool-pause (no auto-resume); contextlost → sessionStorage interrupt snapshot + gfx/menu note after reload (not seamless Three restore). Module `js/webgl-guard.js`. Tests `tests/webgl-guard.test.mjs`. Desktop/balance/Phase4/horn unchanged. **HOLD for Roy phone verify** (box≠device).
 
 - **v0.9.50** (`PHASE6-ELITE-LANE-READ-001`) — Elite charge warning lanes thicker／brighter for phone read (`ELITE_LANE` dual≈1.28／single≈1.62；opacity floor 0.58；brighter orange；y=0.09). Not a new elite／not Morph. Screenshots `tests/screenshots/phase6-elite-lane-read/`. Tests `tests/elite-lane-read.test.mjs`. **HIT-FEEL-DEVICE Complete**／Roy phone OK 2026-10-27 (still ban Phase 4／4th enemy／soft-juice invent；Active=HOLD).
 

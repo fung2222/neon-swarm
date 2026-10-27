@@ -1107,3 +1107,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   font-variant-numeric: tabular-nums;
 }
 #screen-over .over-pos.hidden { display: none; }
+
+
+/* ---- v0.9.51: post-reload WebGL interrupt note on menu ---- */
+.interrupt-note {
+  margin: 8px 0 0;
+  max-width: min(360px, 92vw);
+  font-size: 12px;
+  line-height: 1.4;
+  color: #ffb0c0;
+  font-family: var(--font-zh, inherit);
+  text-align: center;
+  opacity: 0.92;
+}
+.interrupt-note.hidden { display: none; }

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.50 elite lane read; zone HUD chip; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.51 PHONE-STABLE-CONTEXT-001 mid-run WebGL guard; elite lane read; horn interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -11,6 +11,12 @@ import { Game } from './logic.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
+import {
+  computeShedLevel, pixelRatioForShed, bloomStrengthForShed,
+  shouldSkipParticleTick, shouldCoolPause,
+  buildInterruptSnapshot, writeInterruptSnapshot, readInterruptSnapshot,
+  clearInterruptSnapshot, formatInterruptNote, SHED,
+} from './webgl-guard.js';
 import { createBannerController, BANNER_MS } from './banner-queue.js';
 import {
   shouldShowCoach, markCoachSeen, zoneShortLabel, formatLoadoutFromGame,
@@ -70,8 +76,18 @@ const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
 function showGfxRecover(kind = 'lost') {
   const body = $('gfx-body');
   const bodyEn = $('gfx-body-en');
-  const zh = kind === 'boot' ? t('gfx.boot') : t('gfx.lost');
-  const en = kind === 'boot' ? t('gfx.bootEn') : t('gfx.lostEn');
+  let zh = kind === 'boot' ? t('gfx.boot') : t('gfx.lost');
+  let en = kind === 'boot' ? t('gfx.bootEn') : t('gfx.lostEn');
+  // v0.9.51: append last-run interrupt note when snapshot survives reload
+  if (kind === 'lost') {
+    try {
+      const snap = readInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null);
+      const noteZh = formatInterruptNote(snap, true);
+      const noteEn = formatInterruptNote(snap, false);
+      if (noteZh) zh = zh + '\n\n' + noteZh;
+      if (noteEn) en = en + '\n\n' + noteEn;
+    } catch (_) {}
+  }
   if (body) body.textContent = zh;
   if (bodyEn) bodyEn.textContent = en;
   // Hide kit permanent-fatal strip if present
@@ -217,6 +233,7 @@ const S = {
   state: 'menu', demo: !!flags.demo, game: null, mode: 'endless',
   hub: HUB, keys: Object.create(null), stick: { active: false, dx: 0, dy: 0 },
   demoT: 0, newRecord: false, gfxLost: false,
+  _shedLevel: 0, _shedHot: 0, _shedFrame: 0, _shedAccMs: 0, _shedAccN: 0,
   mechId: MECH_BY_ID[store.get('mech', 'horn')] ? store.get('mech', 'horn') : 'horn',
 };
 S.mech = MECH_BY_ID[S.mechId];
@@ -230,6 +247,11 @@ S.mech = MECH_BY_ID[S.mechId];
     if (S.gfxLost) return;
     S.gfxLost = true;
     console.warn('[neon-swarm] WebGL context lost');
+    // v0.9.51: persist tiny interrupt snapshot for post-reload note (not seamless resume)
+    try {
+      const snap = buildInterruptSnapshot(S.game);
+      writeInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null, snap);
+    } catch (_) {}
     try { if (S.state === 'play' || S.state === 'level') S.state = 'pause'; } catch (_) {}
     try { audio.duckAll?.(true); } catch (_) {}
     showGfxRecover('lost');
@@ -545,6 +567,21 @@ function showMenu() {
   Object.assign(pViewC, defaultView());
   ui.show('start');
   refreshMenu();
+  // v0.9.51: surface last graphics-interrupt snapshot on menu after reload
+  try {
+    const noteEl = $('interrupt-note');
+    if (noteEl) {
+      const snap = readInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null);
+      const note = formatInterruptNote(snap, i18n.isZh());
+      if (note) {
+        noteEl.textContent = note;
+        noteEl.classList.remove('hidden');
+      } else {
+        noteEl.textContent = '';
+        noteEl.classList.add('hidden');
+      }
+    }
+  } catch (_) {}
   if (HUB.trial) {
     const el = $('start-trial');
     el.classList.remove('hidden');
@@ -1005,6 +1042,13 @@ function startRun() {
   S.state = 'play';
   S.demoT = 0;
   S.newRecord = false;
+  // v0.9.51: fresh run — clear interrupt note + reset mid-run GPU shed
+  try { clearInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null); } catch (_) {}
+  S._shedLevel = 0;
+  S._shedHot = 0;
+  S._shedFrame = 0;
+  S._shedAccMs = 0;
+  S._shedAccN = 0;
   Object.assign(pView, defaultView());
   Object.assign(pViewC, defaultView());
   document.body.classList.remove('in-menu');
@@ -1702,7 +1746,10 @@ else if (ev.type === 'xp') {
     if (S.state === 'play') {
       dampView(pViewC, pView, dt);
       view.setZoom(pViewC.zoom);
-      particles.update(dt);
+      // v0.9.51: shed≥2 halves particle GPU work on MOBILE_GFX
+      if (!shouldSkipParticleTick(S._shedLevel | 0, S._shedFrame | 0)) {
+        particles.update(dt);
+      }
       waves.update(dt);
       fx.update(dt);
       view.sync(S.game, dt);
@@ -1738,9 +1785,55 @@ async function boot() {
   }
   const PERF = flags.get('perf') === '1';
   let _perfAcc = 0, _perfFrames = 0, _perfNearestMs = 0;
+  // v0.9.51: apply shed level to PR / bloom (MOBILE_GFX only; desktop shed stays 0)
+  function applyShedToStage(level) {
+    if (!MOBILE_GFX) return;
+    try {
+      const wantPr = pixelRatioForShed(level, MAX_PR);
+      if (Math.abs((stage.pixelRatio || 1) - wantPr) > 0.02) {
+        stage.setPixelRatio(wantPr);
+      }
+      const bloom = bloomStrengthForShed(level, 0.10);
+      stage.bloomBase = bloom;
+      if (stage.bloomPass) stage.bloomPass.strength = bloom;
+    } catch (_) {}
+  }
+
   stage.loop((dt, time, rawDt) => {
     if (S.gfxLost) return; // freeze game + render after context loss (overlay owns the screen)
     const capped = Math.min(0.05, dt);
+
+    // v0.9.51 mid-run GPU shed sample (~every frame accumulate; evaluate ~0.5s)
+    if (MOBILE_GFX && S.game && (S.state === 'play' || S.state === 'level')) {
+      S._shedFrame = (S._shedFrame | 0) + 1;
+      const frameMs = Math.min(100, (rawDt || dt || 0) * 1000);
+      S._shedAccMs = (S._shedAccMs || 0) + frameMs;
+      S._shedAccN = (S._shedAccN || 0) + 1;
+      if (S._shedAccN >= 30) {
+        const avg = S._shedAccMs / S._shedAccN;
+        S._shedAccMs = 0;
+        S._shedAccN = 0;
+        const next = computeShedLevel({
+          mobile: true,
+          runT: S.game.t || 0,
+          avgFrameMs: avg,
+          prevLevel: S._shedLevel | 0,
+        });
+        if (next !== (S._shedLevel | 0)) {
+          S._shedLevel = next;
+          applyShedToStage(next);
+          console.info('[neon-swarm] GPU shed level', next, 'avgFrameMs', avg.toFixed(1));
+        }
+        if (avg >= SHED.frameMsHot) S._shedHot = (S._shedHot | 0) + 1;
+        else S._shedHot = 0;
+        if (shouldCoolPause({ shedLevel: S._shedLevel | 0, hotStreak: S._shedHot | 0, state: S.state })) {
+          S._shedHot = 0;
+          pauseRun();
+          console.warn('[neon-swarm] cool-pause after sustained hot frames (GPU pressure)');
+        }
+      }
+    }
+
     if (PERF && S.game && S.state === 'play') {
       const t0 = performance.now();
       tick(capped * (fx.timeScale || 1));
