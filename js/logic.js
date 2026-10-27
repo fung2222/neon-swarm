@@ -2327,9 +2327,16 @@ export class Game {
   }
 
   weaponIcon() {
-    const owned = Object.keys(this.taken || {}).filter((id) => WEAPON_IDS.includes(id));
-    if (!owned.length) return 'dmg';
-    return owned[Math.floor(this.rng() * owned.length)];
+    // v0.9.58 — crates only offer catalog weapon ids (not legacy laser/rocket titles or buff cards).
+    const takenKeys = Object.keys(this.taken || {});
+    const owned = [];
+    for (const id of takenKeys) {
+      const nid = normalizeWeaponId(id) || id;
+      if (SLOT_WEAPONS.includes(nid) && !owned.includes(nid)) owned.push(nid);
+    }
+    if (owned.length) return owned[Math.floor(this.rng() * owned.length)];
+    const pool = SLOT_WEAPONS.filter((id) => id !== 'gatling');
+    return pool.length ? pool[Math.floor(this.rng() * pool.length)] : 'ion_beam';
   }
 
 

@@ -1,0 +1,38 @@
+{
+  "ver": "0.9.58",
+  "task": "WEAPONS-LEGACY-PURGE-001",
+  "offerMeta": {
+    "cardCount": 3,
+    "text": "離子光束\nION BEAM\n武器\n0/5\n裝入空欄\n主武器·穿透離子束（最多 5）\n追蹤爆彈\nTRACKING BOMB\n武器\n0/5\n裝入空欄\n主武器·追蹤爆炸彈（最多 5）\n硫酸槍\nACID GUN\n武器\n0/5\n裝入空欄\n副武器·溶甲酸液（能源；最多 5）",
+    "titles": [
+      "離子光束",
+      "追蹤爆彈",
+      "硫酸槍"
+    ],
+    "allCardText": [
+      "離子光束 ION BEAM 武器 0/5 裝入空欄 主武器·穿透離子束（最多 5）",
+      "追蹤爆彈 TRACKING BOMB 武器 0/5 裝入空欄 主武器·追蹤爆炸彈（最多 5）",
+      "硫酸槍 ACID GUN 武器 0/5 裝入空欄 副武器·溶甲酸液（能源；最多 5）"
+    ],
+    "hasLaser": false,
+    "hasRocket": false,
+    "hasIon": true,
+    "hasTrack": true,
+    "hasAcid": true,
+    "hasBareMg": false
+  },
+  "buffMeta": {
+    "text": "火力強化\nFIREPOWER\n武器\n主武器傷害 +0.35\n破片榴彈\nFRAG GRENADE\n武器\n0/5\n裝入空欄\n投擲·破片爆破（最多 5）\n零度激光\nZERO LASER\n武器\n0/5\n裝入空欄\n主武器·寒冰穿透激光（最多 5）",
+    "hasMgInDmg": false,
+    "hasFrag": true,
+    "hasZero": true,
+    "hasFirepower": true
+  },
+  "overMeta": {
+    "line": "機關雷射炮 Lv1 · 離子光束 Lv2 · 破片榴彈 Lv1",
+    "hasLegacy": false,
+    "hasCatalog": true
+  },
+  "errs": [],
+  "at": "2026-10-27T16:47:25.336Z"
+}

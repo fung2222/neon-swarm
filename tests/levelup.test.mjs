@@ -59,17 +59,20 @@ function applySettled(g, card, prefer = 'swap') {
   assert.ok(Math.abs(g.bulletDmg - (before + 0.7)) < 1e-9, 'dmg should stack +0.35 twice');
 }
 
-// 4. Special weapon cards unlock stacks (slot cap 4 → 5th resolves via swap)
+// 4. Catalog weapon cards unlock stacks (2P+2S+2T; extras resolve via swap)
 {
   const g = new Game({ seed: 8 });
-  for (const id of ['laser', 'shotgun', 'rocket', 'grenade', 'plasma']) {
+  // Fill remaining banks: P1 + S0/S1 + T0/T1 (starter already holds gatling in P0)
+  for (const id of ['ion_beam', 'shotgun', 'acid_gun', 'frag', 'chill']) {
     const c = CARDS.find((x) => x.id === id);
+    assert.ok(c, id + ' card');
     applySettled(g, c);
-    assert.equal(g[id], 1, id + ' unlock');
+    assert.ok((g[id] || 0) >= 1, id + ' unlock');
   }
-  assert.equal(g.weaponSlots.filter(Boolean).length, 4, 'still capped at 4 visible slots');
-  assert.ok(g.weaponSlots.includes('mg'));
-  assert.ok(g.weaponSlots.includes('plasma'), 'latest unlock sits in a slot after swaps');
+  assert.equal(g.weaponSlots.filter(Boolean).length, 6, 'full 2+2+2 bank');
+  assert.ok(g.weaponSlots.includes('gatling'));
+  assert.ok(g.weaponSlots.includes('acid_gun'));
+  assert.ok(g.weaponSlots.includes('frag'));
 }
 
 // 5. Two hundred level-ups through the real loop still keep a healthy pick rate.

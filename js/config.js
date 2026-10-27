@@ -74,7 +74,7 @@ export const MECHS = [
     hue: 'violet', plate: 0x1a1e28, accent: 0x3a2a55, trim: 0x00e5ff, hot: 0x00e5ff, visor: 0x7ad7ff,
     rampage: 0xff2bd6,
     stats: { hp: 1.14, speed: 1, damage: 1, fireRate: 1 },
-    starterWeapon: 'mg',
+    starterWeapon: 'gatling',
     passive: 'rampage',
     muzzle: { dist: 0.78, y: 0.95 },
     // legacy adapter (logic may still read these) — keep in sync with stats
@@ -90,7 +90,7 @@ export const MECHS = [
     descZh: '製作中 · 白粉精密機體（數值暫定，非正式平衡）', descEn: 'Coming soon · white-pink precision (stub stats, not balance)',
     hue: 'rose', plate: 0xe8dce6, accent: 0xf5eef3, trim: 0xff7ab0, hot: 0xffb0d0, visor: 0xffd6ea,
     stats: { hp: 1, speed: 0.92, damage: 1, fireRate: 1 },
-    starterWeapon: 'mg',
+    starterWeapon: 'gatling',
     passive: 'precision', // stub id — no unique ability yet
     muzzle: { dist: 0.72, y: 1.05 },
     bonus: { speedMul: 0.92, armor: 1 },
@@ -105,7 +105,7 @@ export const MECHS = [
     descZh: '製作中 · 可變結構原型（數值暫定，非正式平衡）', descEn: 'Coming soon · morph prototype (stub stats, not balance)',
     hue: 'citrus', plate: 0x1a2218, accent: 0x2a3a22, trim: 0x00e5ff, hot: 0xffc21a, visor: 0x7cffea,
     stats: { hp: 1, speed: 1.06, damage: 1, fireRate: 1 },
-    starterWeapon: 'mg',
+    starterWeapon: 'gatling',
     passive: 'morph', // stub id — no morph states yet
     muzzle: { dist: 0.74, y: 0.98 },
     bonus: { speedMul: 1.06, magnetMul: 1.25 },
@@ -149,7 +149,7 @@ export function resolveMechCombat(mech) {
     fireCd: PLAYER.fireCd / Math.max(0.25, fireRateMul),
     magnet: PLAYER.magnet * magnetMul,
     armor: PLAYER.armor + armorAdd,
-    starterWeapon: cfg.starterWeapon || 'mg',
+    starterWeapon: cfg.starterWeapon || 'gatling',
     passive: cfg.passive || null,
     muzzle: cfg.muzzle || { dist: 0.72, y: 0.95 },
   };
@@ -604,31 +604,19 @@ export const MAGNET_DROP_CHANCE = 0.025;
 /** Level-up cards — weapons + armour. `shape` drives the big emblem in the pick UI. */
 export const CARDS = [
   { id: 'dmg', kind: 'weapon', icon: '⚡', shape: 'bolt',
-    zh: '火力強化', en: 'FIREPOWER', descZh: '機槍傷害 +0.35', descEn: 'MG damage +0.35',
+    zh: '火力強化', en: 'FIREPOWER', descZh: '主武器傷害 +0.35', descEn: 'Primary damage +0.35',
     apply: (s) => { s.bulletDmg += 0.35; } },
   { id: 'rate', kind: 'weapon', icon: '⏱', shape: 'clock', max: 6,
-    zh: '連射超頻', en: 'RAPID FIRE', descZh: '機槍射速 +18%（最多 6）', descEn: 'MG rate +18% (max 6)',
+    zh: '連射超頻', en: 'RAPID FIRE', descZh: '主武器射速 +18%（最多 6）', descEn: 'Primary rate +18% (max 6)',
     apply: (s) => { s.fireCd = Math.max(0.045, s.fireCd * 0.82); } },
-  { id: 'laser', kind: 'weapon', icon: '═', shape: 'rail', max: 5,
-    zh: '鐳射炮', en: 'LASER', descZh: '解鎖／強化穿透鐳射束（最多 5）', descEn: 'Unlock/upgrade piercing laser (max 5)',
-    apply: (s) => { s.laser = Math.min(5, (s.laser || 0) + 1); s.ion_beam = Math.min(5, (s.ion_beam || 0) + 1); } },
   { id: 'shotgun', kind: 'weapon', icon: '✴', shape: 'spread', max: 5,
-    zh: '散彈槍', en: 'SHOTGUN', descZh: '近距扇形散彈（最多 5）', descEn: 'Close-range pellet cone (max 5)',
+    zh: '散彈槍', en: 'SHOTGUN', descZh: '副武器·近距扇形散彈（最多 5）', descEn: 'Secondary pellet cone (max 5)',
     apply: (s) => { s.shotgun = Math.min(5, (s.shotgun || 0) + 1); } },
-  { id: 'rocket', kind: 'weapon', icon: '🚀', shape: 'nova', max: 5,
-    zh: '火箭炮', en: 'ROCKET', descZh: '慢速火箭＋範圍爆炸（最多 3）', descEn: 'Slow rocket + AoE blast (max 3)',
-    apply: (s) => { s.rocket = Math.min(5, (s.rocket || 0) + 1); } },
-  { id: 'grenade', kind: 'weapon', icon: '💣', shape: 'orb', max: 5,
-    zh: '手榴彈／迫擊砲', en: 'GRENADE / MORTAR', descZh: '拋射延遲爆破（最多 3）', descEn: 'Lobbed delayed blast (max 3)',
-    apply: (s) => { s.grenade = Math.min(5, (s.grenade || 0) + 1); } },
-  { id: 'plasma', kind: 'weapon', icon: '☢', shape: 'frost', max: 5,
-    zh: '電漿／鏹水', en: 'PLASMA / ACID', descZh: '電漿團＋殘留毒池（最多 3）', descEn: 'Plasma blob + lingering puddle (max 3)',
-    apply: (s) => { s.plasma = Math.min(5, (s.plasma || 0) + 1); } },
   { id: 'multi', kind: 'weapon', icon: '◎', shape: 'lock', max: 3,
-    zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '機槍同時鎖定 +1（最多 4）', descEn: 'MG locks +1 foe (max 4)',
+    zh: '鎖定多目標', en: 'MULTI-LOCK', descZh: '主武器同時鎖定 +1（最多 4）', descEn: 'Primary locks +1 foe (max 4)',
     apply: (s) => { s.multi = Math.min(4, (s.multi || 1) + 1); } },
   { id: 'pierce', kind: 'weapon', icon: '↗', shape: 'pierce', max: 4,
-    zh: '穿透芯', en: 'PIERCE', descZh: '機槍穿透 +1（最多 4）', descEn: 'MG pierce +1 (max 4)',
+    zh: '穿透芯', en: 'PIERCE', descZh: '主武器穿透 +1（最多 4）', descEn: 'Primary pierce +1 (max 4)',
     apply: (s) => { s.pierce = Math.min(4, (s.pierce || 0) + 1); } },
   { id: 'orbit', kind: 'weapon', icon: '⟳', shape: 'orbit', max: 4,
     zh: '軌道刃', en: 'ORBIT BLADES', descZh: '環繞刃 +1（最多 4）', descEn: '+1 orbit blade (max 4)',
@@ -654,7 +642,7 @@ export const CARDS = [
   { id: 'hp', kind: 'armor', icon: '♥', shape: 'heart',
     zh: '護盾芯', en: 'SHIELD CORE', descZh: '最大 HP +1 並回滿', descEn: 'Max HP +1 & heal',
     apply: (s) => { s.maxHp += 1; s.hp = s.maxHp; } },
-  // v0.9.53 WEAPONS-REDESIGN-001 — new catalog cards (legacy laser/shotgun/… still valid via aliases)
+  // v0.9.53 catalog + v0.9.58 legacy purge — player cards = catalog ids only (aliases internal)
   { id: 'gatling', kind: 'weapon', icon: '⚡', shape: 'bolt', max: 5,
     zh: '機關雷射炮', en: 'GATLING LASER', descZh: '主武器·持續自動射擊（最多 5）', descEn: 'Primary auto-fire (max 5)',
     apply: (s) => { s.gatling = Math.min(5, (s.gatling || 0) + 1); s.bulletDmg = (s.bulletDmg || 1) + 0.18; } },
@@ -697,16 +685,16 @@ export const CARDS = [
   // PHASE6-TRADEOFF-CARDS-001 — build depth via trade-offs (existing card numbers unchanged)
   { id: 'overclock', kind: 'weapon', icon: '⚙', shape: 'overclock', max: 3,
     zh: '超頻過載', en: 'OVERCLOCK',
-    descZh: '機槍射速↑（CD×0.85）· 裝甲 −1（最少 0）',
-    descEn: 'MG rate↑ (CD×0.85) · armor −1 (min 0)',
+    descZh: '主武器射速↑（CD×0.85）· 裝甲 −1（最少 0）',
+    descEn: 'Primary rate↑ (CD×0.85) · armor −1 (min 0)',
     apply: (s) => {
       s.fireCd = Math.max(0.045, (s.fireCd || 0.1) * 0.85);
       s.armor = Math.max(0, (s.armor || 0) - 1);
     } },
   { id: 'glass', kind: 'weapon', icon: '◇', shape: 'glass', max: 2,
     zh: '玻璃大炮', en: 'GLASS CANNON',
-    descZh: '機槍傷害 +0.45 · 最大 HP −1（最少 3；當前 HP 同步上限）',
-    descEn: 'MG dmg +0.45 · max HP −1 (floor 3; clamp HP)',
+    descZh: '主武器傷害 +0.45 · 最大 HP −1（最少 3；當前 HP 同步上限）',
+    descEn: 'Primary dmg +0.45 · max HP −1 (floor 3; clamp HP)',
     apply: (s) => {
       s.bulletDmg = (s.bulletDmg || 0) + 0.45;
       s.maxHp = Math.max(3, (s.maxHp || 3) - 1);
@@ -734,8 +722,8 @@ export const WEAPON_ICONS = {
 
 /** Large English labels drawn on neon pickup frames (readable at a glance). */
 export const WEAPON_DROP_LABEL = {
-  dmg: 'MG', rate: 'ROF', laser: 'LASER', shotgun: 'SG', rocket: 'RKT',
-  grenade: 'GRN', plasma: 'PLAS', multi: 'MULTI', pierce: 'PRC',
+  dmg: 'DMG', rate: 'ROF', laser: 'ION', shotgun: 'SG', rocket: 'TRK',
+  grenade: 'FRAG', plasma: 'ACID', multi: 'MULTI', pierce: 'PRC',
   orbit: 'ORB', nova: 'NOVA',
   gatling: 'GAT', ion_beam: 'ION', tracking_bomb: 'TRK', vulcan: 'VUL', zero_laser: 'ZERO',
   acid_gun: 'ACID', slow_gun: 'SLOW', attack_drone: 'DRN', blackhole: 'BH',
@@ -847,7 +835,7 @@ export function pickCards(rng, n = 3, taken = null) {
 /**
  * Phase 6 multi-slot inventory (v0.9.28).
  * Fireable weapon systems that occupy HUD slots. MG upgrades (dmg/rate/…) do NOT.
- * Cap 4: start with mg in slot 0; up to 3 additional specials.
+ * Cap 6 (2P+2S+2T): start with gatling in P0.
  */
 /** Phase 6 + v0.9.53 weapons redesign — loadout 2P+2S+2T (see docs/WEAPONS.md / js/weapons.js). */
 export const SLOT_WEAPONS = WEAPONS_SLOT_LIST;
@@ -884,7 +872,7 @@ export function weaponSlotLevel(id, taken = {}) {
  */
 export function buildWeaponPickupOffer(weaponId, taken = {}, slots = null) {
   const nid = normalizeWeaponId(weaponId) || weaponId;
-  // Prefer the requested card id (legacy alias crates keep laser/plasma copy); fall back to normalized.
+  // Prefer exact card id; legacy alias crates (laser/plasma/…) resolve via normalizeWeaponId → catalog card.
   const base = CARDS_BY_ID[weaponId] || CARDS_BY_ID[nid];
   // Synthetic starter may lack card — only real weapon cards are crate targets.
   if (!base || base.kind !== 'weapon') return null;

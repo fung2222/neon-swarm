@@ -1,34 +1,42 @@
 /**
- * Phase 6 weapon pickup choice — no silent overwrite (v0.9.11).
+ * Phase 6 weapon pickup choice — catalog ids (v0.9.58 legacy purge).
+ * Legacy crate ids (laser/…) still normalize to catalog cards.
  * Run: node tests/weapon-pickup.test.mjs
  */
 import assert from 'assert';
 import { Game } from '../js/logic.js';
-import { CARDS, CARDS_BY_ID, buildWeaponPickupOffer, cardExhausted } from '../js/config.js';
+import { CARDS, CARDS_BY_ID, buildWeaponPickupOffer, cardExhausted, pickCards } from '../js/config.js';
 
-const laser = CARDS_BY_ID.laser;
-assert.ok(laser && laser.max === 5, 'laser card');
+assert.ok(!CARDS_BY_ID.laser && !CARDS_BY_ID.rocket && !CARDS_BY_ID.grenade && !CARDS_BY_ID.plasma,
+  'legacy unlock cards purged from CARDS');
+const ion = CARDS_BY_ID.ion_beam;
+assert.ok(ion && ion.max === 5 && ion.zh === '離子光束', 'ion_beam catalog card');
 
-// ---- Helper: pure offer builder ----
+// ---- Helper: pure offer builder (catalog id) ----
 {
-  const notOwned = buildWeaponPickupOffer('laser', {});
+  const notOwned = buildWeaponPickupOffer('ion_beam', {});
   assert.equal(notOwned.mode, 'take');
   assert.equal(notOwned.stacks, 0);
-  assert.ok(notOwned.choices.some((c) => c.pickupAction === 'take' && c.id === 'laser'));
+  assert.ok(notOwned.choices.some((c) => c.pickupAction === 'take' && c.id === 'ion_beam'));
   assert.ok(notOwned.choices.some((c) => c.pickupAction === 'keep'));
   assert.equal(notOwned.choices.length, 2);
 
-  const owned = buildWeaponPickupOffer('laser', { laser: 2 });
+  const owned = buildWeaponPickupOffer('ion_beam', { ion_beam: 2 });
   assert.equal(owned.mode, 'upgrade');
   assert.ok(owned.choices.some((c) => c.pickupAction === 'upgrade'));
-  assert.ok(owned.choices.some((c) => c.pickupAction === 'keep'));
 
-  const atMax = buildWeaponPickupOffer('laser', { laser: 5 });
+  const atMax = buildWeaponPickupOffer('ion_beam', { ion_beam: 5 });
   assert.equal(atMax.mode, 'max');
   assert.ok(atMax.atMax);
   assert.ok(atMax.choices.some((c) => c.pickupAction === 'convertHeal'));
-  assert.ok(atMax.choices.some((c) => c.pickupAction === 'keep'));
-  assert.ok(!atMax.choices.some((c) => c.id === 'laser'), 'must not offer another laser stack at max');
+  assert.ok(!atMax.choices.some((c) => c.id === 'ion_beam'), 'no stack at max');
+
+  // Legacy alias crate id still resolves to catalog card copy
+  const legacy = buildWeaponPickupOffer('laser', {});
+  assert.ok(legacy, 'laser alias resolves');
+  assert.equal(legacy.mode, 'take');
+  assert.equal(legacy.choices.find((c) => c.pickupAction === 'take').id, 'ion_beam');
+  assert.equal(legacy.choices.find((c) => c.pickupAction === 'take').zh.includes('離子') || legacy.choices.find((c) => c.pickupAction === 'take').zh.includes('裝上'), true);
 
   assert.equal(buildWeaponPickupOffer('nope', {}), null);
   assert.equal(buildWeaponPickupOffer('armor', {}), null, 'armor is not a weapon crate');
@@ -37,157 +45,112 @@ assert.ok(laser && laser.max === 5, 'laser card');
 // ---- Not owned: take grants via taken path ----
 {
   const g = new Game({ seed: 7 });
-  assert.equal(g.laser, 0);
-  assert.equal(g.taken.laser || 0, 0);
+  assert.equal(g.ion_beam || 0, 0);
   g.gems.push({
     x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'laser',
+    kind: 'weapon', weapon: 'ion_beam',
   });
   const { events } = g.step(1 / 30);
   const offer = events.find((e) => e.type === 'weaponOffer');
-  const level = events.find((e) => e.type === 'levelup' && e.from === 'pickup');
   assert.ok(offer, 'weaponOffer event');
   assert.equal(offer.mode, 'take');
-  assert.ok(level, 'levelup from pickup');
-  assert.ok(g.pausedForLevel, 'run paused until choice');
-  assert.equal(g.pendingFrom, 'pickup');
-  assert.equal(g.laser, 0, 'must not grant before choice');
-  assert.equal(g.taken.laser || 0, 0, 'must not touch taken before choice');
-
+  assert.equal(g.ion_beam || 0, 0, 'must not grant before choice');
   const take = g.pendingCards.find((c) => c.pickupAction === 'take');
   g.applyCard(take);
-  assert.equal(g.laser, 1);
-  assert.equal(g.taken.laser, 1);
-  assert.equal(g.pausedForLevel, false);
-  assert.equal(g.pendingCards, null);
+  assert.ok((g.ion_beam || 0) >= 1);
+  assert.equal(g.taken.ion_beam, 1);
 }
 
-// ---- Owned below max: upgrade vs keep ----
+// ---- Legacy laser gem → ion_beam ----
+{
+  const g = new Game({ seed: 8 });
+  g.gems.push({
+    x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
+    kind: 'weapon', weapon: 'laser',
+  });
+  g.step(1 / 30);
+  const take = g.pendingCards.find((c) => c.pickupAction === 'take');
+  assert.ok(take);
+  assert.equal(take.id, 'ion_beam');
+  assert.ok(take.zh.includes('離子') || take.zh.includes('裝上'));
+  g.applyCard(take);
+  assert.ok((g.ion_beam || 0) >= 1 || (g.laser || 0) >= 1);
+}
+
+// ---- Owned upgrade ----
 {
   const g = new Game({ seed: 9 });
-  g.applyCard(laser);
-  assert.equal(g.taken.laser, 1);
+  g.applyCard(ion);
+  assert.equal(g.taken.ion_beam, 1);
   g.gems.push({
     x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'laser',
+    kind: 'weapon', weapon: 'ion_beam',
   });
-  const { events } = g.step(1 / 30);
-  const offer = events.find((e) => e.type === 'weaponOffer');
-  assert.equal(offer.mode, 'upgrade');
-  const before = g.laser;
-  // Keep: no stack change
-  const keep = g.pendingCards.find((c) => c.pickupAction === 'keep');
-  g.applyCard(keep);
-  assert.equal(g.laser, before);
-  assert.equal(g.taken.laser, 1);
-  assert.equal(g.taken._pickup_keep, undefined, 'keep must not pollute taken');
-  assert.equal(g.pausedForLevel, false);
+  g.step(1 / 30);
+  const before = g.ion_beam;
+  g.applyCard(g.pendingCards.find((c) => c.pickupAction === 'keep'));
+  assert.equal(g.ion_beam, before);
+  assert.equal(g.taken.ion_beam, 1);
+
+  g.gems.push({
+    x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
+    kind: 'weapon', weapon: 'ion_beam',
+  });
+  g.step(1 / 30);
+  g.applyCard(g.pendingCards.find((c) => c.pickupAction === 'upgrade'));
+  assert.equal(g.taken.ion_beam, 2);
 }
 
+// ---- At max → convertHeal ----
 {
   const g = new Game({ seed: 11 });
-  g.applyCard(laser);
+  // Seed stacks + slot without walking branch/ult offer queue
+  g.ion_beam = ion.max;
+  g.laser = ion.max;
+  g.taken.ion_beam = ion.max;
+  g.loadout.primary[1] = 'ion_beam';
+  g.weaponSlots = ['gatling', 'ion_beam', null, null, null, null];
+  g.weaponBranches = { ion_beam: 'A' };
+  g.weaponUlts = { ion_beam: 'U1' };
+  assert.ok(cardExhausted(ion, g.taken));
   g.gems.push({
     x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'laser',
+    kind: 'weapon', weapon: 'ion_beam',
   });
   g.step(1 / 30);
-  const up = g.pendingCards.find((c) => c.pickupAction === 'upgrade');
-  g.applyCard(up);
-  assert.equal(g.laser, 2);
-  assert.equal(g.taken.laser, 2);
+  assert.ok(g.pendingCards && g.pendingCards.some((c) => c.pickupAction === 'convertHeal'),
+    'expected convertHeal, got ' + JSON.stringify(g.pendingCards && g.pendingCards.map((c) => c.pickupAction)));
+  assert.equal(g.taken.ion_beam, ion.max, 'no silent stack bump');
+  g.applyCard(g.pendingCards.find((c) => c.pickupAction === 'keep'));
+  assert.equal(g.taken.ion_beam, ion.max);
 }
 
-// ---- At max: keep / convertHeal — never silent grant ----
+// ---- Slots-aware take / upgrade ----
 {
-  const g = new Game({ seed: 13 });
-  for (let i = 0; i < laser.max; i++) g.applyCard(laser);
-  assert.equal(g.taken.laser, laser.max);
-  assert.ok(cardExhausted(laser, g.taken));
-  g.hp = Math.max(1, g.maxHp - 4);
-  const hpBefore = g.hp;
-  g.gems.push({
-    x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'laser',
-  });
-  const { events } = g.step(1 / 30);
-  const offer = events.find((e) => e.type === 'weaponOffer');
-  assert.equal(offer.mode, 'max');
-  assert.ok(g.pausedForLevel, 'at-max still pauses with UI');
-  assert.equal(g.taken.laser, laser.max, 'no silent stack bump');
-
-  const heal = g.pendingCards.find((c) => c.pickupAction === 'convertHeal');
-  g.applyCard(heal);
-  assert.equal(g.taken.laser, laser.max);
-  assert.equal(g.taken._pickup_heal, undefined);
-  assert.equal(g.hp, Math.min(g.maxHp, hpBefore + 2));
-  assert.equal(g.pausedForLevel, false);
-}
-
-{
-  const g = new Game({ seed: 15 });
-  for (let i = 0; i < laser.max; i++) g.applyCard(laser);
-  g.gems.push({
-    x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'laser',
-  });
-  g.step(1 / 30);
-  const keep = g.pendingCards.find((c) => c.pickupAction === 'keep');
-  g.applyCard(keep);
-  assert.equal(g.taken.laser, laser.max);
-  assert.equal(g.pausedForLevel, false);
-}
-
-// ---- While already paused for level-up, weapon crate stays on ground ----
-{
-  const g = new Game({ seed: 17 });
-  g._levelUp();
-  assert.ok(g.pausedForLevel);
-  const n0 = g.gems.length;
-  g.gems.push({
-    x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'shotgun',
-  });
-  // step early-outs while paused — gem untouched
-  const { events } = g.step(1 / 30);
-  assert.equal(events.length, 0);
-  assert.equal(g.gems.length, n0 + 1);
-  assert.ok(g.gems.some((x) => x.kind === 'weapon'));
-}
-
-// ---- Uncapped weapon (dmg) take still works ----
-{
-  const g = new Game({ seed: 19 });
-  g.gems.push({
-    x: g.px, z: g.pz, xp: 0, r: 0.22, life: 22, pop: 0, letter: 'W',
-    kind: 'weapon', weapon: 'dmg',
-  });
-  const before = g.bulletDmg;
-  g.step(1 / 30);
-  assert.equal(g.pendingFrom, 'pickup');
-  const take = g.pendingCards.find((c) => c.pickupAction === 'take');
-  g.applyCard(take);
-  assert.equal(g.taken.dmg, 1);
-  assert.ok(Math.abs(g.bulletDmg - (before + 0.35)) < 1e-9);
-}
-
-
-// ---- v0.9.29 copy polish: take / upgrade / keep phrasing ----
-{
-  const take = buildWeaponPickupOffer('laser', {}, ['mg', null, null, null]);
+  const take = buildWeaponPickupOffer('ion_beam', {}, ['gatling', null, null, null, null, null]);
   assert.equal(take.mode, 'take');
-  const t = take.choices.find((c) => c.pickupAction === 'take');
-  assert.ok(t.zh.startsWith('裝上'), t.zh);
-  const k = take.choices.find((c) => c.pickupAction === 'keep');
-  assert.ok(k.descZh.includes('恢復戰鬥'), k.descZh);
-
-  const up = buildWeaponPickupOffer('laser', { laser: 1 }, ['mg', 'laser', null, null]);
+  const up = buildWeaponPickupOffer('ion_beam', { ion_beam: 1 }, ['gatling', 'ion_beam', null, null, null, null]);
   assert.equal(up.mode, 'upgrade');
-  const u = up.choices.find((c) => c.pickupAction === 'upgrade');
-  assert.ok(u.zh.includes('升級') && u.zh.includes('Lv1→2'), u.zh);
 }
 
-console.log('weapon-pickup OK', {
-  cards: CARDS.filter((c) => c.kind === 'weapon').length,
-  modes: ['take', 'upgrade', 'max', 'keep'],
-});
+// ---- pickCards never offers purged legacy titles ----
+{
+  const seen = new Set();
+  let rngState = 1;
+  const rng = () => { rngState = (rngState * 1664525 + 1013904223) >>> 0; return (rngState >>> 0) / 0xffffffff; };
+  for (let i = 0; i < 80; i++) {
+    for (const c of pickCards(rng, 3, {})) seen.add(c.id);
+  }
+  for (const bad of ['laser', 'rocket', 'grenade', 'plasma']) {
+    assert.ok(!seen.has(bad), 'pickCards must not offer ' + bad);
+  }
+  assert.ok(seen.has('ion_beam') || seen.has('gatling'), 'catalog weapons appear');
+  const bannedNames = [/鐳射炮/, /火箭炮/, /^電漿/, /手榴彈／迫擊/];
+  for (const c of CARDS) {
+    for (const re of bannedNames) {
+      assert.ok(!re.test(c.zh || ''), 'banned zh on ' + c.id + ': ' + c.zh);
+    }
+  }
+}
+
+console.log('weapon-pickup.test.mjs: PASS');

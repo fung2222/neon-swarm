@@ -18,7 +18,20 @@ export const ZONE_SHORT = Object.freeze({
   rooftop: { zh: '天台逃出區', en: 'ROOFTOP' },
 });
 
-const MG_LABEL = { zh: '機槍', en: 'MG' };
+/** Player-facing starter label = catalog gatling (legacy mg alias internal-only). */
+const MG_LABEL = { zh: '機關雷射炮', en: 'GATLING LASER' };
+
+
+/** Resolve player-facing name; legacy slot ids map to catalog card titles when present. */
+function displayWeaponName(id, cardsById, isZh) {
+  if (!id) return isZh ? MG_LABEL.zh : MG_LABEL.en;
+  if (id === 'mg' || id === 'gatling') return isZh ? MG_LABEL.zh : MG_LABEL.en;
+  const ALIAS = { laser: 'ion_beam', rocket: 'tracking_bomb', grenade: 'frag', plasma: 'acid_gun' };
+  const nid = ALIAS[id] || id;
+  const card = (cardsById && (cardsById[nid] || cardsById[id])) || null;
+  if (card) return isZh ? (card.zh || nid) : (card.en || nid);
+  return String(nid).toUpperCase();
+}
 
 /**
  * @param {Storage|null|undefined} storage
@@ -52,17 +65,13 @@ export function zoneShortLabel(zoneId, isZh = true) {
  */
 export function formatLoadoutLine(slots, taken = {}, cardsById = {}, isZh = true) {
   const list = Array.isArray(slots) ? slots.filter(Boolean) : [];
-  if (!list.length) return isZh ? '機槍' : 'MG';
+  if (!list.length) return isZh ? MG_LABEL.zh : MG_LABEL.en;
   return list.map((id) => {
-    const stack = id === 'mg'
-      ? Math.max(1, (taken && (taken.dmg || taken.rate)) ? 1 : 1)
-      : Math.max(1, (taken && taken[id]) || 1);
-    // Display stack from game fields is caller-resolved; here use taken[id] or 1
-    const lv = id === 'mg' ? Math.max(1, Number(taken.mg) || 1) : Math.max(1, Number(taken[id]) || 1);
-    let name;
-    if (id === 'mg') name = isZh ? MG_LABEL.zh : MG_LABEL.en;
-    else if (cardsById[id]) name = isZh ? (cardsById[id].zh || id) : (cardsById[id].en || id);
-    else name = String(id).toUpperCase();
+    const isStarter = id === 'mg' || id === 'gatling';
+    const lv = isStarter
+      ? Math.max(1, Number(taken.gatling) || Number(taken.mg) || 1)
+      : Math.max(1, Number(taken[id]) || 1);
+    const name = displayWeaponName(id, cardsById, isZh);
     return `${name} Lv${lv}`;
   }).join(isZh ? ' · ' : ' · ');
 }
@@ -70,21 +79,24 @@ export function formatLoadoutLine(slots, taken = {}, cardsById = {}, isZh = true
 /** Resolve stack level for a slotted weapon from game-like state. */
 export function slotStackLevel(id, g) {
   if (!g) return 1;
-  if (id === 'mg') return 1; // MG has no stack field; always base
-  const n = Number(g[id]);
+  const ALIAS = { mg: 'gatling', laser: 'ion_beam', rocket: 'tracking_bomb', grenade: 'frag', plasma: 'acid_gun' };
+  const nid = ALIAS[id] || id;
+  if (nid === 'gatling') {
+    const n = Number(g.gatling);
+    if (Number.isFinite(n) && n > 0) return n;
+    return Math.max(1, Number(g.taken && (g.taken.gatling || g.taken.mg)) || 1);
+  }
+  const n = Number(g[nid] != null ? g[nid] : g[id]);
   if (Number.isFinite(n) && n > 0) return n;
-  const t = g.taken && g.taken[id];
-  return Math.max(1, Number(t) || 1);
+  const tk = g.taken && (g.taken[nid] || g.taken[id]);
+  return Math.max(1, Number(tk) || 1);
 }
 
 export function formatLoadoutFromGame(g, cardsById = {}, isZh = true) {
-  const slots = (g && g.weaponSlots) ? g.weaponSlots.filter(Boolean) : ['mg'];
+  const slots = (g && g.weaponSlots) ? g.weaponSlots.filter(Boolean) : ['gatling'];
   return slots.map((id) => {
     const lv = slotStackLevel(id, g);
-    let name;
-    if (id === 'mg') name = isZh ? MG_LABEL.zh : MG_LABEL.en;
-    else if (cardsById[id]) name = isZh ? (cardsById[id].zh || id) : (cardsById[id].en || id);
-    else name = String(id).toUpperCase();
+    const name = displayWeaponName(id, cardsById, isZh);
     return `${name} Lv${lv}`;
   }).join(' · ');
 }

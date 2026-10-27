@@ -403,6 +403,8 @@ new ViewInput($('scene'), {
 window.__swarm = S;
 S.weaponIconHtml = weaponIconHtml;
 S.WEAPON_ICON_SRC = WEAPON_ICON_SRC;
+S.CARDS_BY_ID = CARDS_BY_ID;
+S.formatLoadoutFromGame = formatLoadoutFromGame;
 S.view = view;
 S._coachSessionShown = false;
 S._coachTimer = 0;

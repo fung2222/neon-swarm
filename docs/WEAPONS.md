@@ -258,18 +258,24 @@ Each weapon needs a **real square icon** (not emoji forever).
 
 ---
 
-## Legacy map (migration)
+## Legacy map (v0.9.58 — internal aliases only)
 
-| Legacy slot id | New id | Notes |
-|----------------|--------|-------|
-| `mg` | `gatling` | starter; dmg/rate cards still buff primary gatling stats |
-| `laser` | `ion_beam` | pierce beam |
-| `shotgun` | `shotgun` | same id · now **secondary** |
-| `rocket` | `tracking_bomb` | primary homing |
+Player-facing level-up / crate cards use **catalog ids only**. Legacy unlock cards
+(`laser`／鐳射炮, `rocket`／火箭炮, `grenade`, `plasma`) were **removed** from `CARDS`.
+`shotgun` stays (same catalog id · secondary). Generic buffs (`dmg`/`rate`/`multi`/`pierce`/
+`overclock`/`glass`) reworded off bare「機槍」→「主武器」. Mech `starterWeapon` = `gatling`.
+
+| Legacy id (ingest only) | Catalog id | Notes |
+|-------------------------|------------|-------|
+| `mg` | `gatling` | starter; fire tag may still emit `mg`; HUD shows 機關雷射炮 |
+| `laser` | `ion_beam` | crates/saves normalize; no player card titled 鐳射炮 |
+| `shotgun` | `shotgun` | same id · **secondary** |
+| `rocket` | `tracking_bomb` | no player card titled 火箭炮 |
 | `grenade` | `frag` | throw |
-| `plasma` | `acid_gun` | secondary energy (acid role); `zero_laser` is new primary |
+| `plasma` | `acid_gun` | secondary energy |
 
-Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
+`WEAPON_ID_ALIASES` + `normalizeWeaponId()` keep fire-path / save / test compat.
+Do **not** re-add player cards under legacy ids.
 
 ---
 
@@ -277,7 +283,7 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 
 | Piece | Status |
 |-------|--------|
-| Catalog IDs + zh/en strings | **live** |
+| Catalog IDs + zh/en strings | **live** (v0.9.58 player cards = catalog only) |
 | Loadout 2+2+2 model | **live** |
 | Left rail + top status HUD | **live** |
 | Primary auto-fire (gatling, ion_beam) | **live** (exemplars) |
@@ -300,5 +306,6 @@ Pickup / cards accept legacy ids and normalize via `normalizeWeaponId()`.
 - `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
 - `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
-- Screenshots: redesign (v0.9.53) + branch (v0.9.54) + kits (v0.9.55) + feel-fx (v0.9.56) + icon-placeholders (v0.9.57)  
+- Screenshots: redesign (v0.9.53) + branch (v0.9.54) + kits (v0.9.55) + feel-fx (v0.9.56) + icon-placeholders (v0.9.57) + legacy-purge (v0.9.58)
+- `tests/weapons-legacy-purge.test.mjs` + `tests/screenshots/weapons-legacy-purge/`  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push

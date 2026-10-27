@@ -38,7 +38,7 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- Take fills category banks (P / S / T) ----
 {
   const g = new Game({ seed: 3 });
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   assert.ok(g.laser >= 1 || g.ion_beam >= 1);
   assert.equal(g.taken.ion_beam, 1);
   assert.deepEqual(g.loadout.primary, ['gatling', 'ion_beam']);
@@ -48,7 +48,7 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
   assert.deepEqual(g.loadout.secondary, ['shotgun', null]);
   assert.deepEqual(g.weaponSlots, ['gatling', 'ion_beam', 'shotgun', null, null, null]);
 
-  g.applyCard(CARDS_BY_ID.grenade);
+  g.applyCard(CARDS_BY_ID.frag);
   assert.deepEqual(g.loadout.throw, ['frag', null]);
   assert.ok(g.weaponSlots.includes('frag'));
 }
@@ -56,8 +56,8 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- Primary category full → swap (not silent) ----
 {
   const g = new Game({ seed: 4 });
-  g.applyCard(CARDS_BY_ID.laser); // fills P1
-  g.applyCard(CARDS_BY_ID.rocket); // 3rd primary → swap
+  g.applyCard(CARDS_BY_ID.ion_beam); // fills P1
+  g.applyCard(CARDS_BY_ID.tracking_bomb); // 3rd primary → swap
   assert.equal(g.tracking_bomb || g.rocket || 0, 0, 'no silent grant');
   assert.ok(g.pausedForLevel);
   assert.ok(g.pendingCards.some((c) => c.pickupAction === 'swap' && c.swapOut === 'ion_beam'));
@@ -71,8 +71,8 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- Upgrade bumps stacks, does not duplicate slot ----
 {
   const g = new Game({ seed: 5 });
-  g.applyCard(CARDS_BY_ID.laser);
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   assert.equal(g.taken.ion_beam, 2);
   assert.deepEqual(g.loadout.primary, ['gatling', 'ion_beam']);
 }
@@ -113,10 +113,10 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- Full 6-slot bank + new type → swap ----
 {
   const g = new Game({ seed: 11 });
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.plasma);
-  g.applyCard(CARDS_BY_ID.grenade);
+  g.applyCard(CARDS_BY_ID.acid_gun);
+  g.applyCard(CARDS_BY_ID.frag);
   g.applyCard(CARDS_BY_ID.chill);
   assert.ok(!hasEmptyWeaponSlot(g.weaponSlots));
   assert.deepEqual(g.weaponSlots, ['gatling', 'ion_beam', 'shotgun', 'acid_gun', 'frag', 'chill']);
@@ -145,10 +145,10 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- Keep on full inventory ----
 {
   const g = new Game({ seed: 13 });
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.plasma);
-  g.applyCard(CARDS_BY_ID.grenade);
+  g.applyCard(CARDS_BY_ID.acid_gun);
+  g.applyCard(CARDS_BY_ID.frag);
   g.applyCard(CARDS_BY_ID.chill);
   const before = g.weaponSlots.slice();
   g.gems.push({
@@ -165,7 +165,7 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- Level-up new weapon with category full → swap UI ----
 {
   const g = new Game({ seed: 15 });
-  g.applyCard(CARDS_BY_ID.laser); // P full with gatling
+  g.applyCard(CARDS_BY_ID.ion_beam); // P full with gatling
   g.applyCard(CARDS_BY_ID.vulcan); // deferred swap
   assert.equal(g.vulcan || 0, 0, 'level-up deferred to swap — no silent grant');
   assert.ok(g.pausedForLevel);
@@ -181,7 +181,7 @@ assert.equal(normalizeWeaponId('plasma'), 'acid_gun');
 // ---- only slotted weapons fire ----
 {
   const g = new Game({ seed: 21 });
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   g.applyCard(CARDS_BY_ID.shotgun);
   g.plasma = 2;
   g.taken.plasma = 2;

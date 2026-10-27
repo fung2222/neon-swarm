@@ -26,9 +26,9 @@ assert.equal(initialResource('gatling'), null);
 
 {
   const g = new Game({ seed: 42 });
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   g.applyCard(CARDS_BY_ID.shotgun);
-  g.applyCard(CARDS_BY_ID.grenade);
+  g.applyCard(CARDS_BY_ID.frag);
   assert.equal(g.fireMode, 'primary');
   assert.equal(g.activePrimaryId(), 'gatling');
 

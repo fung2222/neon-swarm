@@ -31,13 +31,22 @@ assert.ok(HURT_VIGNETTE_MS >= 120 && HURT_VIGNETTE_MS <= 280);
 
 {
   const line = formatLoadoutFromGame(
-    { weaponSlots: ['mg', 'laser', null, 'rocket'], laser: 2, rocket: 1 },
+    { weaponSlots: ['gatling', 'ion_beam', null, 'tracking_bomb'], ion_beam: 2, tracking_bomb: 1, gatling: 1 },
     CARDS_BY_ID,
     true,
   );
-  assert.ok(line.includes('機槍'), line);
-  assert.ok(line.includes('鐳射炮 Lv2'), line);
-  assert.ok(line.includes('火箭炮'), line);
+  assert.ok(line.includes('機關雷射炮'), line);
+  assert.ok(line.includes('離子光束 Lv2'), line);
+  assert.ok(line.includes('追蹤爆彈'), line);
+  // legacy slot ids still resolve to catalog names
+  const legacy = formatLoadoutFromGame(
+    { weaponSlots: ['mg', 'laser'], laser: 2 },
+    CARDS_BY_ID,
+    true,
+  );
+  assert.ok(legacy.includes('機關雷射炮'), legacy);
+  assert.ok(legacy.includes('離子光束 Lv2'), legacy);
+  assert.ok(!legacy.includes('鐳射炮'), 'no bare 鐳射炮 title: ' + legacy);
 }
 
 {

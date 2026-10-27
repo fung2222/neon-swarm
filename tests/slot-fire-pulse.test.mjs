@@ -21,9 +21,9 @@ assert.equal(slotIndexForWeapon([], 'mg'), -1);
 // Fire events carry weapon id that maps to HUD slot
 {
   const g = new Game({ seed: 11 });
-  g.applyCard(CARDS_BY_ID.laser);
+  g.applyCard(CARDS_BY_ID.ion_beam);
   g.applyCard(CARDS_BY_ID.shotgun);
-  assert.deepEqual(g.weaponSlots, ['mg', 'laser', 'shotgun', null]);
+  assert.deepEqual(g.weaponSlots, ['gatling', 'ion_beam', 'shotgun', null, null, null]);
 
   // spawn nearby fodder so weapons can acquire
   for (let i = 0; i < 6; i++) {
@@ -39,14 +39,13 @@ assert.equal(slotIndexForWeapon([], 'mg'), -1);
       if (ev.type !== 'fire' || !ev.weapon) continue;
       const idx = slotIndexForWeapon(g.weaponSlots, ev.weapon);
       assert.ok(idx >= 0, `fired weapon ${ev.weapon} must be in slots`);
-      assert.equal(g.weaponSlots[idx], ev.weapon);
+      // fire tags may still be legacy (mg) while slots hold catalog ids — alias map covers it
       seen.add(ev.weapon);
     }
   }
-  assert.ok(seen.has('mg'), 'mg should fire');
-  // laser/shotgun may or may not fire in 90 frames depending on CD — at least mapping works for any that did
+  assert.ok(seen.has('mg') || seen.has('gatling'), 'starter primary should fire');
   for (const w of seen) {
-    assert.ok(g.weaponSlots.includes(w));
+    assert.ok(slotIndexForWeapon(g.weaponSlots, w) >= 0, w);
   }
 }
 
