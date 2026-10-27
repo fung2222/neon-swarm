@@ -560,12 +560,12 @@ function updateWeaponSlotsHUD(g) {
       continue;
     }
     const lv = _slotLv(g, id);
-    const lab = SLOT_LABEL[id] || (def ? def.en.split(' ')[0].slice(0, 5) : id.toUpperCase());
+    const lab = def ? (i18n.isZh() ? def.zh : def.en) : (SLOT_LABEL[id] || id.toUpperCase());
     el.innerHTML =
       `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 22 })}</span>` +
       `<span class="wslot-name">${lab}</span>` +
       `<span class="wslot-lv">Lv${lv}</span>`;
-    el.title = `${def ? (i18n.isZh() ? def.zh : def.en) : lab} Lv${lv}`;
+    el.title = `${lab} Lv${lv}`;
   }
   while (bar.children.length > 6) bar.removeChild(bar.lastChild);
   updateWeaponStatusHUD(g);
@@ -589,7 +589,9 @@ function updateWeaponStatusHUD(g) {
     icoEl.innerHTML = id ? weaponIconHtml(id, { size: 22 }) : weaponIconHtml(null, { empty: true, size: 22 });
   }
   modeEl.textContent = secondary ? (zh ? '副' : 'SEC') : (zh ? '主' : 'PRI');
+  // v0.9.59: full catalog zh/en titles (機關雷射炮 etc.), not truncated short labels
   nameEl.textContent = def ? (zh ? def.zh : def.en) : (id || '—');
+  nameEl.title = nameEl.textContent;
   if (id) {
     const br = g.weaponBranches && g.weaponBranches[id];
     const ult = g.weaponUlts && g.weaponUlts[id];
@@ -677,7 +679,8 @@ function updateWeaponRailHUD(g) {
     );
     btn.classList.toggle('active', isActive);
     if (!id) {
-      btn.innerHTML = '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 36 }) + '</span>';
+      btn.innerHTML = '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 26 }) + '</span>' +
+        '<span class="wslot-name">' + (zh ? '空' : '—') + '</span>';
       btn.title = zh ? '空' : 'Empty';
       btn.disabled = true;
       return;
@@ -689,10 +692,12 @@ function updateWeaponRailHUD(g) {
     let lvTxt = `Lv${lv}`;
     if (br) lvTxt += `·${br}`;
     if (ult) lvTxt += ult.replace('U', '');
+    const fullName = zh ? def.zh : def.en;
     btn.innerHTML =
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 36 })}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 26 })}</span>` +
+      `<span class="wslot-name">${fullName}</span>` +
       `<span class="wslot-lv">${lvTxt}</span>`;
-    btn.title = `${zh ? def.zh : def.en} ${lvTxt}`;
+    btn.title = `${fullName} ${lvTxt}`;
   });
 }
 
@@ -1378,9 +1383,48 @@ function applyMoveFromInput() {
     root.style.bottom = '';
     root.classList.remove('active', 'following');
   };
+  // v0.9.59 multi-tap: double→secondary burst, triple→throw (debounce ~350ms; ignore stick drags / rail)
+  const TAP_WINDOW_MS = 360;
+  const TAP_MOVE_MAX = 16;
+  let tapCount = 0;
+  let tapTimer = null;
+  let pressMoved = false;
+  let pressMaxDist = 0;
+  const resolveTaps = () => {
+    const n = tapCount;
+    tapCount = 0;
+    tapTimer = null;
+    const g = S.game;
+    if (!g || S.state !== 'play') return;
+    if (n >= 3) {
+      if (typeof g.activateThrowFromTap === 'function') g.activateThrowFromTap();
+      else if (typeof g.requestThrow === 'function') {
+        const thr = (g.loadout && g.loadout.throw) || [];
+        for (const id of thr) { if (id && g.requestThrow(id)) break; }
+      }
+      updateWeaponSlotsHUD(g);
+      return;
+    }
+    if (n === 2) {
+      if (typeof g.activateSecondaryFromTap === 'function') g.activateSecondaryFromTap();
+      else if (typeof g.selectWeaponTile === 'function') g.selectWeaponTile(2);
+      updateWeaponSlotsHUD(g);
+    }
+  };
+  const noteTap = () => {
+    tapCount += 1;
+    if (tapTimer) clearTimeout(tapTimer);
+    if (tapCount >= 3) {
+      resolveTaps();
+      return;
+    }
+    tapTimer = setTimeout(resolveTaps, TAP_WINDOW_MS);
+  };
   const begin = (clientX, clientY, pointerId) => {
     pid = pointerId;
     cx = clientX; cy = clientY;
+    pressMoved = false;
+    pressMaxDist = 0;
     placeAt(cx, cy);
     setKnob(0, 0);
     S.stick.active = true;
@@ -1399,6 +1443,8 @@ function applyMoveFromInput() {
     if (!tch) return;
     let dx = tch.clientX - cx, dy = tch.clientY - cy;
     const len = Math.hypot(dx, dy) || 1;
+    if (len > pressMaxDist) pressMaxDist = len;
+    if (len > TAP_MOVE_MAX) pressMoved = true;
     const cl = Math.min(len, R);
     const kx = (dx / len) * cl, ky = (dy / len) * cl;
     setKnob(kx, ky);
@@ -1413,12 +1459,15 @@ function applyMoveFromInput() {
   const onUp = (e) => {
     if (pid == null) return;
     if (e && e.pointerId != null && e.pointerId !== pid) return;
+    const wasTap = !pressMoved && pressMaxDist <= TAP_MOVE_MAX;
     S.stick.active = false; S.stick.dx = 0; S.stick.dy = 0; setKnob(0, 0); pid = null;
     resetHome();
+    if (wasTap && S.state === 'play') noteTap();
   };
   // Any playfield press (except real UI controls) starts the stick. ViewInput keeps pinch zoom.
   // Listen on window so transparent HUD chrome / safe-area overlays cannot swallow the down.
-  const UI_BLOCK = 'button, a, input, textarea, select, .level-card, .icon-btn, .neon-btn';
+  // .weapon-rail / .wrail-tile excluded so multi-tap never fights rail taps.
+  const UI_BLOCK = 'button, a, input, textarea, select, .level-card, .icon-btn, .neon-btn, .weapon-rail, .wrail-tile';
   const onPlayfieldDown = (e) => {
     if (S.state !== 'play') return;
     if (e.target.closest && e.target.closest(UI_BLOCK)) return;
@@ -1432,6 +1481,7 @@ function applyMoveFromInput() {
   window.addEventListener('pointermove', onMove, { passive: false });
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
+  S._multiTap = { TAP_WINDOW_MS, TAP_MOVE_MAX, noteTap, resolveTaps };
 })();
 
 window.addEventListener('keydown', (e) => {

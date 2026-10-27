@@ -72,6 +72,6 @@ assert.ok(!line.includes('鐳射炮'), line);
 assert.ok(!line.includes('火箭炮'), line);
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-assert.ok(html.includes('?v=0.9.58'), 'cache-bust 0.9.58');
+assert.ok(html.includes('?v=0.9.59'), 'cache-bust current (0.9.59)');
 
 console.log('weapons-legacy-purge.test.mjs: PASS');

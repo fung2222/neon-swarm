@@ -2390,41 +2390,43 @@ export class View {
     this.group = new THREE.Group();
     stage.scene.add(this.group);
 
-    // ---- arena floor (top-down background_arena)
+    // ---- arena floor (v0.9.59: fully near-black play plate — no multi-color flash)
     const floorSize = ARENA.half * 2 + 4;
     const floorTex = makeFloorTexture();
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(floorSize, floorSize),
       new THREE.MeshStandardMaterial({
-        // Phase 2 floor readability: darker playable ground so silhouettes /
-        // bullets / pickups / danger telegraphs out-compete grid & dust.
-        map: floorTex, color: 0x303842, emissive: 0x010406, emissiveIntensity: 0.06,
-        roughness: 0.94, metalness: 0.05,
+        // WEAPONS-HUD-CONTROLS-FLOOR-001: solid near-black arena so silhouettes /
+        // bullets / pickups / danger telegraphs stay readable (no cyan grid plate).
+        map: floorTex, color: 0x060608, emissive: 0x000000, emissiveIntensity: 0.0,
+        roughness: 0.98, metalness: 0.02,
       })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = ARENA.floorY;
     this.group.add(floor);
+    this.arenaFloor = floor;
 
-    // Soft playable ring + outer hard edge (five-zone trim: teal/amber/violet/olive/night-blue)
+    // Soft / hard / pad rings — near-black only (no zone color flash on main floor).
+    // Danger pulse + zone-pressure edge telegraphs stay elsewhere for safety.
     this.softRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.soft - 0.18, ARENA.soft + 0.08, 96),
-      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.04, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x101014, transparent: true, opacity: 0.035, side: THREE.DoubleSide })
     );
     this.softRing.rotation.x = -Math.PI / 2;
     this.softRing.position.y = 0.04;
     this.group.add(this.softRing);
     this.hardRing = new THREE.Mesh(
       new THREE.RingGeometry(ARENA.half - 0.12, ARENA.half + 0.06, 96),
-      new THREE.MeshBasicMaterial({ color: 0x3a6068, transparent: true, opacity: 0.05, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x141418, transparent: true, opacity: 0.04, side: THREE.DoubleSide })
     );
     this.hardRing.rotation.x = -Math.PI / 2;
     this.hardRing.position.y = 0.05;
     this.group.add(this.hardRing);
-    // Center pad ring — reads as lab arena spawn (kept quiet vs pickups)
+    // Center pad ring — near-black (no teal flash)
     this.padRing = new THREE.Mesh(
       new THREE.RingGeometry(2.4, 2.55, 64),
-      new THREE.MeshBasicMaterial({ color: 0x1a6a78, transparent: true, opacity: 0.032, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0x101014, transparent: true, opacity: 0.03, side: THREE.DoubleSide })
     );
     this.padRing.rotation.x = -Math.PI / 2;
     this.padRing.position.y = 0.035;
@@ -2861,20 +2863,11 @@ export class View {
     }
     this.edgeDecor = buildEdgeDecor(z);
     this.group.add(this.edgeDecor);
-    // Quiet ring tint: teal / amber / violet / olive / night-blue. Low opacity — no danger steal.
-    const soft = z === 'rooftop' ? 0x3a6ad8
-      : z === 'blockade' ? 0x5a6a40
-        : z === 'reactor' ? 0x6a38c8
-          : z === 'assembly' ? 0xb86a28
-            : 0x1a6a78;
-    const hard = z === 'rooftop' ? 0x4a5a78
-      : z === 'blockade' ? 0x4a5558
-        : z === 'reactor' ? 0x3a5080
-          : z === 'assembly' ? 0x8a6040
-            : 0x3a6068;
-    if (this.softRing && this.softRing.material) this.softRing.material.color.setHex(soft);
-    if (this.hardRing && this.hardRing.material) this.hardRing.material.color.setHex(hard);
-    if (this.padRing && this.padRing.material) this.padRing.material.color.setHex(soft);
+    // v0.9.59: do NOT recolor soft/hard/pad rings with zone hues — main floor stays near-black.
+    // Edge décor still swaps; zone-pressure edge + danger pulse keep their safety telegraphs.
+    if (this.softRing && this.softRing.material) this.softRing.material.color.setHex(0x101014);
+    if (this.hardRing && this.hardRing.material) this.hardRing.material.color.setHex(0x141418);
+    if (this.padRing && this.padRing.material) this.padRing.material.color.setHex(0x101014);
   }
 
   sync(game, dt = 0.016) {
@@ -3715,83 +3708,34 @@ function disposeTree(obj) {
   });
 }
 
-/** Arena floor: top-down background_arena PNG (calm cyan grid), canvas fallback. */
+/** Arena floor: near-black play plate (v0.9.59). No cyan/multi-color grid flash. */
 function makeFloorTexture() {
   const apply = (tex) => {
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(4, 4);
+    tex.repeat.set(2, 2);
     tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
+    tex.anisotropy = 4;
     tex.generateMipmaps = true;
     tex.minFilter = THREE.LinearMipmapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
     tex.needsUpdate = true;
     return tex;
   };
-  /** Crush bright cyan grid spikes so lines never read as MG tracers / XP. */
-  function dimFloorImage(img) {
-    const c = document.createElement('canvas');
-    c.width = img.width; c.height = img.height;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const id = ctx.getImageData(0, 0, c.width, c.height);
-    const d = id.data;
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i], g = d[i + 1], b = d[i + 2];
-      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-      let nr = r, ng = g, nb = b;
-      if (lum > 36) {
-        const k = 36 / lum;
-        nr = r * k * 0.85; ng = g * k * 0.9; nb = b * k * 0.95;
-      }
-      d[i] = (nr * 0.72) | 0;
-      d[i + 1] = (ng * 0.72) | 0;
-      d[i + 2] = (nb * 0.72) | 0;
-    }
-    ctx.putImageData(id, 0, 0);
-    return c;
-  }
-  try {
-    const holder = apply(new THREE.Texture());
-    new THREE.TextureLoader().load('./assets/floor/background_arena.png', (tex) => {
-      try {
-        const canvas = dimFloorImage(tex.image);
-        holder.image = canvas;
-        holder.needsUpdate = true;
-        apply(holder);
-      } catch (_) {
-        holder.image = tex.image;
-        holder.needsUpdate = true;
-        apply(holder);
-      }
-    });
-    return holder;
-  } catch (_) { /* fall through */ }
-  const s = 512;
+  const s = 256;
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#0a0c10';
+  ctx.fillStyle = '#050506';
   ctx.fillRect(0, 0, s, s);
+  // Ultra-subtle checker so the plate is not a flat void — still near-black.
   const tile = 64;
   for (let y = 0; y < s; y += tile) {
     for (let x = 0; x < s; x += tile) {
-      const shade = 10 + ((x / tile + y / tile) % 2) * 2;
-      ctx.fillStyle = `rgb(${shade},${shade + 1},${shade + 2})`;
-      ctx.fillRect(x + 1, y + 1, tile - 2, tile - 2);
+      const shade = 5 + ((x / tile + y / tile) % 2) * 2;
+      ctx.fillStyle = `rgb(${shade},${shade},${shade + 1})`;
+      ctx.fillRect(x, y, tile, tile);
     }
   }
-  // Quiet grid — must not read as cyan MG tracers or XP shards.
-  ctx.strokeStyle = 'rgba(0,100,120,0.055)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= s; i += tile) {
-    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, s); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(s, i); ctx.stroke();
-  }
-  ctx.strokeStyle = 'rgba(0,110,130,0.07)';
-  ctx.beginPath(); ctx.arc(s / 2, s / 2, 90, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = 'rgba(0,90,110,0.08)';
-  ctx.strokeRect(3, 3, s - 6, s - 6);
   return apply(new THREE.CanvasTexture(c));
 }
 

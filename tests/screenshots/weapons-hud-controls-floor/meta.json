@@ -1,0 +1,27 @@
+{
+  "ver": "0.9.59",
+  "task": "WEAPONS-HUD-CONTROLS-FLOOR-001",
+  "meta": {
+    "floorColor": 394760,
+    "railBottom": 834,
+    "railTop": 773,
+    "viewportH": 844,
+    "railNames": [
+      "機關雷射炮",
+      "離子光束",
+      "散彈槍",
+      "硫酸槍",
+      "破片榴彈",
+      "空"
+    ],
+    "statusName": "機關雷射炮",
+    "burstMax": 3,
+    "multiTap": true
+  },
+  "pageErrors": [],
+  "shots": [
+    "01-bottom-rail-full-names.png",
+    "02-secondary-burst-armed.png",
+    "03-near-black-floor-telegraphs.png"
+  ]
+}

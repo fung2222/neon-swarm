@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.57 `WEAPONS-ICON-PLACEHOLDERS-001` (feel FX = v0.9.56)  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.59 `WEAPONS-HUD-CONTROLS-FLOOR-001` (legacy purge = v0.9.58)  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -12,11 +12,13 @@
 | Primary catalog | **5** weapons · max **Lv5** · **3** branch paths · each branch → **2** ultimate/大招 forms |
 | Secondary catalog | **5** weapons · max **Lv5** · **2** branch paths |
 | Throw catalog | **4** weapons · max **Lv5** · **2** branch paths |
-| HUD | All weapon list + status at **top**; combat map mid–bottom |
-| Icons | **Left column**, stacked square tiles (P / S / T groups); left-hand select |
+| HUD | Status chips unified (padding/radius/type); XP + key status readable |
+| Icons | **Bottom row**, smaller tiles, single horizontal P/S/T groups (clears stick) |
+| Titles | Full catalog **zh** names (機關雷射炮 etc.) on status + rail |
 | Primary play | Continuous **auto-fire** while that primary is selected |
-| Secondary play | Switch to secondary (ammo/energy limited); empty → **auto back to primary** |
-| Throw play | **Tap to throw** — no hold-select mode |
+| Secondary play | Rescue / special-enemy tool — **rapid burst ≤3 shots** then **auto primary** (even if ammo remains); empty ammo also returns |
+| Throw play | **Tap / triple-tap** to throw once — no hold-select mode; stays on primary |
+| Multi-tap | **Double-tap** playfield → secondary (if owned); **triple-tap** → throw (if owned / off CD); ~360ms window; does not fight rail taps |
 
 **Out of scope this beat:** Phase 4 Precision full playable · horn art lock · soft-juice invent.  
 **Do not wipe** the existing run loop — migrate from `weaponSlots×4` carefully.
@@ -258,6 +260,21 @@ Each weapon needs a **real square icon** (not emoji forever).
 
 ---
 
+## Controls / HUD / floor (v0.9.59)
+
+| Rule | Value |
+|------|--------|
+| Play arena floor | **Near-black** plate — no multi-color / zone-tint flash on main floor |
+| Danger / zone-pressure edges | **Kept** as safety telegraphs (not removed) |
+| Soft / hard / pad rings | Near-black only — no teal/amber/violet zone recolor |
+| Double-tap (playfield) | Arm owned **secondary** + start `secondaryBurstLeft = 3` |
+| Triple-tap (playfield) | Fire owned **throw** off CD (one shot) |
+| Debounce | ~300–400ms (`TAP_WINDOW_MS = 360`); stick drag ≠ tap |
+| `secondaryBurstMax` | **3** — after 3 `_consumeSecondary` returns → `fireMode = primary` |
+| Balance | **First-pass only** — no big retune this beat; optional next = named `BALANCE-PASS` after Roy try |
+
+---
+
 ## Legacy map (v0.9.58 — internal aliases only)
 
 Player-facing level-up / crate cards use **catalog ids only**. Legacy unlock cards
@@ -285,7 +302,10 @@ Do **not** re-add player cards under legacy ids.
 |-------|--------|
 | Catalog IDs + zh/en strings | **live** (v0.9.58 player cards = catalog only) |
 | Loadout 2+2+2 model | **live** |
-| Left rail + top status HUD | **live** |
+| Bottom rail + unified status HUD | **live** (v0.9.59) |
+| Near-black arena floor | **live** (v0.9.59) |
+| Multi-tap secondary / throw | **live** (v0.9.59) |
+| Secondary ≤3 burst → primary | **live** (v0.9.59) |
 | Primary auto-fire (gatling, ion_beam) | **live** (exemplars) |
 | Secondary ammo/energy → auto primary | **live** (shotgun, acid_gun) |
 | Throw tap (frag) | **live** |
@@ -294,7 +314,7 @@ Do **not** re-add player cards under legacy ids.
 | Ult pick UI (Lv5 primary) | **live** light amp — full unique ult kits still stub |
 | Branch deep kits A/B/C | **live** (v0.9.55) distinct fire/behavior |
 | Real art icons | **placeholder** — Roy art pipeline above |
-| Full balance pass vs all elites | **baseline tables** — tune later |
+| Full balance pass vs all elites | **first-pass only** — optional named `BALANCE-PASS` after Roy try (do not invent huge retune) |
 
 ---
 
@@ -306,6 +326,7 @@ Do **not** re-add player cards under legacy ids.
 - `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
 - `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
-- Screenshots: redesign (v0.9.53) + branch (v0.9.54) + kits (v0.9.55) + feel-fx (v0.9.56) + icon-placeholders (v0.9.57) + legacy-purge (v0.9.58)
-- `tests/weapons-legacy-purge.test.mjs` + `tests/screenshots/weapons-legacy-purge/`  
+- Screenshots: … + legacy-purge (v0.9.58) + hud-controls-floor (v0.9.59)
+- `tests/weapons-legacy-purge.test.mjs` + `tests/screenshots/weapons-legacy-purge/`
+- `tests/weapons-hud-controls-floor.test.mjs` + `tests/screenshots/weapons-hud-controls-floor/`  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push

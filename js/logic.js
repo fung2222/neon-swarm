@@ -280,6 +280,9 @@ export class Game {
     this.weaponResources = Object.create(null); // id → { type, current, max }
     this.throwCdT = Object.create(null); // id → remaining cd
     this._throwRequest = null; // id requested by HUD tap this frame
+    // v0.9.59: secondary rescue burst — typically ≤3 shots then auto-return to primary
+    this.secondaryBurstLeft = 0;
+    this.secondaryBurstMax = 3;
     // v0.9.54 branch / ult picks (playable stubs)
     this.weaponBranches = Object.create(null); // id → 'A'|'B'|'C'
     this.weaponUlts = Object.create(null); // id → 'U1'|'U2'
@@ -695,8 +698,11 @@ export class Game {
       this.weaponResources[id] = res;
       if (res && res.current <= 0) {
         this.fireMode = 'primary';
+        this.secondaryBurstLeft = 0;
         return false;
       }
+      // Rescue / special-enemy tool: short rapid burst then auto primary (ammo may remain).
+      this.secondaryBurstLeft = this.secondaryBurstMax || 3;
       return true;
     }
     if (def.category === 'throw') {
@@ -728,13 +734,53 @@ export class Game {
 
   _consumeSecondary(id, amount = 1) {
     const res = this.weaponResources[id];
-    if (!res) return true;
+    if (!res) {
+      // still count burst shots even without a resource pool
+      if (this.fireMode === 'secondary' && this.secondaryBurstLeft > 0) {
+        this.secondaryBurstLeft -= 1;
+        if (this.secondaryBurstLeft <= 0) this.fireMode = 'primary';
+      }
+      return true;
+    }
     res.current = Math.max(0, res.current - amount);
-    if (res.current <= 0) {
+    if (this.fireMode === 'secondary' && this.secondaryBurstLeft > 0) {
+      this.secondaryBurstLeft -= 1;
+    }
+    if (res.current <= 0 || this.secondaryBurstLeft <= 0) {
       this.fireMode = 'primary';
-      return false;
+      this.secondaryBurstLeft = 0;
+      return res.current > 0;
     }
     return true;
+  }
+
+  /** Double-tap: arm first owned secondary with a ≤3-shot rescue burst. */
+  activateSecondaryFromTap() {
+    if (!this.loadout) this.loadout = starterLoadout();
+    this._syncSlotsFromLoadout();
+    const secs = this.loadout.secondary || [];
+    let idx = -1;
+    for (let i = 0; i < secs.length; i++) {
+      if (!secs[i]) continue;
+      const res = this.weaponResources[secs[i]] || initialResource(secs[i]);
+      if (res) this.weaponResources[secs[i]] = res;
+      if (!res || res.current > 0) { idx = i; break; }
+    }
+    if (idx < 0) return false;
+    return this.selectWeaponTile(2 + idx);
+  }
+
+  /** Triple-tap: fire first owned throw off cooldown (one-shot; stays on primary). */
+  activateThrowFromTap() {
+    if (!this.loadout) this.loadout = starterLoadout();
+    this._syncSlotsFromLoadout();
+    const thr = this.loadout.throw || [];
+    for (let i = 0; i < thr.length; i++) {
+      const id = thr[i];
+      if (!id) continue;
+      if (this.requestThrow(id)) return true;
+    }
+    return false;
   }
 
   _regenSecondary(dt) {
@@ -2524,6 +2570,10 @@ export class Game {
         const res = this.weaponResources[sid] || initialResource(sid);
         this.weaponResources[sid] = res;
         if (!res || res.current <= 0) {
+          this.fireMode = 'primary';
+          this.secondaryBurstLeft = 0;
+        } else if (this.secondaryBurstLeft <= 0) {
+          // Burst exhausted with ammo remaining — still return to primary (Roy play loop).
           this.fireMode = 'primary';
         } else {
           const stacks = Math.max((this.taken && this.taken[sid]) || 0, this[sid] || 0, 1);

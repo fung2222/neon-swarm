@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.52 · **狀態 Status:** v0.9.52 UI layout home＋top HUD
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.59 · **狀態 Status:** v0.9.59 HUD/controls/floor home＋top HUD
 
 > **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**UI layout:** `UI-LAYOUT-HOME-HUD-001` shipped v0.9.52 — **HOLD for Roy try**。**Phone GPU:** v0.9.51 mid-run guard still awaiting device verify when Roy returns to it.
 

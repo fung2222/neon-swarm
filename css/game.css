@@ -5,17 +5,35 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   --sa-right: env(safe-area-inset-right, 0px);
   --sa-bottom: env(safe-area-inset-bottom, 0px);
   --sa-left: env(safe-area-inset-left, 0px);
+  /* v0.9.59 unified HUD status chrome */
+  --hud-chip-pad-y: 4px;
+  --hud-chip-pad-x: 12px;
+  --hud-chip-radius: 12px;
+  --hud-chip-bg: rgba(5, 1, 15, 0.78);
+  --hud-chip-border: 1px solid rgba(0, 229, 255, 0.38);
+  --hud-chip-shadow: 0 0 12px rgba(0, 229, 255, 0.16);
+  --hud-chip-fs: 11px;
+  --hud-chip-fs-sm: 9px;
+  --hud-chip-label: #9a93bf;
+  --hud-chip-value: #00e5ff;
 }
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #fx-flash, #scanlines { pointer-events: none; }
 /* ---- v0.6.0 HUD: one row of numbers, controls pinned to a reserved corner ----
    Layout: [HP | LV] ............ [GOAL] ............ [TIME | SCORE] [mute][pause]
    The right panel stops 112px short of the edge so the 2x44px buttons never sit on top of it. */
-.hud-panel { position: absolute; top: calc(10px + var(--sa-top)); z-index: 5; padding: 6px 12px; }
+.hud-panel {
+  position: absolute; top: calc(10px + var(--sa-top)); z-index: 5;
+  padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
+  border-radius: var(--hud-chip-radius);
+  background: var(--hud-chip-bg);
+  border: var(--hud-chip-border);
+  box-shadow: var(--hud-chip-shadow);
+}
 .hud-left { left: calc(10px + var(--sa-left)); }
 .hud-right { right: calc(108px + var(--sa-right)); text-align: right; }
-.stat .label { font-size: 10px; letter-spacing: 1.5px; color: #9a93bf; }
-.stat .value { font-size: clamp(16px, 4.6vw, 22px); color: #00e5ff; text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
+.stat .label { font-size: var(--hud-chip-fs-sm); letter-spacing: 1.5px; color: var(--hud-chip-label); }
+.stat .value { font-size: clamp(16px, 4.6vw, 22px); color: var(--hud-chip-value); text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
 .stat .value.big { font-size: clamp(20px, 5.6vw, 28px); color: #7ef9ff; }
 .hud-buttons.top {
   position: absolute; top: calc(10px + var(--sa-top)); right: calc(10px + var(--sa-right));
@@ -29,10 +47,12 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   position: absolute; left: 50%; transform: translateX(-50%);
   top: calc(10px + var(--sa-top));
   z-index: 5; pointer-events: none;
-  padding: 5px 12px; border-radius: 99px;
-  font-size: 11px; letter-spacing: 1px; color: #cfe6ff;
-  background: #0a0520cc; border: 1px solid #2f9bff66;
-  box-shadow: 0 0 12px #2f9bff33;
+  padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
+  border-radius: var(--hud-chip-radius);
+  font-size: var(--hud-chip-fs); letter-spacing: 1px; color: #cfe6ff;
+  background: var(--hud-chip-bg);
+  border: var(--hud-chip-border);
+  box-shadow: var(--hud-chip-shadow);
 }
 .hud-goal b { color: #ffe600; font-size: 13px; }
 .hud-goal.done { border-color: #7cff3a; color: #bfffb0; }
@@ -42,11 +62,12 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   top: calc(42px + var(--sa-top));
   z-index: 5; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 3px 12px 4px; border-radius: 99px;
-  font-size: 10px; letter-spacing: 1px; color: #d8f6ff;
-  background: #0a0520cc;
+  padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
+  border-radius: var(--hud-chip-radius);
+  font-size: var(--hud-chip-fs-sm); letter-spacing: 1px; color: #d8f6ff;
+  background: var(--hud-chip-bg);
   border: 1px solid color-mix(in srgb, var(--zone-accent, #2ad4c8) 55%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--zone-accent, #2ad4c8) 28%, transparent);
+  box-shadow: var(--hud-chip-shadow);
   --zone-accent: #2ad4c8;
 }
 .hud-zone-zh { font-weight: 700; line-height: 1.15; color: #e8fbff; }
@@ -1175,7 +1196,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 
-/* ===== WEAPONS-REDESIGN-001 + BRANCH-KITS v0.9.55 — top status + left icon rail ===== */
+/* ===== WEAPONS-HUD-CONTROLS-FLOOR-001 v0.9.59 — unified chips + bottom weapon row ===== */
 .weapon-status {
   position: absolute;
   left: 50%;
@@ -1186,79 +1207,99 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   align-items: center;
   gap: 8px;
   pointer-events: none;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgba(5, 1, 15, 0.72);
-  border: 1px solid rgba(0, 229, 255, 0.35);
+  padding: var(--hud-chip-pad-y) var(--hud-chip-pad-x);
+  border-radius: var(--hud-chip-radius);
+  background: var(--hud-chip-bg);
+  border: var(--hud-chip-border);
+  box-shadow: var(--hud-chip-shadow);
   color: #c8f7ff;
-  font-size: 12px;
+  font-size: var(--hud-chip-fs);
   font-weight: 700;
   letter-spacing: 0.04em;
   max-width: calc(100vw - 24px - var(--sa-left) - var(--sa-right));
   white-space: nowrap;
+  overflow: hidden;
 }
 .wstat-mode {
   color: #ffe600;
-  font-size: 11px;
+  font-size: var(--hud-chip-fs-sm);
   text-transform: uppercase;
+  flex-shrink: 0;
 }
-.wstat-name { color: #e8fbff; }
-.wstat-lv { color: #ffe600; }
-.wstat-res { color: #7dffb3; font-variant-numeric: tabular-nums; }
+.wstat-name {
+  color: #e8fbff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(52vw, 220px);
+}
+.wstat-lv { color: #ffe600; flex-shrink: 0; }
+.wstat-res { color: #7dffb3; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .wstat-res:empty { display: none; }
 
-/* Legacy top chips: hide — selection is left rail; active read-out is #weapon-status */
+/* Legacy top chips: hide — selection is bottom rail; active read-out is #weapon-status */
 .weapon-slots {
   display: none !important;
 }
 
-/* Left stacked square tiles — primary / secondary / throw groups */
+/* Bottom single horizontal row — smaller tiles; clear idle stick (left) */
 .weapon-rail {
   position: absolute;
   left: calc(8px + var(--sa-left));
-  top: 50%;
-  transform: translateY(-50%);
+  right: calc(8px + var(--sa-right));
+  bottom: calc(10px + var(--sa-bottom));
+  top: auto;
+  transform: none;
   z-index: 8;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
   pointer-events: auto;
-  max-height: min(70vh, 520px);
+  max-height: none;
   overflow: visible;
+  padding-left: 108px; /* clear idle stick home — do not cover stick */
+  box-sizing: border-box;
 }
 .weapon-rail .wrail-group {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.18);
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px 0 0;
+  border-bottom: none;
+  border-right: 1px solid rgba(0, 229, 255, 0.18);
 }
-.weapon-rail .wrail-group:last-child { border-bottom: none; padding-bottom: 0; }
+.weapon-rail .wrail-group:last-child { border-right: none; padding-right: 0; }
 .weapon-rail .wrail-label {
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  font-size: 8px;
+  letter-spacing: 0.1em;
   color: #7aa8b8;
   text-transform: uppercase;
-  padding-left: 2px;
+  padding: 0 2px;
   pointer-events: none;
+  writing-mode: horizontal-tb;
+  flex-shrink: 0;
 }
 .wrail-tile {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  min-height: 52px;
+  height: auto;
   border: 1.5px solid rgba(0, 229, 255, 0.45);
-  border-radius: 10px;
-  background: rgba(5, 1, 15, 0.78);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.16), inset 0 0 10px rgba(0, 0, 0, 0.35);
+  border-radius: var(--hud-chip-radius);
+  background: var(--hud-chip-bg);
+  box-shadow: var(--hud-chip-shadow), inset 0 0 10px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1px;
   color: #c8f7ff;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  padding: 0;
+  padding: 3px 2px 2px;
   font: inherit;
 }
 .wrail-tile.primary { border-color: rgba(0, 229, 255, 0.85); }
@@ -1276,15 +1317,38 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   border-color: #ffe600;
   transform: scale(1.04);
 }
-.wrail-tile .wslot-ico { font-size: 18px; line-height: 1; pointer-events: none; }
-.wrail-tile .wslot-lv { font-size: 9px; color: #ffe600; font-weight: 700; pointer-events: none; }
+.wrail-tile .wslot-ico { font-size: 14px; line-height: 1; pointer-events: none; }
+.wrail-tile .wslot-name {
+  font-size: 7.5px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #e8fbff;
+  text-align: center;
+  max-width: 42px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  word-break: break-all;
+  pointer-events: none;
+}
+.wrail-tile .wslot-lv { font-size: 8px; color: #ffe600; font-weight: 700; pointer-events: none; }
 .wrail-tile.fire-pulse {
   animation: wslot-fire-pulse 140ms ease-out;
 }
 
 @media (max-width: 420px) {
-  .wrail-tile { width: 46px; height: 46px; }
-  .weapon-status { font-size: 11px; top: calc(34px + var(--sa-top)); }
+  .wrail-tile { width: 40px; min-height: 48px; }
+  .wrail-tile .wslot-name { font-size: 7px; max-width: 38px; }
+  .weapon-status { font-size: var(--hud-chip-fs); top: calc(34px + var(--sa-top)); }
+  .weapon-rail { padding-left: 100px; gap: 2px; }
+}
+@media (min-width: 900px) {
+  .weapon-rail { padding-left: 0; justify-content: center; }
+  .wrail-tile { width: 48px; }
+  .wrail-tile .wslot-name { font-size: 8px; max-width: 46px; }
 }
 
 
@@ -1329,7 +1393,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   align-items: center;
   justify-content: center;
 }
-.wrail-tile .wslot-ico .wico-svg { width: 36px; height: 36px; }
+.wrail-tile .wslot-ico .wico-svg { width: 26px; height: 26px; }
 .wrail-tile.empty .wico { opacity: 0.85; }
 .weapon-status .wstat-ico {
   display: inline-flex;
