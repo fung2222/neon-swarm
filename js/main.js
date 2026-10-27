@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.48 zone HUD chip; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.49 slot fire pulse; zone HUD chip; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -38,6 +38,7 @@ import {
   applyMuteUi, applyMutePreference, writeMutedToStore, readMutedFromStore, muteTipFor,
   MUTE_STORE_KEY, MUTE_LS_KEY,
 } from './mute-persist.js';
+import { slotIndexForWeapon, SLOT_FIRE_PULSE_MS } from './slot-fire-pulse.js';
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -507,6 +508,27 @@ function updateWeaponSlotsHUD(g) {
       `<span class="wslot-lv">Lv${lv}</span>`;
     el.title = `${lab} Lv${lv}`;
   }
+}
+
+/** v0.9.49: brief yellow pulse on the slot that just fired (multi-bar readability). */
+const _slotPulseTimers = [null, null, null, null];
+function pulseWeaponSlotFire(weaponId) {
+  const g = S.game;
+  if (!g || !weaponId) return;
+  const i = slotIndexForWeapon(g.weaponSlots, weaponId);
+  if (i < 0) return;
+  const bar = $('weapon-slots');
+  const el = bar && bar.children[i];
+  if (!el) return;
+  el.classList.remove('fire-pulse');
+  // restart CSS animation
+  void el.offsetWidth;
+  el.classList.add('fire-pulse');
+  if (_slotPulseTimers[i]) clearTimeout(_slotPulseTimers[i]);
+  _slotPulseTimers[i] = setTimeout(() => {
+    el.classList.remove('fire-pulse');
+    _slotPulseTimers[i] = null;
+  }, SLOT_FIRE_PULSE_MS);
 }
 
 function showMenu() {
@@ -1318,6 +1340,7 @@ function tick(dt) {
   for (const ev of events) {
     if (ev.type === 'fire') {
       audio.fire();
+      if (ev.weapon) pulseWeaponSlotFire(ev.weapon);
       const g = S.game;
       // Muzzle flash uses the SAME coords computed once at bullet spawn (js/muzzle.js).
       const mx = ev.muzzleX != null ? ev.muzzleX : g.px;

@@ -18,7 +18,7 @@ const main = readFileSync(join(ROOT, 'js/main.js'), 'utf8');
 assert.match(html, /id="hud-zone"/);
 assert.match(html, /id="hud-zone-zh"/);
 assert.match(html, /id="hud-zone-en"/);
-assert.match(html, /\?v=0\.9\.48/);
+assert.match(html, /\?v=0\.9\.\d+/);
 
 assert.match(css, /\.hud-zone\s*\{/);
 assert.match(css, /--zone-accent/);

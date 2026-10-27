@@ -799,6 +799,17 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   box-shadow: 0 0 18px rgba(255, 43, 214, 0.55), inset 0 0 12px rgba(255, 43, 214, 0.18);
   transform: translateY(-2px);
 }
+
+/* v0.9.49 slot fire pulse — brief flash when that weapon fires */
+.wslot.fire-pulse {
+  animation: wslot-fire-pulse 140ms ease-out;
+  border-color: #ffe600;
+  box-shadow: 0 0 18px rgba(255, 230, 0, 0.65), inset 0 0 12px rgba(255, 230, 0, 0.22);
+}
+@keyframes wslot-fire-pulse {
+  0%   { filter: brightness(1.55); transform: scale(1.06); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
 .level-cards.pickup-offer .level-card {
   min-height: 88px;
 }
