@@ -8,7 +8,7 @@
 **Opened:** 2026-10-28 Asia/Hong_Kong — Roy「開始」after WEAPONS-BRANCH-PICK-001 HOLD.  
 **Closed → HOLD:** 2026-10-28 Asia/Hong_Kong — Grok bot ship.
 
-**Author:** Grok bot · **Shipped:** v0.9.55 · **SHA:** `(pending push)`  
+**Author:** Grok bot · **Shipped:** v0.9.55 · **SHA:** `616c81d`  
 **Spec:** `docs/WEAPONS.md` · prior branch pick = v0.9.54 · redesign = v0.9.53
 
 ### Shipped this beat
