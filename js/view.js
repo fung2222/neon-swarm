@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { buildPlayerMech } from './mech-builder.js';
 import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
+import { ELITE_LANE, eliteLaneOpacity, eliteLaneWidth } from './elite-lane-read.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
@@ -952,16 +953,16 @@ function commanderMesh() {
   return g;
 }
 
-/** Ground warning lane: thin additive strip elite → player during telegraph. */
+/** Ground warning lane: thicker/brighter strip elite → player (v0.9.50 phone read). */
 function warningLane() {
   const g = new THREE.Group();
   const mat = new THREE.MeshBasicMaterial({
-    // v0.9.22: danger orange — reads vs floor / player cyan / décor teal
-    color: 0xff6a1a, transparent: true, opacity: 0.62, depthWrite: false, side: THREE.DoubleSide,
+    // v0.9.50: brighter danger orange — still vs floor / player cyan / décor teal
+    color: ELITE_LANE.color, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide,
   });
   const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
   quad.rotation.x = -Math.PI / 2;
-  quad.position.y = 0.06;
+  quad.position.y = ELITE_LANE.y;
   g.add(quad);
   g.userData.quad = quad;
   g.userData.mat = mat;
@@ -2455,7 +2456,7 @@ export class View {
     this.warnLane = warningLane();
     this.group.add(this.warnLane);
     this.warnLane2 = warningLane();
-    if (this.warnLane2.userData.mat) this.warnLane2.userData.mat.color.setHex(0xff8a1a);
+    if (this.warnLane2.userData.mat) this.warnLane2.userData.mat.color.setHex(ELITE_LANE.colorTwin);
     this.group.add(this.warnLane2);
     // Phase 3 sniper: up to 4 concurrent red aim lines
     this.sniperAimLines = [];
@@ -3614,14 +3615,15 @@ export class View {
       const quad = ln.userData.quad;
       const mat = ln.userData.mat;
       if (quad) quad.scale.set(width, dist, 1);
-      if (mat) mat.opacity = 0.42 + u * 0.50; // v0.9.22 stronger telegraph
+      if (mat) mat.opacity = eliteLaneOpacity(u); // v0.9.50 thicker/brighter
     };
     if (elite.dualLane || elite.type === 'hunter') {
-      const off = 0.55;
-      place(lane, pdx * off, pdz * off, 0.85);
-      place(lane2, -pdx * off, -pdz * off, 0.85);
+      const off = 0.62;
+      const w = eliteLaneWidth(true);
+      place(lane, pdx * off, pdz * off, w);
+      place(lane2, -pdx * off, -pdz * off, w);
     } else {
-      place(lane, 0, 0, 1.1);
+      place(lane, 0, 0, eliteLaneWidth(false));
       if (lane2) lane2.visible = false;
     }
   }

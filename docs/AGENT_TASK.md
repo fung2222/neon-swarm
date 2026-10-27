@@ -3,28 +3,30 @@
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 > 審核回覆請直接改本文件或 `HANDOFF.md` 並 push；唔使經 Roy 轉發檔案。
 
-## 狀態：PHASE6-SLOT-FIRE-PULSE-001 → **Complete**（`?v=0.9.49`）· Active → **PHASE6-ELITE-LANE-READ-001**（clarity beat 3/3）
+## 狀態：**HOLD** · Active → **none**（clarity beat Complete · wait Roy try）
 
-**ROY continue** clarity beat in progress. Soft-juice DONE；priority enemies 0.9.45–47 done.
+**Clarity beat DONE**（zone chip → slot fire pulse → elite lane read）。Soft-juice DONE；priority enemies 0.9.45–47 done。
 
-### Clarity beat
+### Clarity beat（shipped）
 
 | # | Task | Status |
 |---|---|---|
 | 1 | **PHASE6-ZONE-HUD-CHIP-001** `?v=0.9.48` | **Complete** |
-| 2 | **PHASE6-SLOT-FIRE-PULSE-001** `?v=0.9.49` | **Complete** — slot fire pulse |
-| 3 | **PHASE6-ELITE-LANE-READ-001** `?v=0.9.50` | **Active** |
+| 2 | **PHASE6-SLOT-FIRE-PULSE-001** `?v=0.9.49` | **Complete** |
+| 3 | **PHASE6-ELITE-LANE-READ-001** `?v=0.9.50` | **Complete** — thicker/brighter elite charge lanes |
 
-**Do NOT：** Phase 4／horn art lock／phone GPU／soft-juice invent／4th priority enemy／balance overhaul。
+**Do NOT auto-start：** Phase 4／horn art lock／phone GPU／soft-juice invent／4th priority enemy／balance overhaul／second beat。
 
 ### Just shipped
 
-- **v0.9.49** `PHASE6-SLOT-FIRE-PULSE-001` — `.wslot.fire-pulse` ~140ms yellow flash on the firing weapon; `slotIndexForWeapon`；截圖 `tests/screenshots/phase6-slot-fire-pulse/`；測試 `tests/slot-fire-pulse.test.mjs`。
-- **v0.9.48** zone HUD chip。
+- **v0.9.50** `PHASE6-ELITE-LANE-READ-001` — elite warn lanes thicker／brighter（`ELITE_LANE`）；截圖 `tests/screenshots/phase6-elite-lane-read/`；測試 `tests/elite-lane-read.test.mjs`。
+- **v0.9.49** slot fire pulse · **v0.9.48** zone HUD chip。
 
-### After beat
+### Next（wait Roy）
 
-HOLD for Roy try · OR HIT-FEEL when phones · OR named Active／「繼續」
+1. **HOLD for Roy try**（live `?v=0.9.50`）
+2. OR HIT-FEEL-DEVICE when Roy phones
+3. OR Roy-named Active／「繼續」only
 
 ---
 

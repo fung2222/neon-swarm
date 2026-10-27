@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.49 slot fire pulse; zone HUD chip; horn silhouette interim OK-to-continue
+// RAMPAGE MECH 暴走機甲 — v0.9.50 elite lane read; zone HUD chip; horn silhouette interim OK-to-continue
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
