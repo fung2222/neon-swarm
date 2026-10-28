@@ -1,0 +1,24 @@
+{
+  "ver": "0.9.81",
+  "probe": {
+    "resume": {
+      "w": 236.2,
+      "h": 74.8,
+      "minH": "44px",
+      "id": "btn-resume"
+    },
+    "restart": {
+      "w": 236.2,
+      "h": 60,
+      "minH": "44px",
+      "id": "btn-restart"
+    },
+    "quit": {
+      "w": 236.2,
+      "h": 60,
+      "minH": "44px",
+      "id": "btn-quit"
+    }
+  },
+  "fail": []
+}

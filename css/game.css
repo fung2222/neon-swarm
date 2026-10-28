@@ -954,7 +954,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   margin: 0 0 16px;
   line-height: 1.45;
 }
-#screen-pause .neon-btn { min-height: 48px; }
+/* PAUSE-CTA-TAP-001 v0.9.81 — pause resume/restart/quit ≥44 phone / 48 desktop */
+#screen-pause .neon-btn { min-height: 48px; box-sizing: border-box; }
+@media (max-width: 520px) {
+  #screen-pause .neon-btn { min-height: 44px; }
+}
 
 
 /* Phase 6 multi-slot weapon bar (v0.9.28) — v0.9.52 moved to TOP (thumb clear) */
