@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.171 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.172 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.171` `HANDOFF-AGENT-TIDY-002`. Shipping safe polish (docs tip / CTA aria / soft-pins / contrast).
+## 狀態：**HOLD** — tip `v0.9.172` `GAMES-JSON-STAGE-007`. Safe polish beat complete; wait Roy try.
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.171
+https://fung2222.github.io/neon-swarm/?v=0.9.172
 
 ### Shipped this beat (slice table)
 
@@ -23,6 +23,7 @@ https://fung2222.github.io/neon-swarm/?v=0.9.171
 | v0.9.169 | `GFX-RELOAD-ARIA-001` | gfx reload btn aria-label via data-i18n-attr (mirror CTA aria) |
 | v0.9.170 | `OVER-RESULT-EM-READ-001` | over .result em contrast (best-label) phone readability leftover |
 | v0.9.171 | `HANDOFF-AGENT-TIDY-002` | HANDOFF/AGENT_TASK tidy for safe-polish beat; affirm no pause glow |
+| v0.9.172 | `GAMES-JSON-STAGE-007` | games.json stub stage → tip; safe polish beat HOLD; **HOLD** |
 
 ### Preserve / HARD BANS
 stick hide · hub flush top · gear L + pause R under hub · settings vol/SFX/BGM/quality/share/howto · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · over title oneline+size · 畫質 label · balance/GPU already shipped.
