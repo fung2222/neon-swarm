@@ -2327,3 +2327,13 @@ html[data-lang="en"] #over-title {
   font-weight: 600;
   opacity: 1;
 }
+
+
+/* ===== EARLY-TOAST-EN-READ-001 v0.9.179 — early-toast EN line contrast (mirror coach-en) ===== */
+.early-toast-en {
+  color: #9ecfff;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+  opacity: 1;
+}

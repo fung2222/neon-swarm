@@ -1,0 +1,10 @@
+{
+  "ver": "0.9.179",
+  "probe": {
+    "screen": "start",
+    "glow": false,
+    "playAria": "aria-label:play",
+    "endlessAria": "aria-label:endless"
+  },
+  "errs": []
+}
