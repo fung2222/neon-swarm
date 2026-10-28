@@ -1,7 +1,7 @@
 /**
  * WEAPONS-ICON-PLACEHOLDERS-001 (v0.9.57)
  * Neon SVG / CSS square tiles for all catalog weapons.
- * Later: drop assets/weapons/{id}.png — WEAPON_ICON_SRC already points there;
+ * WEAPONS-PNG-PATH (v0.9.191): path ready — drop assets/weapons/{id}.png — WEAPON_ICON_SRC already points there;
  * weaponIconHtml prefers <img> when the PNG is present (data-src swap).
  * Do NOT invent Roy final art — placeholders only.
  */

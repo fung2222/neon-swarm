@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/?v=0.9.174 · **Ship:** v0.9.174 WEAPONS-MD-TIP-SYNC-004 · UI a11y/docs sync (weapons unchanged)
+> **Live:** https://fung2222.github.io/neon-swarm/?v=0.9.191 · **Ship:** v0.9.174 WEAPONS-MD-TIP-SYNC-004 · UI a11y/docs sync (weapons unchanged)
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -458,3 +458,10 @@ Do **not** re-add player cards under legacy ids.
 - `tests/weapons-legacy-purge.test.mjs` + `tests/screenshots/weapons-legacy-purge/`
 - `tests/weapons-hud-controls-floor.test.mjs` + `tests/screenshots/weapons-hud-controls-floor/`  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push
+
+
+## Weapon PNG path (v0.9.191 WEAPONS-PNG-PATH)
+
+- `WEAPON_ICON_SRC[id] = assets/weapons/{id}.png`
+- HUD `preferSrc: true` → `<img>` with onerror → neon SVG placeholder
+- **No Roy-supplied PNGs in repo yet** — drop files under `assets/weapons/`; do not claim Grok placeholders as final art

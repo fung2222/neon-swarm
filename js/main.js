@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.190
+// RAMPAGE MECH 暴走機甲 — tip v0.9.191
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -50,6 +50,7 @@ import {
   slowFieldFeelFx, deployDronesFeelFx, blackholeFeelFx, flashFeelFx, puddleFeelFx,
 } from './weapons-feel-fx.js';
 import { weaponIconHtml, WEAPON_ICON_SRC } from './weapons-icons.js';
+// WEAPONS-PNG-PATH (v0.9.191): preferSrc tries assets/weapons/{id}.png then SVG fallback
 
 const $ = (id) => document.getElementById(id);
 const HUB = readHub(location.search);
@@ -649,7 +650,7 @@ function updateWeaponSlotsHUD(g) {
     const lv = _slotLv(g, id);
     const lab = def ? (i18n.isZh() ? def.zh : def.en) : (SLOT_LABEL[id] || id.toUpperCase());
     el.innerHTML =
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 22 })}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 22, preferSrc: true })}</span>` +
       `<span class="wslot-name">${lab}</span>` +
       `<span class="wslot-lv">Lv${lv}</span>`;
     el.title = `${lab} Lv${lv}`;
@@ -673,7 +674,7 @@ function updateWeaponStatusHUD(g) {
   const def = weaponDef(id);
   const icoEl = $('wstat-ico');
   if (icoEl) {
-    icoEl.innerHTML = id ? weaponIconHtml(id, { size: 22 }) : weaponIconHtml(null, { empty: true, size: 22 });
+    icoEl.innerHTML = id ? weaponIconHtml(id, { size: 22, preferSrc: true }) : weaponIconHtml(null, { empty: true, size: 22 });
   }
   modeEl.textContent = secondary ? (zh ? '副' : 'SEC') : (zh ? '主' : 'PRI');
   // v0.9.59: full catalog zh/en titles (機關雷射炮 etc.), not truncated short labels
@@ -797,7 +798,7 @@ function updateWeaponRailHUD(g) {
     }
     btn.innerHTML =
       `<span class="wrail-fill" style="--fill:${fill.toFixed(3)}" aria-hidden="true"></span>` +
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, mutedOpt)}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { ...mutedOpt, preferSrc: true })}</span>` +
       pathBadge;
     let title = `${fullName} ${lvTxt}`;
     if (edge.drained) title += zh ? ' · 用盡' : ' · empty';

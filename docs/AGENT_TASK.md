@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.190 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.191 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****Active** — tip `v0.9.190` `MECH-PROTOTYPE-SILHOUETTE`. Prototype unique select+bake stub; continue PNG path then HOLD.**
+## 狀態：****Active** — tip `v0.9.191` `WEAPONS-PNG-PATH`. PNG path ready; stage close → HOLD for Roy 肉眼.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.190
+https://fung2222.github.io/neon-swarm/?v=0.9.191
 
 ### Roy decision (2026-10-28 ~17:41 HKT)
 Widget「v0.9.185 之後下一條？」→ **機體／角／Roy PNG**
@@ -40,6 +40,7 @@ Continue art track until coherent phone beat (horn deepen+rebake live) then HOLD
 | v0.9.188 | `HORN-BAKE-INGAME-ALIGN` | Honesty: in-game horn billboards = rebaked sheets (same buildPlayerMech); art-bible/render-pipeline/README note |
 | v0.9.189 | `MECH-HEAVY-SILHOUETTE` | Unique Precision (heavy) mesh — compact wide stance, twin shoulder pods, sensor crown; white-pink; bake 4-dir stub; NOT recolor horn |
 | v0.9.190 | `MECH-PROTOTYPE-SILHOUETTE` | Unique Morph (prototype) mesh — morph seams, dual fins+monocle, fold-panel pack; citrus; bake 4-dir stub; NOT recolor horn |
+| v0.9.191 | `WEAPONS-PNG-PATH` | Wire WEAPON_ICON_SRC preferSrc→assets/weapons/{id}.png + SVG fallback; README drop path; no Roy PNGs yet — HOLD note |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above
