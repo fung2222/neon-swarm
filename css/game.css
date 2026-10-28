@@ -18,6 +18,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   --hud-chip-value: #00e5ff;
   /* v0.9.61 WEAPONS-HUD-MERGE-001 — single centered hub + bottom color rail */
   /* v0.9.62 WEAPONS-HUD-RAIL-CLEAR-001 — stick/hub clear + stronger water fill */
+  /* v0.9.63 WEAPONS-COLOR-TOKENS-001 — --weapon-* shared by rail + level/branch cards */
   --hud-hub-top: calc(8px + var(--sa-top));
   --hud-hub-max-w: min(360px, calc(100vw - 124px - var(--sa-left) - var(--sa-right)));
   --hud-hub-pad: 8px 12px 7px;
@@ -1550,6 +1551,64 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 /* ===== WEAPONS-HUD-RAIL-CLEAR-001 v0.9.62 ===== */
 /* Mute/pause stacked top-right so centered hub does not overlap icon pair. */
 /* Stick clearance via --hud-stick-clear (+36px). Water fill meniscus + family active glow. */
+
+
+/* ===== WEAPONS-COLOR-TOKENS-001 v0.9.63 — shared P/S/T tokens on cards ===== */
+.level-card.cat-primary {
+  border-color: color-mix(in srgb, var(--weapon-primary) 70%, transparent);
+}
+.level-card.cat-primary .card-icon {
+  border-color: color-mix(in srgb, var(--weapon-primary) 80%, white);
+  color: var(--weapon-primary);
+  background: color-mix(in srgb, var(--weapon-primary) 12%, #05010f);
+}
+.level-card.cat-primary .card-kind {
+  color: var(--weapon-primary);
+  background: color-mix(in srgb, var(--weapon-primary) 14%, transparent);
+  border-color: color-mix(in srgb, var(--weapon-primary) 45%, transparent);
+}
+.level-card.cat-primary .card-title { color: color-mix(in srgb, var(--weapon-primary) 70%, white); }
+
+.level-card.cat-secondary {
+  border-color: color-mix(in srgb, var(--weapon-secondary) 70%, transparent);
+}
+.level-card.cat-secondary .card-icon {
+  border-color: color-mix(in srgb, var(--weapon-secondary) 80%, white);
+  color: var(--weapon-secondary);
+  background: color-mix(in srgb, var(--weapon-secondary) 12%, #05010f);
+}
+.level-card.cat-secondary .card-kind {
+  color: var(--weapon-secondary);
+  background: color-mix(in srgb, var(--weapon-secondary) 14%, transparent);
+  border-color: color-mix(in srgb, var(--weapon-secondary) 45%, transparent);
+}
+.level-card.cat-secondary .card-title { color: color-mix(in srgb, var(--weapon-secondary) 70%, white); }
+
+.level-card.cat-throw {
+  border-color: color-mix(in srgb, var(--weapon-throw) 70%, transparent);
+}
+.level-card.cat-throw .card-icon {
+  border-color: color-mix(in srgb, var(--weapon-throw) 80%, white);
+  color: var(--weapon-throw);
+  background: color-mix(in srgb, var(--weapon-throw) 12%, #05010f);
+}
+.level-card.cat-throw .card-kind {
+  color: var(--weapon-throw);
+  background: color-mix(in srgb, var(--weapon-throw) 14%, transparent);
+  border-color: color-mix(in srgb, var(--weapon-throw) 45%, transparent);
+}
+.level-card.cat-throw .card-title { color: color-mix(in srgb, var(--weapon-throw) 70%, white); }
+
+/* Branch/ult chrome keeps gold/magenta accent but inherits cat border when present */
+.level-cards.branch-offer .level-card.cat-primary {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--weapon-primary) 28%, transparent);
+}
+.level-cards.branch-offer .level-card.cat-secondary {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--weapon-secondary) 28%, transparent);
+}
+.level-cards.branch-offer .level-card.cat-throw {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--weapon-throw) 28%, transparent);
+}
 
 /* ===== WEAPONS-BRANCH-KITS-001 v0.9.55 ===== */
 .level-cards.branch-offer .level-card {

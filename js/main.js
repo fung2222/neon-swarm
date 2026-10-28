@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.62 WEAPONS-HUD-RAIL-CLEAR-001; merge v0.9.61; overlap v0.9.60; floor v0.9.59; icons v0.9.57; feel FX v0.9.56
+// RAMPAGE MECH 暴走機甲 — v0.9.63 WEAPONS-COLOR-TOKENS-001; rail-clear v0.9.62; merge v0.9.61; floor v0.9.59; icons v0.9.57; feel FX v0.9.56
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -821,6 +821,16 @@ function cardKindClass(c) {
   return 'kind-util';
 }
 
+/** P/S/T family class for rail+card color tokens (v0.9.63). */
+function cardWeaponCatClass(c) {
+  const id = c && (c.weaponId || (c.kind === 'weapon' ? c.id : null) || c.id);
+  if (!id || String(id).startsWith('_')) return '';
+  const def = weaponDef(normalizeWeaponId(id) || id);
+  const cat = def && def.category;
+  if (cat === 'primary' || cat === 'secondary' || cat === 'throw') return 'cat-' + cat;
+  return '';
+}
+
 /** Large readable SVG emblems per upgrade shape (fallback: emoji glyph). */
 function cardEmblem(c) {
   const stroke = 'currentColor';
@@ -1017,7 +1027,9 @@ function showLevelCards(cards, opts = {}) {
   cards.forEach((c) => {
     const b = document.createElement('button');
     const action = c.pickupAction || '';
+    const catCls = cardWeaponCatClass(c);
     b.className = 'level-card ' + cardKindClass(c)
+      + (catCls ? ' ' + catCls : '')
       + (action ? ' action-' + action : '')
       + (action === 'swap' ? ' has-swap' : '');
     b.type = 'button';
