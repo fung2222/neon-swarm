@@ -606,11 +606,11 @@ Rollback baseline:
 
 **誠實標籤：** `implemented`、`tested`、`visually reviewed`、`device verified`、`user reported`、`not verified` 是不同狀態，不可混用。
 
-**Active = HOLD** — tip `?v=0.9.185` GAMES-JSON-STAGE-008. Safe polish done. **no** Phase 4／soft-juice／horn／more ult／BALANCE re-pass.
+**Active = HOLD** — tip `?v=0.9.185` (`1dcb595`) GAMES-JSON-STAGE-008. Safe micro-pipeline empty; Roy product fork needed. **no** Phase 4／soft-juice／horn／more ult／BALANCE re-pass.
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**HOLD for Roy try** on live `?v=0.9.185`. Soft-juice / Phase 4 / horn / BALANCE re-pass still banned.
+**HOLD for Roy try** on live `?v=0.9.185` (`1dcb595`). Safe queue empty — need product fork (Phase4 / art / soft-juice / ult / BALANCE / games.json / Play Store) or phone OK. Soft-juice / Phase 4 / horn / BALANCE re-pass still banned.
 
 HARD BANS: Phase 4 · horn art lock · soft-juice invent · BALANCE-PASS · deep phone GPU · Roy PNG.
 （full ult invent ban returns unless Roy re-opens.)

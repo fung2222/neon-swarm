@@ -2,12 +2,25 @@
 
 > Live: https://fung2222.github.io/neon-swarm/?v=0.9.185 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD** — tip `v0.9.185` `GAMES-JSON-STAGE-008`. Safe polish beat complete; wait Roy try.
+## 狀態：**HOLD** — tip `v0.9.185` (`1dcb595`) `GAMES-JSON-STAGE-008`. Safe micro-pipeline **empty**. Wait Roy product decision before next invent.
 
 **Author:** Grok bot
 
 ### Tip
 https://fung2222.github.io/neon-swarm/?v=0.9.185
+
+### Why HOLD / Roy decision needed
+Safe leftovers from tip v0.9.172 are shipped (docs tip sync · soft-pins · share aria · contrast · privacy·meta · stub stage). Next useful work is a **product fork** — pick one (or say「繼續 safe」if you spotted a leftover):
+
+1. **Phone try** tip `?v=0.9.185` — any contrast/tap/share regression on your device?
+2. **Phase 4** start? (banned until you name it)
+3. **New mech frames / body art / horn final art / Roy PNG** lock?
+4. **Soft-juice invent** or **more ult invent**? (full invent ban is back)
+5. **BALANCE re-pass** beyond BALANCE-PASS-001?
+6. **games.json** paste into cyber-arcade (slug/tier confirm) / Play Store / ads path?
+7. Something else you name?
+
+Until then: do **not** invent past bans; preserves stay.
 
 ### Shipped this beat (slice table)
 
