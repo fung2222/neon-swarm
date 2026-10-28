@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.9.112">
+<link rel="stylesheet" href="./css/game.css?v=0.9.113">
 <script type="importmap">
 {
   "imports": {
@@ -109,7 +109,7 @@
     <button id="btn-pause" class="icon-btn" data-i18n-attr="title:pauseTip,aria-label:pauseTip"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
   </div>
   <div id="demo-tag" class="demo-tag hidden" data-i18n="kit.demo"></div>
-  <div id="fps" class="fps hidden">-- FPS</div>
+  <!-- v0.9.113 FPS-ARIA-HIDDEN-001 --><div id="fps" class="fps hidden" aria-hidden="true">-- FPS</div>
 </div>
 
 <!-- v0.9.110 STICK-ARIA-HIDDEN-001 -->
@@ -232,6 +232,6 @@
   } catch (e) { /* private mode */ }
 })();
 </script>
-<script type="module" src="./js/main.js?v=0.9.112"></script>
+<script type="module" src="./js/main.js?v=0.9.113"></script>
 </body>
 </html>
