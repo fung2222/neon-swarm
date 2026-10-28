@@ -1,8 +1,8 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.131 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.132 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**SHIPPING polish** — tip `v0.9.131` `OVER-NOTE-READ-001`.
+## 狀態：**SHIPPING polish** — tip `v0.9.132` `OVER-RESULT-READ-001`.
 
 **Author:** Grok bot
 
@@ -11,7 +11,8 @@
 2. v0.9.128 `OVER-SUBTITLE-CHROME-001`
 3. v0.9.129 `HOWTO-ULT-KITS-SYNC-001`
 4. v0.9.130 `OVER-META-READ-001`
-5. v0.9.131 `OVER-NOTE-READ-001` — `#over-note` amber contrast／weight for killedBy on phone.
+5. v0.9.131 `OVER-NOTE-READ-001`
+6. v0.9.132 `OVER-RESULT-READ-001` — over `.hi-line`／`.result` best labels phone contrast.
 
 ### Preserve / HARD BANS
 stick hide · hub · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · balance/UI/GPU · over title oneline.

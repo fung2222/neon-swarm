@@ -2148,3 +2148,32 @@ html[data-lang="en"] #over-title {
   max-width: 100%;
   font-weight: 600;
 }
+
+/* ===== OVER-RESULT-READ-001 v0.9.132 — over result/hi-line phone readability (kills·contracts·best) ===== */
+#screen-over .hi-line {
+  margin-top: 8px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #ffe600;
+  text-shadow: 0 0 8px rgba(255, 230, 0, 0.4);
+}
+#screen-over .hi-line b {
+  font-size: 18px;
+  color: #ffffff;
+  margin-left: 4px;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+}
+#screen-over .result span {
+  color: #b0c8e8;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+#screen-over .result em {
+  color: #9a93bf;
+  font-size: 10px;
+}
+#screen-over .result i {
+  color: #ffe600;
+  font-size: 13px;
+  text-shadow: 0 0 8px rgba(255, 230, 0, 0.35);
+}

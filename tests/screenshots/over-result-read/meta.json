@@ -1,0 +1,11 @@
+{
+  "ver": "0.9.132",
+  "probe": {
+    "hiColor": "rgb(255, 230, 0)",
+    "hiFs": "13px",
+    "bestColor": "rgb(255, 230, 0)",
+    "labelColor": "rgb(176, 200, 232)",
+    "killsText": "擊殺 117 完成合約 2"
+  },
+  "fail": []
+}
