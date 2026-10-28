@@ -1,0 +1,961 @@
+{
+  "version": "0.9.27",
+  "implemented": true,
+  "source": "buildPlayerMech (js/mech-builder.js)",
+  "id": "heavy",
+  "size": 256,
+  "dirs": [
+    "n",
+    "e",
+    "s",
+    "w"
+  ],
+  "frames": 4,
+  "characterHeightFrac": 0.75,
+  "camera": {
+    "elevationDeg": 60,
+    "fov": 28,
+    "dist": 4.1
+  },
+  "anchors": {
+    "foot": [
+      0.5,
+      0.92
+    ],
+    "pivot": [
+      0.5,
+      0.52
+    ],
+    "muzzle": [
+      0.7831,
+      0.0596
+    ]
+  },
+  "anchorsByDir": {
+    "n": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.7831,
+        0.0596
+      ]
+    },
+    "e": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.9174,
+        0.5651
+      ]
+    },
+    "s": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.1436,
+        0.6219
+      ]
+    },
+    "w": {
+      "foot": [
+        0.5,
+        0.92
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "muzzle": [
+        0.1556,
+        0.0968
+      ]
+    }
+  },
+  "muzzleWorldByDir": {
+    "n": [
+      0.4711,
+      1.3495,
+      -0.5635
+    ],
+    "e": [
+      -0.5635,
+      1.3495,
+      -0.4711
+    ],
+    "s": [
+      -0.4711,
+      1.3495,
+      0.5635
+    ],
+    "w": [
+      0.5635,
+      1.3495,
+      0.4711
+    ]
+  },
+  "cells": [
+    {
+      "dir": "n",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_n_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_n_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "heavy_n_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "heavy_n_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "heavy_n_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_n_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_n_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "n",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "heavy_n_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.7831,
+          0.0596
+        ],
+        "muzzleWorld": [
+          0.4711,
+          1.3495,
+          -0.5635
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_e_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_e_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "heavy_e_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "heavy_e_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "heavy_e_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_e_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_e_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "e",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "heavy_e_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.9174,
+          0.5651
+        ],
+        "muzzleWorld": [
+          -0.5635,
+          1.3495,
+          -0.4711
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_s_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_s_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "heavy_s_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "heavy_s_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "heavy_s_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_s_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_s_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "s",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "heavy_s_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1436,
+          0.6219
+        ],
+        "muzzleWorld": [
+          -0.4711,
+          1.3495,
+          0.5635
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "idle",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_w_idle_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_w_run_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 1,
+      "layer": "body",
+      "file": "heavy_w_run_01.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 2,
+      "layer": "body",
+      "file": "heavy_w_run_02.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "run",
+      "frame": 3,
+      "layer": "body",
+      "file": "heavy_w_run_03.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "hurt",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_w_hurt_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "death",
+      "frame": 0,
+      "layer": "body",
+      "file": "heavy_w_death_00.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    },
+    {
+      "dir": "w",
+      "action": "gun",
+      "frame": 0,
+      "layer": "gun",
+      "file": "heavy_w_gun_00_gun.png",
+      "anchors": {
+        "foot": [
+          0.5,
+          0.92
+        ],
+        "pivot": [
+          0.5,
+          0.52
+        ],
+        "muzzle": [
+          0.1556,
+          0.0968
+        ],
+        "muzzleWorld": [
+          0.5635,
+          1.3495,
+          0.4711
+        ]
+      }
+    }
+  ],
+  "outDir": "assets/mechs/heavy/sheets",
+  "generatedAt": "2026-10-28T09:46:36.958Z",
+  "fallbackPng": true,
+  "layers": {
+    "body": "lower+torso locomotion / idle / hurt / death",
+    "gun": "independent aim layer (upper+rifle)"
+  },
+  "usage": {
+    "moveDir": "select body run/idle by movement yaw → n/ne/e/se/s/sw/w/nw (8-dir)",
+    "aimDir": "select gun layer by visualAim yaw → n/ne/e/se/s/sw/w/nw (8-dir snap; not continuous 360°)",
+    "hurt": "overlay hurt cell OR tint; do not cancel run",
+    "muzzle": "anchors.muzzle normalized; scale by sprite world size"
+  }
+}

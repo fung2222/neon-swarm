@@ -4,7 +4,7 @@
 >
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
-> **文件日期：** 2026-10-28（Asia/Hong_Kong；tip v0.9.188 HORN-BAKE-INGAME-ALIGN; bake align honesty）
+> **文件日期：** 2026-10-28（Asia/Hong_Kong；tip v0.9.189 MECH-HEAVY-SILHOUETTE; unique heavy mesh）
 > **建議承接基準：** v0.9.61 HUD merge (hub+water rail) + v0.9.60 overlap + v0.9.59 HUD/controls/floor + v0.9.58 legacy purge + v0.9.57 neon icon placeholders + v0.9.56 feel FX（prior: v0.9.55 deep branch kits；branch/ult UI = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；elite lane = v0.9.50；slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
@@ -32,8 +32,9 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.188`**（HORN-BAKE-INGAME-ALIGN; bake align honesty）
+- 目前 `main`／live cache-bust：**`?v=0.9.189`**（MECH-HEAVY-SILHOUETTE; unique heavy mesh）
 - **Done since `6ddc483`：**
+  - v0.9.189 — MECH-HEAVY-SILHOUETTE：unique Precision（heavy）mesh／parts（white-pink）；select+bake 4-dir stub；**唔係** horn recolor；截圖 `tests/screenshots/mech-heavy-silhouette/`。**interim**。
   - v0.9.188 — HORN-BAKE-INGAME-ALIGN：in-game horn billboards affirm rebaked sheets（唔用 stale mech_*.png mismatch）；art-bible／render-pipeline honesty note。**interim**。
   - v0.9.187 — HORN-MECHA-DEEPEN：horn mecha deepen（silhouette/plates/materials within bible）+ rebake 8-dir；muzzle/atlas sync；截圖 `tests/screenshots/horn-mecha-deepen/`。**interim for Roy try — not §9 lock**。
   - v0.9.186 — MECH-HORN-ROY-PNG：Active rewrite；lift horn polish／unique heavy·proto／Roy PNG path this Active only；still ban Phase4 abilities／soft-juice／more ult／BALANCE／§9 lock claim without Roy 肉眼。
