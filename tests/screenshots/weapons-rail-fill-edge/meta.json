@@ -1,0 +1,292 @@
+{
+  "ver": "0.9.67",
+  "full": {
+    "tiles": [
+      {
+        "i": "0",
+        "cat": "primary",
+        "empty": false,
+        "active": true,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "機關雷射炮 Lv1"
+      },
+      {
+        "i": "1",
+        "cat": "primary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "離子光束 Lv1"
+      },
+      {
+        "i": "2",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "散彈槍 Lv1"
+      },
+      {
+        "i": "3",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "硫酸槍 Lv1"
+      },
+      {
+        "i": "4",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "破片榴彈 Lv1"
+      },
+      {
+        "i": "5",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "冷卻彈 Lv1"
+      }
+    ],
+    "fireMode": "primary",
+    "burst": 0
+  },
+  "bursting": {
+    "tiles": [
+      {
+        "i": "0",
+        "cat": "primary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "機關雷射炮 Lv1"
+      },
+      {
+        "i": "1",
+        "cat": "primary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "離子光束 Lv1"
+      },
+      {
+        "i": "2",
+        "cat": "secondary",
+        "empty": false,
+        "active": true,
+        "drained": false,
+        "onCd": false,
+        "bursting": true,
+        "fill": "0.375",
+        "title": "散彈槍 Lv1 · 連發3"
+      },
+      {
+        "i": "3",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "硫酸槍 Lv1"
+      },
+      {
+        "i": "4",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": true,
+        "bursting": false,
+        "fill": "0.235",
+        "title": "破片榴彈 Lv1 · 冷卻"
+      },
+      {
+        "i": "5",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "冷卻彈 Lv1"
+      }
+    ],
+    "fireMode": "secondary",
+    "burst": 3
+  },
+  "drained": {
+    "tiles": [
+      {
+        "i": "0",
+        "cat": "primary",
+        "empty": false,
+        "active": true,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "機關雷射炮 Lv1"
+      },
+      {
+        "i": "1",
+        "cat": "primary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "離子光束 Lv1"
+      },
+      {
+        "i": "2",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": true,
+        "onCd": false,
+        "bursting": false,
+        "fill": "0.000",
+        "title": "散彈槍 Lv1 · 用盡"
+      },
+      {
+        "i": "3",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": true,
+        "onCd": false,
+        "bursting": false,
+        "fill": "0.000",
+        "title": "硫酸槍 Lv1 · 用盡"
+      },
+      {
+        "i": "4",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": true,
+        "bursting": false,
+        "fill": "0.382",
+        "title": "破片榴彈 Lv1 · 冷卻"
+      },
+      {
+        "i": "5",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "冷卻彈 Lv1"
+      }
+    ],
+    "fireMode": "primary",
+    "burst": 0
+  },
+  "nearEmpty": {
+    "tiles": [
+      {
+        "i": "0",
+        "cat": "primary",
+        "empty": false,
+        "active": true,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "機關雷射炮 Lv1"
+      },
+      {
+        "i": "1",
+        "cat": "primary",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "離子光束 Lv1"
+      },
+      {
+        "i": "2",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": true,
+        "onCd": false,
+        "bursting": false,
+        "fill": "0.000",
+        "title": "散彈槍 Lv1 · 用盡"
+      },
+      {
+        "i": "3",
+        "cat": "secondary",
+        "empty": false,
+        "active": false,
+        "drained": true,
+        "onCd": false,
+        "bursting": false,
+        "fill": "0.000",
+        "title": "硫酸槍 Lv1 · 用盡"
+      },
+      {
+        "i": "4",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "破片榴彈 Lv1"
+      },
+      {
+        "i": "5",
+        "cat": "throw",
+        "empty": false,
+        "active": false,
+        "drained": false,
+        "onCd": false,
+        "bursting": false,
+        "fill": "1.000",
+        "title": "冷卻彈 Lv1"
+      }
+    ],
+    "fireMode": "primary",
+    "burst": 0
+  },
+  "fail": []
+}

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.66 STICK-RAIL-CLAMP-001; stick-touch v0.9.65; branch-card v0.9.64; color-tokens v0.9.63; rail-clear v0.9.62
+// RAMPAGE MECH 暴走機甲 — v0.9.67 WEAPONS-RAIL-FILL-EDGE-001; stick-rail-clamp v0.9.66; stick-touch v0.9.65; branch-card v0.9.64
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -530,7 +530,8 @@ function updateHUD(force = false) {
   updateWeaponSlotsHUD(g);
 }
 
-/** Compact resource/cd key so water-fill rail refreshes without inventing new systems. */
+/** Compact resource/cd key so water-fill rail refreshes without inventing new systems.
+ * WEAPONS-RAIL-FILL-EDGE-001: include secondaryBurstLeft so burst drain/snap refreshes HUD. */
 function _railFillSnap(g) {
   if (!g) return '';
   const slots = g.weaponSlots || [];
@@ -550,24 +551,43 @@ function _railFillSnap(g) {
       parts.push('1');
     }
   }
-  return parts.join(',');
+  const burst = (g.fireMode === 'secondary') ? (g.secondaryBurstLeft | 0) : 0;
+  return parts.join(',') + '|b' + burst;
 }
 
 function _tileFillRatio(g, id, def) {
   if (!id || !def) return 0;
   if (def.category === 'primary') return 1;
+  let r = 1;
   if (def.category === 'secondary') {
     const res = g.weaponResources && g.weaponResources[id];
     if (!res || !res.max) return 0;
-    return Math.max(0, Math.min(1, res.current / res.max));
-  }
-  if (def.category === 'throw') {
+    r = Math.max(0, Math.min(1, res.current / res.max));
+  } else if (def.category === 'throw') {
     const cdMax = (def.base && def.base.cd) || 1.7;
     const cd = (g.throwCdT && g.throwCdT[id]) || 0;
     if (cdMax <= 0) return 1;
-    return Math.max(0, Math.min(1, 1 - (cd / cdMax)));
+    r = Math.max(0, Math.min(1, 1 - (cd / cdMax)));
+  } else {
+    return 1;
   }
-  return 1;
+  // WEAPONS-RAIL-FILL-EDGE-001: snap near-empty / near-full so water edge reads clean
+  if (r <= 0.02) return 0;
+  if (r >= 0.98) return 1;
+  return r;
+}
+
+/** Secondary empty or throw fully cooling → drained; throw mid-CD → on-cd. */
+function _tileFillEdge(g, id, def, fill) {
+  if (!id || !def) return { drained: false, onCd: false };
+  if (def.category === 'secondary') {
+    return { drained: fill <= 0, onCd: false };
+  }
+  if (def.category === 'throw') {
+    const cd = (g.throwCdT && g.throwCdT[id]) || 0;
+    return { drained: fill <= 0, onCd: cd > 0.05 };
+  }
+  return { drained: false, onCd: false };
 }
 
 const SLOT_LABEL = {
@@ -727,7 +747,13 @@ function updateWeaponRailHUD(g) {
     );
     btn.classList.toggle('active', isActive);
     const fill = _tileFillRatio(g, id, def);
+    const edge = _tileFillEdge(g, id, def, fill);
+    btn.classList.toggle('drained', !!(id && edge.drained));
+    btn.classList.toggle('on-cd', !!(id && edge.onCd));
+    const bursting = !!(id && def && def.category === 'secondary' && isActive && (g.secondaryBurstLeft | 0) > 0);
+    btn.classList.toggle('bursting', bursting);
     if (!id) {
+      btn.classList.remove('drained', 'on-cd', 'bursting');
       btn.innerHTML = '<span class="wrail-fill" style="--fill:0" aria-hidden="true"></span>' +
         '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 26 }) + '</span>';
       btn.title = zh ? '空' : 'Empty';
@@ -744,11 +770,16 @@ function updateWeaponRailHUD(g) {
     if (ult) lvTxt += ult.replace('U', '');
     const fullName = zh ? def.zh : def.en;
     // Icon + water fill only — no on-rail name/lv text (title/aria keep full name for a11y)
+    const mutedOpt = edge.drained ? { size: 26, muted: true } : { size: 26 };
     btn.innerHTML =
       `<span class="wrail-fill" style="--fill:${fill.toFixed(3)}" aria-hidden="true"></span>` +
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 26 })}</span>`;
-    btn.title = `${fullName} ${lvTxt}`;
-    btn.setAttribute('aria-label', btn.title);
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, mutedOpt)}</span>`;
+    let title = `${fullName} ${lvTxt}`;
+    if (edge.drained) title += zh ? ' · 用盡' : ' · empty';
+    else if (edge.onCd) title += zh ? ' · 冷卻' : ' · cooling';
+    else if (bursting) title += zh ? ` · 連發${g.secondaryBurstLeft}` : ` · burst ${g.secondaryBurstLeft}`;
+    btn.title = title;
+    btn.setAttribute('aria-label', title);
   });
 }
 

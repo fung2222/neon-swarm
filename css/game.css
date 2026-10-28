@@ -1470,7 +1470,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   font: inherit;
   overflow: hidden;
 }
-/* Water-cup fill layer (S/T drain; primary stays full/ready) — v0.9.62 stronger */
+/* Water-cup fill layer (S/T drain; primary stays full/ready) — v0.9.62 stronger; edge states v0.9.67 */
 .wrail-tile .wrail-fill {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -1501,6 +1501,35 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   cursor: default;
 }
 .wrail-tile.empty .wrail-fill { display: none; }
+
+/* WEAPONS-RAIL-FILL-EDGE-001 v0.9.67 — drained / on-cd / bursting (color-only; no toast invent) */
+.wrail-tile.drained:not(.empty) {
+  opacity: 0.55;
+  border-style: dashed;
+}
+.wrail-tile.drained .wrail-fill {
+  height: 0 !important;
+  box-shadow: none;
+  opacity: 0;
+}
+.wrail-tile.drained .wslot-ico {
+  filter: grayscale(0.55) brightness(0.7) drop-shadow(0 0 3px rgba(0,0,0,0.65));
+  opacity: 0.75;
+}
+.wrail-tile.on-cd:not(.drained):not(.empty) {
+  opacity: 0.78;
+}
+.wrail-tile.on-cd:not(.drained) .wrail-fill {
+  /* cooling: keep water height from --fill; soft dim meniscus */
+  filter: saturate(0.85) brightness(0.9);
+}
+.wrail-tile.bursting:not(.empty) {
+  outline-color: color-mix(in srgb, var(--wrail-secondary) 70%, #ffe600);
+}
+.wrail-tile.secondary.bursting.active:not(.empty) {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--wrail-secondary) 65%, #ffe600), inset 0 0 14px rgba(255, 43, 214, 0.18);
+}
+
 /* Active = yellow rim + family glow for readability */
 .wrail-tile.active {
   box-shadow: 0 0 18px rgba(255, 230, 0, 0.55), inset 0 0 12px rgba(255, 230, 0, 0.16);
