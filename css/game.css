@@ -2134,3 +2134,17 @@ html[data-lang="en"] #over-title {
   word-break: break-word;
   overflow-wrap: anywhere;
 }
+
+/* ===== OVER-NOTE-READ-001 v0.9.131 — over death-note / killedBy phone readability ===== */
+#screen-over #over-note,
+#screen-over .tagline#over-note {
+  color: #ffe08a;
+  text-shadow: 0 0 10px rgba(255, 200, 80, 0.35);
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  opacity: 1;
+  margin: 8px auto 14px;
+  max-width: 100%;
+  font-weight: 600;
+}
