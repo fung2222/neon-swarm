@@ -2190,3 +2190,13 @@ html[data-lang="en"] #over-title {
   letter-spacing: 0.06em;
 }
 
+/* ===== PAUSE-HINT-READ-001 v0.9.136 — pause hint phone readability ===== */
+#screen-pause .pause-hint {
+  color: #d8d0f0;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.18);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  opacity: 1;
+}
