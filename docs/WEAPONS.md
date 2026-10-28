@@ -118,6 +118,7 @@ Weapon
 **v0.9.76:** over CTA tap ≥44 (UI only; weapons unchanged).
 **v0.9.77:** home play/endless CTA tap ≥44 (UI only; weapons unchanged).
 **v0.9.78:** coach controls sync (copy only; weapons unchanged).
+**v0.9.79:** gfx reload CTA tap ≥44 (UI only; weapons unchanged).
 
 **v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
 
