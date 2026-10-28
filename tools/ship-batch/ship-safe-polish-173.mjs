@@ -456,8 +456,7 @@ assert.ok(!main.includes('ui.glowToggle(stage)'), 'no pause glow');
     // soften SHARE-BTN-ARIA-001 exact ?v=0.9.94 pin
     {
       let t = rf('tests/share-btn-aria.test.mjs');
-      t = t.replace(
-        /assert\.ok\(\/\\?v=0\\\.9\\\.94\/\.test\(html\), 'cache-bust'\);/,
+      t = t.split("assert.ok(/\\?v=0\\.9\\.94/.test(html), 'cache-bust');").join(
         `assert.ok((() => { const m = html.match(/\\?v=0\\.9\\.(\\d+)/); return m && Number(m[1]) >= 94; })(), 'cache-bust ≥0.9.94');`
       );
       t = t.replace(
