@@ -8,7 +8,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(/\?v=0\.9\.131/.test(html), 'cache-bust');
+assert.ok(/\?v=0\.9\.(13[1-9]|1[4-9]\d)/.test(html), 'cache-bust ≥0.9.131');
 assert.ok(css.includes('OVER-NOTE-READ-001'), 'ship id');
 assert.ok(agent.includes('OVER-NOTE-READ-001') || agent.includes('0.9.131'), 'AGENT_TASK');
 assert.match(css, /#screen-over\s+#over-note[^{]*\{[^}]*color:\s*#ffe08a/s, 'amber');

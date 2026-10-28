@@ -10,7 +10,7 @@ const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const strings = readFileSync(new URL('../js/strings.js', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(/\?v=0\.9\.127/.test(html), 'cache-bust 0.9.127');
+assert.ok(/\?v=0\.9\.(12[7-9]|1[3-9]\d)/.test(html), 'cache-bust ≥0.9.127');
 assert.ok(css.includes('OVER-TITLE-ONELINE-001'), 'ship id in CSS');
 assert.ok(css.includes('v0.9.127'), 'version tag');
 assert.ok(agent.includes('OVER-TITLE-ONELINE-001') || agent.includes('0.9.127'), 'AGENT_TASK');

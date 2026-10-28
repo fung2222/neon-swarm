@@ -8,7 +8,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const strings = readFileSync(new URL('../js/strings.js', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(/\?v=0\.9\.129/.test(html), 'cache-bust');
+assert.ok(/\?v=0\.9\.(129|1[3-9]\d)/.test(html), 'cache-bust ≥0.9.129');
 assert.ok(agent.includes('HOWTO-ULT-KITS-SYNC-001') || agent.includes('0.9.129'), 'AGENT_TASK');
 assert.ok(strings.includes('獨特大招'), 'zh unique ult');
 assert.ok(strings.includes('unique ult kits'), 'en unique ult');
