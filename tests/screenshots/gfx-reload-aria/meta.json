@@ -1,0 +1,9 @@
+{
+  "ver": "0.9.169",
+  "probe": {
+    "screen": "gfx",
+    "glow": false,
+    "reloadAria": "aria-label:gfx.reload"
+  },
+  "errs": []
+}
