@@ -1,0 +1,7 @@
+{
+  "ver": "0.9.99",
+  "probe": {
+    "slots": "武器狀態 WEAPON STATUS",
+    "rail": "武器欄 LOADOUT"
+  }
+}

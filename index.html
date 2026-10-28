@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.9.98">
+<link rel="stylesheet" href="./css/game.css?v=0.9.99">
 <script type="importmap">
 {
   "imports": {
@@ -94,8 +94,9 @@
     <span class="wstat-lv" id="wstat-lv">Lv1</span>
     <span class="wstat-res" id="wstat-res"></span>
   </div>
-  <div id="weapon-slots" class="weapon-slots" aria-label="武器狀態 WEAPONS"></div>
-  <div id="weapon-rail" class="weapon-rail" aria-label="武器選擇 LOADOUT"></div>
+  <!-- v0.9.99 SLOT-RAIL-ARIA-SYNC-001 -->
+  <div id="weapon-slots" class="weapon-slots" aria-label="武器狀態 WEAPON STATUS"></div>
+  <div id="weapon-rail" class="weapon-rail" aria-label="武器欄 LOADOUT"></div>
   <div class="hud-buttons top">
     <button id="btn-mute" class="icon-btn" data-i18n-attr="title:muteTip,aria-label:muteTip" aria-pressed="false">
       <svg class="ico-on" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke-width="2"/></svg>
@@ -225,6 +226,6 @@
   } catch (e) { /* private mode */ }
 })();
 </script>
-<script type="module" src="./js/main.js?v=0.9.98"></script>
+<script type="module" src="./js/main.js?v=0.9.99"></script>
 </body>
 </html>
