@@ -4,7 +4,7 @@
 >
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
-> **文件日期：** 2026-10-28（Asia/Hong_Kong；tip v0.9.155 SETTINGS-QUALITY-AFFIRM-001；prior GAMES-JSON-STAGE-005 v0.9.153）
+> **文件日期：** 2026-10-28（Asia/Hong_Kong；tip v0.9.156 PAUSE-CTA-ARIA-SYNC-001；prior GAMES-JSON-STAGE-005 v0.9.153）
 > **建議承接基準：** v0.9.61 HUD merge (hub+water rail) + v0.9.60 overlap + v0.9.59 HUD/controls/floor + v0.9.58 legacy purge + v0.9.57 neon icon placeholders + v0.9.56 feel FX（prior: v0.9.55 deep branch kits；branch/ult UI = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；elite lane = v0.9.50；slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
@@ -32,7 +32,7 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.155`**（SETTINGS-QUALITY-AFFIRM-001；affirm settings 畫質 row + setGlow persist; no second quality system；…）
+- 目前 `main`／live cache-bust：**`?v=0.9.156`**（PAUSE-CTA-ARIA-SYNC-001；pause Resume/Restart/Quit aria-label via data-i18n-attr; no glow chrome；…）
 - **Done since `6ddc483`：**
   - v0.9.143 — HUD-HUB-FLUSH-TOP-001：hub flush top — shipping
   - v0.9.144 — HUD-MUTE-TO-GEAR-001：in-run mute → gear; opens same settings; settingsTip aria
@@ -46,6 +46,7 @@
   - v0.9.152 — HANDOFF-AGENT-TIDY-001：HANDOFF/AGENT_TASK tidy for HUD/settings beat
   - v0.9.154 — PAUSE-GLOW-TO-SETTINGS-001：remove pause glowToggle; quality/畫質 only in settings
   - v0.9.155 — SETTINGS-QUALITY-AFFIRM-001：affirm settings 畫質 row + setGlow persist; no second quality system
+  - v0.9.156 — PAUSE-CTA-ARIA-SYNC-001：pause Resume/Restart/Quit aria-label via data-i18n-attr; no glow chrome
   - v0.9.153 — GAMES-JSON-STAGE-005：games.json stub stage → tip; HUD/settings beat HOLD
   - v0.9.142 — GAMES-JSON-STAGE-004：games.json stub stage → v0.9.142; end of safe polish beat; HOLD
   - v0.9.141 — LEVEL-PANEL-READ-001：level panel/title phone chrome contrast (no card layout rewrite)
@@ -580,7 +581,7 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**Shipping** tip `?v=0.9.155` (SETTINGS-QUALITY-AFFIRM-001). Soft-juice / Phase 4 / horn / BALANCE re-pass still banned.
+**Shipping** tip `?v=0.9.156` (PAUSE-CTA-ARIA-SYNC-001). Soft-juice / Phase 4 / horn / BALANCE re-pass still banned.
 
 HARD BANS: Phase 4 · horn art lock · soft-juice invent · BALANCE-PASS · deep phone GPU · Roy PNG.
 （full ult invent ban returns unless Roy re-opens.)
@@ -603,6 +604,7 @@ Preserve: hide stick · hub · water rail · tap≥44 · catalog fire live · db
 - **v0.9.152** (`HANDOFF-AGENT-TIDY-001`) — HANDOFF/AGENT_TASK tidy for HUD/settings beat
 - **v0.9.154** (`PAUSE-GLOW-TO-SETTINGS-001`) — remove pause glowToggle; quality/畫質 only in settings
 - **v0.9.155** (`SETTINGS-QUALITY-AFFIRM-001`) — affirm settings 畫質 row + setGlow persist; no second quality system
+- **v0.9.156** (`PAUSE-CTA-ARIA-SYNC-001`) — pause Resume/Restart/Quit aria-label via data-i18n-attr; no glow chrome
 - **v0.9.153** (`GAMES-JSON-STAGE-005`) — games.json stub stage → tip; HUD/settings beat HOLD
 - **v0.9.142** (`GAMES-JSON-STAGE-004`) — games.json stub stage → v0.9.142; end of safe polish beat; HOLD
 - **v0.9.141** (`LEVEL-PANEL-READ-001`) — level panel/title phone chrome contrast (no card layout rewrite)
