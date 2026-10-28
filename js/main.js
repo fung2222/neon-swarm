@@ -771,9 +771,17 @@ function updateWeaponRailHUD(g) {
     const fullName = zh ? def.zh : def.en;
     // Icon + water fill only — no on-rail name/lv text (title/aria keep full name for a11y)
     const mutedOpt = edge.drained ? { size: 26, muted: true } : { size: 26 };
+    // v0.9.73 WEAPONS-RAIL-PATH-BADGE-001 — tiny A/B/C·U corner when branched (no name labels)
+    let pathBadge = '';
+    if (br || ult) {
+      const u = ult ? (String(ult).startsWith('U') ? String(ult) : ('U' + ult)) : '';
+      const pk = br && u ? `${br}·${u}` : (br ? String(br) : u);
+      pathBadge = `<span class="wrail-path" aria-hidden="true">${pk}</span>`;
+    }
     btn.innerHTML =
       `<span class="wrail-fill" style="--fill:${fill.toFixed(3)}" aria-hidden="true"></span>` +
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, mutedOpt)}</span>`;
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, mutedOpt)}</span>` +
+      pathBadge;
     let title = `${fullName} ${lvTxt}`;
     if (edge.drained) title += zh ? ' · 用盡' : ' · empty';
     else if (edge.onCd) title += zh ? ' · 冷卻' : ' · cooling';

@@ -1,0 +1,42 @@
+{
+  "ver": "0.9.73",
+  "probe": [
+    {
+      "i": "0",
+      "path": "A",
+      "hasName": false,
+      "title": "機關雷射炮 Lv4·A"
+    },
+    {
+      "i": "1",
+      "path": "B·U1",
+      "hasName": false,
+      "title": "離子光束 Lv5·B1"
+    },
+    {
+      "i": "2",
+      "path": "A",
+      "hasName": false,
+      "title": "散彈槍 Lv3·A"
+    },
+    {
+      "i": "3",
+      "path": null,
+      "hasName": false,
+      "title": "硫酸槍 Lv1"
+    },
+    {
+      "i": "4",
+      "path": null,
+      "hasName": false,
+      "title": "破片榴彈 Lv2"
+    },
+    {
+      "i": "5",
+      "path": null,
+      "hasName": false,
+      "title": "冷卻彈 Lv1"
+    }
+  ],
+  "fail": []
+}

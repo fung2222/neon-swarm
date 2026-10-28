@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.72 mech-card-tap · mute-pause-tap v0.9.71 · home-settings-tap v0.9.70 · branch-card-path v0.9.69 · rail-tap-target v0.9.68  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.73 rail-path-badge · mech-card-tap v0.9.72 · mute-pause-tap v0.9.71 · home-settings-tap v0.9.70 · branch-card-path v0.9.69  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -339,6 +339,7 @@ Do **not** re-add player cards under legacy ids.
 | Water-fill edge states (drained/on-cd/burst) | **live** (v0.9.67) |
 | Rail phone tap target ≥44px | **live** (v0.9.68) |
 | Branch/ult path chip (A/B/C·U) | **live** (v0.9.69) |
+| Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |
 | In-run mute/pause ≥44px | **live** (v0.9.71) |
 | Home mech-card tap ≥44 tall | **live** (v0.9.72) |
