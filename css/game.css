@@ -1923,3 +1923,11 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   background: rgba(255, 180, 40, 0.95);
   box-shadow: 0 0 4px rgba(255, 180, 40, 0.5);
 }
+
+
+/* ===== LEVEL-CARD-FOCUS-001 v0.9.97 — keyboard/focus ring (a11y; no soft-juice) ===== */
+.level-card:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.35), 0 0 18px rgba(0, 229, 255, 0.22);
+}
