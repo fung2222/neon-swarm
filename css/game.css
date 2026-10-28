@@ -2177,3 +2177,16 @@ html[data-lang="en"] #over-title {
   font-size: 13px;
   text-shadow: 0 0 8px rgba(255, 230, 0, 0.35);
 }
+
+/* ===== OVER-TITLE-SIZE-001 v0.9.134 — bigger one-line over title (Roy phone; keep nowrap) ===== */
+#screen-over .title2,
+#over-title {
+  font-size: clamp(28px, 9vw, 48px);
+  letter-spacing: 0.03em;
+}
+html[data-lang="en"] #screen-over .title2,
+html[data-lang="en"] #over-title {
+  font-size: clamp(22px, 6.8vw, 40px);
+  letter-spacing: 0.06em;
+}
+

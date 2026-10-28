@@ -1,0 +1,28 @@
+{
+  "ver": "0.9.134",
+  "probe": {
+    "text": "你已經被制止",
+    "whiteSpace": "nowrap",
+    "fontSize": "35.1px",
+    "letterSpacing": "1.053px",
+    "width": 276.9,
+    "height": 41.6,
+    "rangeHeight": 50.4,
+    "lineHeight": "42.12px",
+    "overflow": "hidden",
+    "scrollW": 280,
+    "clientW": 280,
+    "parentW": 346,
+    "dataText": "你已經被制止"
+  },
+  "probe360": {
+    "text": "你已經被制止",
+    "height": 38.9,
+    "rangeHeight": 47,
+    "whiteSpace": "nowrap",
+    "fontSize": "32.4px",
+    "scrollW": 250,
+    "clientW": 250
+  },
+  "fail": []
+}
