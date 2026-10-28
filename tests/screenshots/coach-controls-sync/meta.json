@@ -1,0 +1,11 @@
+{
+  "ver": "0.9.78",
+  "probe": {
+    "hidden": false,
+    "text": "拖移移動 · 自動開火 · 雙擊副／三擊投 · 底欄切槍\n  DRAG · AUTO FIRE · DBL SEC / TPL THROW · RAIL",
+    "hasDbl": true,
+    "hasTpl": true,
+    "hasRail": true
+  },
+  "fail": []
+}
