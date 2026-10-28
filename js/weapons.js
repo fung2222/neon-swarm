@@ -34,6 +34,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['soldier', 'staffer', 'guard'], weak: ['shield', 'bomber'],
     base: { hit: 1.0, cd: 0.10, pierce: 0, speed: 28 },
     branchNames: ['過熱連射', '穿甲芯', '散射網'],
+    branchNamesEn: ['OVERHEAT BURST', 'AP CORE', 'SCATTER NET'],
   },
   ion_beam: {
     id: 'ion_beam', category: 'primary', zh: '離子光束', en: 'ION BEAM',
@@ -43,6 +44,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['drone', 'flanker', 'sniper'], weak: ['shield', 'walker'],
     base: { hit: 3.6, charge: 0.55, cd: 0.12, pierce: 3 },
     branchNames: ['長焦聚焦', '連鎖跳電', '裂縫切割'],
+    branchNamesEn: ['LONG FOCUS', 'CHAIN ARC', 'SLIT CUT'],
   },
   tracking_bomb: {
     id: 'tracking_bomb', category: 'primary', zh: '追蹤爆彈', en: 'TRACKING BOMB',
@@ -52,6 +54,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['artillery', 'medic', 'commander'], weak: ['flanker', 'jammer'],
     base: { hit: 2.4, cd: 1.5, pierce: 0, aoe: 1.6, stick: 0.35, homing: 14 },
     branchNames: ['三重彈頭', '黏著地雷', '自殺無人機'],
+    branchNamesEn: ['TRIPLE WARHEAD', 'STICKY MINE', 'KAMIKAZE DRONE'],
   },
   vulcan: {
     id: 'vulcan', category: 'primary', zh: '火神', en: 'VULCAN',
@@ -61,6 +64,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['soldier', 'bomber'], weak: ['sniper', 'shield'],
     base: { hit: 0.55, cd: 0.045, pierce: 0, range: 10, spinUp: 0.4 },
     branchNames: ['彈幕風暴', '燒夷彈', '機槍堡壘'],
+    branchNamesEn: ['BARRAGE STORM', 'INCENDIARY', 'GUN FORTRESS'],
   },
   zero_laser: {
     id: 'zero_laser', category: 'primary', zh: '零度激光', en: 'ZERO LASER',
@@ -70,6 +74,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['mech', 'hunter'], weak: ['jammer', 'drone'],
     base: { hit: 1.5, cd: 0.28, pierce: 1, chill: 0.7, speed: 32 },
     branchNames: ['絕對零度', '霜爆裂縫', '寒晶護盾'],
+    branchNamesEn: ['ABSOLUTE ZERO', 'FROST BURST', 'CRYSTAL SHIELD'],
   },
 
   // —— Secondary (5) ——
@@ -81,6 +86,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['shield', 'walker', 'mech'], weak: ['flanker', 'drone'],
     base: { hit: 0.85, cd: 0.12, pool: 10, reload: 2.2, dissolve: 1.4 },
     branchNames: ['溶甲霧', '酸池陷阱'],
+    branchNamesEn: ['DISSOLVE MIST', 'ACID POOL'],
   },
   shotgun: {
     id: 'shotgun', category: 'secondary', zh: '散彈槍', en: 'SHOTGUN',
@@ -90,6 +96,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['soldier', 'bomber'], weak: ['sniper', 'artillery'],
     base: { hit: 0.7, pellets: 10, cd: 0.70, pool: 8, reload: 1.4, range: 7 },
     branchNames: ['寬扇', '獨頭彈'],
+    branchNamesEn: ['WIDE FAN', 'SLUG'],
   },
   slow_gun: {
     id: 'slow_gun', category: 'secondary', zh: '緩速槍', en: 'SLOW GUN',
@@ -99,6 +106,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['flanker', 'bomber', 'hunter'], weak: ['shield', 'jammer'],
     base: { hit: 0.6, cd: 1.1, pool: 28, regenOut: 5, regenIn: 1.5, slow: 1.6, rush: 14, aoe: 2.4 },
     branchNames: ['凍膠', '黏網'],
+    branchNamesEn: ['FROST GEL', 'STICKY WEB'],
   },
   attack_drone: {
     id: 'attack_drone', category: 'secondary', zh: '攻擊兵衛', en: 'ATTACK DRONE',
@@ -108,6 +116,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['medic', 'artillery'], weak: ['jammer'],
     base: { hit: 0.7, cd: 5.5, pool: 2, reload: 8, drones: 2, life: 8 },
     branchNames: ['護衛編隊', '自爆衝鋒'],
+    branchNamesEn: ['ESCORT WING', 'SUICIDE CHARGE'],
   },
   blackhole: {
     id: 'blackhole', category: 'secondary', zh: '黑洞炮', en: 'BLACKHOLE CANNON',
@@ -117,6 +126,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['drone', 'soldier'], weak: ['sniper'],
     base: { hit: 2.2, cd: 2.6, pool: 2, reload: 10, aoe: 3.4, pull: 9, duration: 1.2 },
     branchNames: ['引力井', '奇點爆破'],
+    branchNamesEn: ['GRAVITY WELL', 'SINGULARITY'],
   },
 
   // —— Throw (4) ——
@@ -128,6 +138,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['soldier', 'medic'], weak: ['sniper'],
     base: { hit: 3.2, fuse: 0.55, cd: 1.7, aoe: 2.4, shards: 6 },
     branchNames: ['高爆', '破片雨'],
+    branchNamesEn: ['HE BLAST', 'SHRAPNEL RAIN'],
   },
   chill: {
     id: 'chill', category: 'throw', zh: '冷卻彈', en: 'CHILL BOMB',
@@ -137,6 +148,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['bomber', 'hunter', 'flanker'], weak: [],
     base: { hit: 1.0, fuse: 0.35, cd: 2.0, aoe: 2.8, slow: 1.8, duration: 2.2 },
     branchNames: ['霜域', '急凍芯'],
+    branchNamesEn: ['FROST FIELD', 'SNAP FREEZE'],
   },
   flash: {
     id: 'flash', category: 'throw', zh: '閃光彈', en: 'FLASHBANG',
@@ -146,6 +158,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['sniper', 'artillery'], weak: [],
     base: { hit: 0.25, fuse: 0.12, cd: 1.4, aoe: 3.2, stun: 0.9 },
     branchNames: ['致盲', '電磁脈衝'],
+    branchNamesEn: ['BLIND', 'EMP'],
   },
   gravity: {
     id: 'gravity', category: 'throw', zh: '重力彈', en: 'GRAVITY BOMB',
@@ -155,6 +168,7 @@ export const WEAPON_CATALOG = Object.freeze({
     counters: ['drone', 'soldier'], weak: [],
     base: { hit: 2.8, fuse: 0.45, cd: 2.8, aoe: 3.2, pull: 11, duration: 0.9 },
     branchNames: ['坍縮', '引力錘'],
+    branchNamesEn: ['COLLAPSE', 'GRAVITY HAMMER'],
   },
 });
 
@@ -450,14 +464,16 @@ export function branchOptions(weaponId) {
   for (let i = 0; i < n; i++) {
     const letter = branchLetter(i);
     const zh = names[i] || `分支 ${letter}`;
+    const namesEn = d.branchNamesEn || [];
+    const enName = namesEn[i] || `PATH ${letter}`;
     const hint = hints[letter] || {};
     out.push({
       letter,
       index: i,
       zh,
-      en: `PATH ${letter}`,
+      en: enName, // v0.9.80 WEAPONS-BRANCH-EN-LABELS-001 — real EN path titles
       descZh: hint.zh ? `${zh} — ${hint.zh}` : `鎖定「${d.zh}」· ${zh}`,
-      descEn: hint.en ? `${letter}: ${hint.en}` : `Lock ${d.en} · ${letter}`,
+      descEn: hint.en ? `${enName} — ${hint.en}` : `Lock ${d.en} · ${enName}`,
     });
   }
   return out;
@@ -476,6 +492,7 @@ export function ultOptions(weaponId, branch) {
   if (bi < 0 || bi >= d.branches) return [];
   const letter = branchLetter(bi);
   const bName = (d.branchNames && d.branchNames[bi]) || letter;
+  const bNameEn = (d.branchNamesEn && d.branchNamesEn[bi]) || letter;
   const out = [];
   for (let u = 1; u <= d.ultsPerBranch; u++) {
     const key = `U${u}`;
@@ -485,7 +502,7 @@ export function ultOptions(weaponId, branch) {
       id: `${d.id}_${letter}_${key}`,
       letter,
       zh: `${bName} · ${stub.zh}`,
-      en: `${letter} · ${stub.en}`,
+      en: `${bNameEn} · ${stub.en}`,
       descZh: `大招 ${key}（數值加成；完整招式後續）`,
       descEn: `Ultimate ${key} (stat bonus; full kit later)`,
     });

@@ -1,0 +1,14 @@
+{
+  "ver": "0.9.80",
+  "probe": {
+    "titles": [
+      "OVERHEAT BURST",
+      "AP CORE",
+      "SCATTER NET"
+    ],
+    "hasOverheat": true,
+    "hasPathStub": false,
+    "cardCount": 3
+  },
+  "fail": []
+}

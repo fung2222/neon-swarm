@@ -119,6 +119,7 @@ Weapon
 **v0.9.77:** home play/endless CTA tap ≥44 (UI only; weapons unchanged).
 **v0.9.78:** coach controls sync (copy only; weapons unchanged).
 **v0.9.79:** gfx reload CTA tap ≥44 (UI only; weapons unchanged).
+**v0.9.80:** branch EN labels live (`branchNamesEn`); sec/throw naming table below; full unique ult kits still stub.
 
 **v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
 
@@ -139,6 +140,27 @@ Weapon
 | zero_laser | 絕對零度 | 霜爆裂縫 | 寒晶護盾 |
 
 Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light stat bump only; not full kits).
+
+### Branch naming stubs (secondary) — live in code · documented v0.9.80
+
+| Weapon | A | B |
+|--------|---|---|
+| acid_gun | 溶甲霧 / DISSOLVE MIST | 酸池陷阱 / ACID POOL |
+| shotgun | 寬扇 / WIDE FAN | 獨頭彈 / SLUG |
+| slow_gun | 凍膠 / FROST GEL | 黏網 / STICKY WEB |
+| attack_drone | 護衛編隊 / ESCORT WING | 自爆衝鋒 / SUICIDE CHARGE |
+| blackhole | 引力井 / GRAVITY WELL | 奇點爆破 / SINGULARITY |
+
+### Branch naming stubs (throw) — live in code · documented v0.9.80
+
+| Weapon | A | B |
+|--------|---|---|
+| frag | 高爆 / HE BLAST | 破片雨 / SHRAPNEL RAIN |
+| chill | 霜域 / FROST FIELD | 急凍芯 / SNAP FREEZE |
+| flash | 致盲 / BLIND | 電磁脈衝 / EMP |
+| gravity | 坍縮 / COLLAPSE | 引力錘 / GRAVITY HAMMER |
+
+EN titles also live as `branchNamesEn` on each catalog id (v0.9.80) — branch/ult cards no longer stub `PATH A`.
 
 ### Deep branch kit deltas (v0.9.55 — Grok-owned numbers)
 
@@ -344,6 +366,7 @@ Do **not** re-add player cards under legacy ids.
 | Water-fill edge states (drained/on-cd/burst) | **live** (v0.9.67) |
 | Rail phone tap target ≥44px | **live** (v0.9.68) |
 | Branch/ult path chip (A/B/C·U) | **live** (v0.9.69) |
+| Branch EN path titles (`branchNamesEn`) | **live** (v0.9.80) |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |
 | In-run mute/pause ≥44px | **live** (v0.9.71) |
