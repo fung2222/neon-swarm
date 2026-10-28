@@ -3,7 +3,7 @@
 > **Task id:** `HIT-FEEL-DEVICE`  
 > **Status:** **Complete** · **device verified** · pass（2026-10-27 Asia/Hong_Kong）  
 > **Live (device-verified baseline):** https://fung2222.github.io/neon-swarm/?v=0.9.50  
-> **Safe pipeline tip now:** https://fung2222.github.io/neon-swarm/?v=0.9.166 · `HIT-FEEL-PIPELINE-TIP-002` (docs sync; hit-feel checklist still tied to verified v0.9.50)
+> **Safe pipeline tip now:** https://fung2222.github.io/neon-swarm/?v=0.9.175 · `HIT-FEEL-PIPELINE-TIP-003` (docs sync; hit-feel checklist still tied to verified v0.9.50)
 > **Not:** Phase 4／horn lock／phone GPU deep cuts／new systems  
 > **Honest:** Box／SwiftShader ≠ device. Grok can only pre-check headless／docs.
 
