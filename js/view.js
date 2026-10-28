@@ -13,7 +13,7 @@ import {
   applySpriteMotion,
   syncBakedPlayerSprite,
 } from './sprites.js';
-import { syncMixamoPlayer, buildMixamoPlayer, mixamoReady, HORN_TRUE_3D } from './q-hero-3d.js';
+import { syncMixamoPlayer, mixamoReady, HORN_TRUE_3D } from './q-hero-3d.js';
 
 // ---------------------------------------------------------------------------
 // Shared materials. Everything is a lit standard material plus an emissive edge so
@@ -2641,8 +2641,8 @@ export class View {
   }
 
   /**
-   * Home-screen showcase: LIVE 3D from buildPlayerMech (same visual identity as bake source).
-   * In-game prefers baked sheets from the same buildPlayerMech when present; PNG fallback otherwise.
+   * Home-screen showcase: LIVE 3D from buildPlayerMech only (never Mixamo on turntable).
+   * In-game (combat) may use Mixamo when ready; menu must stay procedural so phone never blacks out.
    */
   setMenuMech(id) {
     this.hideMenuMech();
@@ -2672,19 +2672,13 @@ export class View {
     shadow.rotation.x = -Math.PI / 2;
     shadow.position.y = 0.128;
 
-    let mech;
+    // Menu showcase: ALWAYS procedural buildPlayerMech (never Mixamo on home turntable).
+    // Mixamo stays combat-only — phone WebGL + meshopt/webp can black-out the whole menu frame.
     const mid = cfg.model || cfg.id;
-    if (HORN_TRUE_3D && mid === 'horn' && mixamoReady()) {
-      mech = buildMixamoPlayer(cfg);
-      if (mech && mech.userData.halo) mech.userData.halo.visible = false;
-      if (mech) mech.position.set(0, 0.12, 0);
-    }
-    if (!mech) {
-      mech = buildPlayerMech(cfg);
-      mech.position.set(0, 0.12, 0);
-      mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
-      if (mech.userData.halo) mech.userData.halo.visible = false;
-    }
+    const mech = buildPlayerMech(cfg);
+    mech.position.set(0, 0.12, 0);
+    mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
+    if (mech.userData.halo) mech.userData.halo.visible = false;
 
     wrap.add(pedestal, pedRing, shadow, mech);
 

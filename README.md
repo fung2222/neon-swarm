@@ -3,9 +3,9 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.198 · **狀態 Status:** v0.9.198 HORN-MIXAMO-TRUE3D-001 HOLD for Roy 肉眼 (Mixamo true-3D horn combat)
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.199 · **狀態 Status:** v0.9.199 MENU-MECH-PHONE-FIX-001 HOLD for Roy 肉眼 (menu always buildPlayerMech; Mixamo combat-only)
 
-> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Art Active tip:** v0.9.198 — HORN-MIXAMO-TRUE3D-001 (Mixamo-skinned Q hero true 3D in combat); HARD BAN Phase4 abilities / soft-juice / more ult / BALANCE re-pass / §9 lock claim without Roy 肉眼。
+> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Art Active tip:** v0.9.199 — MENU-MECH-PHONE-FIX-001 (menu showcase = buildPlayerMech only; Mixamo true-3D combat + fallbacks); HARD BAN Phase4 abilities / soft-juice / more ult / BALANCE re-pass / §9 lock claim without Roy 肉眼。
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  

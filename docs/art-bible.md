@@ -125,8 +125,8 @@ Full three-mech anim packs, white-pink unique mesh, morph states, map districts,
 
 Order: protagonist proves fun → precision proves reusable → morph proves extensible → then mass enemies / maps / weapons.
 
-### Mixamo true-3D combat (v0.9.198 `HORN-MIXAMO-TRUE3D-001`)
+### Mixamo true-3D combat (v0.9.198 `HORN-MIXAMO-TRUE3D-001` + v0.9.199 `MENU-MECH-PHONE-FIX-001`)
 - **In-game horn:** prefers Mixamo-skinned GLB (`assets/mechs/horn/q-hero-mixamo-walk.play.glb`) via `js/q-hero-3d.js` + `HORN_TRUE_3D`; walk clip when moving, freeze frame 0 when idle.
-- **Fallback:** if GLB/meshopt load fails → existing baked 8-dir PNG billboards (unchanged).
-- **Select/home:** `setMenuMech` uses same Mixamo mesh when ready; else `buildPlayerMech`.
+- **Fallback:** if GLB/meshopt load fails **or** `buildMixamoPlayer` throws → existing baked 8-dir PNG billboards (never leave player null).
+- **Select/home:** `setMenuMech` **always** `buildPlayerMech` (never Mixamo on turntable — phone black-void fix).
 - **Status:** interim true-3D tip — **not** §9 / device-final without Roy 肉眼 OK.

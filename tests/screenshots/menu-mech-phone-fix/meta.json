@@ -1,0 +1,13 @@
+{
+  "ver": "0.9.199",
+  "info": {
+    "hasView": true,
+    "hasMenu": true,
+    "modelName": "",
+    "isMixamo": false,
+    "isPlayerMech": true,
+    "mechId": "horn",
+    "childCount": 4
+  },
+  "shot": "/workspace/neon-swarm/tests/screenshots/menu-mech-phone-fix/menu-phone-390x844-v0.9.199.png"
+}

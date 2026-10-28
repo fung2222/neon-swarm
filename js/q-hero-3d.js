@@ -11,7 +11,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 /** Feature flag — horn combat uses Mixamo 3D when load succeeds. */
 export const HORN_TRUE_3D = true;
 
-export const MIXAMO_GLB_URL = './assets/mechs/horn/q-hero-mixamo-walk.play.glb?v=0.9.198';
+export const MIXAMO_GLB_URL = './assets/mechs/horn/q-hero-mixamo-walk.play.glb?v=0.9.199';
 
 /** Target height ≈ prior baked sprite worldH (2.12 * ~0.83 visual). */
 export const MIXAMO_FIT_H = 1.76;
@@ -53,7 +53,16 @@ export function preloadMixamoHero() {
   if (_cache && _cache.scene) return Promise.resolve(_cache);
   if (_loading) return _loading;
   _loading = ensureDecoder().then(() => getLoader().loadAsync(MIXAMO_GLB_URL)).then((gltf) => {
-    _cache = { scene: gltf.scene, animations: gltf.animations || [], gltf };
+    const scene = gltf && gltf.scene;
+    let meshCount = 0;
+    if (scene) scene.traverse((c) => { if (c.isMesh) meshCount += 1; });
+    if (!scene || meshCount === 0) {
+      const err = new Error('Mixamo GLB has zero meshes');
+      console.warn('[q-hero-3d] invalid GLB — keep baked sprites', err);
+      _cache = { scene: null, animations: [], error: err };
+      return _cache;
+    }
+    _cache = { scene, animations: gltf.animations || [], gltf };
     return _cache;
   }).catch((err) => {
     console.warn('[q-hero-3d] load failed — keep baked sprites', err);
@@ -97,13 +106,16 @@ function makeStubMats() {
  */
 export function buildMixamoPlayer(cfg) {
   if (!_cache || !_cache.scene) return null;
+  try {
   const trim = (cfg && cfg.trim) || 0x00e5ff;
   const root = new THREE.Group();
   root.name = 'mixamoPlayer';
 
   const model = cloneSkinned(_cache.scene);
+  let meshCount = 0;
   model.traverse((c) => {
     if (c.isMesh) {
+      meshCount += 1;
       c.frustumCulled = false; // top-down; bind-pose bounds unreliable for skinned
       c.castShadow = false;
       c.receiveShadow = false;
@@ -113,9 +125,11 @@ export function buildMixamoPlayer(cfg) {
         // so the Mixamo hero reads like the old billboards under top-down camera.
         const cloned = src.map((m) => {
           if (!m) return m;
-          if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+          try {
+            if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+          } catch (_) { /* map may be disposed / non-texture */ }
           const basic = new THREE.MeshBasicMaterial({
-            map: m.map || null,
+            map: (m.map && m.map.isTexture) ? m.map : null,
             color: m.color ? m.color.clone() : new THREE.Color(0xffffff),
             transparent: !!m.transparent,
             opacity: m.opacity != null ? m.opacity : 1,
@@ -133,11 +147,30 @@ export function buildMixamoPlayer(cfg) {
       }
     }
   });
+  if (meshCount === 0) {
+    console.warn('[q-hero-3d] clone has zero meshes — mark failed');
+    _cache = { scene: null, animations: [], error: new Error('zero meshes after clone') };
+    return null;
+  }
 
   const wrap = new THREE.Group();
   wrap.name = 'mixamoWrap';
   wrap.add(model);
-  wrap.scale.setScalar(MIXAMO_FOOTPRINT_SCALE);
+  // Height-fit to MIXAMO_FIT_H, then footprint multiplier (was unused before v0.9.199).
+  try {
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const h = size.y > 1e-4 ? size.y : MIXAMO_FIT_H;
+    const fit = (MIXAMO_FIT_H / h) * MIXAMO_FOOTPRINT_SCALE;
+    wrap.scale.setScalar(fit);
+    // Ground feet on y=0 after scale (box min may be below origin).
+    const box2 = new THREE.Box3().setFromObject(wrap);
+    if (Number.isFinite(box2.min.y)) wrap.position.y -= box2.min.y;
+  } catch (fitErr) {
+    console.warn('[q-hero-3d] height fit failed — footprint only', fitErr);
+    wrap.scale.setScalar(MIXAMO_FOOTPRINT_SCALE);
+  }
   root.add(wrap);
 
   const halo = groundRing(trim, 0.46, 0.32);
@@ -192,6 +225,11 @@ export function buildMixamoPlayer(cfg) {
   root.userData.moving = false;
 
   return root;
+  } catch (err) {
+    console.warn('[q-hero-3d] buildMixamoPlayer failed — keep baked sprites', err);
+    _cache = { scene: null, animations: [], error: err };
+    return null;
+  }
 }
 
 /**

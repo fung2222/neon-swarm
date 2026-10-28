@@ -177,10 +177,15 @@ export function makeBillboard(key, w, h, opts = {}) {
 
 export function buildPlayerSprite(cfg) {
   // True-3D Mixamo horn when asset ready; else baked sheets / legacy PNG.
+  // Never leave player null: any Mixamo throw falls through to baked PNG path.
   const id = (cfg && (cfg.model || cfg.id)) || 'horn';
   if (HORN_TRUE_3D && id === 'horn' && mixamoReady()) {
-    const m3 = buildMixamoPlayer(cfg);
-    if (m3) return m3;
+    try {
+      const m3 = buildMixamoPlayer(cfg);
+      if (m3) return m3;
+    } catch (err) {
+      console.warn('[sprites] Mixamo player build failed — baked fallback', err);
+    }
   }
 
   // Prefer baked buildPlayerMech sheets when available for this mech id.
