@@ -1,19 +1,20 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.162 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.163 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.162` `SOFTPIN-CTA-TAP-001`. Shipping safe polish (docs tip / CTA aria / soft-pins / contrast).
+## 狀態：**Active** — tip `v0.9.163` `SHARE-FALLBACK-SOFTPIN-002`. Shipping safe polish (docs tip / CTA aria / soft-pins / contrast).
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.162
+https://fung2222.github.io/neon-swarm/?v=0.9.163
 
 ### Shipped this beat (slice table)
 
 | Ver | ID | What |
 |---|---|---|
 | v0.9.162 | `SOFTPIN-CTA-TAP-001` | soft-pin over/home/pause/gfx/mech CTA tap cache-bust ≥ tip (3-digit) |
+| v0.9.163 | `SHARE-FALLBACK-SOFTPIN-002` | fix share-fallback softpin double-escape; pin ≥ tip |
 
 ### Preserve / HARD BANS
 stick hide · hub flush top · gear L + pause R under hub · settings vol/SFX/BGM/quality/share/howto · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · over title oneline+size · 畫質 label · balance/GPU already shipped.
