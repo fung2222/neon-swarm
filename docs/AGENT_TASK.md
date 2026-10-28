@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.183 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.184 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.183` `INTERRUPT-NOTE-READ-001`. Shipping safe polish (docs tip / soft-pins / share aria / contrast / privacy·meta).
+## 狀態：**Active** — tip `v0.9.184` `HANDOFF-AGENT-TIDY-003`. Shipping safe polish (docs tip / soft-pins / share aria / contrast / privacy·meta).
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.183
+https://fung2222.github.io/neon-swarm/?v=0.9.184
 
 ### Shipped this beat (slice table)
 
@@ -24,6 +24,7 @@ https://fung2222.github.io/neon-swarm/?v=0.9.183
 | v0.9.181 | `PRIVACY-PRODUCT-RENAME-001` | privacy.html title/h1 → 暴走機甲 RAMPAGE MECH (keep NEON SWARM aka) |
 | v0.9.182 | `META-COLOR-SCHEME-001` | index + privacy meta color-scheme=dark (hygiene; theme-color kept) |
 | v0.9.183 | `INTERRUPT-NOTE-READ-001` | menu interrupt-note phone contrast leftover (WebGL recover) |
+| v0.9.184 | `HANDOFF-AGENT-TIDY-003` | HANDOFF/AGENT_TASK tidy for safe-polish beat; affirm no pause glow |
 
 ### Preserve / HARD BANS
 stick hide · hub flush top · gear L + pause R under hub · settings vol/SFX/BGM/quality/share/howto · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · over title oneline+size · 畫質 label · balance/GPU already shipped.
