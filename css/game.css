@@ -2348,3 +2348,14 @@ html[data-lang="en"] #over-title {
   font-weight: 600;
   opacity: 1;
 }
+
+
+/* ===== INTERRUPT-NOTE-READ-001 v0.9.183 — menu interrupt-note phone contrast leftover ===== */
+.interrupt-note {
+  color: #ffc0d0;
+  text-shadow: 0 0 10px rgba(255, 80, 120, 0.35);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+  opacity: 1;
+}
