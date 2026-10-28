@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.171 · **狀態 Status:** v0.9.171 HANDOFF-AGENT-TIDY-002
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.172 · **狀態 Status:** v0.9.172 GAMES-JSON-STAGE-007
 
 > **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Safe pipeline tip:** v0.9.164 — docs tip sync / CTA aria / soft-pins；HARD BAN Phase4/horn/soft-juice/full ult/BALANCE/deep GPU。
 
