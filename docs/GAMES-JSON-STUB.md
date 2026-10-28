@@ -1,6 +1,6 @@
 # games.json stub — neon-swarm
 
-<!-- 0.9.153 GAMES-JSON-STAGE-005 / stub tip bump -->
+<!-- 0.9.161 GAMES-JSON-STAGE-006 / stub tip bump -->
 
 Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier.
 
@@ -22,8 +22,8 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 0.9.153 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · over title size + pause/coach/gfx/level polish · 未包裝 Android
-    "en": "web 0.9.153 · 2+2+2 loadout / branch+ult / hide-stick / color rail · over title size + pause/coach/gfx/level polish · 未包裝 Android
+    "zh": "網頁版 0.9.161 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · pause glow→settings · HUD gear/settings · over/pause polish · 未包裝 Android
+    "en": "web 0.9.161 · 2+2+2 loadout / branch+ult / hide-stick / color rail · pause glow→settings · HUD gear/settings · over/pause polish · 未包裝 Android
   },
   "kit": "v0.3.16",
   "play": "not-submitted",

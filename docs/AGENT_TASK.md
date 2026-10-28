@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.160 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.161 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.160` `HANDOFF-GLOW-SETTINGS-NOTE-001`. Shipping pause-glow→settings + safe polish.
+## 狀態：**HOLD** — tip `v0.9.161` `GAMES-JSON-STAGE-006`. Pause-glow→settings + safe polish beat complete; wait Roy try.
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.160
+https://fung2222.github.io/neon-swarm/?v=0.9.161
 
 ### Shipped this beat (slice table)
 
@@ -20,6 +20,7 @@ https://fung2222.github.io/neon-swarm/?v=0.9.160
 | v0.9.158 | `WEAPONS-MD-TIP-SYNC-002` | WEAPONS.md Live tip header sync off stale BALANCE v0.9.124 → tip |
 | v0.9.159 | `HIT-FEEL-PIPELINE-TIP-001` | HIT-FEEL-DEVICE live tip note → current safe pipeline (docs only) |
 | v0.9.160 | `HANDOFF-GLOW-SETTINGS-NOTE-001` | HANDOFF note: pause has no glow btn; 畫質 only in settings |
+| v0.9.161 | `GAMES-JSON-STAGE-006` | games.json stub stage → tip; pause-glow→settings beat HOLD; **HOLD** |
 
 ### Preserve / HARD BANS
 stick hide · hub flush top · gear L + pause R under hub · settings vol/SFX/BGM/quality/share/howto · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · over title oneline+size · balance/GPU already shipped.
