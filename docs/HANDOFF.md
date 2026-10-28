@@ -613,11 +613,11 @@ Rollback baseline:
 
 **誠實標籤：** `implemented`、`tested`、`visually reviewed`、`device verified`、`user reported`、`not verified` 是不同狀態，不可混用。
 
-**Active = HOLD** — tip `?v=0.9.185` (`1dcb595`) GAMES-JSON-STAGE-008. Safe micro-pipeline empty; Roy product fork needed. **no** Phase 4／soft-juice／horn／more ult／BALANCE re-pass.
+**Active = HOLD** — tip `?v=0.9.192` (`10cd48c`) GAMES-JSON-STAGE-009. Art beat (horn deepen+rebake · heavy/proto unique silhouettes · weapons PNG path) shipped; **wait Roy 肉眼** before §9 lock / next invent. Still HARD BAN: Phase 4／soft-juice／more ult／BALANCE re-pass／pause `#btn-glow`／T2I menu PNGs.
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**HOLD for Roy try** on live `?v=0.9.185` (`1dcb595`). Safe queue empty — need product fork (Phase4 / art / soft-juice / ult / BALANCE / games.json / Play Store) or phone OK. Soft-juice / Phase 4 / horn / BALANCE re-pass still banned.
+**HOLD for Roy 肉眼** on live `?v=0.9.192` (`10cd48c`). Try horn (select 3D + in-game bake) + heavy/proto silhouettes; OK to continue polish? Lock horn? Drop weapons PNGs? Soft-juice / Phase 4 / more ult / BALANCE re-pass still banned. **Interim — not §9 lock.**
 
 HARD BANS: Phase 4 · horn art lock · soft-juice invent · BALANCE-PASS · deep phone GPU · Roy PNG.
 （full ult invent ban returns unless Roy re-opens.)

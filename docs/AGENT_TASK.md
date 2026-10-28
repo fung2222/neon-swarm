@@ -2,7 +2,7 @@
 
 > Live: https://fung2222.github.io/neon-swarm/?v=0.9.192 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****HOLD** — tip `v0.9.192` (`GAMES-JSON-STAGE-009`). Art beat shipped; wait Roy 肉眼 before lock / next invent.**
+## 狀態：**HOLD** — tip `v0.9.192` (`GAMES-JSON-STAGE-009`). Art beat shipped; wait Roy 肉眼 before lock / next invent.
 
 **Author:** Grok bot
 
