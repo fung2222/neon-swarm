@@ -225,7 +225,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   min-height: 0;
   pointer-events: auto;
 }
-.hud-buttons.top .icon-btn { width: 36px; height: 36px; }
+.hud-buttons.top .icon-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; } /* HUD-MUTE-PAUSE-TAP-001 */
 /* goal line: the kills still needed for the next contract level */
 .hud-goal {
   position: absolute; left: calc(10px + var(--sa-left)); transform: none;
@@ -292,7 +292,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .stat .value.big { font-size: 18px; }
   .hud-right .value.big { font-size: 16px; }
   .hud-buttons.top { top: var(--hud-row1-top); right: calc(6px + var(--sa-right)); min-height: 0; flex-direction: column; }
-  .hud-buttons.top .icon-btn { width: 34px; height: 34px; }
+  .hud-buttons.top .icon-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; } /* HUD-MUTE-PAUSE-TAP-001 phone */
   .hud-goal {
     top: var(--hud-side-top);
     left: calc(8px + var(--sa-left)); transform: none;
@@ -1818,4 +1818,23 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   min-height: 44px; /* taller hit area; visual track stays thin via accent */
   padding: 20px 0;
   box-sizing: border-box;
+}
+
+
+/* ===== HUD-MUTE-PAUSE-TAP-001 v0.9.71 — in-run mute/pause ≥44×44 (was 36/34) ===== */
+/* Kit .icon-btn is 44; game.css had shrunk top HUD buttons — restore HIG ≥44. */
+.hud-buttons.top .icon-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+@media (max-width: 760px) {
+  .hud-buttons.top .icon-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
 }

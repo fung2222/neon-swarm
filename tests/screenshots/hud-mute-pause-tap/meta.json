@@ -1,0 +1,20 @@
+{
+  "ver": "0.9.71",
+  "probe": {
+    "mute": {
+      "w": 44,
+      "h": 44,
+      "minW": "44px",
+      "minH": "44px",
+      "id": "btn-mute"
+    },
+    "pause": {
+      "w": 44,
+      "h": 44,
+      "minW": "44px",
+      "minH": "44px",
+      "id": "btn-pause"
+    }
+  },
+  "fail": []
+}
