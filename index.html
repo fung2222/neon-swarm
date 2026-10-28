@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.9.167">
+<link rel="stylesheet" href="./css/game.css?v=0.9.168">
 <script type="importmap">
 {
   "imports": {
@@ -139,9 +139,10 @@
       </div>
       <div class="menu-cta">
         <!-- v0.9.112 MECH-PICK-ARIA-SYNC-001 --><div id="mech-pick" class="mech-pick" role="radiogroup" aria-label="機體選取 FRAME PICK"></div>
-        <button class="neon-btn" id="btn-play"><span data-i18n="play">啟動暴走</span><small data-i18n="playS">BREAK OUT</small></button>
+        <!-- HOME-CTA-ARIA-SYNC-001: aria from i18n (mirror pause/over CTA) -->
+        <button class="neon-btn" id="btn-play" data-i18n-attr="aria-label:play"><span data-i18n="play">啟動暴走</span><small data-i18n="playS">BREAK OUT</small></button>
         <div class="menu-sec">
-          <button class="neon-btn ghost" id="btn-endless"><span data-i18n="endless">無盡暴走</span><small data-i18n="endlessS">NO CAP</small></button>
+          <button class="neon-btn ghost" id="btn-endless" data-i18n-attr="aria-label:endless"><span data-i18n="endless">無盡暴走</span><small data-i18n="endlessS">NO CAP</small></button>
         </div>
       </div>
     </div>
@@ -238,6 +239,6 @@
   } catch (e) { /* private mode */ }
 })();
 </script>
-<script type="module" src="./js/main.js?v=0.9.167"></script>
+<script type="module" src="./js/main.js?v=0.9.168"></script>
 </body>
 </html>
