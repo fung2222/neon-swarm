@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.98 WEAPONS-MD-TIP-SYNC-001 · hub/pause/over a11y v0.9.91–0.9.95 · catalog-fire-live v0.9.75
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.116 WEAPONS-MD-BATCH-SYNC-001 · a11y batch v0.9.101–0.9.114 · catalog-fire-live v0.9.75
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -391,6 +391,11 @@ Do **not** re-add player cards under legacy ids.
 | Boss HP region a11y | **live** (v0.9.95 BOSS-HP-A11Y-001) |
 | Hub armor i18n | **live** (v0.9.96 HUB-ARMOR-I18N-001) |
 | Level-card focus ring | **live** (v0.9.97 LEVEL-CARD-FOCUS-001) |
+| Level screen dialog a11y | **live** (v0.9.101 LEVEL-DIALOG-A11Y-001) |
+| XP bar progressbar a11y | **live** (v0.9.102 XP-BAR-A11Y-001) |
+| HUD zone/goal status a11y | **live** (v0.9.103–0.9.104) |
+| Neon/icon btn focus rings | **live** (v0.9.108–0.9.109) |
+| Stick/fps aria-hidden | **live** (v0.9.110 / v0.9.113) |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |
 | In-run mute/pause ≥44px | **live** (v0.9.71) |
