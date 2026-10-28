@@ -1610,6 +1610,54 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   box-shadow: 0 0 14px color-mix(in srgb, var(--weapon-throw) 28%, transparent);
 }
 
+
+/* ===== WEAPONS-BRANCH-CARD-LAYOUT-001 v0.9.64 — branch/ult pick UI polish only ===== */
+.level-cards.branch-offer {
+  gap: 10px;
+  margin-top: 10px;
+  max-height: min(68vh, 520px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
+}
+.level-cards.branch-offer .level-card {
+  min-height: 78px;
+  padding: 12px 14px;
+  gap: 12px;
+}
+.level-cards.branch-offer .level-card .card-icon {
+  flex-basis: 64px; width: 64px; height: 64px; border-radius: 14px;
+}
+.level-cards.branch-offer .level-card .card-icon .emblem { width: 46px; height: 46px; }
+.level-cards.branch-offer .level-card .card-title {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.level-cards.branch-offer .level-card .card-desc {
+  -webkit-line-clamp: 2;
+  font-size: 12px;
+}
+.level-cards.branch-offer .level-card.action-branch .card-kind {
+  letter-spacing: 2px;
+}
+.level-panel.branch-panel,
+.overlay-level .level-panel:has(.level-cards.branch-offer) {
+  max-width: min(94vw, 420px);
+}
+@media (max-width: 420px) {
+  .level-cards.branch-offer .level-card {
+    min-height: 72px;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .level-cards.branch-offer .level-card .card-icon {
+    flex-basis: 56px; width: 56px; height: 56px;
+  }
+  .level-cards.branch-offer .level-card .card-title { font-size: 14.5px; }
+}
+
 /* ===== WEAPONS-BRANCH-KITS-001 v0.9.55 ===== */
 .level-cards.branch-offer .level-card {
   border-color: rgba(255, 230, 0, 0.45);

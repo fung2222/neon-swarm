@@ -1,0 +1,32 @@
+{
+  "ver": "0.9.64",
+  "task": "WEAPONS-BRANCH-CARD-LAYOUT-001",
+  "cats": [
+    "level-card kind-weapon cat-primary action-branch",
+    "level-card kind-weapon cat-secondary action-branch",
+    "level-card kind-weapon cat-throw action-branch"
+  ],
+  "tokens": {
+    "primary": "#00e5ff",
+    "secondary": "#ff2bd6",
+    "throw": "#ffb428",
+    "wrailP": "#00e5ff"
+  },
+  "layoutMetrics": {
+    "cardCount": 3,
+    "cardHeights": [
+      0,
+      0,
+      0
+    ],
+    "boxMaxH": "520px",
+    "boxH": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "shots": [
+    "01-rail-colors.png",
+    "02-branch-cat-cards.png",
+    "03-hub-and-rail.png"
+  ]
+}
