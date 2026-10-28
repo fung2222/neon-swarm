@@ -11,7 +11,7 @@ const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.61'), 'cache-bust 0.9.61');
+assert.ok(/\?v=0\.9\.(6[1-9]|[7-9]\d)/.test(html), 'cache-bust ≥0.9.61');
 assert.ok(html.includes('id="hud-hub"'), 'hud-hub in DOM');
 assert.ok(html.includes('id="hub-hp-fill"'), 'HP bar fill');
 assert.ok(html.includes('id="xp-pct"'), 'XP % display');

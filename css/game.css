@@ -17,8 +17,9 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   --hud-chip-label: #9a93bf;
   --hud-chip-value: #00e5ff;
   /* v0.9.61 WEAPONS-HUD-MERGE-001 — single centered hub + bottom color rail */
+  /* v0.9.62 WEAPONS-HUD-RAIL-CLEAR-001 — stick/hub clear + stronger water fill */
   --hud-hub-top: calc(8px + var(--sa-top));
-  --hud-hub-max-w: min(420px, calc(100vw - 96px - var(--sa-left) - var(--sa-right)));
+  --hud-hub-max-w: min(360px, calc(100vw - 124px - var(--sa-left) - var(--sa-right)));
   --hud-hub-pad: 8px 12px 7px;
   --hud-gap: 6px;
   --hud-xp-h: 8px;
@@ -29,15 +30,18 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   --hud-wstat-top: var(--hud-hub-top);
   --hud-wstat-h: 0px;
   --hud-side-top: calc(var(--hud-hub-top) + 78px);
-  --hud-rail-h: 48px;
-  --hud-stick-clear: calc(var(--hud-rail-h) + 22px + var(--sa-bottom));
-  /* weapon family color tokens */
-  --wrail-primary: #00e5ff;
-  --wrail-secondary: #ff2bd6;
-  --wrail-throw: #ffb428;
-  --wrail-fill-primary: rgba(0, 229, 255, 0.28);
-  --wrail-fill-secondary: rgba(255, 43, 214, 0.42);
-  --wrail-fill-throw: rgba(255, 180, 40, 0.42);
+  --hud-rail-h: 50px;
+  --hud-stick-clear: calc(var(--hud-rail-h) + 36px + var(--sa-bottom));
+  /* weapon family color tokens (shared rail + cards) */
+  --weapon-primary: #00e5ff;
+  --weapon-secondary: #ff2bd6;
+  --weapon-throw: #ffb428;
+  --wrail-primary: var(--weapon-primary);
+  --wrail-secondary: var(--weapon-secondary);
+  --wrail-throw: var(--weapon-throw);
+  --wrail-fill-primary: rgba(0, 229, 255, 0.34);
+  --wrail-fill-secondary: rgba(255, 43, 214, 0.55);
+  --wrail-fill-throw: rgba(255, 180, 40, 0.55);
 }
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 
@@ -182,7 +186,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 560px) {
   :root {
     --hud-hub-top: calc(6px + var(--sa-top));
-    --hud-hub-max-w: min(340px, calc(100vw - 92px - var(--sa-left) - var(--sa-right)));
+    --hud-hub-max-w: min(300px, calc(100vw - 124px - var(--sa-left) - var(--sa-right)));
     --hud-hub-pad: 6px 10px 6px;
     --hud-xp-h: 7px;
     --hud-gap: 5px;
@@ -214,13 +218,13 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .stat .value { font-size: clamp(16px, 4.6vw, 22px); color: var(--hud-chip-value); text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
 .stat .value.big { font-size: clamp(20px, 5.6vw, 28px); color: #7ef9ff; }
 .hud-buttons.top {
-  position: absolute; top: var(--hud-row1-top); right: calc(10px + var(--sa-right));
+  position: absolute; top: var(--hud-row1-top); right: calc(8px + var(--sa-right));
   bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear or strip stretches full height */
-  display: flex; gap: 6px; z-index: 6; align-items: center;
-  min-height: var(--hud-row1-h);
+  display: flex; flex-direction: column; gap: 6px; z-index: 12; align-items: center;
+  min-height: 0;
   pointer-events: auto;
 }
-.hud-buttons.top .icon-btn { width: 40px; height: 40px; }
+.hud-buttons.top .icon-btn { width: 36px; height: 36px; }
 /* goal line: the kills still needed for the next contract level */
 .hud-goal {
   position: absolute; left: calc(10px + var(--sa-left)); transform: none;
@@ -286,8 +290,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .stat .value { font-size: 15px; letter-spacing: 0; }
   .stat .value.big { font-size: 18px; }
   .hud-right .value.big { font-size: 16px; }
-  .hud-buttons.top { top: var(--hud-row1-top); right: calc(8px + var(--sa-right)); min-height: var(--hud-row1-h); }
-  .hud-buttons.top .icon-btn { width: 36px; height: 36px; }
+  .hud-buttons.top { top: var(--hud-row1-top); right: calc(6px + var(--sa-right)); min-height: 0; flex-direction: column; }
+  .hud-buttons.top .icon-btn { width: 34px; height: 34px; }
   .hud-goal {
     top: var(--hud-side-top);
     left: calc(8px + var(--sa-left)); transform: none;
@@ -1460,27 +1464,28 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   font: inherit;
   overflow: hidden;
 }
-/* Water-cup fill layer (S/T drain; primary stays full/ready) */
+/* Water-cup fill layer (S/T drain; primary stays full/ready) — v0.9.62 stronger */
 .wrail-tile .wrail-fill {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   height: calc(var(--fill, 1) * 100%);
   pointer-events: none;
   z-index: 0;
-  transition: height 0.18s linear;
+  transition: height 0.2s linear;
   border-radius: 0 0 calc(var(--hud-chip-radius) - 2px) calc(var(--hud-chip-radius) - 2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .wrail-tile.primary { border-color: color-mix(in srgb, var(--wrail-primary) 85%, white); }
 .wrail-tile.primary .wrail-fill {
-  background: linear-gradient(180deg, transparent 0%, var(--wrail-fill-primary) 40%, color-mix(in srgb, var(--wrail-primary) 55%, transparent) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wrail-primary) 18%, transparent) 0%, var(--wrail-fill-primary) 35%, color-mix(in srgb, var(--wrail-primary) 62%, transparent) 100%);
 }
 .wrail-tile.secondary { border-color: color-mix(in srgb, var(--wrail-secondary) 80%, white); }
 .wrail-tile.secondary .wrail-fill {
-  background: linear-gradient(180deg, transparent 0%, var(--wrail-fill-secondary) 30%, color-mix(in srgb, var(--wrail-secondary) 60%, transparent) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wrail-secondary) 22%, transparent) 0%, var(--wrail-fill-secondary) 28%, color-mix(in srgb, var(--wrail-secondary) 70%, transparent) 100%);
 }
 .wrail-tile.throw { border-color: color-mix(in srgb, var(--wrail-throw) 80%, white); }
 .wrail-tile.throw .wrail-fill {
-  background: linear-gradient(180deg, transparent 0%, var(--wrail-fill-throw) 30%, color-mix(in srgb, var(--wrail-throw) 60%, transparent) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wrail-throw) 22%, transparent) 0%, var(--wrail-fill-throw) 28%, color-mix(in srgb, var(--wrail-throw) 70%, transparent) 100%);
 }
 .wrail-tile.empty {
   opacity: 0.38;
@@ -1490,17 +1495,26 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   cursor: default;
 }
 .wrail-tile.empty .wrail-fill { display: none; }
+/* Active = yellow rim + family glow for readability */
 .wrail-tile.active {
-  box-shadow: 0 0 18px rgba(255, 230, 0, 0.5), inset 0 0 12px rgba(255, 230, 0, 0.14);
+  box-shadow: 0 0 18px rgba(255, 230, 0, 0.55), inset 0 0 12px rgba(255, 230, 0, 0.16);
   border-color: #ffe600;
-  transform: scale(1.06);
+  transform: scale(1.07);
+  outline: 1px solid rgba(255, 230, 0, 0.55);
+  outline-offset: 1px;
 }
 .wrail-tile.primary.active:not(.empty) {
   animation: wrail-ready-pulse 1.6s ease-in-out infinite;
 }
+.wrail-tile.secondary.active:not(.empty) {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--wrail-secondary) 55%, #ffe600), inset 0 0 12px rgba(255, 230, 0, 0.14);
+}
+.wrail-tile.throw.active:not(.empty) {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--wrail-throw) 55%, #ffe600), inset 0 0 12px rgba(255, 230, 0, 0.14);
+}
 @keyframes wrail-ready-pulse {
-  0%, 100% { box-shadow: 0 0 14px rgba(0, 229, 255, 0.35), inset 0 0 10px rgba(0, 229, 255, 0.08); }
-  50% { box-shadow: 0 0 22px rgba(255, 230, 0, 0.55), inset 0 0 14px rgba(255, 230, 0, 0.16); }
+  0%, 100% { box-shadow: 0 0 14px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.1); }
+  50% { box-shadow: 0 0 24px rgba(255, 230, 0, 0.6), inset 0 0 14px rgba(255, 230, 0, 0.18); }
 }
 .wrail-tile .wslot-ico {
   position: relative;
@@ -1532,6 +1546,10 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 @media (max-width: 560px) {
   .boss-hp { top: calc(var(--hud-side-top) + 4px) !important; }
 }
+
+/* ===== WEAPONS-HUD-RAIL-CLEAR-001 v0.9.62 ===== */
+/* Mute/pause stacked top-right so centered hub does not overlap icon pair. */
+/* Stick clearance via --hud-stick-clear (+36px). Water fill meniscus + family active glow. */
 
 /* ===== WEAPONS-BRANCH-KITS-001 v0.9.55 ===== */
 .level-cards.branch-offer .level-card {

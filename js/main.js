@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.61 WEAPONS-HUD-MERGE-001; overlap v0.9.60; floor v0.9.59; icons v0.9.57; feel FX v0.9.56
+// RAMPAGE MECH 暴走機甲 — v0.9.62 WEAPONS-HUD-RAIL-CLEAR-001; merge v0.9.61; overlap v0.9.60; floor v0.9.59; icons v0.9.57; feel FX v0.9.56
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
