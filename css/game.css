@@ -1786,6 +1786,19 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .wslot .wslot-ico .wico-svg { width: 22px; height: 22px; }
 
 
+/* ===== HOME-CTA-TAP-001 v0.9.77 — play + endless ≥44 phone / 48 desktop ===== */
+#screen-start #btn-play,
+#screen-start #btn-endless {
+  min-height: 48px;
+  box-sizing: border-box;
+}
+@media (max-width: 760px) {
+  #screen-start #btn-play,
+  #screen-start #btn-endless {
+    min-height: 44px;
+  }
+}
+
 /* ===== STICK-TOUCH-SHOW-001 v0.9.65 — idle stick invisible; show at finger while pressed ===== */
 
 /* ===== HOME-SETTINGS-TAP-001 v0.9.70 — phone gear/settings ≥44px (override kit 40px shrink) ===== */

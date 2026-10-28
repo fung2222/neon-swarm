@@ -1,0 +1,18 @@
+{
+  "ver": "0.9.77",
+  "probe": {
+    "play": {
+      "w": 280,
+      "h": 76,
+      "minH": "44px",
+      "id": "btn-play"
+    },
+    "endless": {
+      "w": 118,
+      "h": 55,
+      "minH": "44px",
+      "id": "btn-endless"
+    }
+  },
+  "fail": []
+}

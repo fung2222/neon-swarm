@@ -116,6 +116,7 @@ Weapon
 **v0.9.53 ship:** full catalog IDs/names/feel/counters; branch/ult **data stubs**. All 14 wired with feel-matched behaviors.
 **v0.9.75:** catalog fire status **live** (docs stub cleared); full unique ult kits still stub.
 **v0.9.76:** over CTA tap ≥44 (UI only; weapons unchanged).
+**v0.9.77:** home play/endless CTA tap ≥44 (UI only; weapons unchanged).
 
 **v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
 
