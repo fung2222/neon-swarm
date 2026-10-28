@@ -1,0 +1,14 @@
+{
+  "ver": "0.9.129",
+  "opened": "click",
+  "probe": {
+    "hasUnique": true,
+    "hasOld": false,
+    "modal": true
+  },
+  "fromI18n": {
+    "textSnippet": true,
+    "len": 551
+  },
+  "fail": []
+}
