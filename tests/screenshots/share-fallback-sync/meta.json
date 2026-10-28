@@ -1,0 +1,9 @@
+{
+  "ver": "0.9.133",
+  "probe": {
+    "zh": "分享戰績",
+    "en": "SHARE RUN",
+    "htmlHasShare": true
+  },
+  "fail": []
+}

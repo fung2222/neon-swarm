@@ -1,5 +1,6 @@
 /**
  * Over-screen result share / copy (v0.9.39 / PHASE6-RESULT-SHARE-001).
+ * v0.9.133 SHARE-FALLBACK-SYNC-001 — index.html fallback mirrors phone SHARE labels.
  * No social SDK / analytics / backend. Feedback-only UX.
  */
 
