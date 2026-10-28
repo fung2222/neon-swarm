@@ -1,0 +1,11 @@
+{
+  "ver": "0.9.170",
+  "probe": {
+    "screen": "over",
+    "glow": false,
+    "retryAria": "再嚟一次",
+    "menuAria": "aria-label:menu",
+    "emColor": "rgb(176, 200, 232)"
+  },
+  "errs": []
+}

@@ -2317,3 +2317,13 @@ html[data-lang="en"] #over-title {
 .hud-buttons.top #btn-pause {
   min-width: 44px; min-height: 44px;
 }
+
+
+/* ===== OVER-RESULT-EM-READ-001 v0.9.170 — over .result em (best label) contrast leftover ===== */
+#screen-over .result em {
+  color: #b0c8e8;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  opacity: 1;
+}
