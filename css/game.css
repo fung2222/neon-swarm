@@ -1838,3 +1838,19 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     min-height: 44px;
   }
 }
+
+
+/* ===== HOME-MECH-CARD-TAP-001 v0.9.72 — home mech cards phone ≥44 tall ===== */
+/* Phone padding was 5×7 → short hit area; HIG ≥44 without inventing new mech unlock. */
+@media (max-width: 760px) {
+  #screen-start .mech-card,
+  .mech-card {
+    min-height: 44px;
+    padding: 8px 8px 7px;
+    box-sizing: border-box;
+  }
+  #screen-start .mech-card b,
+  .mech-card b {
+    font-size: 12px;
+  }
+}
