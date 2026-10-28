@@ -1,8 +1,8 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.136 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.137 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — shipping safe polish. Tip `v0.9.136` `PAUSE-HINT-READ-001`.
+## 狀態：**Active** — shipping safe polish. Tip `v0.9.137` `PAUSE-SUBTITLE-READ-001`.
 
 **Author:** Grok bot
 
@@ -10,6 +10,7 @@
 1. v0.9.134 `OVER-TITLE-SIZE-001` — 「你已經被制止」bigger clamp + nowrap
 2. v0.9.135 `PAUSE-HINT-FALLBACK-001` — index pause-hint HTML fallback sync P／Esc + 繼續／唔會自動恢復 (mirror strings)
 3. v0.9.136 `PAUSE-HINT-READ-001` — pause-hint phone contrast/weight readability
+4. v0.9.137 `PAUSE-SUBTITLE-READ-001` — pause title-en cyan chrome / nowrap (mirror over subtitle)
 
 ### Preserve / HARD BANS
 stick hide · hub · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · balance/UI/GPU · over title oneline+size.

@@ -2200,3 +2200,17 @@ html[data-lang="en"] #over-title {
   font-weight: 600;
   opacity: 1;
 }
+
+/* ===== PAUSE-SUBTITLE-READ-001 v0.9.137 — pause EN subtitle chrome (mirror over) ===== */
+#screen-pause .title-en {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9ecfff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+  margin: 2px 0 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}
