@@ -1,0 +1,24 @@
+{
+  "ver": "0.9.76",
+  "probe": {
+    "retry": {
+      "w": 236.2,
+      "h": 74.8,
+      "minH": "44px",
+      "id": "btn-retry"
+    },
+    "menu": {
+      "w": 236.2,
+      "h": 60,
+      "minH": "44px",
+      "id": "btn-menu"
+    },
+    "share": {
+      "w": 236.2,
+      "h": 56.1,
+      "minH": "44px",
+      "id": "btn-share"
+    }
+  },
+  "fail": []
+}

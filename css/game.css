@@ -1330,8 +1330,10 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 #screen-over .share-confirm.hidden { display: none; }
 #screen-over .share-confirm.fail { color: #ffb0c0; text-shadow: 0 0 8px rgba(255, 80, 120, 0.35); }
+/* OVER-CTA-TAP-001 v0.9.76 — over retry/menu/share ≥44 (phone) / 48 desktop */
+#screen-over .neon-btn { min-height: 48px; box-sizing: border-box; }
 @media (max-width: 520px) {
-  #screen-over .over-share { min-height: 44px; }
+  #screen-over .neon-btn { min-height: 44px; }
 }
 
 /* v0.9.44 score-position breakdown on over screen (no mid-run toast) */
