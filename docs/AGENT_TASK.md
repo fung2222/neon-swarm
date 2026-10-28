@@ -1,8 +1,8 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.138 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.139 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — shipping safe polish. Tip `v0.9.138` `COACH-FALLBACK-SYNC-001`.
+## 狀態：**Active** — shipping safe polish. Tip `v0.9.139` `COACH-READ-001`.
 
 **Author:** Grok bot
 
@@ -12,6 +12,7 @@
 3. v0.9.136 `PAUSE-HINT-READ-001` — pause-hint phone contrast/weight readability
 4. v0.9.137 `PAUSE-SUBTITLE-READ-001` — pause title-en cyan chrome / nowrap (mirror over subtitle)
 5. v0.9.138 `COACH-FALLBACK-SYNC-001` — run-coach HTML fallback mirrors coach.move (dbl/tpl/rail)
+6. v0.9.139 `COACH-READ-001` — run-coach zh/en phone contrast readability
 
 ### Preserve / HARD BANS
 stick hide · hub · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · balance/UI/GPU · over title oneline+size.

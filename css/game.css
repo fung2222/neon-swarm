@@ -2214,3 +2214,22 @@ html[data-lang="en"] #over-title {
   max-width: 100%;
   overflow: hidden;
 }
+
+/* ===== COACH-READ-001 v0.9.139 — run-coach phone readability ===== */
+.run-coach {
+  border-color: rgba(0, 229, 255, 0.55);
+  background: rgba(6, 2, 18, 0.88);
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.28), inset 0 0 14px rgba(0, 0, 0, 0.35);
+}
+.run-coach-zh {
+  color: #f0ffff;
+  font-size: clamp(15px, 4.2vw, 20px);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+  font-weight: 800;
+}
+.run-coach-en {
+  color: #9ecfff;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+}
