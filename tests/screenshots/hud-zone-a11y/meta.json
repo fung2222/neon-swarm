@@ -1,0 +1,8 @@
+{
+  "ver": "0.9.103",
+  "probe": {
+    "role": "status",
+    "aria": "區域 ZONE",
+    "zone": "lab"
+  }
+}
