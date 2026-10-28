@@ -410,7 +410,7 @@ export const BAKED_PLAYER_BASE = {
   horn: {
     id: 'horn',
     root: './assets/mechs/horn/sheets/',
-    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.187',
+    atlasUrl: './assets/mechs/horn/sheets/horn_atlas.json?v=0.9.195',
     dirs: ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'],
     runFrames: 4,
     cellSize: 256,

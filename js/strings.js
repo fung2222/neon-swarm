@@ -77,7 +77,7 @@ i18n.add({
   'mech.horn': ['覺醒突擊型', 'AWAKEN ASSAULT'],
   'mech.heavy': ['高速精密型', 'PRECISION FRAME'],
   'mech.proto': ['可變結構原型', 'MORPH PROTOTYPE'],
-  'mech.desc.horn': ['深灰＋青紫 · 均衡突擊 · 開局護盾 +1', 'Deep-gray + cyan/violet · balanced · +1 shield'],
+  'mech.desc.horn': ['炭灰＋青霓虹 · 均衡突擊 · 開局護盾 +1', 'Charcoal + cyan neon · balanced · +1 shield'],
   'mech.desc.heavy': ['製作中 · 白粉精密機體（數值暫定）', 'Coming soon · white-pink precision (stub stats)'],
   'mech.desc.proto': ['製作中 · 可變結構原型（數值暫定）', 'Coming soon · morph prototype (stub stats)'],
   'mech.coming': ['製作中', 'Coming soon'],

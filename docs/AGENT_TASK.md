@@ -1,22 +1,22 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.192 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.193 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD** — tip `v0.9.192` (`GAMES-JSON-STAGE-009`). Art beat shipped; wait Roy 肉眼 before lock / next invent.
+## 狀態：****Active** — tip `v0.9.193` `HORN-MATCH-APPROVED-3D`. Roy「跟圖重做 3D 再 bake」.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.192
+https://fung2222.github.io/neon-swarm/?v=0.9.193
 
-### Roy decision (2026-10-28 ~17:41 HKT)
-Widget「v0.9.185 之後下一條？」→ **機體／角／Roy PNG**
-= Open Active art track for mech frames / horn / Roy PNG path. Baseline tip v0.9.185 HEAD ~`138bf76` (ship `1dcb595`).
+### Roy decision (2026-10-28 ~17:57 HKT)
+Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
+= Rebuild `buildPlayerMech` horn from approved charcoal+cyan slender swordsman PNG (`sword-mech-sideview-approved.jpg` / `roy-approved-ref.jpg`), then rebake sheets. Do **not** drop menu T2I PNGs. Prior Active open was「機體／角／Roy PNG」(17:41).
 
 ### Lifted for THIS Active only
-- Horn further polish (was banned after interim v0.9.21)
-- New mech frame body art (heavy / prototype unique silhouettes — NOT recolor-horn)
-- Roy PNG pipeline (weapon `assets/weapons/{id}.png` readiness; in-game mech bake sheets aligned to select 3D; honest select↔in-game)
+- Horn further polish / silhouette rebuild to approved ref
+- (heavy / prototype unique silhouettes already shipped — leave as stubs unless tiny shared material cleanup)
+- Roy PNG pipeline (weapons path already live)
 
 ### Still HARD BAN
 - Phase 4 **abilities** / Precision gameplay invent
@@ -27,18 +27,8 @@ Widget「v0.9.185 之後下一條？」→ **機體／角／Roy PNG**
 - Do NOT invent menu PNGs from text-to-image (art-bible: select = live 3D `buildPlayerMech`)
 - Do NOT bring back pause `#btn-glow`
 
-### Why HOLD / Roy decision needed
-Art beat shipped for phone 肉眼. **Interim — not §9 / device-final lock.**
-
-Please try tip and answer:
-
-1. **Horn** `?v=0.9.192` select 3D + in-game bake — OK to continue polish? **Lock horn** as §9 / device-final?
-2. **Heavy / Prototype** unique select silhouettes — OK direction? Continue polish?
-3. **Weapons PNG** — drop your `assets/weapons/{id}.png` files when ready? (path is live; neon SVG until then)
-
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.192
-
-Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
+### Active queue
+Rebuild horn 3D to approved PNG → rebake → wire in-game → screenshots → HOLD for Roy 肉眼.
 
 
 ### Shipped this beat (slice table)
@@ -52,6 +42,7 @@ Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANC
 | v0.9.190 | `MECH-PROTOTYPE-SILHOUETTE` | Unique Morph (prototype) mesh — morph seams, dual fins+monocle, fold-panel pack; citrus; bake 4-dir stub; NOT recolor horn |
 | v0.9.191 | `WEAPONS-PNG-PATH` | Wire WEAPON_ICON_SRC preferSrc→assets/weapons/{id}.png + SVG fallback; README drop path; no Roy PNGs yet — HOLD note |
 | v0.9.192 | `GAMES-JSON-STAGE-009` | games.json stub stage → tip; art beat HOLD for Roy 肉眼 on horn (+ optional heavy/proto); weapons PNG drop ask |
+| v0.9.193 | `HORN-MATCH-APPROVED-3D` | Active rewrite — Roy chose rebuild-3D-from-approved charcoal+cyan PNG (not T2I menu drop); target sword-mech-sideview-approved |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

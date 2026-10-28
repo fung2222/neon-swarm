@@ -2,11 +2,12 @@
  * Procedural player mech mesh — sole visual identity for select + sprite bake.
  * Imported by view.js (select/in-game 3D) and tools/bake-mech-sprites.mjs (via capture page).
  *
- * horn (v0.9.187 HORN-MECHA-DEEPEN): deepen mecha read on v0.9.21 silhouette —
- * sharper angular plates, stronger asymmetry, mil-tech panel lines, longer horn sweep.
- * Identity cues kept: single horn antenna, cyan chest personality core,
- * asymmetric pauldrons, mid rifle, deep-gray / violet / cyan palette.
- * Interim for Roy 肉眼 — NOT device-final-art-locked / HANDOFF §9.
+ * horn (v0.9.194 HORN-MESH-MATCH-001): rebuild to Roy-approved charcoal+cyan slender
+ * swordsman silhouette (sword-mech-sideview-approved.jpg / roy-approved-ref.jpg).
+ * Matte charcoal plates, cyan neon edge trim, slender athletic limbs, swept-back
+ * crest/horn, cyan visor slit, sharp geometric plates, circular joint hinges.
+ * Identity cues kept: single crest, cyan chest personality core, mid rifle.
+ * NO purple/violet block read. Interim for Roy 肉眼 — NOT §9 / device-final lock.
  *
  * heavy (v0.9.189 MECH-HEAVY-SILHOUETTE): unique Precision Frame mesh —
  * compact wide stance, twin shoulder pods, sensor crown, white-pink bible palette.
@@ -62,60 +63,62 @@ function cyl(rTop, rBottom, h, material, seg = 12) {
 function makeMats(cfg, kind) {
   const horn = kind === 'horn';
   const heavy = kind === 'heavy';
+  // Horn: matte charcoal plates + cyan neon (approved sword-mech ref). No purple.
   const plateM = new THREE.MeshStandardMaterial({
     color: cfg.plate,
-    emissive: cfg.plate,
-    emissiveIntensity: horn ? 0.08 : heavy ? 0.12 : 0.22,
-    roughness: horn ? 0.34 : heavy ? 0.28 : 0.4,
-    metalness: horn ? 0.82 : heavy ? 0.72 : 0.58,
+    emissive: horn ? 0x0c1018 : cfg.plate,
+    emissiveIntensity: horn ? 0.06 : heavy ? 0.12 : 0.22,
+    roughness: horn ? 0.62 : heavy ? 0.28 : 0.4,
+    metalness: horn ? 0.42 : heavy ? 0.72 : 0.58,
   });
   const plateHiM = new THREE.MeshStandardMaterial({
-    color: horn ? 0x2a2e38 : heavy ? 0xf8f2f6 : cfg.plate,
-    emissive: horn ? 0x1c2030 : heavy ? 0xe8dce6 : cfg.plate,
-    emissiveIntensity: horn ? 0.12 : heavy ? 0.1 : 0.24,
-    roughness: 0.3,
-    metalness: horn ? 0.85 : 0.7,
+    color: horn ? 0x2a303a : heavy ? 0xf8f2f6 : cfg.plate,
+    emissive: horn ? 0x141820 : heavy ? 0xe8dce6 : cfg.plate,
+    emissiveIntensity: horn ? 0.08 : heavy ? 0.1 : 0.24,
+    roughness: horn ? 0.55 : 0.3,
+    metalness: horn ? 0.48 : 0.7,
   });
   const accentM = new THREE.MeshStandardMaterial({
-    color: cfg.accent,
-    emissive: horn ? 0x4a2a70 : heavy ? 0xff9ec8 : cfg.accent,
-    emissiveIntensity: horn ? 0.2 : heavy ? 0.18 : 0.35,
-    roughness: horn ? 0.38 : 0.36,
-    metalness: horn ? 0.58 : 0.55,
+    color: horn ? 0x1e242e : cfg.accent,
+    emissive: horn ? 0x10141c : heavy ? 0xff9ec8 : cfg.accent,
+    emissiveIntensity: horn ? 0.1 : heavy ? 0.18 : 0.35,
+    roughness: horn ? 0.58 : 0.36,
+    metalness: horn ? 0.4 : 0.55,
   });
+  // violetM kept as name for heavy/proto; horn remaps to cyan edge line (not purple)
   const violetM = new THREE.MeshStandardMaterial({
-    color: horn ? 0x8b3dff : heavy ? 0xff7ab0 : 0x5cff8a,
-    emissive: horn ? 0x8b3dff : heavy ? 0xff7ab0 : 0x3cff6a,
-    emissiveIntensity: horn ? 0.38 : heavy ? 0.28 : 0.32,
-    roughness: 0.34,
-    metalness: 0.45,
+    color: horn ? 0x00c8e0 : heavy ? 0xff7ab0 : 0x5cff8a,
+    emissive: horn ? 0x00e5ff : heavy ? 0xff7ab0 : 0x3cff6a,
+    emissiveIntensity: horn ? 0.85 : heavy ? 0.28 : 0.32,
+    roughness: horn ? 0.28 : 0.34,
+    metalness: horn ? 0.25 : 0.45,
   });
   const trimM = new THREE.MeshStandardMaterial({
     color: cfg.trim,
     emissive: cfg.trim,
-    emissiveIntensity: horn ? 1.2 : heavy ? 0.95 : 1.05,
-    roughness: 0.26,
-    metalness: 0.35,
+    emissiveIntensity: horn ? 1.35 : heavy ? 0.95 : 1.05,
+    roughness: 0.22,
+    metalness: 0.28,
   });
   const hotM = new THREE.MeshStandardMaterial({
     color: cfg.hot,
     emissive: cfg.hot,
-    emissiveIntensity: horn ? 1.85 : heavy ? 1.4 : 1.55,
-    roughness: 0.16,
-    metalness: 0.12,
+    emissiveIntensity: horn ? 1.9 : heavy ? 1.4 : 1.55,
+    roughness: 0.14,
+    metalness: 0.1,
   });
   const visorM = new THREE.MeshStandardMaterial({
     color: cfg.visor,
     emissive: cfg.visor,
-    emissiveIntensity: horn ? 1.95 : heavy ? 1.5 : 1.7,
-    roughness: 0.16,
+    emissiveIntensity: horn ? 2.1 : heavy ? 1.5 : 1.7,
+    roughness: 0.12,
   });
   const darkM = new THREE.MeshStandardMaterial({
-    color: heavy ? 0x2a1e28 : 0x0a0c14,
-    emissive: heavy ? 0x1a1018 : 0x10141f,
-    emissiveIntensity: 0.16,
-    roughness: 0.6,
-    metalness: 0.75,
+    color: heavy ? 0x2a1e28 : 0x080a10,
+    emissive: heavy ? 0x1a1018 : 0x0a0c12,
+    emissiveIntensity: 0.12,
+    roughness: 0.72,
+    metalness: 0.55,
   });
   return { plateM, plateHiM, accentM, violetM, trimM, hotM, visorM, darkM };
 }
@@ -148,6 +151,7 @@ function attachCommon(root, body, mats, cfg, id, parts) {
 
 function buildHorn(cfg, root, body, mats) {
   const { plateM, plateHiM, accentM, violetM, trimM, hotM, visorM, darkM } = mats;
+  // violetM = cyan edge line for horn (see makeMats). Charcoal+cyan approved silhouette.
   const thighs = [];
   const shins = [];
   const foots = [];
@@ -155,145 +159,165 @@ function buildHorn(cfg, root, body, mats) {
   const fists = [];
   const pads = [];
 
-  // ---- legs: longer mecha limbs + deepened panel ridges ----
+  function hingeRing(r, tube, mat, x, y, z, rx = 0, ry = 0, rz = 0) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(r, tube, 8, 16), mat);
+    ring.position.set(x, y, z);
+    ring.rotation.set(rx, ry, rz);
+    return ring;
+  }
+
+  // ---- slender athletic legs + circular knee/ankle hinges ----
   for (const side of [-1, 1]) {
     const leg = new THREE.Group();
-    leg.position.set(side * 0.14, 0.92, 0);
-    const thigh = slab(0.095, 0.135, 0.48, 0.115, plateM);
-    thigh.position.set(0, -0.25, 0.01);
-    const thighRidge = box(0.032, 0.36, 0.026, violetM, side * 0.052, -0.23, 0.072, 0.2);
-    const thighPlate = box(0.115, 0.22, 0.038, plateHiM, 0, -0.19, 0.082, 0.14);
-    const thighVent = box(0.05, 0.06, 0.02, trimM, side * 0.02, -0.32, 0.1, 0.28);
-    const knee = slab(0.115, 0.155, 0.085, 0.135, accentM);
-    knee.position.set(0, -0.52, 0.035);
-    const kneeCap = box(0.085, 0.05, 0.042, plateHiM, 0, -0.52, 0.105, 0.18);
-    const kneePin = box(0.02, 0.04, 0.02, trimM, side * 0.06, -0.52, 0.12, 0.3);
-    const shin = slab(0.125, 0.08, 0.54, 0.105, plateM);
-    shin.position.set(0, -0.8, 0.01);
-    const shinBlade = box(0.026, 0.4, 0.032, violetM, side * 0.055, -0.8, 0.082, 0.22);
-    const shinFront = box(0.085, 0.36, 0.032, plateHiM, 0, -0.78, 0.072, 0.16);
-    const shinPanel = box(0.06, 0.12, 0.02, trimM, 0, -0.7, 0.09, 0.28);
-    const calf = box(0.095, 0.28, 0.032, plateHiM, 0, -0.86, -0.072, 0.14);
-    const ankle = box(0.065, 0.042, 0.065, darkM, 0, -1.08, 0.02);
-    const foot = slab(0.095, 0.175, 0.065, 0.3, accentM);
-    foot.position.set(0, -1.13, -0.02);
-    const toe = box(0.085, 0.032, 0.085, trimM, 0, -1.14, -0.155, 0.22);
-    const heelGlow = box(0.065, 0.02, 0.028, trimM, 0, -1.16, 0.11, 0.28);
-    leg.add(thigh, thighRidge, thighPlate, thighVent, knee, kneeCap, kneePin, shin, shinBlade, shinFront, shinPanel, calf, ankle, foot, toe, heelGlow);
+    leg.position.set(side * 0.11, 0.98, 0);
+    // long thin thigh
+    const thigh = slab(0.065, 0.09, 0.52, 0.08, plateM);
+    thigh.position.set(0, -0.28, 0.005);
+    const thighEdge = box(0.012, 0.4, 0.012, violetM, side * 0.038, -0.26, 0.042, 0.3);
+    const thighPlate = box(0.06, 0.18, 0.018, plateHiM, 0, -0.2, 0.048, 0.18);
+    // exposed joint cabling vibe at hip
+    const hipCable = box(0.018, 0.06, 0.018, darkM, 0, -0.02, 0, 0.35);
+    const hipHinge = hingeRing(0.032, 0.008, trimM, 0, -0.02, 0.01, Math.PI / 2, 0, 0);
+    // knee circular hinge
+    const knee = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, 0.045, 12), darkM);
+    knee.rotation.z = Math.PI / 2;
+    knee.position.set(0, -0.56, 0.02);
+    const kneeRing = hingeRing(0.042, 0.007, trimM, 0, -0.56, 0.02, 0, 0, Math.PI / 2);
+    const kneeCap = box(0.05, 0.028, 0.022, plateHiM, 0, -0.56, 0.055, 0.22);
+    // long thin shin
+    const shin = slab(0.082, 0.052, 0.58, 0.072, plateM);
+    shin.position.set(0, -0.88, 0.01);
+    const shinEdge = box(0.01, 0.42, 0.01, violetM, side * 0.035, -0.86, 0.04, 0.3);
+    const shinFront = box(0.048, 0.32, 0.016, plateHiM, 0, -0.84, 0.045, 0.2);
+    const shinPanel = box(0.032, 0.08, 0.012, trimM, 0, -0.72, 0.055, 0.3);
+    const calf = box(0.05, 0.22, 0.018, plateHiM, 0, -0.95, -0.04, 0.18);
+    // ankle hinge + pointed foot
+    const ankle = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.032, 10), darkM);
+    ankle.rotation.z = Math.PI / 2;
+    ankle.position.set(0, -1.18, 0.015);
+    const ankleRing = hingeRing(0.028, 0.006, trimM, 0, -1.18, 0.015, 0, 0, Math.PI / 2);
+    const foot = slab(0.05, 0.095, 0.04, 0.22, accentM);
+    foot.position.set(0, -1.22, -0.01);
+    const toe = box(0.04, 0.018, 0.055, trimM, 0, -1.225, -0.12, 0.28);
+    const heelGlow = box(0.032, 0.012, 0.018, trimM, 0, -1.24, 0.08, 0.3);
+    leg.add(
+      thigh, thighEdge, thighPlate, hipCable, hipHinge,
+      knee, kneeRing, kneeCap,
+      shin, shinEdge, shinFront, shinPanel, calf,
+      ankle, ankleRing, foot, toe, heelGlow
+    );
     body.add(leg);
     thighs.push(leg);
     shins.push(shin);
     foots.push(foot);
   }
 
-  // ---- waist + skirt ----
-  const waist = box(0.21, 0.095, 0.14, darkM, 0, 0.98, 0, 0.14);
-  const belt = box(0.27, 0.032, 0.16, trimM, 0, 1.02, 0.015, 0.25);
-  const pelvisPlate = slab(0.23, 0.19, 0.075, 0.125, plateHiM);
-  pelvisPlate.position.set(0, 1.04, 0.02);
-  const beltBuckle = box(0.06, 0.04, 0.03, violetM, 0, 1.02, 0.09, 0.22);
-  body.add(waist, belt, pelvisPlate, beltBuckle);
+  // ---- narrow waist + light skirt plates ----
+  const waist = box(0.14, 0.07, 0.1, darkM, 0, 1.02, 0, 0.16);
+  const belt = box(0.18, 0.018, 0.11, trimM, 0, 1.05, 0.01, 0.28);
+  const pelvisPlate = slab(0.15, 0.12, 0.055, 0.085, plateHiM);
+  pelvisPlate.position.set(0, 1.07, 0.015);
+  body.add(waist, belt, pelvisPlate);
   for (const side of [-1, 1]) {
-    const skirt = slab(0.115, 0.075, 0.34, 0.08, accentM);
-    skirt.position.set(side * 0.14, 0.85, 0.025);
-    skirt.rotation.z = side * 0.24;
-    const skirtEdge = box(0.022, 0.28, 0.016, violetM, side * 0.205, 0.83, 0.06, 0.25);
-    const skirtLip = box(0.08, 0.018, 0.015, trimM, side * 0.14, 0.7, 0.07, 0.3);
-    body.add(skirt, skirtEdge, skirtLip);
+    const skirt = slab(0.07, 0.045, 0.28, 0.05, accentM);
+    skirt.position.set(side * 0.1, 0.9, 0.02);
+    skirt.rotation.z = side * 0.18;
+    const skirtEdge = box(0.01, 0.22, 0.01, violetM, side * 0.14, 0.88, 0.04, 0.3);
+    body.add(skirt, skirtEdge);
   }
-  const frontSkirt = slab(0.13, 0.17, 0.24, 0.06, plateM);
-  frontSkirt.position.set(0, 0.85, 0.1);
-  const frontLip = box(0.125, 0.022, 0.018, trimM, 0, 0.95, 0.14, 0.28);
-  const frontChevron = box(0.08, 0.04, 0.02, violetM, 0, 0.88, 0.135, 0.22);
-  body.add(frontSkirt, frontLip, frontChevron);
+  const frontSkirt = slab(0.09, 0.12, 0.18, 0.04, plateM);
+  frontSkirt.position.set(0, 0.9, 0.07);
+  const frontLip = box(0.085, 0.012, 0.01, trimM, 0, 0.98, 0.095, 0.3);
+  body.add(frontSkirt, frontLip);
 
-  // ---- chest: taller wedge + chevron plates ----
-  const chest = slab(0.27, 0.21, 0.44, 0.175, accentM);
-  chest.position.set(0, 1.28, 0);
-  const chestPlate = slab(0.19, 0.15, 0.34, 0.08, plateM);
-  chestPlate.position.set(0, 1.28, 0.12);
-  const reactor = box(0.125, 0.125, 0.055, hotM, 0, 1.26, 0.175, 0.14);
-  reactor.scale.set(1.4, 1.4, 1.5);
+  // ---- slender chest wedge + cyan core ----
+  const chest = slab(0.17, 0.13, 0.4, 0.11, accentM);
+  chest.position.set(0, 1.32, 0);
+  const chestPlate = slab(0.13, 0.1, 0.32, 0.05, plateM);
+  chestPlate.position.set(0, 1.32, 0.08);
+  const reactor = box(0.08, 0.08, 0.035, hotM, 0, 1.3, 0.12, 0.16);
+  reactor.scale.set(1.25, 1.25, 1.3);
   reactor.name = 'personalityCore';
-  const collar = box(0.21, 0.042, 0.135, plateM, 0, 1.51, -0.01, 0.14);
-  const neck = cyl(0.042, 0.052, 0.085, darkM, 10);
-  neck.position.set(0, 1.57, 0);
-  const coreBay = box(0.155, 0.155, 0.032, darkM, 0, 1.26, 0.15, 0.12);
-  const pecL = box(0.08, 0.17, 0.038, plateHiM, -0.1, 1.33, 0.155, 0.16);
-  const pecR = box(0.08, 0.17, 0.038, plateHiM, 0.1, 1.33, 0.155, 0.16);
-  const seamH = box(0.175, 0.014, 0.014, trimM, 0, 1.26, 0.195, 0.32);
-  const seamV = box(0.014, 0.17, 0.014, trimM, 0, 1.26, 0.195, 0.32);
-  const collarLip = box(0.19, 0.018, 0.038, violetM, 0, 1.53, 0.05, 0.25);
-  const sidePlateL = box(0.032, 0.32, 0.115, plateHiM, -0.15, 1.28, 0, 0.14);
-  const sidePlateR = box(0.032, 0.32, 0.115, plateHiM, 0.15, 1.28, 0, 0.14);
-  const abPlate = slab(0.15, 0.17, 0.125, 0.06, plateHiM);
-  abPlate.position.set(0, 1.07, 0.1);
-  const chestChevron = box(0.14, 0.03, 0.02, violetM, 0, 1.42, 0.17, 0.22);
-  const coreGlow = new THREE.Mesh(new THREE.OctahedronGeometry(0.075, 0), hotM);
-  coreGlow.position.set(0, 1.26, 0.215);
+  const collar = box(0.14, 0.03, 0.09, plateM, 0, 1.54, -0.005, 0.16);
+  const neck = cyl(0.028, 0.036, 0.07, darkM, 10);
+  neck.position.set(0, 1.59, 0);
+  const coreBay = box(0.1, 0.1, 0.02, darkM, 0, 1.3, 0.1, 0.14);
+  const pecL = box(0.05, 0.14, 0.022, plateHiM, -0.065, 1.36, 0.105, 0.18);
+  const pecR = box(0.05, 0.14, 0.022, plateHiM, 0.065, 1.36, 0.105, 0.18);
+  const seamH = box(0.11, 0.01, 0.01, trimM, 0, 1.3, 0.135, 0.32);
+  const seamV = box(0.01, 0.11, 0.01, trimM, 0, 1.3, 0.135, 0.32);
+  const collarLip = box(0.12, 0.012, 0.022, violetM, 0, 1.555, 0.035, 0.28);
+  const sidePlateL = box(0.018, 0.28, 0.07, plateHiM, -0.1, 1.32, 0, 0.16);
+  const sidePlateR = box(0.018, 0.28, 0.07, plateHiM, 0.1, 1.32, 0, 0.16);
+  const abPlate = slab(0.1, 0.115, 0.1, 0.04, plateHiM);
+  abPlate.position.set(0, 1.1, 0.07);
+  const coreGlow = new THREE.Mesh(new THREE.OctahedronGeometry(0.048, 0), hotM);
+  coreGlow.position.set(0, 1.3, 0.145);
   coreGlow.name = 'personalityCoreGlow';
-  const coreRing = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.012, 6, 16), trimM);
-  coreRing.position.set(0, 1.26, 0.195);
-  body.add(chest, chestPlate, reactor, collar, neck, coreBay, pecL, pecR, seamH, seamV, collarLip, sidePlateL, sidePlateR, abPlate, chestChevron, coreGlow, coreRing);
+  const coreRing = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.008, 6, 16), trimM);
+  coreRing.position.set(0, 1.3, 0.13);
+  body.add(
+    chest, chestPlate, reactor, collar, neck, coreBay, pecL, pecR,
+    seamH, seamV, collarLip, sidePlateL, sidePlateR, abPlate, coreGlow, coreRing
+  );
   for (const side of [-1, 1]) {
-    const vent = box(0.018, 0.11, 0.014, trimM, side * 0.055, 1.26, 0.19, 0.28);
+    const vent = box(0.012, 0.07, 0.01, trimM, side * 0.035, 1.3, 0.13, 0.3);
     body.add(vent);
   }
 
-  // ---- shoulders: stronger asymmetry ----
+  // ---- sharp upward triangular pauldrons ----
   for (const side of [-1, 1]) {
     const pad = new THREE.Group();
-    const asym = side < 0 ? 1.55 : 0.62;
-    pad.position.set(side * 0.2 * (side > 0 ? 1.12 : 1), 1.43, side < 0 ? 0.035 : 0);
-    const cap = slab(0.095 * asym, 0.155 * asym, 0.145 * (side < 0 ? 1.35 : 0.85), 0.195 * asym, accentM);
-    const rim = box(0.155 * asym, 0.022, 0.215 * asym, trimM, 0, 0.085, 0, 0.22);
-    const outer = slab(0.085 * asym, 0.125 * asym, 0.075 * (side < 0 ? 1.3 : 1), 0.135 * asym, plateHiM);
-    outer.position.set(side * 0.02, 0.045, 0.02);
-    const spike = box(0.028 * asym, side < 0 ? 0.2 : 0.055, 0.028, violetM, side * 0.038, 0.15, -0.02, 0.2);
-    const glowStrip = box(0.018, 0.014, 0.135 * asym, trimM, 0, 0.115, 0.015, 0.32);
-    const under = box(0.065 * asym, 0.048, 0.095 * asym, darkM, 0, -0.035, 0, 0.16);
-    const wingTip = side < 0
-      ? box(0.04, 0.06, 0.12, plateHiM, -0.08, 0.1, -0.04, 0.18)
-      : box(0.03, 0.04, 0.06, violetM, 0.04, 0.06, 0.02, 0.2);
-    pad.add(cap, rim, outer, spike, glowStrip, under, wingTip);
-    pad.rotation.z = side * -0.24 * (side < 0 ? 1.45 : 1);
+    const asym = side < 0 ? 1.08 : 1.0;
+    pad.position.set(side * 0.15, 1.48, 0.01);
+    // triangular upward pauldron: wide base → point up
+    const cap = slab(0.03 * asym, 0.1 * asym, 0.16 * asym, 0.11 * asym, accentM);
+    const rim = box(0.08 * asym, 0.01, 0.1 * asym, trimM, 0, 0.02, 0.02, 0.28);
+    const spike = box(0.022, 0.18 * asym, 0.022, plateHiM, 0, 0.14, 0, 0.18);
+    const spikeEdge = box(0.01, 0.14 * asym, 0.01, violetM, side * 0.012, 0.13, 0.02, 0.28);
+    const glowStrip = box(0.01, 0.01, 0.07 * asym, trimM, 0, 0.05, 0.02, 0.32);
+    const under = box(0.04 * asym, 0.028, 0.05 * asym, darkM, 0, -0.03, 0, 0.2);
+    const shHinge = hingeRing(0.03, 0.007, trimM, 0, -0.045, 0, Math.PI / 2, 0, 0);
+    pad.add(cap, rim, spike, spikeEdge, glowStrip, under, shHinge);
+    pad.rotation.z = side * -0.38;
     body.add(pad);
     pads.push(pad);
   }
 
-  // ---- arms + mid rifle ----
+  // ---- slender arms + mid rifle + elbow hinges ----
   for (const side of [-1, 1]) {
     const arm = new THREE.Group();
-    arm.position.set(side * 0.22, 1.37, 0);
-    const upper = slab(0.07, 0.09, 0.4, 0.08, darkM);
-    upper.position.set(0, -0.23, 0);
-    const armSeam = box(0.014, 0.26, 0.014, trimM, side * 0.045, -0.21, 0.045, 0.32);
-    const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.046, 10, 8), trimM);
-    elbow.position.set(0, -0.46, 0);
-    const fore = slab(0.105, 0.07, 0.42, 0.095, plateM);
-    fore.position.set(side * 0.012, -0.7, 0.015);
-    const forePlate = box(0.08, 0.28, 0.032, plateHiM, side * 0.012, -0.7, 0.07, 0.16);
-    const vambrace = box(0.032, 0.26, 0.022, violetM, side * 0.045, -0.7, 0.08, 0.22);
-    const fist = box(0.08, 0.08, 0.08, accentM, side * 0.012, -0.95, 0.025, 0.14);
-    arm.add(upper, armSeam, elbow, fore, forePlate, vambrace, fist);
+    arm.position.set(side * 0.17, 1.42, 0);
+    const upper = slab(0.048, 0.062, 0.42, 0.052, darkM);
+    upper.position.set(0, -0.24, 0);
+    const armSeam = box(0.01, 0.28, 0.01, trimM, side * 0.028, -0.22, 0.028, 0.32);
+    const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.032, 10, 8), darkM);
+    elbow.position.set(0, -0.48, 0);
+    const elbowRing = hingeRing(0.036, 0.006, trimM, 0, -0.48, 0, 0, 0, Math.PI / 2);
+    const fore = slab(0.072, 0.048, 0.44, 0.06, plateM);
+    fore.position.set(side * 0.008, -0.74, 0.01);
+    const forePlate = box(0.048, 0.28, 0.016, plateHiM, side * 0.008, -0.74, 0.04, 0.2);
+    const vambrace = box(0.014, 0.24, 0.012, violetM, side * 0.03, -0.74, 0.045, 0.28);
+    const fist = box(0.05, 0.05, 0.05, accentM, side * 0.008, -1.0, 0.015, 0.16);
+    const fistTip = box(0.035, 0.018, 0.02, trimM, side * 0.008, -1.02, 0.04, 0.3);
+    arm.add(upper, armSeam, elbow, elbowRing, fore, forePlate, vambrace, fist, fistTip);
     if (side > 0) {
       const rifle = new THREE.Group();
       rifle.name = 'rifle';
-      const stock = box(0.042, 0.065, 0.115, darkM, 0, -0.8, -0.04);
-      const receiver = box(0.068, 0.075, 0.21, plateHiM, 0, -0.78, 0.12);
-      const mag = box(0.032, 0.105, 0.055, accentM, 0, -0.9, 0.07);
-      const barrel = cyl(0.018, 0.026, 0.48, darkM, 10);
+      const stock = box(0.028, 0.045, 0.09, darkM, 0, -0.82, -0.03);
+      const receiver = box(0.045, 0.05, 0.16, plateHiM, 0, -0.8, 0.1);
+      const mag = box(0.022, 0.08, 0.04, accentM, 0, -0.92, 0.055);
+      const barrel = cyl(0.012, 0.018, 0.42, darkM, 10);
       barrel.rotation.x = Math.PI / 2;
-      barrel.position.set(0, -0.78, 0.4);
-      const shroud = box(0.038, 0.038, 0.14, plateM, 0, -0.78, 0.3, 0.16);
-      const rail = box(0.02, 0.016, 0.2, trimM, 0, -0.71, 0.14);
-      const tip = cyl(0.014, 0.014, 0.055, hotM, 10);
+      barrel.position.set(0, -0.8, 0.36);
+      const shroud = box(0.028, 0.028, 0.11, plateM, 0, -0.8, 0.26, 0.18);
+      const rail = box(0.014, 0.01, 0.16, trimM, 0, -0.74, 0.12);
+      const tip = cyl(0.01, 0.01, 0.045, hotM, 10);
       tip.rotation.x = Math.PI / 2;
-      tip.position.set(0, -0.78, 0.62);
+      tip.position.set(0, -0.8, 0.55);
       tip.name = 'muzzle';
-      const optic = box(0.02, 0.028, 0.055, violetM, 0, -0.68, 0.05, 0.22);
-      const underRail = box(0.018, 0.014, 0.16, violetM, 0, -0.84, 0.2, 0.25);
-      rifle.add(stock, receiver, mag, barrel, shroud, rail, tip, optic, underRail);
+      const optic = box(0.014, 0.02, 0.04, violetM, 0, -0.72, 0.04, 0.25);
+      rifle.add(stock, receiver, mag, barrel, shroud, rail, tip, optic);
       arm.add(rifle);
     }
     body.add(arm);
@@ -301,72 +325,72 @@ function buildHorn(cfg, root, body, mats) {
     fists.push(fist);
   }
 
-  // ---- head + longer swept horn ----
+  // ---- head: elongated helm + cyan visor slit + SWEPT-BACK crest ----
   const head = new THREE.Group();
-  head.position.set(0, 1.7, 0);
-  const skull = box(0.165, 0.145, 0.165, accentM, 0, 0, 0, 0.14);
-  const jaw = box(0.115, 0.048, 0.125, plateM, 0, -0.09, 0.015, 0.14);
-  const visor = box(0.135, 0.038, 0.02, visorM, 0, 0.01, 0.095, 0.18);
-  const helmPlate = box(0.145, 0.052, 0.125, plateHiM, 0, 0.06, 0.015, 0.14);
-  const visorBar = box(0.14, 0.022, 0.028, visorM, 0, 0.015, 0.1, 0.2);
-  head.add(skull, jaw, visor, helmPlate, visorBar);
+  head.position.set(0, 1.74, 0);
+  // slight forward lean of helm only (crest stays rear-biased in world)
+  const skull = box(0.1, 0.08, 0.15, accentM, 0, 0.015, 0.0, 0.12);
+  skull.rotation.x = -0.1;
+  const jaw = box(0.068, 0.026, 0.09, plateM, 0, -0.048, 0.035, 0.14);
+  const chin = box(0.036, 0.018, 0.035, plateHiM, 0, -0.065, 0.075, 0.2);
+  const visor = box(0.088, 0.012, 0.012, visorM, 0, 0.018, 0.088, 0.18);
+  const visorBar = box(0.098, 0.007, 0.014, visorM, 0, 0.018, 0.092, 0.22);
+  const helmPlate = box(0.092, 0.028, 0.11, plateHiM, 0, 0.05, -0.02, 0.14);
+  const brow = box(0.092, 0.01, 0.03, plateHiM, 0, 0.042, 0.055, 0.18);
+  head.add(skull, jaw, chin, visor, visorBar, helmPlate, brow);
   for (const side of [-1, 1]) {
-    const cheek = box(0.032, 0.095, 0.105, plateM, side * 0.092, -0.025, 0.015, 0.14);
+    const cheek = box(0.018, 0.055, 0.085, plateM, side * 0.052, -0.01, 0.015, 0.14);
     head.add(cheek);
   }
-  const hornBase = box(0.055, 0.038, 0.055, plateM, 0.02, 0.1, -0.015, 0.16);
-  const hornAnt = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.64, 6), plateHiM);
-  hornAnt.position.set(0.035, 0.38, -0.025);
-  hornAnt.rotation.z = -0.26;
-  hornAnt.rotation.x = -0.16;
-  const hornRidge = box(0.018, 0.4, 0.02, violetM, 0.055, 0.32, -0.01, 0.25);
-  hornRidge.rotation.z = -0.26;
-  hornRidge.rotation.x = -0.16;
-  const hornTip = new THREE.Mesh(new THREE.ConeGeometry(0.014, 0.16, 6), trimM);
-  hornTip.position.set(0.11, 0.68, -0.07);
-  hornTip.rotation.z = -0.26;
-  hornTip.rotation.x = -0.16;
-  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.032, 0), hotM);
-  gem.position.set(0, 0.075, 0.095);
+  // SWEPT-BACK crest — tip must read behind the skull (approved sideview)
+  // Build as a Group parented at crown-rear, rotated so long axis goes up+back.
+  const crest = new THREE.Group();
+  crest.position.set(0, 0.07, -0.06);
+  // Negative Rx: local +Y tip sweeps toward -Z (rear) — approved swept-back crest
+  crest.rotation.x = -0.72;
+  const crestRoot = box(0.05, 0.04, 0.06, plateM, 0, 0.0, 0.0, 0.14);
+  // long axis = local +Y after group rot → world up-and-back
+  const crestBlade = box(0.036, 0.48, 0.09, plateHiM, 0, 0.26, -0.02, 0.08);
+  const crestMid = box(0.024, 0.36, 0.055, accentM, 0, 0.28, 0.02, 0.1);
+  const crestEdge = box(0.01, 0.4, 0.014, violetM, 0, 0.28, 0.05, 0.25);
+  const crestTip = box(0.016, 0.12, 0.04, trimM, 0, 0.52, -0.01, 0.18);
+  const crestFin = box(0.008, 0.22, 0.07, plateM, 0, 0.22, -0.04, 0.2);
+  crest.add(crestRoot, crestBlade, crestMid, crestEdge, crestTip, crestFin);
+  head.add(crest);
+  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.016, 0), hotM);
+  gem.position.set(0, 0.048, 0.082);
   gem.name = 'coreGem';
-  const gemRing = new THREE.Mesh(new THREE.TorusGeometry(0.042, 0.008, 6, 12), trimM);
-  gemRing.position.set(0, 0.075, 0.095);
-  gemRing.rotation.x = Math.PI / 2;
-  head.add(hornBase, hornAnt, hornRidge, hornTip, gem, gemRing);
+  head.add(gem);
   body.add(head);
 
-  // ---- backpack ----
-  const pack = box(0.19, 0.36, 0.115, plateM, 0, 1.3, -0.15, 0.12);
-  const packCore = box(0.07, 0.24, 0.028, trimM, 0, 1.3, -0.22, 0.22);
-  const packFrame = box(0.23, 0.32, 0.038, plateHiM, 0, 1.3, -0.13, 0.12);
-  const packVentL = box(0.028, 0.17, 0.02, violetM, -0.07, 1.3, -0.23, 0.24);
-  const packVentR = box(0.028, 0.17, 0.02, violetM, 0.07, 1.3, -0.23, 0.24);
-  const packFinL = box(0.02, 0.22, 0.08, plateHiM, -0.11, 1.35, -0.18, 0.18);
-  const packFinR = box(0.02, 0.22, 0.08, plateHiM, 0.11, 1.35, -0.18, 0.18);
-  body.add(pack, packCore, packFrame, packVentL, packVentR, packFinL, packFinR);
+  // ---- slim backpack / thruster pack ----
+  const pack = box(0.12, 0.28, 0.08, plateM, 0, 1.34, -0.11, 0.14);
+  const packCore = box(0.04, 0.16, 0.018, trimM, 0, 1.34, -0.16, 0.24);
+  const packFrame = box(0.14, 0.24, 0.025, plateHiM, 0, 1.34, -0.095, 0.14);
+  body.add(pack, packCore, packFrame);
   const glows = [];
   for (const side of [-1, 1]) {
-    const nozzle = cyl(0.048, 0.072, 0.115, darkM, 10);
+    const nozzle = cyl(0.028, 0.042, 0.08, darkM, 10);
     nozzle.rotation.x = Math.PI / 2;
-    nozzle.position.set(side * 0.075, 1.18, -0.245);
-    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.042, 0.19, 8), hotM);
+    nozzle.position.set(side * 0.05, 1.22, -0.18);
+    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.028, 0.14, 8), hotM);
     flame.rotation.x = -Math.PI / 2;
-    flame.position.set(side * 0.075, 1.18, -0.37);
-    const nozzleRing = cyl(0.058, 0.058, 0.02, trimM, 10);
+    flame.position.set(side * 0.05, 1.22, -0.28);
+    const nozzleRing = cyl(0.036, 0.036, 0.014, trimM, 10);
     nozzleRing.rotation.x = Math.PI / 2;
-    nozzleRing.position.set(side * 0.075, 1.18, -0.295);
+    nozzleRing.position.set(side * 0.05, 1.22, -0.22);
     body.add(nozzle, flame, nozzleRing);
     glows.push(flame);
   }
 
   const halo = new THREE.Mesh(
-    new THREE.RingGeometry(0.28, 0.54, 36),
-    new THREE.MeshBasicMaterial({ color: cfg.trim, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+    new THREE.RingGeometry(0.22, 0.42, 36),
+    new THREE.MeshBasicMaterial({ color: cfg.trim, transparent: true, opacity: 0.28, side: THREE.DoubleSide })
   );
   halo.rotation.x = -Math.PI / 2;
   halo.position.y = 0.03;
   root.add(halo);
-  root.scale.setScalar(0.98);
+  root.scale.setScalar(1.02);
   attachCommon(root, body, mats, cfg, 'horn', { thighs, shins, foots, arms, fists, pads, head, glows, halo });
   return root;
 }
