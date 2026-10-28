@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.151 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.152 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.151` `SHARE-FALLBACK-SOFTPIN-001`. HUD/settings beat in progress.
+## 狀態：**Active** — tip `v0.9.152` `HANDOFF-AGENT-TIDY-001`. HUD/settings beat in progress.
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.151
+https://fung2222.github.io/neon-swarm/?v=0.9.152
 
 ### Shipped this beat (slice table)
 
@@ -22,6 +22,7 @@ https://fung2222.github.io/neon-swarm/?v=0.9.151
 | v0.9.149 | `GEAR-PAUSE-TAP-NOTE-001` | gear+pause tap≥44 docs/CSS affirm under hub |
 | v0.9.150 | `SETTINGS-FOCUS-TRAP-NOTE-001` | docs: settings/pause focus — kit modal focuses OK; pause-on-open |
 | v0.9.151 | `SHARE-FALLBACK-SOFTPIN-001` | share-fallback soft-pin ≥ tip; settings share reuses result-share |
+| v0.9.152 | `HANDOFF-AGENT-TIDY-001` | HANDOFF/AGENT_TASK tidy for HUD/settings beat |
 
 ### Preserve / HARD BANS
 stick hide · hub content · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · balance/UI/GPU · over title oneline+size.
