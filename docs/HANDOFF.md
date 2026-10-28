@@ -511,6 +511,8 @@ Rollback baseline:
 
 **誠實標籤：** `implemented`、`tested`、`visually reviewed`、`device verified`、`user reported`、`not verified` 是不同狀態，不可混用。
 
+**Active = HOLD**（none）— **HOLD for Roy try** on live `?v=0.9.90`（10-slice batch v0.9.81–0.9.90 done）。Do **not** invent soft-juice／full ult kits／BALANCE-PASS／Phase 4／horn／deep GPU without Roy。
+
 ## 11. 下一位 agent 的第一個建議動作
 
 **HOLD for Roy try** on live `?v=0.9.90`. Do **not** auto-start next batch.
@@ -524,6 +526,16 @@ After Roy「繼續」／「十個十個」→ pick real Next stubs from this HAN
 
 ## 版本歷史（增量）
 
+- **v0.9.90** (`RAIL-GROUP-A11Y-001`) — `wrail-group` role=group + aria 主/副/投; color-only rail preserved. End of 10-slice batch. Screenshots `tests/screenshots/rail-group-a11y/`. Tests `rail-group-a11y`. **HOLD for Roy try**.
+- **v0.9.89** (`GAMES-JSON-STAGE-001`) — Bump `docs/GAMES-JSON-STUB.md` stage v0.3.3 → v0.9.89 (2+2+2 / hide-stick / rail). Screenshots `tests/screenshots/games-json-stage/`. Tests `games-json-stage`.
+- **v0.9.88** (`WEAPONS-ULT-LIGHT-AMP-DOCS-001`) — Document U1 dmg×1.2 / U2 cd×0.85 in WEAPONS; full kits still stub. Screenshots `tests/screenshots/weapons-ult-light-amp-docs/`. Tests `weapons-ult-light-amp-docs`.
+- **v0.9.87** (`PAUSE-HINT-SYNC-001`) — pauseHint sync P/Esc + resume; no soft-juice invent. Screenshots `tests/screenshots/pause-hint-sync/`. Tests `pause-hint-sync`.
+- **v0.9.86** (`WEAPONS-BRANCH-HINT-SYNC-001`) — BRANCH_KIT_HINTS match branchNames (slow_gun/attack_drone/flash/gravity/blackhole B). Screenshots `tests/screenshots/weapons-branch-hint-sync/`. Tests `weapons-branch-hint-sync`.
+- **v0.9.85** (`WEAPONS-BRANCH-PRIMARY-EN-DOCS-001`) — Primary branch naming table EN columns in WEAPONS (parity sec/throw). Screenshots `tests/screenshots/weapons-branch-primary-en-docs/`. Tests `weapons-branch-primary-en-docs`.
+- **v0.9.84** (`OVER-LOADOUT-PST-001`) — formatLoadoutFromGame groups P/S/T from loadout. Screenshots `tests/screenshots/over-loadout-pst/`. Tests `over-loadout-pst`.
+- **v0.9.83** (`HOWTO-RULES-SYNC-001`) — help.rules sync 2+2+2 / magnet / stick hide. Screenshots `tests/screenshots/howto-rules-sync/`. Tests `howto-rules-sync`.
+- **v0.9.82** (`WEAPONS-ULT-EN-LABELS-001`) — U1/U2 POWER AMP / CADENCE AMP; FORM I/II retired; full kits stub. Screenshots `tests/screenshots/weapons-ult-en-labels/`. Tests `weapons-ult-en-labels`.
+- **v0.9.81** (`PAUSE-CTA-TAP-001`) — pause resume/restart/quit ≥44 phone / 48 desktop. Screenshots `tests/screenshots/pause-cta-tap/`. Tests `pause-cta-tap`.
 - **v0.9.80** (`WEAPONS-BRANCH-EN-LABELS-001`) — Real EN branch titles via `branchNamesEn` (all 14); branch/ult cards no longer stub `PATH A`. Sec/throw naming table in WEAPONS.md. No full ult invent / BALANCE-PASS. Screenshots `tests/screenshots/weapons-branch-en-labels/`. Tests `weapons-branch-en-labels`. **HOLD for Roy try**.
 - **v0.9.79** (`GFX-RELOAD-TAP-001`) — Gfx recover reload CTA ≥44 phone / 48 desktop. Screenshots `tests/screenshots/gfx-reload-tap/`. Tests `gfx-reload-tap`. Phase4/horn/soft-juice/BALANCE-PASS / deep GPU **unchanged**.
 - **v0.9.78** (`COACH-CONTROLS-SYNC-001`) — Sync run-coach strings to dbl/tpl/rail (mirrors howto; no soft-juice invent). Screenshots `tests/screenshots/coach-controls-sync/`. Tests `coach-controls-sync`. Phase4/horn/BALANCE-PASS **unchanged**.
