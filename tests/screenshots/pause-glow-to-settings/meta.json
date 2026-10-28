@@ -1,0 +1,44 @@
+{
+  "ver": "0.9.154",
+  "probe": {
+    "hasBtnGlow": false,
+    "hasCkGlow": false,
+    "hasResume": true,
+    "hasRestart": true,
+    "hasQuit": true,
+    "pauseBtns": [
+      {
+        "id": "btn-resume",
+        "cls": "neon-btn",
+        "text": "繼續BACK TO RUN"
+      },
+      {
+        "id": "btn-restart",
+        "cls": "neon-btn ghost",
+        "text": "重來NEW RUN"
+      },
+      {
+        "id": "btn-quit",
+        "cls": "neon-btn ghost",
+        "text": "返主畫面HOME"
+      }
+    ]
+  },
+  "errs": [],
+  "settings": {
+    "labels": [
+      "語言",
+      "靜音",
+      "音量",
+      "畫質",
+      "聲效",
+      "背景音樂",
+      "分享",
+      "操作教學"
+    ],
+    "hasGlowSeg": true,
+    "hasQualityLabel": true,
+    "open": true
+  },
+  "errsSettings": []
+}

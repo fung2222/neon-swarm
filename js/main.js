@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.153
+// RAMPAGE MECH 暴走機甲 — tip v0.9.154
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -142,7 +142,7 @@ const stage = createStage({
   // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
   onFatal: () => showGfxRecover('boot'),
 });
-ui.glowToggle(stage);
+// PAUSE-GLOW-TO-SETTINGS-001: no pause #btn-glow — quality/畫質 lives in settings only (mountSettings)
 stage.setGlow('low'); // v0.8.5: force low glow (ignore shared high from other games)
 // v0.9.20: clamp bloom base after setGlow so mobile stays low even if prefs flip
 if (MOBILE_GFX) {
