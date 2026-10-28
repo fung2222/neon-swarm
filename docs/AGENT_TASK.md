@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.195 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.196 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****Active** — tip `v0.9.195` `HORN-REBAKE-MATCH-001`. Horn rebaked from matched 3D.**
+## 狀態：****Active** — tip `v0.9.196` `HORN-INGAME-MATCH-001`. In-game + shots vs approved.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.195
+https://fung2222.github.io/neon-swarm/?v=0.9.196
 
 ### Roy decision (2026-10-28 ~17:57 HKT)
 Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
@@ -28,7 +28,7 @@ Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
 - Do NOT bring back pause `#btn-glow`
 
 ### Active queue
-Confirm in-game uses new sheets + screenshots vs approved → HOLD.
+Docs honesty + GAMES-JSON stage → HOLD for Roy 肉眼.
 
 
 ### Shipped this beat (slice table)
@@ -45,6 +45,7 @@ Confirm in-game uses new sheets + screenshots vs approved → HOLD.
 | v0.9.193 | `HORN-MATCH-APPROVED-3D` | Active rewrite — Roy chose rebuild-3D-from-approved charcoal+cyan PNG (not T2I menu drop); target sword-mech-sideview-approved |
 | v0.9.194 | `HORN-MESH-MATCH-001` | Rebuild buildHorn mesh/materials — charcoal matte plates, cyan neon edge trim, slender limbs, swept-back crest, cyan visor slit, circular hinges; drop purple block read |
 | v0.9.195 | `HORN-REBAKE-MATCH-001` | Rebake horn 8-dir sheets from new buildPlayerMech; sync muzzle/atlas/anchors; cool bake fill (no purple kick) |
+| v0.9.196 | `HORN-INGAME-MATCH-001` | Confirm in-game uses new sheets; screenshots select + bake + in-game vs approved under tests/screenshots/horn-match-approved/ |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

@@ -34,6 +34,7 @@
 
 - 目前 `main`／live cache-bust：**`?v=0.9.193`**（HORN-MATCH-APPROVED-3D; rebuild horn from approved PNG）
 - **Done since `6ddc483`：**
+  - v0.9.196 — HORN-INGAME-MATCH-001：in-game horn sheets wired; screenshots select/bake/ingame vs approved-ref under tests/screenshots/horn-match-approved/.
   - v0.9.195 — HORN-REBAKE-MATCH-001：rebake 8-dir horn sheets + muzzle/atlas/anchors sync from matched 3D.
   - v0.9.194 — HORN-MESH-MATCH-001：buildPlayerMech horn rebuild — charcoal+cyan slender swept-crest; config/strings palette; no purple primary.
   - v0.9.193 — HORN-MATCH-APPROVED-3D：Active rewrite；Roy「跟圖重做 3D 再 bake」；target sword-mech-sideview-approved；still ban Phase4／soft-juice／more ult／BALANCE／§9 claim without Roy 肉眼。
