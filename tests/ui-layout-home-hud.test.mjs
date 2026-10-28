@@ -14,7 +14,9 @@ const main = readFileSync(join(ROOT, 'js/main.js'), 'utf8');
 
 assert.match(html, /\?v=0\.9\.(5[4-9]|[6-9]\d)/); // ≥0.9.54 (HOME-SETTINGS-TAP-001 relaxed)
 assert.ok(!html.includes('id="btn-mute-menu"'), 'home mute must live in gear, not loose chrome');
-assert.ok(html.includes('id="btn-mute"'), 'in-run mute remains');
+// HUD-MUTE-TO-GEAR-001: mute chrome → gear; soft-pin now requires settings-run
+assert.ok(html.includes('id="btn-settings-run"'), 'in-run gear settings');
+assert.ok(!html.includes('id="btn-mute"'), 'in-run mute chrome removed');
 assert.ok(html.includes('id="xp-bar"') || html.includes('class="xp-bar"') || css.includes('.xp-bar'), 'xp bar present');
 assert.ok(html.includes('weapon-slots') || css.includes('.weapon-slots'), 'weapon slots present');
 

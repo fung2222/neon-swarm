@@ -57,6 +57,16 @@ i18n.add({
   muteTip: ['靜音', 'Mute'],
   unmuteTip: ['取消靜音', 'Unmute'],
   pauseTip: ['暫停', 'Pause'],
+  // HUD-MUTE-TO-GEAR-001 / SETTINGS-* 
+  settingsTip: ['設定', 'Settings'],
+  'settings.sfx': ['聲效', 'SFX'],
+  'settings.bgm': ['背景音樂', 'BGM'],
+  'settings.share': ['分享', 'SHARE'],
+  'settings.shareGo': ['分享', 'SHARE'],
+  'settings.howto': ['操作教學', 'HOWTO'],
+  'settings.howtoGo': ['開啟', 'OPEN'],
+  // glow row remapped as 畫質 (existing low/high GPU glow — no new system)
+  'kit.glowLabel': ['畫質', 'QUALITY'],
   newRecord: ['新紀錄！', 'NEW RECORD!'],
   kills: ['擊殺', 'KILLS'],
   'goal.kills': ['目標擊殺', 'GOAL'],

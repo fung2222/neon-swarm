@@ -19,8 +19,10 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   /* v0.9.61 WEAPONS-HUD-MERGE-001 — single centered hub + bottom color rail */
   /* v0.9.62 WEAPONS-HUD-RAIL-CLEAR-001 — stick/hub clear + stronger water fill */
   /* v0.9.63 WEAPONS-COLOR-TOKENS-001 — --weapon-* shared by rail + level/branch cards */
-  --hud-hub-top: calc(8px + var(--sa-top));
-  --hud-hub-max-w: min(360px, calc(100vw - 124px - var(--sa-left) - var(--sa-right)));
+  /* HUD-HUB-FLUSH-TOP-001 */ --hud-hub-top: var(--sa-top);
+  --hud-hub-approx-h: 86px;
+  --hud-chrome-under: calc(var(--hud-hub-top) + var(--hud-hub-approx-h) + 4px);
+  --hud-hub-max-w: min(360px, calc(100vw - 24px - var(--sa-left) - var(--sa-right)));
   --hud-hub-pad: 8px 12px 7px;
   --hud-gap: 6px;
   --hud-xp-h: 8px;
@@ -186,8 +188,10 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 @media (max-width: 560px) {
   :root {
-    --hud-hub-top: calc(6px + var(--sa-top));
-    --hud-hub-max-w: min(300px, calc(100vw - 124px - var(--sa-left) - var(--sa-right)));
+    /* HUD-HUB-FLUSH-TOP-001 phone */
+    --hud-hub-top: var(--sa-top);
+    --hud-hub-approx-h: 78px;
+    --hud-hub-max-w: min(340px, calc(100vw - 24px - var(--sa-left) - var(--sa-right)));
     --hud-hub-pad: 6px 10px 6px;
     --hud-xp-h: 7px;
     --hud-gap: 5px;
@@ -219,9 +223,15 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .stat .value { font-size: clamp(16px, 4.6vw, 22px); color: var(--hud-chip-value); text-shadow: 0 0 10px #00e5ff88; font-variant-numeric: tabular-nums; }
 .stat .value.big { font-size: clamp(20px, 5.6vw, 28px); color: #7ef9ff; }
 .hud-buttons.top {
-  position: absolute; top: var(--hud-row1-top); right: calc(8px + var(--sa-right));
-  bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear or strip stretches full height */
-  display: flex; flex-direction: column; gap: 6px; z-index: 12; align-items: center;
+  /* HUD-GEAR-PAUSE-CORNERS-001 — gear L + pause R under hub bottom edge */
+  position: absolute;
+  top: var(--hud-chrome-under);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: var(--hud-hub-max-w);
+  bottom: auto; height: auto; /* kit .hud-buttons sets bottom — must clear */
+  display: flex; flex-direction: row; justify-content: space-between; gap: 0; z-index: 12; align-items: flex-start;
   min-height: 0;
   pointer-events: auto;
 }
@@ -291,7 +301,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   .stat .value { font-size: 15px; letter-spacing: 0; }
   .stat .value.big { font-size: 18px; }
   .hud-right .value.big { font-size: 16px; }
-  .hud-buttons.top { top: var(--hud-row1-top); right: calc(6px + var(--sa-right)); min-height: 0; flex-direction: column; }
+  .hud-buttons.top { top: var(--hud-chrome-under); left: 50%; right: auto; transform: translateX(-50%); width: var(--hud-hub-max-w); min-height: 0; flex-direction: row; justify-content: space-between; }
   .hud-buttons.top .icon-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; } /* HUD-MUTE-PAUSE-TAP-001 phone */
   .hud-goal {
     top: var(--hud-side-top);
@@ -1175,7 +1185,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
     --hud-wstat-h: 22px;
   }
   .hud-panel { top: var(--hud-row1-top); min-height: var(--hud-row1-h); }
-  .hud-buttons.top { top: var(--hud-row1-top); right: calc(8px + var(--sa-right)); }
+  .hud-buttons.top { top: var(--hud-chrome-under); left: 50%; right: auto; transform: translateX(-50%); width: var(--hud-hub-max-w); flex-direction: row; justify-content: space-between; }
   .stick {
     left: calc(12px + var(--sa-left));
     bottom: var(--hud-stick-clear);
@@ -2265,4 +2275,39 @@ html[data-lang="en"] #over-title {
   color: #e8f7ff;
   text-shadow: 0 0 14px rgba(0, 229, 255, 0.45), 0 0 22px rgba(124, 255, 58, 0.2);
   letter-spacing: 0.06em;
+}
+
+/* ===== HUD-GEAR-PAUSE-CORNERS-001 marker — gear+pause under hub ≥44 ===== */
+.hud-buttons.top .icon-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+.hud-buttons.top #btn-settings-run svg,
+.hud-buttons.top #btn-settings-run .menu-ico {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== SETTINGS-SHEET-PHONE-READ-001 — settings sheet phone contrast ===== */
+.ck-settings-panel .ck-set-label {
+  color: #e8e4ff;
+  font-weight: 600;
+}
+.ck-settings-panel .ck-set-row {
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12);
+}
+.ck-settings .ck-action {
+  min-height: 44px;
+  min-width: 88px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  background: rgba(0, 229, 255, 0.12);
+  color: #7ef9ff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
 }

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.142
+// RAMPAGE MECH 暴走機甲 — tip v0.9.143
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -240,8 +240,8 @@ const audio = new SwarmAudio(store);
 // Mirror alias key so early-paint script + smoke tests stay aligned with kit store.
 writeMutedToStore(store, !!audio.muted);
 function muteButtons() {
-  // v0.9.52: home mute lives in gear settings sheet — only in-run #btn-mute stays as chrome.
-  return [$('btn-mute')].filter(Boolean);
+  // HUD-MUTE-TO-GEAR-001: in-run mute chrome removed; mute lives in settings sheet only.
+  return [];
 }
 function syncMuteChrome() {
   applyMuteUi(!!audio.muted, muteButtons(), { isZh: i18n.isZh() });
@@ -1722,7 +1722,8 @@ S.showShareConfirm = showShareConfirm;
 $('btn-retry')?.addEventListener('click', () => startRun());
 $('btn-share')?.addEventListener('click', () => { onShareRun().catch(() => {}); });
 $('btn-menu')?.addEventListener('click', () => showMenu());
-$('btn-mute')?.addEventListener('click', () => { toggleMutePersist(); });
+// HUD-MUTE-TO-GEAR-001: #btn-mute removed; in-run gear opens same settings sheet.
+$('btn-settings-run')?.addEventListener('click', () => { openInRunSettings(); });
 
 if (shouldShowArcadeMenu(HUB)) {
   const b = $('btn-arcade-menu');
@@ -1744,18 +1745,106 @@ ui.mountHowto({
     ],
   }),
 });
-// v0.9.52: settings sheet owns mute/volume/lang — wrap so mute still hits toggleMutePersist (alias + HUD sync).
-ui.mountSettings({
-  audio: {
-    get muted() { return !!audio.muted; },
-    init: () => { try { audio.init(); } catch (_) {} },
-    toggleMute: () => { toggleMutePersist(); },
-    setVolume: (v, ch) => (typeof audio.setVolume === 'function' ? audio.setVolume(v, ch) : undefined),
-    getVolumes: () => (typeof audio.getVolumes === 'function' ? audio.getVolumes() : { master: 1 }),
-  },
-  stage,
-  onOpen: () => { try { audio.click(); } catch (_) {} },
-});
+
+/** Shared settings opts — home gear + in-run gear (SETTINGS-AUDIO-SPLIT / QUALITY-SHARE-HOWTO). */
+function settingsExtras() {
+  return [
+    {
+      id: 'sfx', type: 'slider', labelKey: 'settings.sfx',
+      get: () => (typeof audio.getVolumes === 'function' ? (audio.getVolumes().sfx ?? 1) : 1),
+      set: (v) => { if (typeof audio.setVolume === 'function') audio.setVolume(v, 'sfx'); },
+    },
+    {
+      id: 'bgm', type: 'slider', labelKey: 'settings.bgm',
+      get: () => (typeof audio.getVolumes === 'function' ? (audio.getVolumes().music ?? 1) : 1),
+      set: (v) => { if (typeof audio.setVolume === 'function') audio.setVolume(v, 'music'); },
+    },
+    {
+      id: 'share', type: 'action', labelKey: 'settings.share', actionLabelKey: 'settings.shareGo',
+      set: () => { onShareFromSettings().catch(() => {}); },
+    },
+    {
+      id: 'howto', type: 'action', labelKey: 'settings.howto', actionLabelKey: 'settings.howtoGo',
+      set: () => { openHowtoFromSettings(); },
+    },
+  ];
+}
+
+function settingsOpts() {
+  return {
+    audio: {
+      get muted() { return !!audio.muted; },
+      init: () => { try { audio.init(); } catch (_) {} },
+      toggleMute: () => { toggleMutePersist(); },
+      setVolume: (v, ch) => (typeof audio.setVolume === 'function' ? audio.setVolume(v, ch) : undefined),
+      getVolumes: () => (typeof audio.getVolumes === 'function' ? audio.getVolumes() : { master: 1 }),
+    },
+    stage,
+    extras: settingsExtras(),
+    onOpen: () => { try { audio.click(); } catch (_) {} },
+  };
+}
+
+/** Mid-run / menu share: reuse result-share; if no score yet, share game link. */
+async function onShareFromSettings() {
+  const g = S.game;
+  let snap = S._lastShare || null;
+  if (!snap && g && ((g.score | 0) > 0 || (g.kills | 0) > 0)) {
+    const zh = i18n.isZh();
+    snap = {
+      timeStr: fmtTime(g.t || 0),
+      kills: g.kills | 0,
+      zone: zoneShortLabel(g.mapZone || 'lab', zh),
+      score: Math.floor(g.score || 0),
+      isZh: zh,
+    };
+  }
+  if (!snap) {
+    const isZh = i18n.isZh();
+    const text = (isZh
+      ? '暴走機甲 — 賽博機甲生存射擊\n'
+      : 'RAMPAGE MECH — cyber mech survival shooter\n') + LIVE_URL;
+    const result = await shareOrCopy(text, {
+      title: isZh ? '暴走機甲' : 'RAMPAGE MECH',
+      preferShare: true,
+    });
+    if (result.aborted) return;
+    const msg = confirmCopy(!!result.ok, !!result.usedShare);
+    showShareConfirm(msg.zh, msg.en, !result.ok);
+    try { if (result.ok && audio && audio.click) audio.click(); } catch (_) {}
+    return;
+  }
+  const text = buildShareText({ ...snap, url: LIVE_URL });
+  const result = await shareOrCopy(text, {
+    title: snap.isZh ? '暴走機甲' : 'RAMPAGE MECH',
+    preferShare: true,
+  });
+  if (result.aborted) return;
+  const msg = confirmCopy(!!result.ok, !!result.usedShare);
+  showShareConfirm(msg.zh, msg.en, !result.ok);
+  try { if (result.ok && audio && audio.click) audio.click(); } catch (_) {}
+}
+
+function openHowtoFromSettings() {
+  try { ui.closeModal(); } catch (_) {}
+  const o = ui._howtoOpts;
+  if (!o || typeof o.getContent !== 'function') return;
+  try { if (o.onOpen) o.onOpen(); } catch (_) {}
+  const content = o.getContent() || {};
+  if (o.privacyUrl && !content.privacyUrl) content.privacyUrl = o.privacyUrl;
+  if (o.privacyHtml && !content.privacyHtml) content.privacyHtml = o.privacyHtml;
+  ui.howto(content);
+}
+
+/** In-run gear: pause if playing, then same settings sheet as home. */
+function openInRunSettings() {
+  if (S.state === 'play') pauseRun();
+  try { audio.click(); } catch (_) {}
+  ui.settings(settingsOpts());
+}
+
+// v0.9.52 + SETTINGS-*: settings sheet owns mute/volume/lang/sfx/bgm/quality/share/howto
+ui.mountSettings(settingsOpts());
 
 i18n.onChange(() => refreshMenu());
 Platform.onBack(() => {

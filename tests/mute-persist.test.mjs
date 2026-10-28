@@ -115,7 +115,9 @@ assert.equal(muteTipFor(true, false), 'Unmute');
   assert.ok(!main.includes('btn-mute-menu'), 'no loose menu mute handler');
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(!html.includes('id="btn-mute-menu"'), 'no loose menu mute markup');
-  assert.ok(html.includes('id="btn-mute"'), 'in-run mute remains');
+  // HUD-MUTE-TO-GEAR-001: mute chrome → settings sheet only
+  assert.ok(html.includes('id="btn-settings-run"'), 'in-run gear settings');
+  assert.ok(!html.includes('id="btn-mute"'), 'in-run mute chrome removed');
   assert.ok(html.includes('cyber.neon-swarm.muted'), 'early paint');
   assert.ok(/\?v=0\.9\.\d+/.test(html), 'cache-bust');
   const audio = readFileSync(new URL('../js/audio.js', import.meta.url), 'utf8');

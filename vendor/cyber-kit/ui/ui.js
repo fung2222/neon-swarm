@@ -425,6 +425,14 @@ export class CyberUI {
             if (volRow) volRow.textContent = t('kit.volume');
             const glowRow = body.querySelector('[data-row="glow"] .ck-set-label');
             if (glowRow) glowRow.textContent = t('kit.glowLabel');
+            for (const ex of (o.extras || [])) {
+              const lab = body.querySelector('[data-row="' + ex.id + '"] .ck-set-label, [data-ex="' + ex.id + '"]')?.closest?.('.ck-set-row')?.querySelector('.ck-set-label');
+              // soft refresh: find by data-ex ancestor
+              const rowEl = body.querySelector('[data-ex="' + ex.id + '"]');
+              const labEl = rowEl && rowEl.closest('.ck-set-row') && rowEl.closest('.ck-set-row').querySelector('.ck-set-label');
+              if (labEl) labEl.textContent = ex.labelKey ? t(ex.labelKey) : (ex.label || ex.id);
+              if (ex.type === 'action' && rowEl) rowEl.textContent = ex.actionLabelKey ? t(ex.actionLabelKey) : (ex.actionLabel || labEl?.textContent || '');
+            }
             b.blur();
           });
         });
@@ -516,6 +524,26 @@ export class CyberUI {
           paint();
           r.querySelectorAll('button').forEach((b) => {
             b.addEventListener('click', (e) => { e.stopPropagation(); ex.set(b.dataset.v); paint(); b.blur(); });
+          });
+        } else if (ex.type === 'slider') {
+          // Thin kit enhancement: SFX/BGM (or any 0..1) sliders via extras
+          const cur = Math.max(0, Math.min(1, +(typeof ex.get === 'function' ? ex.get() : 1) || 0));
+          const r = row(label, `<input type="range" min="0" max="100" step="1" class="ck-slider" data-ex="${ex.id}" value="${Math.round(cur * 100)}"/>`);
+          r.dataset.row = ex.id;
+          const sl = r.querySelector('input');
+          sl.addEventListener('input', () => {
+            try { audio && audio.init && audio.init(); } catch (_) {}
+            if (typeof ex.set === 'function') ex.set(sl.value / 100);
+          });
+        } else if (ex.type === 'action') {
+          const go = ex.actionLabelKey ? t(ex.actionLabelKey) : (ex.actionLabel || label);
+          const r = row(label, `<button type="button" class="ck-action" data-ex="${ex.id}"></button>`);
+          const btn = r.querySelector('button');
+          btn.textContent = go;
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            try { if (typeof ex.set === 'function') ex.set(); } catch (_) {}
+            btn.blur();
           });
         }
       }
