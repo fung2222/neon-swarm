@@ -2,7 +2,7 @@
 
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — shipping safe batch v0.9.101–0.9.120. Tip `v0.9.118` `MENU-HOME-MAIN-001`.
+## 狀態：**Active** — shipping safe batch v0.9.101–0.9.120. Tip `v0.9.119` `SHARE-CONFIRM-ROLE-001`.
 
 **Author:** Grok bot · **Waiting:** finish 20 then HOLD
 
@@ -25,6 +25,7 @@
 16. v0.9.116 `WEAPONS-MD-BATCH-SYNC-001`
 17. v0.9.117 `LEVEL-CARDS-ARIA-001`
 18. v0.9.118 `MENU-HOME-MAIN-001`
+19. v0.9.119 `SHARE-CONFIRM-ROLE-001`
 
 ### Preserve
 hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 · clamp · fill-edge · rail-tap · branch-path · prior tap/sync/a11y ships · ult light-amp labels · rail group a11y · hub/pause/over a11y.
@@ -32,4 +33,4 @@ hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 
 ### Out of scope / HARD BANS（下輪仍禁）
 Phase 4 · horn lock · soft-juice invent · full ult invent · BALANCE-PASS · deep GPU · Roy PNG.
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.118
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.119
