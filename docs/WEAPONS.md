@@ -143,6 +143,18 @@ Weapon
 
 Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light amp labels live v0.9.82; not full kits).
 
+### Ult light amplifiers (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001)
+
+Live labels (v0.9.82) + documented multipliers (no full unique kits):
+
+| Key | zh | en | Effect |
+|-----|----|----|--------|
+| U1 | 傷害強化 | POWER AMP | `dmgMul × 1.2` (stacks on branch kit) |
+| U2 | 射速強化 | CADENCE AMP | `cdMul × 0.85` (stacks on branch kit) |
+
+Applied in `branchStatMods(..., ult)` after branch letter mods. Full unique ult kits remain **stub** / HARD BAN this beat.
+
+
 ### Branch naming stubs (secondary) — live in code · documented v0.9.80
 
 | Weapon | A | B |
@@ -372,6 +384,7 @@ Do **not** re-add player cards under legacy ids.
 | Primary branch naming table EN columns | **live** (v0.9.85 WEAPONS-BRANCH-PRIMARY-EN-DOCS-001) |
 | Branch kit hints match branchNames | **live** (v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001) |
 | Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** (v0.9.82 WEAPONS-ULT-EN-LABELS-001); full unique ult kits still **stub** |
+| Ult light-amp multipliers documented (×1.2 / ×0.85) | **live** (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001) |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |
 | In-run mute/pause ≥44px | **live** (v0.9.71) |

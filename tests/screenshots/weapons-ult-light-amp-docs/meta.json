@@ -1,0 +1,10 @@
+{
+  "ver": "0.9.88",
+  "probe": {
+    "hasShip": true,
+    "hasU1": true,
+    "hasU2": true,
+    "hasTable": true
+  },
+  "fail": []
+}
