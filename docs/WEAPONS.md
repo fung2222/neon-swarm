@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.121 WEAPONS-ULT-SPEC-001 · unique U1/U2 kits specified · prior a11y batch v0.9.101–0.9.120
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.122 WEAPONS-ULT-LABELS-001 · unique U1/U2 card copy · kits code next
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -152,7 +152,7 @@ Live labels (v0.9.82) + documented multipliers (no full unique kits):
 | U1 | 傷害強化 | POWER AMP | `dmgMul × 1.2` (stacks on branch kit) |
 | U2 | 射速強化 | CADENCE AMP | `cdMul × 0.85` (stacks on branch kit) |
 
-Applied in `branchStatMods(..., ult)` after branch letter mods. **v0.9.121:** unique ult kits **specified** below; light amp remains live **fallback** until kit code lands. HARD BAN「full ult invent」lifted for this Active beat only (Roy 2026-10-28「好你順住去」).
+Applied in `branchStatMods(..., ult)` after branch letter mods. **v0.9.121:** unique ult kits **specified** below. **v0.9.122:** unique card labels **live**. Light amp stubs remain fallback export only. HARD BAN「full ult invent」lifted for this Active beat only (Roy 2026-10-28「好你順住去」).
 
 ### Unique ult kits (v0.9.121 WEAPONS-ULT-SPEC-001 — Grok-owned first-pass)
 
@@ -407,7 +407,8 @@ Do **not** re-add player cards under legacy ids.
 | Branch EN path titles (`branchNamesEn`) | **live** (v0.9.80) |
 | Primary branch naming table EN columns | **live** (v0.9.85 WEAPONS-BRANCH-PRIMARY-EN-DOCS-001) |
 | Branch kit hints match branchNames | **live** (v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001) |
-| Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** fallback (v0.9.82); unique titles pending v0.9.122 |
+| Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | fallback stubs kept (v0.9.82); cards use unique titles |
+| Unique ult card labels (30 forms) | **live** (v0.9.122 WEAPONS-ULT-LABELS-001) |
 | Unique ult kits (30 forms primary×branch×U) | **spec** (v0.9.121 WEAPONS-ULT-SPEC-001); code pending |
 | Ult light-amp multipliers documented (×1.2 / ×0.85) | **live** (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001) |
 | HUD hub region a11y | **live** (v0.9.91 HUD-HUB-A11Y-001) |

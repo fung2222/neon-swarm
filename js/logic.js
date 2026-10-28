@@ -2095,7 +2095,7 @@ export class Game {
     return true;
   }
 
-  /** ion_beam: charge-fire high damage pierce shot */
+  /** ion_beam: charge-fire high damage pierce shot (+ dual slit ult boltCount) */
   _fireIonBeam(events, stacks, base = {}) {
     const targets = this._targetsForWeapon(1, this.fireRange + 5);
     if (!targets.length) return false;
@@ -2105,22 +2105,31 @@ export class Game {
       this.px, this.pz, best.x, best.z, best.vx || 0, best.vz || 0,
       speed, Math.max(AIM_LEAD_MAX_T, 0.3)
     );
-    const dx = lead.dx, dz = lead.dz;
+    const boltCount = Math.max(1, base.boltCount || 1);
+    const spread = base.spreadRad || 0;
+    const baseAng = Math.atan2(lead.dz, lead.dx);
     const tDist = Math.hypot(best.x - this.px, best.z - this.pz);
-    const b = this._emitBullet(dx, dz, {
-      weapon: 'ion_beam',
-      dmg: (base.hit || 3.6) + stacks * 0.7,
-      pierce: (base.pierce || 3) + stacks,
-      life: base.slit ? 0.26 : 0.32,
-      speed: base.slit ? speed * 1.12 : speed,
-      r: base.slit ? 0.12 : 0.18,
-      chainJumps: base.chainJumps || 0,
-      chainRange: base.chainRange || 0,
-      tierStacks: stacks,
-      targetDist: tDist,
-      targetR: best.r || 0.3,
-    });
-    this._pushFire(events, 'ion_beam', dx, dz, b, best);
+    let primary = null;
+    for (let bi = 0; bi < boltCount; bi++) {
+      const t = boltCount === 1 ? 0 : (bi / (boltCount - 1)) * 2 - 1;
+      const a = baseAng + t * spread;
+      const dx = Math.cos(a), dz = Math.sin(a);
+      const b = this._emitBullet(dx, dz, {
+        weapon: 'ion_beam',
+        dmg: (base.hit || 3.6) + stacks * 0.7,
+        pierce: (base.pierce || 3) + stacks,
+        life: base.slit ? 0.26 : 0.32,
+        speed: base.slit ? speed * 1.12 : speed,
+        r: base.slit ? 0.12 : 0.18,
+        chainJumps: base.chainJumps || 0,
+        chainRange: base.chainRange || 0,
+        tierStacks: stacks,
+        targetDist: tDist,
+        targetR: best.r || 0.3,
+      });
+      if (!primary) primary = { b, dx, dz };
+    }
+    this._pushFire(events, 'ion_beam', primary.dx, primary.dz, primary.b, best);
     return true;
   }
 
@@ -2614,7 +2623,8 @@ export class Game {
       if (fired) {
         let cd = (base.cd || this.fireCd || 0.1) * jamMul * (mods.cdMul || 1);
         if (mods.overheat) {
-          this._gatlingHeat = Math.min(1.35, (this._gatlingHeat || 0) + 0.085);
+          const heatGain = 0.085 * (mods.heatGainMul != null ? mods.heatGainMul : 1);
+          this._gatlingHeat = Math.min(1.35, (this._gatlingHeat || 0) + heatGain);
           if (this._gatlingHeat >= 1) {
             cd *= 2.4; // brief overheat stutter
             this._gatlingHeat = 0.15;
@@ -2697,6 +2707,8 @@ export class Game {
           chainJumps: mods.chainJumps || 0,
           chainRange: mods.chainRange || 0,
           slit: !!mods.slit,
+          boltCount: mods.boltCount || 1,
+          spreadRad: mods.spreadRad || 0,
         };
         if (this._fireIonBeam(events, stacks, base2)) {
           this.muzzle = 0.18; this.aimHold = 0.55;

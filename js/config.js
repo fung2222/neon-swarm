@@ -9,7 +9,7 @@ import {
   hasEmptyWeaponSlot as weaponsHasEmpty, weaponSlotLevel as weaponsSlotLevel,
   WEAPON_ICON, WEAPON_LABEL,
   BRANCH_UNLOCK_LV, ULT_UNLOCK_LV, branchLetter, branchIndex, branchOptions, ultOptions,
-  branchStatMods, buildBranchOfferCards, buildUltOfferCards, needsBranchPick, needsUltPick,
+  branchStatMods, applyUltKitMods, buildBranchOfferCards, buildUltOfferCards, needsBranchPick, needsUltPick,
   ULT_STUB_LABELS,
 } from './weapons.js';
 export {
@@ -20,7 +20,7 @@ export {
   weaponLevel, initialResource, ultimateIdStubs, WEAPON_ICON, WEAPON_LABEL,
   categoryOf, hasEmptyInCategory, slotCountFilled,
   BRANCH_UNLOCK_LV, ULT_UNLOCK_LV, branchLetter, branchIndex, branchOptions, ultOptions,
-  branchStatMods, buildBranchOfferCards, buildUltOfferCards, needsBranchPick, needsUltPick,
+  branchStatMods, applyUltKitMods, buildBranchOfferCards, buildUltOfferCards, needsBranchPick, needsUltPick,
   ULT_STUB_LABELS,
 } from './weapons.js';
 export const GAME_ID = 'neon-swarm';

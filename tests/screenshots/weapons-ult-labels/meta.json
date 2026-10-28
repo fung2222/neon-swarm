@@ -1,0 +1,11 @@
+{
+  "ver": "0.9.122",
+  "probe": {
+    "u1en": "OVERHEAT BURST · OVERCLOCK BURST",
+    "u2en": "OVERHEAT BURST · COOLANT JET",
+    "u1zh": "過熱連射 · 超頻爆發",
+    "hasStubLater": false,
+    "hasPowerAmp": false
+  },
+  "fail": []
+}

@@ -480,8 +480,82 @@ export function branchOptions(weaponId) {
   return out;
 }
 
-/** Ult options for a primary after branch is chosen. */
-/** Light-amp labels (v0.9.82 WEAPONS-ULT-EN-LABELS-001). U1=+20% dmg · U2=−15% cd. Full kits still stub. */
+
+/** Unique ult kit labels (v0.9.122 WEAPONS-ULT-LABELS-001). Per weapon×branch×U. */
+export const ULT_KIT_LABELS = Object.freeze({
+  gatling: {
+    A: {
+      U1: { zh: '超頻爆發', en: 'OVERCLOCK BURST', descZh: '雙束超頻連射・熱累加快', descEn: 'Dual-bolt overclock · heat builds faster' },
+      U2: { zh: '冷卻噴射', en: 'COOLANT JET', descZh: '過熱更慢・射速↑', descEn: 'Slower heat gain · cadence↑' },
+    },
+    B: {
+      U1: { zh: '貫穿光束', en: 'PIERCE BEAM', descZh: '穿透+2・單發更硬', descEn: 'Pierce+2 · harder bolts' },
+      U2: { zh: '穿甲連射', en: 'AP CADENCE', descZh: '保留穿透・射速↑', descEn: 'Keep pierce · cadence↑' },
+    },
+    C: {
+      U1: { zh: '錐形新星', en: 'CONE NOVA', descZh: '五向寬錐散射', descEn: '5-bolt wide cone' },
+      U2: { zh: '密網掃射', en: 'DENSE NET', descZh: '四向密網・射速↑', descEn: '4-bolt tight net · cadence↑' },
+    },
+  },
+  ion_beam: {
+    A: {
+      U1: { zh: '太陽矛', en: 'SOLAR LANCE', descZh: '更長充能・超高傷穿透', descEn: 'Longer charge · huge pierce dmg' },
+      U2: { zh: '快焦重擊', en: 'SNAP FOCUS', descZh: '縮短充能・節奏↑', descEn: 'Shorter charge · cadence↑' },
+    },
+    B: {
+      U1: { zh: '連鎖風暴', en: 'CHAIN STORM', descZh: '跳電+2・範圍↑', descEn: 'Chain+2 · range↑' },
+      U2: { zh: '電弧節奏', en: 'ARC CADENCE', descZh: '跳電+1・射速↑', descEn: 'Chain+1 · cadence↑' },
+    },
+    C: {
+      U1: { zh: '雙縫撕裂', en: 'DUAL SLIT', descZh: '雙裂縫並行切割', descEn: 'Twin slit beams' },
+      U2: { zh: '快縫連切', en: 'RAPID SLIT', descZh: '更快充能・節奏↑', descEn: 'Faster charge · cadence↑' },
+    },
+  },
+  tracking_bomb: {
+    A: {
+      U1: { zh: '五重彈幕', en: 'PENTA WARHEAD', descZh: '一次五枚微彈頭', descEn: 'Five micro warheads' },
+      U2: { zh: '集群節奏', en: 'CLUSTER BEAT', descZh: '三重保留・射速↑', descEn: 'Keep triple · cadence↑' },
+    },
+    B: {
+      U1: { zh: '粘彈集群', en: 'STICKY CLUSTER', descZh: '雙雷・長黏・爆圈↑', descEn: 'Dual mines · stick↑ · AoE↑' },
+      U2: { zh: '地雷節奏', en: 'MINE BEAT', descZh: '黏著保留・射速↑', descEn: 'Keep stick · cadence↑' },
+    },
+    C: {
+      U1: { zh: '蜂群衝鋒', en: 'SWARM DIVE', descZh: '雙機疾速追蹤', descEn: 'Dual seekers · seek↑' },
+      U2: { zh: '疾速節奏', en: 'SEEK BEAT', descZh: '更快尋敵・射速↑', descEn: 'Faster seek · cadence↑' },
+    },
+  },
+  vulcan: {
+    A: {
+      U1: { zh: '彈幕超載', en: 'BARRAGE OVERLOAD', descZh: '三向超密彈幕', descEn: 'Triple dense spray' },
+      U2: { zh: '風暴節奏', en: 'STORM BEAT', descZh: '雙向保留・射速↑', descEn: 'Keep dual · cadence↑' },
+    },
+    B: {
+      U1: { zh: '燃燒風暴', en: 'BURN STORM', descZh: '燒夷更猛更久', descEn: 'Stronger longer burn' },
+      U2: { zh: '燒夷節奏', en: 'INCENDIARY BEAT', descZh: '燒夷保留・射速↑', descEn: 'Keep burn · cadence↑' },
+    },
+    C: {
+      U1: { zh: '要塞終極', en: 'FORTRESS ULT', descZh: '更慢移・穿透↑・傷害↑', descEn: 'Slower move · pierce↑ · dmg↑' },
+      U2: { zh: '堡壘連射', en: 'FORTRESS CADENCE', descZh: '堡壘保留・射速↑', descEn: 'Keep fortress · cadence↑' },
+    },
+  },
+  zero_laser: {
+    A: {
+      U1: { zh: '絕對凍結', en: 'ABSOLUTE FREEZE', descZh: '寒緩大幅強化', descEn: 'Chill greatly increased' },
+      U2: { zh: '零度節奏', en: 'ZERO BEAT', descZh: '寒緩保留・射速↑', descEn: 'Keep chill · cadence↑' },
+    },
+    B: {
+      U1: { zh: '霜爆新星', en: 'FROST NOVA', descZh: '霜爆圈更大更痛', descEn: 'Bigger harder frost burst' },
+      U2: { zh: '霜爆節奏', en: 'FROST BEAT', descZh: '霜爆保留・射速↑', descEn: 'Keep frost · cadence↑' },
+    },
+    C: {
+      U1: { zh: '寒晶壁垒', en: 'CRYSTAL BASTION', descZh: '護盾更厚更久', descEn: 'Thicker longer self-shield' },
+      U2: { zh: '護盾節奏', en: 'SHIELD BEAT', descZh: '護盾保留・射速↑', descEn: 'Keep shield · cadence↑' },
+    },
+  },
+});
+
+/** @deprecated light-amp fallback labels — prefer ULT_KIT_LABELS */
 export const ULT_STUB_LABELS = Object.freeze({
   U1: { zh: '傷害強化', en: 'POWER AMP' },
   U2: { zh: '射速強化', en: 'CADENCE AMP' },
@@ -495,33 +569,37 @@ export function ultOptions(weaponId, branch) {
   const letter = branchLetter(bi);
   const bName = (d.branchNames && d.branchNames[bi]) || letter;
   const bNameEn = (d.branchNamesEn && d.branchNamesEn[bi]) || letter;
+  const kitTable = (ULT_KIT_LABELS[d.id] && ULT_KIT_LABELS[d.id][letter]) || {};
   const out = [];
   for (let u = 1; u <= d.ultsPerBranch; u++) {
     const key = `U${u}`;
+    const kit = kitTable[key];
     const stub = ULT_STUB_LABELS[key] || { zh: key, en: key };
+    const titleZh = kit ? kit.zh : stub.zh;
+    const titleEn = kit ? kit.en : stub.en;
     out.push({
       key,
       id: `${d.id}_${letter}_${key}`,
       letter,
-      zh: `${bName} · ${stub.zh}`,
-      en: `${bNameEn} · ${stub.en}`,
-      descZh: key === 'U1' ? `${stub.zh}（傷害 ×1.2；完整招式後續）` : `${stub.zh}（冷卻 ×0.85；完整招式後續）`,
-      descEn: key === 'U1' ? `${stub.en} (dmg ×1.2; full kit later)` : `${stub.en} (CD ×0.85; full kit later)`,
+      zh: `${bName} · ${titleZh}`,
+      en: `${bNameEn} · ${titleEn}`,
+      descZh: kit ? kit.descZh : (key === 'U1' ? `${stub.zh}（傷害 ×1.2）` : `${stub.zh}（冷卻 ×0.85）`),
+      descEn: kit ? kit.descEn : (key === 'U1' ? `${stub.en} (dmg ×1.2)` : `${stub.en} (CD ×0.85)`),
     });
   }
   return out;
 }
 
 /**
- * Deep branch kits (v0.9.55 WEAPONS-BRANCH-KITS-001).
- * Distinct fire/behavior deltas per letter; ult stays light amplifier only.
+ * Deep branch kits (v0.9.55) + unique ult kits (v0.9.123 WEAPONS-ULT-KITS-001).
+ * Distinct fire/behavior deltas per letter; ult stacks unique kit (not bare light amp).
  */
 export function branchStatMods(weaponId, branch, ult) {
   const d = weaponDef(weaponId);
   const mods = {
     dmgMul: 1, cdMul: 1, pierceAdd: 0,
     // optional kit flags (0 / false = off)
-    boltCount: 1, spreadRad: 0, overheat: false,
+    boltCount: 1, spreadRad: 0, overheat: false, heatGainMul: 1,
     chargeMul: 1, chainJumps: 0, chainRange: 0, slit: false,
     warheads: 1, stickMul: 1, homingMul: 1, seekSpeedMul: 1,
     sprayMul: 1, burn: 0, burnDur: 0, fortressMoveMul: 1, fortressPierce: 0,
@@ -615,10 +693,86 @@ export function branchStatMods(weaponId, branch, ult) {
     }
   }
 
-  // Ult = light amplifier only (not full unique kits this beat)
-  if (ult === 'U1') mods.dmgMul *= 1.2;
-  else if (ult === 'U2') mods.cdMul *= 0.85;
+  // Unique ult kits (v0.9.123 WEAPONS-ULT-KITS-001) — stack behavior on branch letter
+  if (ult === 'U1' || ult === 'U2') {
+    applyUltKitMods(mods, id, letter, ult);
+  }
 
+  return mods;
+}
+
+/** Apply unique primary ult kit deltas (behavior-first; Grok fair first-pass). */
+export function applyUltKitMods(mods, weaponId, letter, ult) {
+  const L = String(letter || '').toUpperCase();
+  const U = String(ult || '').toUpperCase();
+  if (!mods || !weaponId || (U !== 'U1' && U !== 'U2')) return mods;
+
+  const mul = (key, factor) => { if (factor != null) mods[key] = (mods[key] || 1) * factor; };
+  const add = (key, n) => { mods[key] = (mods[key] || 0) + n; };
+  const setMax = (key, n) => { mods[key] = Math.max(mods[key] || 0, n); };
+
+  if (weaponId === 'gatling') {
+    if (L === 'A') {
+      if (U === 'U1') { setMax('boltCount', 2); mul('dmgMul', 1.12); mods.heatGainMul = 1.45; }
+      else { mods.heatGainMul = 0.55; mul('cdMul', 0.82); }
+    } else if (L === 'B') {
+      if (U === 'U1') { add('pierceAdd', 2); mul('dmgMul', 1.15); }
+      else { add('pierceAdd', 1); mul('cdMul', 0.80); }
+    } else if (L === 'C') {
+      if (U === 'U1') { mods.boltCount = 5; mods.spreadRad = 0.38; mul('dmgMul', 0.82); }
+      else { mods.boltCount = 4; mods.spreadRad = 0.22; mul('cdMul', 0.82); }
+    }
+  } else if (weaponId === 'ion_beam') {
+    if (L === 'A') {
+      if (U === 'U1') { mul('chargeMul', 1.18); mul('dmgMul', 1.22); add('pierceAdd', 1); }
+      else { mul('chargeMul', 0.72); mul('cdMul', 0.80); }
+    } else if (L === 'B') {
+      if (U === 'U1') { add('chainJumps', 2); mods.chainRange = (mods.chainRange || 0) + 1.4; }
+      else { add('chainJumps', 1); mul('cdMul', 0.80); }
+    } else if (L === 'C') {
+      if (U === 'U1') { mods.boltCount = 2; mods.spreadRad = 0.10; mul('dmgMul', 0.88); }
+      else { mul('chargeMul', 0.75); mul('cdMul', 0.78); add('pierceAdd', 1); }
+    }
+  } else if (weaponId === 'tracking_bomb') {
+    if (L === 'A') {
+      if (U === 'U1') { mods.warheads = 5; mul('dmgMul', 0.78); mul('aoeMul', 0.9); }
+      else { mul('cdMul', 0.78); mul('aoeMul', 1.08); }
+    } else if (L === 'B') {
+      if (U === 'U1') { mods.warheads = 2; mul('stickMul', 1.35); mul('aoeMul', 1.25); }
+      else { mul('cdMul', 0.75); }
+    } else if (L === 'C') {
+      if (U === 'U1') { mods.warheads = 2; mul('homingMul', 1.2); mul('seekSpeedMul', 1.2); }
+      else { mul('seekSpeedMul', 1.25); mul('cdMul', 0.78); }
+    }
+  } else if (weaponId === 'vulcan') {
+    if (L === 'A') {
+      if (U === 'U1') { mods.boltCount = 3; mul('sprayMul', 1.15); mods.spreadRad = (mods.spreadRad || 0) + 0.06; mul('dmgMul', 0.9); }
+      else { mul('cdMul', 0.78); }
+    } else if (L === 'B') {
+      if (U === 'U1') { mul('burn', 1.45); mul('burnDur', 1.4); }
+      else { mul('burn', 1.1); mul('cdMul', 0.80); }
+    } else if (L === 'C') {
+      if (U === 'U1') {
+        mods.fortressMoveMul = (mods.fortressMoveMul || 1) * 0.7;
+        add('pierceAdd', 1); add('fortressPierce', 1); mul('dmgMul', 1.15);
+      } else { mul('cdMul', 0.82); }
+    }
+  } else if (weaponId === 'zero_laser') {
+    if (L === 'A') {
+      if (U === 'U1') { mul('chillMul', 1.35); mul('dmgMul', 1.10); }
+      else { mul('cdMul', 0.80); }
+    } else if (L === 'B') {
+      if (U === 'U1') { mul('frostBurstR', 1.35); mul('frostBurstDmg', 1.35); }
+      else { mul('cdMul', 0.80); }
+    } else if (L === 'C') {
+      if (U === 'U1') { mul('selfShield', 1.45); mul('selfShieldDur', 1.5); }
+      else { mul('selfShieldDur', 1.15); mul('cdMul', 0.82); }
+    }
+  } else {
+    // Fallback light amp for any unexpected primary
+    if (U === 'U1') mul('dmgMul', 1.2);
+    else mul('cdMul', 0.85);
+  }
   return mods;
 }
 

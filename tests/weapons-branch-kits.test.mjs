@@ -71,11 +71,13 @@ function readyGatling(g, letter) {
   assert.ok(branchStatMods('zero_laser', 'A').chillMul > 1.5);
   assert.ok(branchStatMods('zero_laser', 'B').frostBurstR > 1);
   assert.ok(branchStatMods('zero_laser', 'C').selfShield > 0);
-  // Ult still light amp only
+  // Ult kits deepen branch (v0.9.123) — U1 overclock raises boltCount on gatling A
   const u1 = branchStatMods('gatling', 'A', 'U1');
   const base = branchStatMods('gatling', 'A');
-  assert.ok(u1.dmgMul > base.dmgMul);
-  assert.equal(u1.boltCount, base.boltCount);
+  assert.ok(u1.boltCount >= 2, 'gatling A U1 overclock dual bolt');
+  assert.ok((u1.heatGainMul || 1) > 1, 'gatling A U1 heat gain');
+  const u2 = branchStatMods('gatling', 'A', 'U2');
+  assert.ok(u2.cdMul < base.cdMul, 'gatling A U2 coolant cadence');
 }
 
 {
