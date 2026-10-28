@@ -2311,3 +2311,9 @@ html[data-lang="en"] #over-title {
   letter-spacing: 0.04em;
   cursor: pointer;
 }
+
+/* GEAR-PAUSE-TAP-NOTE-001 — affirm ≥44 under hub (inherits HUD-MUTE-PAUSE-TAP-001) */
+.hud-buttons.top #btn-settings-run,
+.hud-buttons.top #btn-pause {
+  min-width: 44px; min-height: 44px;
+}
