@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.60 `WEAPONS-HUD-OVERLAP-FIX-001` (floor/controls = v0.9.59; legacy purge = v0.9.58)  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.61 `53f9d8b` `WEAPONS-HUD-MERGE-001` (overlap = v0.9.60; floor/controls = v0.9.59)  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -13,8 +13,8 @@
 | Secondary catalog | **5** weapons · max **Lv5** · **2** branch paths |
 | Throw catalog | **4** weapons · max **Lv5** · **2** branch paths |
 | HUD | Status chips unified (padding/radius/type); XP + key status readable |
-| Icons | **Bottom row**, smaller tiles, single horizontal P/S/T groups (clears stick) |
-| Titles | Full catalog **zh** names (機關雷射炮 etc.) on status + rail |
+| Icons | **Bottom centered rail**, smaller tiles, space-evenly P/S/T groups (clears stick); glyph icons OK |
+| Titles | **No name labels on rail** (color families only); catalog zh names remain in pick cards / docs |
 | Primary play | Continuous **auto-fire** while that primary is selected |
 | Secondary play | Rescue / special-enemy tool — **rapid burst ≤3 shots** then **auto primary** (even if ammo remains); empty ammo also returns |
 | Throw play | **Tap / triple-tap** to throw once — no hold-select mode; stays on primary |
@@ -228,7 +228,7 @@ Start run: `primary[0] = 'gatling'`, all else empty (same “one starter gun” 
 ## HUD / play wiring (v0.9.53)
 
 1. **Top strip** `#weapon-status` — active weapon name · Lv · mode (主/副) · ammo/energy if secondary · throw CD hints.  
-2. **Left column** `#weapon-rail` — square tiles grouped P/S/T; pointer selects primary/secondary; throw tile = immediate throw request.  
+2. **Bottom centered** `#weapon-rail` — square tiles grouped P/S/T (no name labels; water fill on S/T); pointer selects primary/secondary; throw tile = immediate throw request.  
 3. **Map** stays mid–bottom; stick bottom.  
 4. Legacy `#weapon-slots` kept as top status mirror **or** hidden once rail+status live (ship keeps both: rail = select, top = compact status).
 
@@ -260,15 +260,27 @@ Each weapon needs a **real square icon** (not emoji forever).
 
 ---
 
-## HUD overlap rhythm (v0.9.60)
+## HUD merge (v0.9.61) — supersedes v0.9.60 scattered chips
 
 In-run portrait rhythm (tokens in `css/game.css`):
 
-1. **Row 1** — HP/LV left · TIME/SCORE · mute/pause (shared `--hud-row1-top`)
-2. **Row 2** — full-width XP (`--hud-xp-top`) alone
-3. **Row 3** — `#weapon-status` thin bar under XP (`--hud-wstat-top`); bottom rail still shows full names
-4. **Side** — goal + zone stacked left at `--hud-side-top` (never row1–2)
-5. **Bottom** — weapon rail; stick raised via `--hud-stick-clear`
+1. **Top `#hud-hub`** — one large **horizontally centered** panel (`--hud-hub-top` / `--hud-hub-max-w`)
+   - HP **bar** left + LV · **TIME** center · SCORE (+ ARM if >0)
+   - XP bar with **%** (`#xp-pct`)
+   - goal + zone inside hub meta row
+2. **Mute/pause** — top-right icon buttons outside hub (may lightly attach)
+3. **Bottom `#weapon-rail`** — centered, **space-evenly**, **no name labels**; color families via `--wrail-primary/secondary/throw`
+4. **Water-cup fill** — `.wrail-fill` `--fill` on secondary (ammo/energy) + throw (CD remaining); primary full + ready pulse when active
+5. **`#weapon-status`** — hidden (active = rail cell highlight)
+6. Stick raised via `--hud-stick-clear` above rail band
+
+### Prior overlap rhythm (v0.9.60) — historical
+
+1. Row 1 — HP/LV left · TIME/SCORE · mute/pause
+2. Row 2 — XP alone
+3. Row 3 — `#weapon-status` under XP; rail showed full names
+4. Side — goal + zone at `--hud-side-top`
+5. Bottom rail + stick clear
 
 ## Controls / HUD / floor (v0.9.59)
 
@@ -312,8 +324,10 @@ Do **not** re-add player cards under legacy ids.
 |-------|--------|
 | Catalog IDs + zh/en strings | **live** (v0.9.58 player cards = catalog only) |
 | Loadout 2+2+2 model | **live** |
-| HUD no-overlap vertical rhythm | **live** (v0.9.60) |
-| Bottom rail + unified status HUD | **live** (v0.9.59+) |
+| Merged hub + color water rail | **live** (v0.9.61) |
+| HUD no-overlap vertical rhythm | **live** (v0.9.60; superseded layout) |
+| Bottom color-only rail (no names) | **live** (v0.9.61) |
+| Bottom rail + unified status HUD | **live** (v0.9.59; status hidden in 0.9.61) |
 | Near-black arena floor | **live** (v0.9.59) |
 | Multi-tap secondary / throw | **live** (v0.9.59) |
 | Secondary ≤3 burst → primary | **live** (v0.9.59) |
@@ -337,7 +351,7 @@ Do **not** re-add player cards under legacy ids.
 - `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
 - `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
-- Screenshots: … + legacy-purge (v0.9.58) + hud-controls-floor (v0.9.59) + hud-overlap-fix (v0.9.60)
+- Screenshots: … + hud-overlap-fix (v0.9.60) + **hud-merge (v0.9.61)**
 - `tests/weapons-legacy-purge.test.mjs` + `tests/screenshots/weapons-legacy-purge/`
 - `tests/weapons-hud-controls-floor.test.mjs` + `tests/screenshots/weapons-hud-controls-floor/`  
 - Box = SwiftShader ≠ Roy device try → **HOLD for Roy try** after push
