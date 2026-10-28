@@ -1,0 +1,26 @@
+{
+  "ver": "0.9.90",
+  "probe": {
+    "count": 3,
+    "aria": [
+      {
+        "cat": "primary",
+        "role": "group",
+        "aria": "主武器"
+      },
+      {
+        "cat": "secondary",
+        "role": "group",
+        "aria": "副武器"
+      },
+      {
+        "cat": "throw",
+        "role": "group",
+        "aria": "投擲"
+      }
+    ],
+    "visibleLabel": false,
+    "built": "1"
+  },
+  "fail": []
+}

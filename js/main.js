@@ -706,10 +706,16 @@ function updateWeaponRailHUD(g) {
 
   if (!rail.dataset.built) {
     rail.innerHTML = '';
+    // v0.9.90 RAIL-GROUP-A11Y-001 — aria on groups only (no visible P/S/T name labels; color-only preserved)
+    const groupAria = zh
+      ? { primary: '主武器', secondary: '副武器', throw: '投擲' }
+      : { primary: 'Primary', secondary: 'Secondary', throw: 'Throw' };
     for (const gr of groups) {
       const wrap = document.createElement('div');
       wrap.className = 'wrail-group';
       wrap.dataset.cat = gr.key;
+      wrap.setAttribute('role', 'group');
+      wrap.setAttribute('aria-label', groupAria[gr.key] || gr.key);
       for (let k = 0; k < gr.n; k++) {
         const btn = document.createElement('button');
         btn.type = 'button';
