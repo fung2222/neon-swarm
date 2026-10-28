@@ -1,0 +1,19 @@
+{
+  "ver": "0.9.121",
+  "id": "WEAPONS-ULT-SPEC-001",
+  "note": "docs-only slice; unique 30-form U1/U2 table in WEAPONS.md; light amp fallback",
+  "kitsNamed": [
+    "OVERCLOCK BURST",
+    "CONE NOVA",
+    "SOLAR LANCE",
+    "CHAIN STORM",
+    "PENTA WARHEAD",
+    "STICKY CLUSTER",
+    "BARRAGE OVERLOAD",
+    "BURN STORM",
+    "FORTRESS ULT",
+    "ABSOLUTE FREEZE",
+    "FROST NOVA",
+    "CRYSTAL BASTION"
+  ]
+}

@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.116 WEAPONS-MD-BATCH-SYNC-001 · a11y batch v0.9.101–0.9.114 · catalog-fire-live v0.9.75
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.121 WEAPONS-ULT-SPEC-001 · unique U1/U2 kits specified · prior a11y batch v0.9.101–0.9.120
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -89,7 +89,7 @@ IDs are stable English snake keys used in code / saves. zh-HK names are product 
 | `flash` | flash interrupt | Short fuse; breaks aim / telegraph |
 | `gravity` | gravity pull → crush | Pull then damage |
 
-Branch/ult UI playable as of v0.9.54; **deep branch kits as of v0.9.55** (A/B/C distinct fire deltas). Ult kits still light amp only. Feel + kits in `WEAPON_CATALOG` / `branchStatMods` + Game ticks.
+Branch/ult UI playable as of v0.9.54; **deep branch kits as of v0.9.55** (A/B/C distinct fire deltas). Ult kits **specified** v0.9.121 (light amp fallback until kit code). Feel + kits in `WEAPON_CATALOG` / `branchStatMods` + Game ticks.
 
 **v0.9.56 ship (`WEAPONS-FEEL-FX-001`):** per-weapon muzzle/trail/burst FX recipes in `js/weapons-feel-fx.js` — gatling bolts, ion charge→punch, tracking stick→pop, vulcan spin sparks, zero chill+frost, acid mist, shotgun flash, slow rush ring, drone deploy puff, blackhole swirl, distinct throw bursts. MOBILE_GFX / webgl-guard respectful (shed rings; reuse pools). Screenshots `tests/screenshots/weapons-feel-fx/`.
 
@@ -141,7 +141,7 @@ Weapon
 | vulcan | 彈幕風暴 / BARRAGE STORM | 燒夷彈 / INCENDIARY | 機槍堡壘 / GUN FORTRESS |
 | zero_laser | 絕對零度 / ABSOLUTE ZERO | 霜爆裂縫 / FROST BURST | 寒晶護盾 / CRYSTAL SHIELD |
 
-Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light amp labels live v0.9.82; not full kits).
+Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards; unique kit names+effects **specced** v0.9.121 (labels/code follow).
 
 ### Ult light amplifiers (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001)
 
@@ -152,7 +152,31 @@ Live labels (v0.9.82) + documented multipliers (no full unique kits):
 | U1 | 傷害強化 | POWER AMP | `dmgMul × 1.2` (stacks on branch kit) |
 | U2 | 射速強化 | CADENCE AMP | `cdMul × 0.85` (stacks on branch kit) |
 
-Applied in `branchStatMods(..., ult)` after branch letter mods. Full unique ult kits remain **stub** / HARD BAN this beat.
+Applied in `branchStatMods(..., ult)` after branch letter mods. **v0.9.121:** unique ult kits **specified** below; light amp remains live **fallback** until kit code lands. HARD BAN「full ult invent」lifted for this Active beat only (Roy 2026-10-28「好你順住去」).
+
+### Unique ult kits (v0.9.121 WEAPONS-ULT-SPEC-001 — Grok-owned first-pass)
+
+Primary only · stacks on branch letter kits · **behavior deltas preferred** over bare % amps.
+Light amp (U1 dmg×1.2 / U2 cd×0.85) remains **fallback** until code ships (v0.9.122+ labels, v0.9.123+ kits).
+Schema id = `{weapon}_{branch}_U{n}` (30 forms). Sec/throw `ultsPerBranch:0`.
+
+| Weapon | Branch | U1 zh / en | U1 effect | U2 zh / en | U2 effect |
+|--------|--------|------------|-----------|------------|-----------|
+| `gatling` | A 過熱連射 | 超頻爆發 / OVERCLOCK BURST | 雙束超頻連射・熱累加快 | 冷卻噴射 / COOLANT JET | 過熱更慢・射速↑ |
+| `gatling` | B 穿甲芯 | 貫穿光束 / PIERCE BEAM | 穿透+2・單發更硬 | 穿甲連射 / AP CADENCE | 保留穿透・射速↑ |
+| `gatling` | C 散射網 | 錐形新星 / CONE NOVA | 五向寬錐散射 | 密網掃射 / DENSE NET | 四向密網・射速↑ |
+| `ion_beam` | A 長焦聚焦 | 太陽矛 / SOLAR LANCE | 更長充能・超高傷穿透 | 快焦重擊 / SNAP FOCUS | 縮短充能・節奏↑ |
+| `ion_beam` | B 連鎖跳電 | 連鎖風暴 / CHAIN STORM | 跳電+2・範圍↑ | 電弧節奏 / ARC CADENCE | 跳電+1・射速↑ |
+| `ion_beam` | C 裂縫切割 | 雙縫撕裂 / DUAL SLIT | 雙裂縫並行切割 | 快縫連切 / RAPID SLIT | 更快充能・節奏↑ |
+| `tracking_bomb` | A 三重彈頭 | 五重彈幕 / PENTA WARHEAD | 一次五枚微彈頭 | 集群節奏 / CLUSTER BEAT | 三重保留・射速↑ |
+| `tracking_bomb` | B 黏著地雷 | 粘彈集群 / STICKY CLUSTER | 雙雷・長黏・爆圈↑ | 地雷節奏 / MINE BEAT | 黏著保留・射速↑ |
+| `tracking_bomb` | C 自殺無人機 | 蜂群衝鋒 / SWARM DIVE | 雙機疾速追蹤 | 疾速節奏 / SEEK BEAT | 更快尋敵・射速↑ |
+| `vulcan` | A 彈幕風暴 | 彈幕超載 / BARRAGE OVERLOAD | 三向超密彈幕 | 風暴節奏 / STORM BEAT | 雙向保留・射速↑ |
+| `vulcan` | B 燒夷彈 | 燃燒風暴 / BURN STORM | 燒夷更猛更久 | 燒夷節奏 / INCENDIARY BEAT | 燒夷保留・射速↑ |
+| `vulcan` | C 機槍堡壘 | 要塞終極 / FORTRESS ULT | 更慢移・穿透↑・傷害↑ | 堡壘連射 / FORTRESS CADENCE | 堡壘保留・射速↑ |
+| `zero_laser` | A 絕對零度 | 絕對凍結 / ABSOLUTE FREEZE | 寒緩大幅強化 | 零度節奏 / ZERO BEAT | 寒緩保留・射速↑ |
+| `zero_laser` | B 霜爆裂縫 | 霜爆新星 / FROST NOVA | 霜爆圈更大更痛 | 霜爆節奏 / FROST BEAT | 霜爆保留・射速↑ |
+| `zero_laser` | C 寒晶護盾 | 寒晶壁垒 / CRYSTAL BASTION | 護盾更厚更久 | 護盾節奏 / SHIELD BEAT | 護盾保留・射速↑ |
 
 
 ### Branch naming stubs (secondary) — live in code · documented v0.9.80
@@ -383,7 +407,8 @@ Do **not** re-add player cards under legacy ids.
 | Branch EN path titles (`branchNamesEn`) | **live** (v0.9.80) |
 | Primary branch naming table EN columns | **live** (v0.9.85 WEAPONS-BRANCH-PRIMARY-EN-DOCS-001) |
 | Branch kit hints match branchNames | **live** (v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001) |
-| Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** (v0.9.82 WEAPONS-ULT-EN-LABELS-001); full unique ult kits still **stub** |
+| Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** fallback (v0.9.82); unique titles pending v0.9.122 |
+| Unique ult kits (30 forms primary×branch×U) | **spec** (v0.9.121 WEAPONS-ULT-SPEC-001); code pending |
 | Ult light-amp multipliers documented (×1.2 / ×0.85) | **live** (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001) |
 | HUD hub region a11y | **live** (v0.9.91 HUD-HUB-A11Y-001) |
 | Pause/over dialog a11y | **live** (v0.9.92–0.9.93) |
@@ -411,7 +436,7 @@ Do **not** re-add player cards under legacy ids.
 | Throw tap (frag) | **live** |
 | Other catalog fire | **live** (v0.9.75) all 14 exemplar + feel behaviors |
 | Branch pick UI (Lv3) | **live** level-cards + apply |
-| Ult pick UI (Lv5 primary) | **live** light amp — full unique ult kits still stub |
+| Ult pick UI (Lv5 primary) | **live** — unique kits specced v0.9.121; light amp until kit code |
 | Branch deep kits A/B/C | **live** (v0.9.55) distinct fire/behavior |
 | Real art icons | **placeholder** — Roy art pipeline above |
 | Full balance pass vs all elites | **first-pass only** — optional named `BALANCE-PASS` after Roy try (do not invent huge retune) |

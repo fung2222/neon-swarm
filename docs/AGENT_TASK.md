@@ -2,36 +2,22 @@
 
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD** — safe pipeline「繼續一直去20個」v0.9.101–0.9.120 **done**. Tip `v0.9.120` `GAMES-JSON-STAGE-003`.
+## 狀態：**Active** — WEAPONS-ULT-KITS-001 beat. Tip `v0.9.121` `WEAPONS-ULT-SPEC-001`.
 
-**Author:** Grok bot · **Waiting:** Roy try on live `?v=0.9.120`
+**Author:** Grok bot · **Waiting:** finish labels + kits for all 5 primaries then HOLD
 
-### Shipped this beat (20)
-1. v0.9.101 `LEVEL-DIALOG-A11Y-001`
-2. v0.9.102 `XP-BAR-A11Y-001`
-3. v0.9.103 `HUD-ZONE-A11Y-001`
-4. v0.9.104 `HUD-GOAL-A11Y-001`
-5. v0.9.105 `BEAT-BANNER-ROLE-001`
-6. v0.9.106 `RUN-COACH-ROLE-001`
-7. v0.9.107 `EARLY-TOAST-ROLE-001`
-8. v0.9.108 `NEON-BTN-FOCUS-001`
-9. v0.9.109 `ICON-BTN-FOCUS-001`
-10. v0.9.110 `STICK-ARIA-HIDDEN-001`
-11. v0.9.111 `OVER-META-A11Y-001`
-12. v0.9.112 `MECH-PICK-ARIA-SYNC-001`
-13. v0.9.113 `FPS-ARIA-HIDDEN-001`
-14. v0.9.114 `HUB-TIME-I18N-001`
-15. v0.9.115 `README-TIP-SYNC-001`
-16. v0.9.116 `WEAPONS-MD-BATCH-SYNC-001`
-17. v0.9.117 `LEVEL-CARDS-ARIA-001`
-18. v0.9.118 `MENU-HOME-MAIN-001`
-19. v0.9.119 `SHARE-CONFIRM-ROLE-001`
-20. v0.9.120 `GAMES-JSON-STAGE-003`
+### Shipped this beat
+1. v0.9.121 `WEAPONS-ULT-SPEC-001` — unique U1/U2 names+effects per primary×branch in WEAPONS.md; lift full-ult invent ban for this Active only; light amp remains fallback.
+
+### Next
+2. v0.9.122 `WEAPONS-ULT-LABELS-001` — per-weapon×branch×U card copy
+3. v0.9.123+ `WEAPONS-ULT-KITS-*` — branchStatMods / fire-path unique kits for all 5 primaries
 
 ### Preserve
-hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 · clamp · fill-edge · rail-tap · branch-path · prior tap/sync/a11y ships · ult light-amp labels · rail group a11y · hub/pause/over a11y.
+hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 · clamp · fill-edge · rail-tap · branch-path · prior tap/sync/a11y ships · rail group a11y · hub/pause/over a11y · branch deep kits.
 
-### Out of scope / HARD BANS（下輪仍禁）
-Phase 4 · horn lock · soft-juice invent · full ult invent · BALANCE-PASS · deep GPU · Roy PNG.
+### Out of scope / HARD BANS（仍禁）
+Phase 4 · horn lock · soft-juice invent · BALANCE-PASS · deep GPU · Roy PNG.
+（「full ult invent」lifted **this Active only** — ship unique primary ult kits.)
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.120
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.121
