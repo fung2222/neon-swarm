@@ -1,13 +1,13 @@
 /**
- * PHONE-STABLE-CONTEXT-001 (v0.9.51)
+ * PHONE-STABLE-CONTEXT-001 (v0.9.51) + PHONE-GPU-DEEPEN-001 (v0.9.126)
  * Mid-run WebGL context-loss prevention + recovery helpers.
  * Pure / storage-injectable — unit-testable without DOM/WebGL.
  *
  * Prevention: escalate MOBILE_GFX shed level from run time + frame budget
- *   (lower PR, bloom, particle tick rate) before the GPU process dies.
- * Recovery: stash a tiny interrupt snapshot on contextlost so reload overlay
- *   can show last score/time (Three.js soft-restore still inadequate — reload).
- * Desktop path: shed stays 0; snapshot still ok if context ever loses.
+ *   (lower PR, bloom, particle/post tick rate; shed 0–3) before the GPU dies.
+ * Recovery: stash a tiny interrupt snapshot on contextlost / cool-pause so
+ *   reload overlay can show last score/time (Three.js soft-restore still
+ *   inadequate — reload). Desktop path: shed stays 0.
  */
 
 /** sessionStorage key for last mid-run graphics interrupt. */
@@ -21,18 +21,22 @@ export const INTERRUPT_MAX_AGE_MS = 30 * 60 * 1000;
  * Level never decreases during a single run (caller keeps max).
  */
 export const SHED = Object.freeze({
-  /** run seconds → at least level 1 */
-  t1: 90,
+  /** run seconds → at least level 1 (earlier than v0.9.51) */
+  t1: 75,
   /** run seconds → at least level 2 */
-  t2: 180,
+  t2: 150,
+  /** run seconds → at least level 3 (deep shed) */
+  t3: 240,
   /** rolling avg frame ms → level 1 */
-  frameMs1: 28,
+  frameMs1: 26,
   /** rolling avg frame ms → level 2 */
-  frameMs2: 40,
+  frameMs2: 36,
+  /** rolling avg frame ms → level 3 */
+  frameMs3: 48,
   /** rolling avg frame ms counts as "hot" toward cool-pause */
-  frameMsHot: 55,
+  frameMsHot: 50,
   /** consecutive hot samples (~0.5s each in main) before cool-pause */
-  hotSamples: 6,
+  hotSamples: 5,
 });
 
 /**
@@ -49,7 +53,7 @@ export function detectMobileGfx(env = {}) {
 
 /**
  * Next shed level from inputs. Monotonic vs prevLevel.
- * Level 0 = baseline MOBILE_GFX cuts only; 1–2 = further mid-run shed.
+ * Level 0 = baseline MOBILE_GFX cuts only; 1–3 = further mid-run shed.
  * Non-mobile always returns 0.
  * @param {{ mobile: boolean, runT?: number, avgFrameMs?: number, prevLevel?: number }} o
  */
@@ -60,6 +64,7 @@ export function computeShedLevel(o) {
   let level = 0;
   if (runT >= SHED.t1 || avg >= SHED.frameMs1) level = 1;
   if (runT >= SHED.t2 || avg >= SHED.frameMs2) level = 2;
+  if (runT >= SHED.t3 || avg >= SHED.frameMs3) level = 3;
   const prev = Math.max(0, o.prevLevel | 0);
   return Math.max(prev, level);
 }
@@ -70,10 +75,11 @@ export function computeShedLevel(o) {
  * @param {number} [baseMax=1]
  */
 export function pixelRatioForShed(level, baseMax = 1) {
-  // v0.9.53: keep cool-pause safety but don't crush PR as hard at shed 1
-  const base = Math.max(0.75, Math.min(baseMax || 1, 2));
+  // v0.9.126: deepen at shed 3; keep shed 1 readable
+  const base = Math.max(0.70, Math.min(baseMax || 1, 2));
+  if (level >= 3) return Math.min(base, 0.72);
   if (level >= 2) return Math.min(base, 0.80);
-  if (level >= 1) return Math.min(base, 0.92);
+  if (level >= 1) return Math.min(base, 0.90);
   return base;
 }
 
@@ -83,24 +89,47 @@ export function pixelRatioForShed(level, baseMax = 1) {
  * @param {number} [mobileBase=0.15] v0.9.53 prettier mobile baseline
  */
 export function bloomStrengthForShed(level, mobileBase = 0.15) {
-  if (level >= 2) return Math.min(mobileBase, 0.04); // keep faint glow; cool-pause still protects
-  if (level >= 1) return Math.min(mobileBase, 0.09);
+  if (level >= 3) return Math.min(mobileBase, 0.02);
+  if (level >= 2) return Math.min(mobileBase, 0.04);
+  if (level >= 1) return Math.min(mobileBase, 0.08);
   return mobileBase;
 }
 
-/** Skip every other particle update at shed ≥ 2 (halve GPU particle work). */
+/** Skip particle updates under GPU pressure: ≥2 every other; ≥3 two-of-three. */
 export function shouldSkipParticleTick(level, frameIndex) {
-  return (level | 0) >= 2 && ((frameIndex | 0) & 1) === 1;
+  const lv = level | 0;
+  const fi = frameIndex | 0;
+  if (lv >= 3) return (fi % 3) !== 0;
+  if (lv >= 2) return (fi & 1) === 1;
+  return false;
+}
+
+/** Skip post-FX / shake every other frame at shed ≥ 2; 2-of-3 at ≥ 3. */
+export function shouldSkipPostFx(level, frameIndex) {
+  const lv = level | 0;
+  const fi = frameIndex | 0;
+  if (lv >= 3) return (fi % 3) !== 0;
+  if (lv >= 2) return (fi & 1) === 1;
+  return false;
+}
+
+/** Soft-feel rings/sparks density cut at shed ≥ 2 (no soft-juice invent — skip only). */
+export function shouldSkipFeelRing(level) {
+  return (level | 0) >= 2;
 }
 
 /**
  * Cool-pause when sustained hot frames at shed ≥ 2 — prevent context death.
- * Same contract as bg-pause: only from `play`; never auto-resume.
+ * Shed ≥ 3 triggers one sample sooner. Same contract as bg-pause: play only; never auto-resume.
  * @param {{ shedLevel: number, hotStreak: number, state: string }} o
  */
 export function shouldCoolPause(o) {
   if (!o || o.state !== 'play') return false;
-  return (o.shedLevel | 0) >= 2 && (o.hotStreak | 0) >= SHED.hotSamples;
+  const lv = o.shedLevel | 0;
+  const hot = o.hotStreak | 0;
+  if (lv >= 3) return hot >= Math.max(1, SHED.hotSamples - 1);
+  if (lv >= 2) return hot >= SHED.hotSamples;
+  return false;
 }
 
 /**
@@ -108,7 +137,7 @@ export function shouldCoolPause(o) {
  * @param {{ t?: number, score?: number, kills?: number, mapZone?: string }|null} game
  * @param {number} [nowMs]
  */
-export function buildInterruptSnapshot(game, nowMs = Date.now()) {
+export function buildInterruptSnapshot(game, nowMs = Date.now(), reason = 'webgl') {
   if (!game) return null;
   return {
     v: 1,
@@ -117,7 +146,7 @@ export function buildInterruptSnapshot(game, nowMs = Date.now()) {
     score: Math.max(0, Math.floor(game.score || 0)),
     kills: Math.max(0, Math.floor(game.kills || 0)),
     zone: typeof game.mapZone === 'string' ? game.mapZone : 'lab',
-    reason: 'webgl',
+    reason: reason || 'webgl',
   };
 }
 

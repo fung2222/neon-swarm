@@ -8,6 +8,10 @@
 
 ## Roy phone result
 
+## v0.9.126 PHONE-GPU-DEEPEN-001 (2026-10-28 Asia/Hong_Kong)
+Deepened mid-run shed 0–3 (earlier t1=75 / t2=150 / t3=240; hotSamples=5; PR 0.90→0.80→0.72; bloom 0.08→0.04→0.02; particle/post/feel-ring skips; cool-pause at shed≥3). Box = SwiftShader — **not** device-verified. Roy phone mid-run is the gate. Soft-juice invent still banned.
+
+
 - **When:** 2026-10-27（Asia/Hong_Kong）— reply on phone to this checklist on live v0.9.50  
 - **Reply:** 「Ok」（pt212u）  
 - **Interpretation:** phone pass **OK** for checklist **A／B／C／D**（docs allow shortest OK／NG；no extra detail required）  

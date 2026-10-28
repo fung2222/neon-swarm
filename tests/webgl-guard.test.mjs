@@ -1,5 +1,5 @@
 /**
- * PHONE-STABLE-CONTEXT-001 (v0.9.51) — mid-run WebGL guard predicates + snapshot.
+ * PHONE-STABLE-CONTEXT-001 (v0.9.51) + PHONE-GPU-DEEPEN-001 (v0.9.126) — shed 0–3 + snapshot.
  * Run: node tests/webgl-guard.test.mjs
  */
 import assert from 'assert';
@@ -8,6 +8,7 @@ import {
   shouldSkipParticleTick, shouldCoolPause,
   buildInterruptSnapshot, writeInterruptSnapshot, readInterruptSnapshot,
   clearInterruptSnapshot, formatInterruptNote, SHED, WEBGL_INTERRUPT_KEY,
+  shouldSkipPostFx, shouldSkipFeelRing,
 } from '../js/webgl-guard.js';
 
 {
@@ -24,18 +25,23 @@ import {
   assert.equal(computeShedLevel({ mobile: true, runT: 10, avgFrameMs: SHED.frameMs1 }), 1);
   assert.equal(computeShedLevel({ mobile: true, runT: SHED.t2, avgFrameMs: 16 }), 2);
   assert.equal(computeShedLevel({ mobile: true, runT: 10, avgFrameMs: SHED.frameMs2 }), 2);
+  assert.equal(computeShedLevel({ mobile: true, runT: SHED.t3, avgFrameMs: 16 }), 3);
+  assert.equal(computeShedLevel({ mobile: true, runT: 10, avgFrameMs: SHED.frameMs3 }), 3);
   // Monotonic — never drop during run
   assert.equal(computeShedLevel({ mobile: true, runT: 0, avgFrameMs: 16, prevLevel: 2 }), 2);
+  assert.equal(computeShedLevel({ mobile: true, runT: 0, avgFrameMs: 16, prevLevel: 3 }), 3);
 }
 
 {
   assert.equal(pixelRatioForShed(0, 1), 1);
-  assert.equal(pixelRatioForShed(1, 1), 0.92);
+  assert.equal(pixelRatioForShed(1, 1), 0.90);
   assert.equal(pixelRatioForShed(2, 1), 0.80);
+  assert.equal(pixelRatioForShed(3, 1), 0.72);
   assert.equal(pixelRatioForShed(2, 0.9), 0.80);
   assert.equal(bloomStrengthForShed(0, 0.15), 0.15);
-  assert.equal(bloomStrengthForShed(1, 0.15), 0.09);
+  assert.equal(bloomStrengthForShed(1, 0.15), 0.08);
   assert.equal(bloomStrengthForShed(2, 0.15), 0.04);
+  assert.equal(bloomStrengthForShed(3, 0.15), 0.02);
 }
 
 {
@@ -44,11 +50,18 @@ import {
   assert.equal(shouldSkipParticleTick(2, 0), false);
   assert.equal(shouldSkipParticleTick(2, 1), true);
   assert.equal(shouldSkipParticleTick(2, 3), true);
+  assert.equal(shouldSkipParticleTick(3, 0), false);
+  assert.equal(shouldSkipParticleTick(3, 1), true);
+  assert.equal(shouldSkipParticleTick(3, 2), true);
+  assert.equal(shouldSkipPostFx(2, 1), true);
+  assert.equal(shouldSkipFeelRing(2), true);
+  assert.equal(shouldSkipFeelRing(1), false);
 }
 
 {
   assert.equal(shouldCoolPause({ shedLevel: 2, hotStreak: SHED.hotSamples, state: 'play' }), true);
   assert.equal(shouldCoolPause({ shedLevel: 2, hotStreak: SHED.hotSamples - 1, state: 'play' }), false);
+  assert.equal(shouldCoolPause({ shedLevel: 3, hotStreak: SHED.hotSamples - 1, state: 'play' }), true);
   assert.equal(shouldCoolPause({ shedLevel: 1, hotStreak: 99, state: 'play' }), false);
   assert.equal(shouldCoolPause({ shedLevel: 2, hotStreak: 99, state: 'pause' }), false);
   assert.equal(shouldCoolPause({ shedLevel: 2, hotStreak: 99, state: 'menu' }), false);

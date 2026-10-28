@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.69 WEAPONS-BRANCH-CARD-PATH-001; tap-target v0.9.68; fill-edge v0.9.67; clamp v0.9.66
+// RAMPAGE MECH 暴走機甲 — tip v0.9.126 PHONE-GPU-DEEPEN-001; prior weapons/UI ships preserved
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -13,7 +13,7 @@ import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
 import {
   computeShedLevel, pixelRatioForShed, bloomStrengthForShed,
-  shouldSkipParticleTick, shouldCoolPause,
+  shouldSkipParticleTick, shouldSkipPostFx, shouldSkipFeelRing, shouldCoolPause,
   buildInterruptSnapshot, writeInterruptSnapshot, readInterruptSnapshot,
   clearInterruptSnapshot, formatInterruptNote, SHED,
 } from './webgl-guard.js';
@@ -223,9 +223,17 @@ function spawnCombatFloat(opts) {
 function kickFx(o) {
   if (!MOBILE_GFX) { fx.kick(o); return; }
   const m = { ...o };
-  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, 0.22); // v0.9.54 less crushed
-  if (m.trauma != null) m.trauma *= 0.5;
-  if (m.slowmo != null) m.slowmo *= 0.5;
+  const shed = S._shedLevel | 0;
+  // v0.9.126 PHONE-GPU-DEEPEN-001 — further clamp under mid-run shed (no soft-juice invent)
+  let bloomCap = 0.22;
+  let traumaMul = 0.5;
+  let slowMul = 0.5;
+  if (shed >= 3) { bloomCap = 0.10; traumaMul = 0.28; slowMul = 0.28; }
+  else if (shed >= 2) { bloomCap = 0.14; traumaMul = 0.36; slowMul = 0.36; }
+  else if (shed >= 1) { bloomCap = 0.18; traumaMul = 0.42; slowMul = 0.42; }
+  if (m.bloomDamp != null) m.bloomDamp = Math.min(m.bloomDamp, bloomCap);
+  if (m.trauma != null) m.trauma *= traumaMul;
+  if (m.slowmo != null) m.slowmo *= slowMul;
   fx.kick(m);
 }
 const audio = new SwarmAudio(store);
@@ -2194,16 +2202,20 @@ else if (ev.type === 'xp') {
     if (S.state === 'play') {
       dampView(pViewC, pView, dt);
       view.setZoom(pViewC.zoom);
-      // v0.9.51: shed≥2 halves particle GPU work on MOBILE_GFX
-      if (!shouldSkipParticleTick(S._shedLevel | 0, S._shedFrame | 0)) {
+      // v0.9.51/v0.9.126: shed≥2 halves (shed≥3 1/3) particle + post GPU work on MOBILE_GFX
+      const _shed = S._shedLevel | 0;
+      const _sframe = S._shedFrame | 0;
+      if (!shouldSkipParticleTick(_shed, _sframe)) {
         particles.update(dt);
       }
       waves.update(dt);
       fx.update(dt);
       view.sync(S.game, dt);
       view.frameCamera(stage.camera, S.game, dt);
-      fx.shake(stage.camera, performance.now() * 0.001, 0.45);
-      fx.applyPost(stage, performance.now() * 0.001);
+      if (!shouldSkipPostFx(_shed, _sframe)) {
+        fx.shake(stage.camera, performance.now() * 0.001, _shed >= 3 ? 0.22 : (_shed >= 2 ? 0.32 : 0.45));
+        fx.applyPost(stage, performance.now() * 0.001);
+      }
       checkTrialEnd();
       _hudAcc += dt;
       if (_hudAcc >= 0.1) { _hudAcc = 0; updateHUD(); updateBossHp(); }
@@ -2276,8 +2288,12 @@ async function boot() {
         else S._shedHot = 0;
         if (shouldCoolPause({ shedLevel: S._shedLevel | 0, hotStreak: S._shedHot | 0, state: S.state })) {
           S._shedHot = 0;
+          try {
+            const snap = buildInterruptSnapshot(S.game, Date.now(), 'cool-pause');
+            writeInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null, snap);
+          } catch (_) {}
           pauseRun();
-          console.warn('[neon-swarm] cool-pause after sustained hot frames (GPU pressure)');
+          console.warn('[neon-swarm] cool-pause after sustained hot frames (GPU pressure) shed', S._shedLevel);
         }
       }
     }
