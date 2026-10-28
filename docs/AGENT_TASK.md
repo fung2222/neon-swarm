@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.186 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.187 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****Active** — tip `v0.9.186` `MECH-HORN-ROY-PNG`. Art track open (Roy「機體／角／Roy PNG」).**
+## 狀態：****Active** — tip `v0.9.187` `HORN-MECHA-DEEPEN`. Horn deepen+rebake live; continue align/heavy/proto/PNG.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.186
+https://fung2222.github.io/neon-swarm/?v=0.9.187
 
 ### Roy decision (2026-10-28 ~17:41 HKT)
 Widget「v0.9.185 之後下一條？」→ **機體／角／Roy PNG**
@@ -36,6 +36,7 @@ Continue art track until coherent phone beat (horn deepen+rebake live) then HOLD
 | Ver | ID | What |
 |---|---|---|
 | v0.9.186 | `MECH-HORN-ROY-PNG` | Open Active art track; lift horn/heavy/proto/Roy-PNG bans for this Active; keep Phase4/soft-juice/ult/BALANCE bans |
+| v0.9.187 | `HORN-MECHA-DEEPEN` | Deepen buildPlayerMech horn (plates/asym/horn sweep/mil-tech); rebake 8-dir sheets; muzzle/atlas sync; interim for Roy try — not §9 lock |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above
