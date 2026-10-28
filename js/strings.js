@@ -68,9 +68,10 @@ i18n.add({
   'mech.desc.proto': ['製作中 · 可變結構原型（數值暫定）', 'Coming soon · morph prototype (stub stats)'],
   'mech.coming': ['製作中', 'Coming soon'],
   'mech.locked': ['呢部機體仲製作中，請揀覺醒突擊型開始。', 'This frame is still in production — start with Awaken Assault.'],
+  // v0.9.83 HOWTO-RULES-SYNC-001 — sync rules to 2+2+2 loadout / catalog / magnet / stick hide (no soft-juice invent)
   'help.rules': [
-    '你係實驗室造出嚟嘅機甲，啟動之後失控暴走。玩家控制佢，科學家同軍隊會一波一波嚟捉你：研究員同保安最弱，之後有士兵同偵察機甲，再嚟係隊長、重裝機甲，最後首席科學家會帶護衛機甲壓場。殺敵會跌 X（經驗方塊）、H（修復）、S（護盾）同 W（武器圖示）；升級時揀大型徽記卡。三款機體唔同節奏：角盔均衡、重裝耐打但慢、原創機動但脆。',
-    'You are the mech the lab built — and it is not going back in the cage. Scientists and soldiers are sent wave by wave: staff and security first, then soldiers with scouts, then officers and heavy walkers, then the chief scientist escorted by a mech. Kills drop X (XP), H (repair), S (shield) and W (weapon icon) cubes; level up to pick big-emblem cards. Three frames play differently: balanced horn, tough-but-slow heavy, fast-but-fragile proto.'
+    '你係實驗室造出嚟嘅機甲，啟動之後失控暴走。科學家同軍隊會一波一波嚟捉你。殺敵跌 X（經驗）、H（修復）、S（護盾）、W（武器圖示）同磁鐵（吸附近掉落）。武器欄 2 主＋2 副＋2 投；升級揀大型徽記卡／分支／大招加成。搖桿淨喺手指按下先顯示。三款機體：角盔均衡、重裝耐打但慢、原創機動但脆。',
+    'You are the lab mech gone rogue. Waves of scientists and soldiers hunt you. Kills drop X (XP), H (repair), S (shield), W (weapon icon) and magnet (pull nearby drops). Loadout is 2 primary + 2 secondary + 2 throw; level-ups pick emblem cards / branch / light ult amps. Stick shows only while pressed. Three frames: balanced horn, tough-but-slow heavy, fast-but-fragile proto.'
   ],
   // v0.9.74 HOWTO-CONTROLS-SYNC-001 — sync howto to shipped stick hide + dbl/tpl + rail (no new toast invent)
   'help.controls': [
