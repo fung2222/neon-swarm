@@ -322,24 +322,28 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .trial-note { margin-top: 8px; font-size: 12px; color: #ff7ae6; }
 .record { color: #ffe600; text-shadow: 0 0 10px #ffe60088; margin: 8px 0; letter-spacing: 2px; }
 
-/* Drag-anywhere stick: idle is a faint corner hint; on press it relocates under the finger.
-   No opaque finger-press disc that blocks the playfield. */
+/* STICK-TOUCH-SHOW-001 v0.9.65 — idle fully invisible; show only under finger while pressed.
+   Drag-anywhere relocates the stick; no corner hint / ready pulse ghost. */
 .stick {
   position: fixed; left: calc(16px + var(--sa-left)); bottom: var(--hud-stick-clear);
   width: 120px; height: 120px; z-index: 8; touch-action: none;
-  opacity: 0.28; pointer-events: none; transition: opacity .12s ease;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .12s ease, visibility 0s linear .12s;
 }
-.stick.ready { opacity: 0.28; }
+/* ready / hint-pulse kept as no-ops so old callers cannot resurrect a corner ghost */
+.stick.ready { opacity: 0; visibility: hidden; }
 .stick.ready.hint-pulse {
-  opacity: 0.55;
-  animation: stick-hint-pulse 0.9s ease-in-out 2;
+  opacity: 0; visibility: hidden;
+  animation: none;
 }
 @keyframes stick-hint-pulse {
-  0%, 100% { opacity: 0.35; transform: scale(1); }
-  50% { opacity: 0.72; transform: scale(1.04); }
+  0%, 100% { opacity: 0; transform: scale(1); }
+  50% { opacity: 0; transform: scale(1); }
 }
 .stick.following, .stick.active {
-  opacity: 1; pointer-events: none; /* input is on scene; stick is visual only */
+  opacity: 1; visibility: visible;
+  transition: opacity .12s ease, visibility 0s linear 0s;
+  pointer-events: none; /* input is on scene; stick is visual only */
 }
 .stick-base {
   width: 100%; height: 100%; border-radius: 50%;
@@ -1709,3 +1713,6 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 .weapon-status .wstat-ico .wico-svg { width: 22px; height: 22px; }
 .wslot .wslot-ico .wico-svg { width: 22px; height: 22px; }
+
+
+/* ===== STICK-TOUCH-SHOW-001 v0.9.65 — idle stick invisible; show at finger while pressed ===== */

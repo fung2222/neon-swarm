@@ -9,7 +9,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.64'), 'cache-bust 0.9.64');
+assert.ok(/\?v=0\.9\.(6[4-9]|[7-9]\d)/.test(html), 'cache-bust ≥0.9.64');
 assert.ok(css.includes('WEAPONS-BRANCH-CARD-LAYOUT-001'), 'ship id');
 assert.ok(css.includes('.level-cards.branch-offer'), 'branch-offer layout');
 assert.match(css, /\.level-cards\.branch-offer\s*\{[^}]*max-height:/s);

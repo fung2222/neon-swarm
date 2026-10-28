@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.64 branch-card layout · color-tokens v0.9.63 `909c7a6` · rail-clear v0.9.62 `25e674c` · HUD-merge v0.9.61 `53f9d8b`  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.65 stick touch-show · branch-card v0.9.64 · color-tokens v0.9.63 `909c7a6` · rail-clear v0.9.62 `25e674c` · HUD-merge v0.9.61 `53f9d8b`  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)

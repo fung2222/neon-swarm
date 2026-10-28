@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.64 WEAPONS-BRANCH-CARD-LAYOUT-001; color-tokens v0.9.63; rail-clear v0.9.62; floor v0.9.59; icons v0.9.57; feel FX v0.9.56
+// RAMPAGE MECH 暴走機甲 — v0.9.65 STICK-TOUCH-SHOW-001; branch-card v0.9.64; color-tokens v0.9.63; rail-clear v0.9.62; floor v0.9.59
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -961,10 +961,9 @@ function resumeAfterCardPick() {
   }
   ui.show(null);
   S.state = 'play';
-  // Stick stays hidden until press — drag-anywhere reveals it under the finger.
-  const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
-  $('stick').classList.toggle('hidden', !touch);
-  $('stick').classList.remove('active', 'following');
+  // STICK-TOUCH-SHOW-001: stay fully hidden until next finger press (no idle corner hint).
+  $('stick').classList.add('hidden');
+  $('stick').classList.remove('ready', 'active', 'following', 'hint-pulse');
 }
 
 function clearSwapSlotHighlights() {
@@ -1323,9 +1322,9 @@ function startRun() {
   $('hud').classList.remove('hidden');
   $('demo-tag').classList.toggle('hidden', !S.demo);
   const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || flags.get('stick') === '1' || S.demo;
-  $('stick').classList.toggle('hidden', !touch);
-  $('stick').classList.add('ready');
-  $('stick').classList.remove('active', 'following', 'hint-pulse');
+  // STICK-TOUCH-SHOW-001: keep stick hidden until finger press — no ready corner ghost / hint-pulse.
+  $('stick').classList.add('hidden');
+  $('stick').classList.remove('ready', 'active', 'following', 'hint-pulse');
   updateHUD();
   audio.click();
   // v0.9.37: once-per-run early feedback flags
@@ -1333,12 +1332,9 @@ function startRun() {
   // v0.9.38: kill-streak soft feedback (no economy)
   S._streak = resetStreak(S._streak || createStreakState());
   hideEarlyToast();
-  // First-run coach OR light stick pulse (not both noisy)
+  // First-run coach tip text OK (pointer-events none); do NOT pulse a visible idle stick.
   const showedCoach = maybeShowRunCoach(touch);
-  if (!showedCoach) {
-    hideRunCoach();
-    if (touch) pulseStickHint();
-  }
+  if (!showedCoach) hideRunCoach();
 }
 
 function endRun(trial = false) {
@@ -1422,7 +1418,7 @@ function applyMoveFromInput() {
   else g.stopMove();
 }
 
-// ---- virtual stick: drag-anywhere; widget/glow follows press (no blocking finger overlay)
+// ---- virtual stick: STICK-TOUCH-SHOW-001 — hidden until press; relocates under finger; hide on release
 (function bindStick() {
   const root = $('stick');
   const knob = $('stick-knob');
@@ -1439,12 +1435,13 @@ function applyMoveFromInput() {
     root.style.bottom = 'auto';
   };
   const resetHome = () => {
-    // Park off-corner when idle — never leave a big opaque pad under the playfield.
+    // STICK-TOUCH-SHOW-001: hide immediately on release (CSS opacity fade ≤120ms if not .hidden yet).
     root.style.left = '';
     root.style.top = '';
     root.style.right = '';
     root.style.bottom = '';
-    root.classList.remove('active', 'following');
+    root.classList.remove('active', 'following', 'ready', 'hint-pulse');
+    root.classList.add('hidden');
   };
   // v0.9.59 multi-tap: double→secondary burst, triple→throw (debounce ~350ms; ignore stick drags / rail)
   const TAP_WINDOW_MS = 360;

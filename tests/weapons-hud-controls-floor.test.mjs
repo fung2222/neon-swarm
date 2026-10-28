@@ -15,7 +15,7 @@ const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const weaponsMd = readFileSync(new URL('../docs/WEAPONS.md', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.60'), 'cache-bust current');
+assert.ok(/\?v=0\.9\.(6[0-9]|[7-9]\d)/.test(html), 'cache-bust ≥0.9.60');
 assert.ok(css.includes('--hud-chip-radius'), 'unified chip tokens');
 assert.ok(css.includes('--hud-stick-clear') || css.includes('padding-left: 108px'), 'rail/stick clear');
 assert.match(css, /\.weapon-rail\s*\{[^}]*bottom:/s);
