@@ -1,0 +1,12 @@
+{
+  "ver": "0.9.130",
+  "probe": {
+    "border": "rgba(0, 229, 255, 0.38)",
+    "bg": "rgba(6, 2, 18, 0.72)",
+    "labelColor": "rgb(158, 207, 255)",
+    "valueColor": "rgb(240, 236, 255)",
+    "wrap": "anywhere",
+    "loadout": "主:機關雷射炮 Lv1、追蹤爆彈 Lv1 · 副:緩速槍 Lv1 · 投:重力彈 Lv1、冷卻彈 Lv1"
+  },
+  "fail": []
+}
