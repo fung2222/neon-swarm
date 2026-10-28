@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.149 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.150 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.149` `GEAR-PAUSE-TAP-NOTE-001`. HUD/settings beat in progress.
+## 狀態：**Active** — tip `v0.9.150` `SETTINGS-FOCUS-TRAP-NOTE-001`. HUD/settings beat in progress.
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.149
+https://fung2222.github.io/neon-swarm/?v=0.9.150
 
 ### Shipped this beat (slice table)
 
@@ -20,6 +20,7 @@ https://fung2222.github.io/neon-swarm/?v=0.9.149
 | v0.9.147 | `SETTINGS-QUALITY-SHARE-HOWTO-001` | quality=glow remap; share+howto actions; pause-on-open in-run |
 | v0.9.148 | `SETTINGS-SHEET-PHONE-READ-001` | settings sheet phone contrast / action chrome |
 | v0.9.149 | `GEAR-PAUSE-TAP-NOTE-001` | gear+pause tap≥44 docs/CSS affirm under hub |
+| v0.9.150 | `SETTINGS-FOCUS-TRAP-NOTE-001` | docs: settings/pause focus — kit modal focuses OK; pause-on-open |
 
 ### Preserve / HARD BANS
 stick hide · hub content · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · balance/UI/GPU · over title oneline+size.

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.149
+// RAMPAGE MECH 暴走機甲 — tip v0.9.150
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1836,7 +1836,8 @@ function openHowtoFromSettings() {
   ui.howto(content);
 }
 
-/** In-run gear: pause if playing, then same settings sheet as home. */
+/** In-run gear: pause if playing, then same settings sheet as home.
+ * SETTINGS-FOCUS-TRAP-NOTE-001: kit settings focuses Close; pause screen stays under modal so play cannot continue. */
 function openInRunSettings() {
   if (S.state === 'play') pauseRun();
   try { audio.click(); } catch (_) {}
