@@ -121,6 +121,8 @@ Weapon
 **v0.9.79:** gfx reload CTA tap ≥44 (UI only; weapons unchanged).
 **v0.9.80:** branch EN labels live (`branchNamesEn`); sec/throw naming table below; full unique ult kits still stub.
 
+**v0.9.82 WEAPONS-ULT-EN-LABELS-001:** U1/U2 cards use POWER AMP / CADENCE AMP (light amp); FORM I/II stub retired; full kits still stub.
+
 **v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
 
 **v0.9.55 ship (`WEAPONS-BRANCH-KITS-001`):** deep A/B/C branch kits — distinct fire/behavior (not only % bumps). Ult U1/U2 still **light amplifiers** only (no full unique ult fire paths).
@@ -367,6 +369,7 @@ Do **not** re-add player cards under legacy ids.
 | Rail phone tap target ≥44px | **live** (v0.9.68) |
 | Branch/ult path chip (A/B/C·U) | **live** (v0.9.69) |
 | Branch EN path titles (`branchNamesEn`) | **live** (v0.9.80) |
+| Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** (v0.9.82 WEAPONS-ULT-EN-LABELS-001); full unique ult kits still **stub** |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |
 | In-run mute/pause ≥44px | **live** (v0.9.71) |

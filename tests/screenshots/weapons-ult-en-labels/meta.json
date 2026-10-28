@@ -1,0 +1,11 @@
+{
+  "ver": "0.9.82",
+  "probe": {
+    "u1zh": "過熱連射 · 傷害強化",
+    "u1en": "OVERHEAT BURST · POWER AMP",
+    "u2zh": "過熱連射 · 射速強化",
+    "u2en": "OVERHEAT BURST · CADENCE AMP",
+    "hasForm": false
+  },
+  "fail": []
+}

@@ -480,9 +480,10 @@ export function branchOptions(weaponId) {
 }
 
 /** Ult options for a primary after branch is chosen. */
+/** Light-amp labels (v0.9.82 WEAPONS-ULT-EN-LABELS-001). U1=+20% dmg · U2=−15% cd. Full kits still stub. */
 export const ULT_STUB_LABELS = Object.freeze({
-  U1: { zh: '形態一', en: 'FORM I' },
-  U2: { zh: '形態二', en: 'FORM II' },
+  U1: { zh: '傷害強化', en: 'POWER AMP' },
+  U2: { zh: '射速強化', en: 'CADENCE AMP' },
 });
 
 export function ultOptions(weaponId, branch) {
@@ -503,8 +504,8 @@ export function ultOptions(weaponId, branch) {
       letter,
       zh: `${bName} · ${stub.zh}`,
       en: `${bNameEn} · ${stub.en}`,
-      descZh: `大招 ${key}（數值加成；完整招式後續）`,
-      descEn: `Ultimate ${key} (stat bonus; full kit later)`,
+      descZh: key === 'U1' ? `${stub.zh}（傷害 ×1.2；完整招式後續）` : `${stub.zh}（冷卻 ×0.85；完整招式後續）`,
+      descEn: key === 'U1' ? `${stub.en} (dmg ×1.2; full kit later)` : `${stub.en} (CD ×0.85; full kit later)`,
     });
   }
   return out;

@@ -4,7 +4,7 @@
 >
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
-> **文件日期：** 2026-10-28（Asia/Hong_Kong；**HOLD** safe pipeline done v0.9.80 branch-en-labels；prior gfx-reload v0.9.79 · coach v0.9.78 · home-cta v0.9.77 · over-cta v0.9.76）  
+> **文件日期：** 2026-10-28（Asia/Hong_Kong；**Active** safe pipeline shipping v0.9.81–0.9.90（tip ult-en-labels）；prior gfx-reload v0.9.79 · coach v0.9.78 · home-cta v0.9.77 · over-cta v0.9.76）  
 > **建議承接基準：** v0.9.61 HUD merge (hub+water rail) + v0.9.60 overlap + v0.9.59 HUD/controls/floor + v0.9.58 legacy purge + v0.9.57 neon icon placeholders + v0.9.56 feel FX（prior: v0.9.55 deep branch kits；branch/ult UI = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；elite lane = v0.9.50；slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
@@ -32,8 +32,10 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.80`**（branch-en-labels；gfx-reload-tap `99cefd1`；coach-controls-sync `498b36a`；home-cta-tap `0a7b8dc`；over-cta-tap `ac6a921`）（HUD overlap fix = v0.9.60；HUD/controls/floor = v0.9.59；legacy purge = v0.9.58；icon placeholders = v0.9.57；feel FX = v0.9.56；deep branch kits = v0.9.55；branch/ult pick = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；suicide bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.82`**（ult-en-labels；pause-cta-tap；branch-en-labels；gfx-reload-tap `99cefd1`；coach-controls-sync `498b36a`；home-cta-tap `0a7b8dc`；over-cta-tap `ac6a921`）（HUD overlap fix = v0.9.60；HUD/controls/floor = v0.9.59；legacy purge = v0.9.58；icon placeholders = v0.9.57；feel FX = v0.9.56；deep branch kits = v0.9.55；branch/ult pick = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；suicide bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
+  - v0.9.82 — WEAPONS-ULT-EN-LABELS-001：U1/U2 改用傷害強化／射速強化 · POWER AMP／CADENCE AMP（對齊 light amp ×1.2／×0.85）；FORM I/II stub 退役；**無** full ult invent。截圖 `tests/screenshots/weapons-ult-en-labels/`；測試 `tests/weapons-ult-en-labels.test.mjs`。
+  - v0.9.81 — PAUSE-CTA-TAP-001：`#screen-pause .neon-btn` ≥44 phone／48 desktop。截圖 `tests/screenshots/pause-cta-tap/`；測試 `tests/pause-cta-tap.test.mjs`。
   - v0.9.80 — WEAPONS-BRANCH-EN-LABELS-001：全部武器 `branchNamesEn`；branch／ult 卡 EN 用真名（唔再淨 `PATH A`）；WEAPONS sec／throw 命名表補齊；**無** full ult invent。截圖 `tests/screenshots/weapons-branch-en-labels/`；測試 `tests/weapons-branch-en-labels.test.mjs`。**HOLD for Roy try**。
   - v0.9.79 — GFX-RELOAD-TAP-001：`#btn-gfx-reload` min-height ≥44 phone／48 desktop；截圖 `tests/screenshots/gfx-reload-tap/`；測試 `tests/gfx-reload-tap.test.mjs`。
   - v0.9.78 — COACH-CONTROLS-SYNC-001：`coach.move`／`coach.wasd` 同步雙擊副／三擊投／底欄（鏡像 howto；**唔** invent soft-juice toast）。截圖 `tests/screenshots/coach-controls-sync/`；測試 `tests/coach-controls-sync.test.mjs`。
@@ -503,47 +505,12 @@ Rollback baseline:
 
 ## 11. 下一位 agent 的第一個建議動作
 
-**目前基準 v0.9.80（WEAPONS-BRANCH-EN-LABELS-001；prior gfx-reload = v0.9.79 · coach = v0.9.78 · home-cta = v0.9.77 · over-cta = v0.9.76 · catalog-fire = v0.9.75；HEAD 以 `main`／live `?v=0.9.80` 為準）。** Soft-juice usability queue **DONE**。Clarity beat **complete**。**HIT-FEEL-DEVICE Complete**／`device verified`（Roy「Ok」2026-10-27）。Catalog fire **live**（v0.9.75）。Phone GPU mid-run guard = v0.9.51（still open for Roy device verify）。Attack balance = **first-pass only** — optional next named `BALANCE-PASS` after Roy try（do not invent huge retune）。
+Queue v0.9.83–0.9.90 still Active（見 `docs/AGENT_TASK.md`）。After 0.9.90 → HOLD。
 
-**Active = HOLD**（none）— **HOLD for Roy try** on live `?v=0.9.80`（CTA tap targets + coach sync + EN branch labels + prior rail／howto／catalog）。Do **not** invent soft-juice／full ult kits／4th enemy／more beauty slices／BALANCE-PASS without ask；**do not** auto-start Phase 4／Morph／horn art lock／further phone GPU deep without Roy。
+HARD BANS: Phase 4 · horn art lock · soft-juice invent · full ult invent · BALANCE-PASS · deep phone GPU。
 
-**Options for Roy after try：** (1) branch kit / feel balance tweak (2) drop real `assets/weapons/{id}.png` when art ready (3) beauty polish **when Roy asks** (4) full ult kits **only if Roy names** (5) phone GPU verify on v0.9.51＋ (6) Phase 4／horn only if Roy clears／names (7) stay HOLD。
+Preserve: hide stick · hub · water rail · tap≥44 · catalog fire live · dbl/tpl · burst≤3 · black floor · 2+2+2 · howto/coach sync。
 
-- `PHASE3-ENEMY-JAMMER-001` **已完成**（v0.9.47）：干擾單位 violet jam telegraph≥0.85s＋fireCd mul debuff；截圖 `tests/screenshots/phase3-jammer/`；測試 `tests/jammer.test.mjs`。
-- `PHASE3-ENEMY-MEDIC-001` **已完成**（v0.9.46）：醫療支援 lime heal telegraph≥0.7s＋ordinary ally heal pulse；截圖 `tests/screenshots/phase3-medic/`；測試 `tests/medic.test.mjs`。
-- `PHASE3-ENEMY-FLANKER-001` **已完成**（v0.9.45）：側襲單位 cyan dash telegraph≥0.85s＋contact dash；截圖 `tests/screenshots/phase3-flanker/`；測試 `tests/flanker.test.mjs`。
-- `PHASE6-SCORE-POSITION-001` **已完成**（v0.9.44 / `f52e205`）：SCORE_POS move／safe／pace kill bonuses；over「走位／安全區／清場 +N」；測試 `tests/score-position.test.mjs`。
-- `PHASE6-TRADEOFF-CARDS-001` **已完成**（v0.9.43 / `d44af7a`）：3 trade-off cards overclock／glass／heavy_frame；截圖 `tests/screenshots/phase6-tradeoff-cards/`。
-- `PHASE6-ZONE-PRESSURE-001` **已完成**（v0.9.42 / `ddf39c4`）：shrinking／pollution safe zone；cyan／acid edge；截圖 `tests/screenshots/phase6-zone-pressure/`。
-- `PHASE6-PERIODIC-DANGER-001` **已完成**（v0.9.41 / `3040b5e`）：periodic arena red danger circles telegraph≥0.9s＋AoE；截圖 `tests/screenshots/phase6-danger-pulse/`。
-- `PHASE3-ENEMY-BOMBER-001` **已完成**（v0.9.40 / `2ab9dbb`）：suicide bomber red self-circle telegraph≥0.9s＋AoE detonate；截圖 `tests/screenshots/phase3-bomber/`。
-- `PHASE6-RESULT-SHARE-001` **已完成**（v0.9.39 / `87eb03a`）：over-screen copy／share run；soft-juice queue **done**。
-- `PHASE6-SAFE-AREA-001` **已完成**（v0.9.36 / `eee063e`）：safe-area tokens＋HUD／stick／slots／panels／xp L/R；截圖 `tests/screenshots/phase6-safe-area/`。
-- `PHASE6-MUTE-PERSIST-001` **已完成**（v0.9.35 / `a026e1e`）：mute persist harden＋menu chrome＋cold-load；截圖 `tests/screenshots/phase6-mute-persist/`。
-- `PHASE6-DAMAGE-NUMBERS-LITE-001` **已完成**（v0.9.34 / `3da3007`）：hit／heal／hurt floats；截圖 `tests/screenshots/phase6-damage-numbers/`。
-- `PHASE6-RUN-LOOP-UX-001` **已完成**（v0.9.33 / `7db11c0`）：coach／hurt／XP／over zone+loadout；截圖 `tests/screenshots/phase6-run-loop-ux/`。
-- `PHASE6-BANNER-TIMING-001` **已完成**（v0.9.32 / `e578bae`）：banner queue／timing＋pause clarity；截圖 `tests/screenshots/phase6-banner-timing/`。
-- `PHASE6-LEVELUP-CARD-UX-001` **已完成**（v0.9.31）：升級卡 UX／tap／stack／slot hint；截圖 `tests/screenshots/phase6-levelup-ux/`。
-- `PHASE6-DROP-READABILITY-001` **已完成**（v0.9.30）：XP shards／heal pack／magnet disc／weapon board；截圖 `tests/screenshots/phase6-drop-readability/`。
-- `PHASE6-PICKUP-POLISH-001` **已完成**（v0.9.29）：slot-fire sync＋pickup UX polish；截圖 `tests/screenshots/phase6-pickup-polish/`。
-- `PHASE6-MULTI-SLOT-INVENTORY-001` **已完成**（v0.9.28）：4-slot weapon bar＋swap-when-full；截圖 `tests/screenshots/phase6-inventory/`。
-
-- `GUN-8DIR-001` **已完成**（v0.9.27）：horn 8-dir gun bake＋runtime sector snap；muzzle／atlas／anchors 同步；legs≠aim；截圖 `tests/screenshots/gun-8dir/`；honest 非 continuous 360°。
-
-- `PHASE3-ELITE-COMMANDER-001` **已完成**（v0.9.26）：army commander tall officer-mech＋summon／attack mode telegraphs≥0.8–1.2s；beat@300＋endless rotate；截圖 `tests/screenshots/phase3-commander/`。
-- `PHASE3-ENEMY-ARTILLERY-001` **已完成**（v0.9.25）：heavy artillery big-barrel silhouette＋orange blast telegraph≥1.0s＋AoE impact；截圖 `tests/screenshots/phase3-artillery/`。
-- `PHASE3-ENEMY-SHIELD-001` **已完成**（v0.9.24）：shield front-plate silhouette＋frontal mitigation＋red bash telegraph；截圖 `tests/screenshots/phase3-shield/`。
-- `PHASE3-ENEMY-SNIPER-001` **已完成**（v0.9.23）：sniper long-rifle silhouette＋red aim telegraph≥1.0s＋hitscan；截圖 `tests/screenshots/phase3-sniper/`。
-- `PHASE2-COMBAT-READABILITY-002` **已完成**（v0.9.22）：ordinary rings off；floor／FX／telegraph／pickup readability；截圖 `tests/screenshots/phase2-readability/`。
-- `HORN-SILHOUETTE-DIRECTION` **interim OK-to-continue**（v0.9.21；Roy 2026-10-26 continue pipeline）：**not** final art lock／**not** §9 locked；**唔**再自動 polish horn。
-- `PHONE-STABLE-FOLLOWUP` **已完成**（v0.9.20）：bg auto-pause＋更強 `MOBILE_GFX` GPU cut；desktop 不變。
-- `UI-LAYOUT-HOME-HUD-001` **已完成**（v0.9.52）：home gear settings only；mech cards／bottom CTA；top XP＋slots；截圖 `tests/screenshots/ui-layout-home-hud/`；**HOLD for Roy try**。
-- `PHONE-STABLE-CONTEXT-001` **已完成**（v0.9.51）：mid-run shed＋interrupt snapshot／overlay note；仍待 Roy phone verify。**不要**重做 AIM-HIT-FAST-002 或已完成 v0.9.4–v0.9.52；**唔**自動再開更深 GPU／Phase 4／weapon invent。
-- `PERF-REBASELINE` **已完成**（桌面 GTX 1070 Ti／live v0.9.20 ≈58–60 FPS；見 `docs/PERF-BASELINE.md`）。**唔**當玩法完成；**仍未** phone-verified。
-- Roy named UI layout（phone 2026-10-27）→ **UI-LAYOUT-HOME-HUD-001** shipped v0.9.52；prior phone GPU = v0.9.51；**soft-juice DONE**；**HIT-FEEL-DEVICE Complete**。**Active = HOLD for Roy try** v0.9.60 HUD overlap fix；still **ban** auto Phase 4／horn art lock／soft-juice invent／full ult invent／BALANCE-PASS／further GPU deep／more beauty slices without Roy。
-- AIM-HIT-FAST-002：**device verified** via HIT-FEEL；仍可待 Kimi 獨立審（重大）；唔阻擋常規佇列。
-- Queue：命中可靠真機閘 **passed** → 其餘支柱（手機穩定／主角好看）仍要 Roy 點名；**唔**自動開 Phase 4／art lock／§9 落地／phone GPU 深入／further horn polish／Morph。
-- SwiftShader ≠ 真機；v0.9.60 HUD overlap **tested** headless＋shots；**仍未** Roy 真機／桌面試玩驗收（HOLD on `?v=0.9.60`）。v0.9.51 mid-run guard仍待裝置。開始前 `git log -1` 對齊 HEAD 與 live cache-bust。
 
 ## 版本歷史（增量）
 
