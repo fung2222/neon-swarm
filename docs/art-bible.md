@@ -60,11 +60,13 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 ### Protagonist ID (覺醒突擊型)
 | Part | Hex |
 |---|---|
-| Deep-gray plate | `#1a1e28` / `#2a2e38` |
-| Violet accent | `#8b3dff` |
-| Cyan trim / core | `#00e5ff` |
-| Visor | `#7ad7ff` |
+| Charcoal plate | `#1a1e28` / `#2a303a` |
+| Charcoal accent plates | `#1e242e` |
+| Cyan neon edge trim / core | `#00e5ff` |
+| Visor slit | `#00e5ff` |
 | Rampage seam | cyan `#00e5ff` → magenta `#ff2bd6` |
+
+**Target ref (Roy 2026-10-28):** `sword-mech-sideview-approved.jpg` / `roy-approved-ref.jpg` — slender charcoal+cyan swept-crest swordsman. **Do not** use purple/violet as primary horn identity. Violet token `#8b3dff` remains for electric tiers / enemy language only.
 
 ### Scene
 | Token | Hex / note |
@@ -85,7 +87,7 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 
 - **Wanted:** Japanese refined mecha + cyberpunk mil-tech (this bible’s style line) — humanoid-mecha proportions, longer limbs vs torso, sharper angular plates.
 - **Rejected:** blocky／塊狀／cube-stack body as the shared style for later mechs. Do **not** lock the old toy-block read.
-- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Roy 2026-10-26:** interim silhouette accepted for pipeline continue（「繼續出去啦」）；**still not** device-final-art-locked／HANDOFF §9 locked. **Lifted 2026-10-28** for Active `MECH-HORN-ROY-PNG` (Roy widget「機體／角／Roy PNG」): further horn polish + unique heavy/prototype silhouettes + Roy PNG path allowed. Still **not** §9 / device-final without Roy 肉眼 OK.
+- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Roy 2026-10-26:** interim silhouette accepted for pipeline continue（「繼續出去啦」）；**still not** device-final-art-locked／HANDOFF §9 locked. **Lifted 2026-10-28** for Active `MECH-HORN-ROY-PNG`; **Roy 17:57 chose**「跟圖重做 3D 再 bake」→ Active `HORN-MATCH-APPROVED-3D` rebuilds horn mesh to approved PNG then rebakes. Still **not** §9 / device-final without Roy 肉眼 OK.
 
 ## 5. Dim-arena rule
 
@@ -101,7 +103,7 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 | **In-game (horn)** | Baked multi-dir sheets from **same** `buildPlayerMech` under `assets/mechs/horn/sheets/` (via `buildBakedPlayerSprite`) |
 | **In-game fallback** | Legacy `assets/sprites/mech_*.png` only when bake atlas missing for that mech id |
 
-**HORN-BAKE-INGAME-ALIGN (v0.9.188):** horn in-game billboards use rebaked sheets — not a second art pipeline. heavy / prototype still select-3D only until their bake stubs land; do **not** claim all three frames are in-game-aligned. Until Roy 肉眼 lock, sheets are **interim**.
+**HORN-BAKE-INGAME-ALIGN (v0.9.188):** horn in-game billboards use rebaked sheets — not a second art pipeline. **HORN-MESH-MATCH-001 / HORN-REBAKE-MATCH-001 (v0.9.194–195):** horn 3D rebuilt toward approved charcoal+cyan slender swept-crest; sheets rebaked from same `buildPlayerMech`. heavy / prototype still select-3D stubs. Until Roy 肉眼 lock, sheets are **interim**. Target = `sword-mech-sideview-approved` — **not** §9 lock.
 
 ## 7. Out of scope here
 

@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.193 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.194 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****Active** — tip `v0.9.193` `HORN-MATCH-APPROVED-3D`. Roy「跟圖重做 3D 再 bake」.**
+## 狀態：****Active** — tip `v0.9.194` `HORN-MESH-MATCH-001`. Horn mesh rebuilt toward approved.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.193
+https://fung2222.github.io/neon-swarm/?v=0.9.194
 
 ### Roy decision (2026-10-28 ~17:57 HKT)
 Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
@@ -28,7 +28,7 @@ Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
 - Do NOT bring back pause `#btn-glow`
 
 ### Active queue
-Rebuild horn 3D to approved PNG → rebake → wire in-game → screenshots → HOLD for Roy 肉眼.
+Next: rebake 8-dir sheets + muzzle sync, then in-game confirm + HOLD.
 
 
 ### Shipped this beat (slice table)
@@ -43,6 +43,7 @@ Rebuild horn 3D to approved PNG → rebake → wire in-game → screenshots → 
 | v0.9.191 | `WEAPONS-PNG-PATH` | Wire WEAPON_ICON_SRC preferSrc→assets/weapons/{id}.png + SVG fallback; README drop path; no Roy PNGs yet — HOLD note |
 | v0.9.192 | `GAMES-JSON-STAGE-009` | games.json stub stage → tip; art beat HOLD for Roy 肉眼 on horn (+ optional heavy/proto); weapons PNG drop ask |
 | v0.9.193 | `HORN-MATCH-APPROVED-3D` | Active rewrite — Roy chose rebuild-3D-from-approved charcoal+cyan PNG (not T2I menu drop); target sword-mech-sideview-approved |
+| v0.9.194 | `HORN-MESH-MATCH-001` | Rebuild buildHorn mesh/materials — charcoal matte plates, cyan neon edge trim, slender limbs, swept-back crest, cyan visor slit, circular hinges; drop purple block read |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

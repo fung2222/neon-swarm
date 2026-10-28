@@ -34,6 +34,7 @@
 
 - 目前 `main`／live cache-bust：**`?v=0.9.193`**（HORN-MATCH-APPROVED-3D; rebuild horn from approved PNG）
 - **Done since `6ddc483`：**
+  - v0.9.194 — HORN-MESH-MATCH-001：buildPlayerMech horn rebuild — charcoal+cyan slender swept-crest; config/strings palette; no purple primary.
   - v0.9.193 — HORN-MATCH-APPROVED-3D：Active rewrite；Roy「跟圖重做 3D 再 bake」；target sword-mech-sideview-approved；still ban Phase4／soft-juice／more ult／BALANCE／§9 claim without Roy 肉眼。
   - v0.9.192 — GAMES-JSON-STAGE-009：games.json stub stage → tip；art Active close；**HOLD for Roy 肉眼** on horn（+ optional heavy/proto）／weapons PNG drop。**唔** claim §9 lock。
   - v0.9.191 — WEAPONS-PNG-PATH：WEAPON_ICON_SRC → assets/weapons/{id}.png；HUD preferSrc + SVG fallback；`assets/weapons/README.md` drop path；**無** Roy-supplied PNG in repo — path+docs only；**唔** claim final art。
