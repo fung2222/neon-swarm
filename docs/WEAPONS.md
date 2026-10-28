@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.61 `53f9d8b` `WEAPONS-HUD-MERGE-001` (overlap = v0.9.60; floor/controls = v0.9.59)  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.64 branch-card layout · color-tokens v0.9.63 `909c7a6` · rail-clear v0.9.62 `25e674c` · HUD-merge v0.9.61 `53f9d8b`  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -260,6 +260,12 @@ Each weapon needs a **real square icon** (not emoji forever).
 
 ---
 
+## Pipeline after HUD merge (v0.9.62–0.9.64)
+
+- **v0.9.62 rail-clear:** `--hud-stick-clear` +36px; mute/pause stacked; stronger water meniscus + active glow.
+- **v0.9.63 color-tokens:** `--weapon-primary/secondary/throw` shared; cards `cat-*`.
+- **v0.9.64 branch-card layout:** branch/ult pick cards shorter + ellipsis + scroll max-height (UI only; no ult invent).
+
 ## HUD merge (v0.9.61) — supersedes v0.9.60 scattered chips
 
 In-run portrait rhythm (tokens in `css/game.css`):
@@ -325,6 +331,9 @@ Do **not** re-add player cards under legacy ids.
 | Catalog IDs + zh/en strings | **live** (v0.9.58 player cards = catalog only) |
 | Loadout 2+2+2 model | **live** |
 | Merged hub + color water rail | **live** (v0.9.61) |
+| Stick/hub clear + water polish | **live** (v0.9.62) |
+| Shared P/S/T color tokens | **live** (v0.9.63) |
+| Branch card layout polish | **live** (v0.9.64) |
 | HUD no-overlap vertical rhythm | **live** (v0.9.60; superseded layout) |
 | Bottom color-only rail (no names) | **live** (v0.9.61) |
 | Bottom rail + unified status HUD | **live** (v0.9.59; status hidden in 0.9.61) |
