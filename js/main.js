@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.126 PHONE-GPU-DEEPEN-001; prior weapons/UI ships preserved
+// RAMPAGE MECH 暴走機甲 — tip v0.9.127 OVER-TITLE-ONELINE-001; prior Balance+UI+GPU preserved
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,

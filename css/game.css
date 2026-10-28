@@ -2056,3 +2056,34 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   background: rgba(6, 2, 18, 0.94);
   box-shadow: 0 0 24px rgba(0, 229, 255, 0.16);
 }
+
+
+/* ===== OVER-TITLE-ONELINE-001 v0.9.127 — force over title one line on phone ===== */
+/* Kit .title2 is clamp(44px…)+letter-spacing 8px → 5–6 CJK wraps (咗 alone). */
+#screen-over .title2,
+#over-title {
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-size: clamp(22px, 6.2vw, 36px);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Glitch layers must not force wrap / expand past title */
+#screen-over .glitch::before,
+#screen-over .glitch::after,
+#over-title.glitch::before,
+#over-title.glitch::after {
+  white-space: nowrap;
+  width: auto;
+  max-width: 100%;
+  overflow: hidden;
+}
+html[data-lang="en"] #screen-over .title2,
+html[data-lang="en"] #over-title {
+  letter-spacing: 0.08em;
+  font-size: clamp(18px, 5.2vw, 32px);
+}

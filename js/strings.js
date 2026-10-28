@@ -33,7 +33,8 @@ i18n.add({
   restartS: ['NEW RUN', 'NEW RUN'],
   quit: ['返主畫面', 'MENU'],
   quitS: ['HOME', 'HOME'],
-  over: ['你被制止咗', 'YOU WERE STOPPED'],
+  // v0.9.127 OVER-TITLE-ONELINE-001 — one-line over title (no orphan wrap)
+  over: ['你已經被制止', 'YOU WERE STOPPED'],
   overS: ['SYSTEM RECAPTURED', 'SYSTEM RECAPTURED'],
   overNote: ['實驗室暫時捉返你 · 再嚟過？', 'The lab got you back — try again?'],
   'over.zone': ['到達區域', 'ZONE REACHED'],
