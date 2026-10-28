@@ -4,14 +4,11 @@
 
 ## 狀態：**Active** — safe pipeline「十個十個」v0.9.81–0.9.90.
 
-**Author:** Grok bot · **Shipping:** v0.9.84 `OVER-LOADOUT-PST-001`
+**Author:** Grok bot · **Shipping:** v0.9.85 `WEAPONS-BRANCH-PRIMARY-EN-DOCS-001`
 
 ### Queue this beat (10 safe slices)
-1. ~~v0.9.81 `PAUSE-CTA-TAP-001`~~ `ee43aa8`
-2. ~~v0.9.82 `WEAPONS-ULT-EN-LABELS-001`~~ `eca54d8`
-3. ~~v0.9.83 `HOWTO-RULES-SYNC-001`~~ `ad2c9af`
-4. **v0.9.84 `OVER-LOADOUT-PST-001`** — over loadout P/S/T groups · `?v=0.9.84`
-5. v0.9.85 `WEAPONS-BRANCH-PRIMARY-EN-DOCS-001`
+1. ~~v0.9.81~~ `ee43aa8` · 2. ~~v0.9.82~~ `eca54d8` · 3. ~~v0.9.83~~ `ad2c9af` · 4. ~~v0.9.84~~ `952ee95`
+5. **v0.9.85 `WEAPONS-BRANCH-PRIMARY-EN-DOCS-001`** · `?v=0.9.85`
 6. v0.9.86 `WEAPONS-BRANCH-HINT-SYNC-001`
 7. v0.9.87 `PAUSE-HINT-SYNC-001`
 8. v0.9.88 `WEAPONS-ULT-LIGHT-AMP-DOCS-001`
@@ -19,9 +16,9 @@
 10. v0.9.90 `RAIL-GROUP-A11Y-001`
 
 ### Preserve
-hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 · prior tap/sync ships.
+hide stick · hub · rail · dbl/tpl · burst≤3 · floor · 2+2+2 · prior ships.
 
-### Out of scope / HARD BANS
-Phase 4 · horn lock · soft-juice invent · full ult invent · BALANCE-PASS · deep GPU · Roy PNG.
+### HARD BANS
+Phase 4 · horn · soft-juice invent · full ult invent · BALANCE-PASS · deep GPU · Roy PNG.
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.84
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.85

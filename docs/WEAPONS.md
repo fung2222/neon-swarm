@@ -131,17 +131,17 @@ Weapon
 
 **v0.9.57 ship (`WEAPONS-ICON-PLACEHOLDERS-001`):** neon SVG placeholder icons + `WEAPON_ICON_SRC` PNG hooks.
 
-### Branch naming stubs (primary)
+### Branch naming (primary) — live in code · EN documented v0.9.85 WEAPONS-BRANCH-PRIMARY-EN-DOCS-001
 
 | Weapon | A | B | C |
 |--------|---|---|---|
-| gatling | 過熱連射 | 穿甲芯 | 散射網 |
-| ion_beam | 長焦聚焦 | 連鎖跳電 | 裂縫切割 |
-| tracking_bomb | 三重彈頭 | 黏著地雷 | 自殺無人機 |
-| vulcan | 彈幕風暴 | 燒夷彈 | 機槍堡壘 |
-| zero_laser | 絕對零度 | 霜爆裂縫 | 寒晶護盾 |
+| gatling | 過熱連射 / OVERHEAT BURST | 穿甲芯 / AP CORE | 散射網 / SCATTER NET |
+| ion_beam | 長焦聚焦 / LONG FOCUS | 連鎖跳電 / CHAIN ARC | 裂縫切割 / SLIT CUT |
+| tracking_bomb | 三重彈頭 / TRIPLE WARHEAD | 黏著地雷 / STICKY MINE | 自殺無人機 / KAMIKAZE DRONE |
+| vulcan | 彈幕風暴 / BARRAGE STORM | 燒夷彈 / INCENDIARY | 機槍堡壘 / GUN FORTRESS |
+| zero_laser | 絕對零度 / ABSOLUTE ZERO | 霜爆裂縫 / FROST BURST | 寒晶護盾 / CRYSTAL SHIELD |
 
-Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light stat bump only; not full kits).
+Ult forms = `{branch}U1` / `{branch}U2` (`gatling_A_U1`, …) — **selectable in v0.9.54** via ult offer cards (light amp labels live v0.9.82; not full kits).
 
 ### Branch naming stubs (secondary) — live in code · documented v0.9.80
 
@@ -369,6 +369,7 @@ Do **not** re-add player cards under legacy ids.
 | Rail phone tap target ≥44px | **live** (v0.9.68) |
 | Branch/ult path chip (A/B/C·U) | **live** (v0.9.69) |
 | Branch EN path titles (`branchNamesEn`) | **live** (v0.9.80) |
+| Primary branch naming table EN columns | **live** (v0.9.85 WEAPONS-BRANCH-PRIMARY-EN-DOCS-001) |
 | Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** (v0.9.82 WEAPONS-ULT-EN-LABELS-001); full unique ult kits still **stub** |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |

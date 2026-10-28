@@ -1,0 +1,10 @@
+{
+  "ver": "0.9.85",
+  "probe": {
+    "hasShip": true,
+    "hasOverheat": true,
+    "hasKamikaze": true,
+    "noStubsTitle": true
+  },
+  "fail": []
+}
