@@ -13,7 +13,7 @@ const ui = readFileSync(new URL('../vendor/cyber-kit/ui/ui.js', import.meta.url)
 const hand = readFileSync(new URL('../docs/HANDOFF.md', import.meta.url), 'utf8');
 const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.160') || /\\?v=0\\.9\\.\\d+/.test(html), 'cache-bust tip');
+assert.ok(/\?v=0\.9\.(16\d|[2-9]\d\d)/.test(html) || html.includes('?v=0.9.160'), 'soft-pin ≥0.9.160');
 assert.ok(agent.includes('HANDOFF-GLOW-SETTINGS-NOTE-001') || agent.includes('0.9.160'), 'AGENT_TASK');
 
 

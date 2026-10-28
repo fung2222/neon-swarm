@@ -13,13 +13,13 @@ const ui = readFileSync(new URL('../vendor/cyber-kit/ui/ui.js', import.meta.url)
 const hand = readFileSync(new URL('../docs/HANDOFF.md', import.meta.url), 'utf8');
 const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.159') || /\\?v=0\\.9\\.\\d+/.test(html), 'cache-bust tip');
+assert.ok(/\?v=0\.9\.(159|1[6-9]\d|[2-9]\d\d)/.test(html) || html.includes('?v=0.9.159'), 'soft-pin ≥0.9.159');
 assert.ok(agent.includes('HIT-FEEL-PIPELINE-TIP-001') || agent.includes('0.9.159'), 'AGENT_TASK');
 
 
 const hf = readFileSync(new URL('../docs/HIT-FEEL-DEVICE.md', import.meta.url), 'utf8');
 assert.ok(hf.includes('HIT-FEEL-PIPELINE-TIP-001'), 'ship id');
-assert.ok(hf.includes('Safe pipeline tip now') && hf.includes('0.9.159'), 'pipeline tip');
+assert.ok(hf.includes('Safe pipeline tip now') && /0\.9\.(159|1[6-9]\d|[2-9]\d\d)/.test(hf), 'pipeline tip ≥0.9.159');
 assert.ok(hf.includes('v=0.9.50'), 'device-verified baseline kept');
 
 console.log('hit-feel-pipeline-tip.test.mjs: PASS');
