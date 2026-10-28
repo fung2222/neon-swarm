@@ -2,9 +2,9 @@
 
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — Balance → UI → Phone GPU beat (Roy 2026-10-28「新機體唔做住 gpu可以做」). Tip shipping `v0.9.124` `BALANCE-PASS-001`.
+## 狀態：**Active** — Balance → UI → Phone GPU beat (Roy 2026-10-28「新機體唔做住 gpu可以做」). Tip shipping `v0.9.125` `UI-POLISH-001`.
 
-**Author:** Grok bot · **Next:** UI polish → Phone GPU deepen → HOLD
+**Author:** Grok bot · **Next:** Phone GPU deepen → HOLD
 
 **Author:** Grok bot · **Waiting:** Roy try on live `?v=0.9.123`
 
