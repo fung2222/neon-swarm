@@ -1670,6 +1670,7 @@ function showShareConfirm(zh, en, fail = false) {
 }
 
 function refreshShareButton() {
+  // v0.9.94 SHARE-BTN-ARIA-001 — aria-label mirrors visible zh/en labels
   const useShare = canNativeShare();
   const labels = shareButtonLabels(useShare);
   const zhEl = $('share-zh');
@@ -1677,7 +1678,10 @@ function refreshShareButton() {
   if (zhEl) zhEl.textContent = labels.zh;
   if (enEl) enEl.textContent = labels.en;
   const btn = $('btn-share');
-  if (btn) btn.dataset.mode = useShare ? 'share' : 'copy';
+  if (btn) {
+    btn.dataset.mode = useShare ? 'share' : 'copy';
+    btn.setAttribute('aria-label', labels.zh + ' ' + labels.en);
+  }
 }
 
 async function onShareRun() {
