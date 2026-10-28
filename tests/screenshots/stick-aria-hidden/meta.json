@@ -1,0 +1,7 @@
+{
+  "ver": "0.9.110",
+  "probe": {
+    "hidden": "true",
+    "cls": "stick hidden"
+  }
+}
