@@ -3,9 +3,9 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.156 · **狀態 Status:** v0.9.156 PAUSE-CTA-ARIA-SYNC-001
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.157 · **狀態 Status:** v0.9.157 README-STATUS-SYNC-001（pause glow→settings + safe polish）
 
-> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Safe pipeline tip:** v0.9.115 — a11y/docs sync；HARD BAN Phase4/horn/soft-juice/full ult/BALANCE/deep GPU。
+> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Safe pipeline tip:** v0.9.157 — a11y/docs sync；HARD BAN Phase4/horn/soft-juice/full ult/BALANCE/deep GPU。
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  
