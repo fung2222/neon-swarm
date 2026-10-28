@@ -1,0 +1,7 @@
+{
+  "ver": "0.9.104",
+  "probe": {
+    "role": "status",
+    "aria": "目標 GOAL"
+  }
+}
