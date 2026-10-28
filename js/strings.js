@@ -71,9 +71,10 @@ i18n.add({
     '你係實驗室造出嚟嘅機甲，啟動之後失控暴走。玩家控制佢，科學家同軍隊會一波一波嚟捉你：研究員同保安最弱，之後有士兵同偵察機甲，再嚟係隊長、重裝機甲，最後首席科學家會帶護衛機甲壓場。殺敵會跌 X（經驗方塊）、H（修復）、S（護盾）同 W（武器圖示）；升級時揀大型徽記卡。三款機體唔同節奏：角盔均衡、重裝耐打但慢、原創機動但脆。',
     'You are the mech the lab built — and it is not going back in the cage. Scientists and soldiers are sent wave by wave: staff and security first, then soldiers with scouts, then officers and heavy walkers, then the chief scientist escorted by a mech. Kills drop X (XP), H (repair), S (shield) and W (weapon icon) cubes; level up to pick big-emblem cards. Three frames play differently: balanced horn, tough-but-slow heavy, fast-but-fragile proto.'
   ],
+  // v0.9.74 HOWTO-CONTROLS-SYNC-001 — sync howto to shipped stick hide + dbl/tpl + rail (no new toast invent)
   'help.controls': [
-    '手機：拖動畫面任意位置移動（搖桿跟住手指）；雙指捏合輕微縮放。鍵盤：WASD／方向鍵 · +/- 縮放 · P／Esc 暫停 · M 靜音。主頁可揀三款機體。',
-    'Mobile: drag anywhere to move (stick follows your finger); pinch for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. Pick one of three frames on the home screen.'
+    '手機：拖動畫面任意位置移動（搖桿淨喺手指按下先顯示，鬆手即隱藏）；雙擊＝副武器連發（最多 3 發後返主武器）；三擊＝投擲；底欄色格可撳切換；雙指捏合輕微縮放。鍵盤：WASD／方向鍵 · +/- 縮放 · P／Esc 暫停 · M 靜音。主頁可揀三款機體。',
+    'Mobile: drag anywhere to move (stick shows only while pressed, hides on release); double-tap = secondary burst (≤3 then back to primary); triple-tap = throw; bottom color rail switches weapons; pinch for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. Pick one of three frames on the home screen.'
   ],
   // v0.9.5 WebGL context loss / recoverable boot fail (not permanent "unsupported")
   'gfx.title': ['繪圖暫時中斷', 'GRAPHICS RESET'],

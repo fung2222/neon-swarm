@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.73 rail-path-badge · mech-card-tap v0.9.72 · mute-pause-tap v0.9.71 · home-settings-tap v0.9.70 · branch-card-path v0.9.69  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.74 howto-controls-sync · rail-path-badge v0.9.73 · mech-card-tap v0.9.72 · mute-pause-tap v0.9.71 · home-settings-tap v0.9.70  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
