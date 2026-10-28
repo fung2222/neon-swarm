@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.166 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.167 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — tip `v0.9.166` `HIT-FEEL-PIPELINE-TIP-002`. Shipping safe polish (docs tip / CTA aria / soft-pins / contrast).
+## 狀態：**Active** — tip `v0.9.167` `OVER-CTA-ARIA-SYNC-001`. Shipping safe polish (docs tip / CTA aria / soft-pins / contrast).
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.166
+https://fung2222.github.io/neon-swarm/?v=0.9.167
 
 ### Shipped this beat (slice table)
 
@@ -18,6 +18,7 @@ https://fung2222.github.io/neon-swarm/?v=0.9.166
 | v0.9.164 | `README-PIPELINE-TIP-002` | README Safe pipeline tip sync off stale v0.9.157 → tip |
 | v0.9.165 | `WEAPONS-MD-TIP-SYNC-003` | WEAPONS.md Live tip header sync off stale v0.9.158 → tip |
 | v0.9.166 | `HIT-FEEL-PIPELINE-TIP-002` | HIT-FEEL-DEVICE Safe pipeline tip sync off stale v0.9.159 → tip |
+| v0.9.167 | `OVER-CTA-ARIA-SYNC-001` | over Retry/Menu aria-label via data-i18n-attr (mirror pause) |
 
 ### Preserve / HARD BANS
 stick hide · hub flush top · gear L + pause R under hub · settings vol/SFX/BGM/quality/share/howto · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · over title oneline+size · 畫質 label · balance/GPU already shipped.
