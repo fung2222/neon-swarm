@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.75 catalog-fire-live · howto-controls-sync v0.9.74 · rail-path-badge v0.9.73 · mech-card-tap v0.9.72 · mute-pause-tap v0.9.71  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.98 WEAPONS-MD-TIP-SYNC-001 · hub/pause/over a11y v0.9.91–0.9.95 · catalog-fire-live v0.9.75
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -385,6 +385,12 @@ Do **not** re-add player cards under legacy ids.
 | Branch kit hints match branchNames | **live** (v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001) |
 | Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** (v0.9.82 WEAPONS-ULT-EN-LABELS-001); full unique ult kits still **stub** |
 | Ult light-amp multipliers documented (×1.2 / ×0.85) | **live** (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001) |
+| HUD hub region a11y | **live** (v0.9.91 HUD-HUB-A11Y-001) |
+| Pause/over dialog a11y | **live** (v0.9.92–0.9.93) |
+| Share btn aria-label | **live** (v0.9.94 SHARE-BTN-ARIA-001) |
+| Boss HP region a11y | **live** (v0.9.95 BOSS-HP-A11Y-001) |
+| Hub armor i18n | **live** (v0.9.96 HUB-ARMOR-I18N-001) |
+| Level-card focus ring | **live** (v0.9.97 LEVEL-CARD-FOCUS-001) |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |
 | In-run mute/pause ≥44px | **live** (v0.9.71) |
