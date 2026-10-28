@@ -1,7 +1,8 @@
 # menu-mech-phone-fix
 
-**Tip:** v0.9.199 MENU-MECH-PHONE-FIX-001
+**Tip:** v0.9.200 PHONE-MENU-BLACK-001
 
-Phone-viewport home menu (390×844). Menu model must be procedural `buildPlayerMech` (not Mixamo).
+Phone-viewport home menu (390×844). Mixamo **disabled** (`HORN_TRUE_3D=false`; no boot preload).
+Menu model = procedural `buildPlayerMech` + pedestal. Combat = baked PNG only until menu OK.
 
-SwiftShader box shot — not device-final.
+SwiftShader box shot — not device-final. Hard-refresh phone if still seeing black.

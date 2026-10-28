@@ -29,7 +29,11 @@ assert.ok(q3d.includes('HORN_TRUE_3D') && q3d.includes('buildMixamoPlayer') && q
 assert.ok(q3d.includes('q-hero-mixamo-walk.play.glb'), 'play url');
 assert.ok(sprites.includes('buildMixamoPlayer') && sprites.includes('mixamoReady'), 'sprites Mixamo path');
 assert.ok(view.includes('syncMixamoPlayer') && view.includes('isMixamo3d'), 'view Mixamo sync');
-assert.ok(main.includes('preloadMixamoHero'), 'boot preload');
+// v0.9.200: Mixamo paused — boot must NOT call preload; flag false; API still present
+assert.ok(/export const HORN_TRUE_3D\s*=\s*false/.test(q3d), 'HORN_TRUE_3D paused false');
+assert.ok(q3d.includes('preloadMixamoHero'), 'preload API kept');
+assert.ok(!/await\s+Promise\.race\(\s*\[\s*preloadMixamoHero/.test(main), 'boot does not preload');
+
 assert.ok(agent.includes('HORN-MIXAMO-TRUE3D') || agent.includes('Mixamo'), 'agent tip');
 assert.ok(agent.includes('HOLD') || agent.includes('肉眼'), 'HOLD');
 assert.ok(agent.includes('Phase 4') && agent.includes('HARD BAN'), 'bans');

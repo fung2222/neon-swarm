@@ -1,21 +1,21 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.199 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.200 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD — tip `v0.9.199` (`MENU-MECH-PHONE-FIX-001`). Menu showcase always `buildPlayerMech`; Mixamo combat-only + fallbacks. Wait Roy phone 肉眼.**
+## 狀態：**HOLD — tip `v0.9.200` (`PHONE-MENU-BLACK-001`). Mixamo boot/combat paused (`HORN_TRUE_3D=false`); menu = buildPlayerMech only. Wait Roy phone 肉眼.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.199
+https://fung2222.github.io/neon-swarm/?v=0.9.200
 
 ### Roy report (2026-10-29)
-Phone tip v0.9.198 showed menu UI (暴走機甲 / 啟動暴走) but **center mech showcase pure black** (開唔到). Authorized fix [t283u]/[t284ua0].
+Phone tip v0.9.199 **選單仲係黑** (widget). Live already always `buildPlayerMech` on menu — so either cached 0.9.198 modules and/or boot `preloadMixamoHero()` meshopt+webp still poisons WebGL. Authorized [t283u][t284] + widget.
 
-### This tip (v0.9.199)
-1. **Menu / home turntable:** always `buildPlayerMech` — **do not** put Mixamo on select showcase (restores pedestal + mech on phone).
-2. **Combat:** keep Mixamo when `mixamoReady()`; wrap `buildMixamoPlayer` / sprites Mixamo branch in try/catch → baked PNG fallback; never leave player null.
-3. **Hardening:** apply `MIXAMO_FIT_H` via Box3 height-fit (+ footprint); zero-mesh / load throw marks failed; guard `m.map` on material convert.
+### This tip (v0.9.200)
+1. **`HORN_TRUE_3D = false`** + remove boot `preloadMixamoHero()` — menu never touches GLB/meshopt/wasm. Combat true-3D **paused** (baked PNG only) until menu verified. Comment: `PHONE-MENU-BLACK: re-enable after menu OK`.
+2. **Cache-bust:** `?v=0.9.200` on index css + main module (hard-refresh if phone still stale).
+3. **Defensive menu:** `setMenuMech` try/catch → bare `buildPlayerMech` + pedestal; `console.warn` on failure.
 
 ### Still HARD BAN
 - Phase 4 **abilities** / Precision gameplay invent
@@ -27,13 +27,13 @@ Phone tip v0.9.198 showed menu UI (暴走機甲 / 啟動暴走) but **center mec
 - Do NOT bring back pause `#btn-glow`
 
 ### Why HOLD / Roy decision needed
-Phone menu black-void fix shipped. Please try tip on phone:
+Menu-first tip: Mixamo fully off boot path. Please try on phone (**hard-refresh** / clear cache if needed):
 
-1. **Menu mech visible again?** (pedestal + procedural horn, not black)
-2. **In-combat Mixamo still OK** (or falls back to sheets cleanly)?
+1. **Menu mech visible?** (pedestal + procedural horn, not black)
+2. After menu OK → we can re-enable Mixamo combat lazily.
 3. Lock / more polish later?
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.199
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.200
 
 Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
@@ -56,6 +56,7 @@ Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANC
 | v0.9.197 | `GAMES-JSON-STAGE-010` | art-bible/render-pipeline honesty (target=approved PNG); games.json stage → tip; HOLD for Roy 肉眼 — not §9 lock |
 | v0.9.198 | `HORN-MIXAMO-TRUE3D-001` | Mixamo-skinned Q hero true 3D in combat (horn); AnimationMixer walk/idle; meshopt+webp play.glb; baked-sprite fallback; select preview same mesh; **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.199 | `MENU-MECH-PHONE-FIX-001` | Menu showcase always `buildPlayerMech` (no Mixamo on turntable); combat Mixamo try/catch + height-fit + zero-mesh fail; phone black-void fix — **HOLD for Roy 肉眼** — not §9 lock |
+| v0.9.200 | `PHONE-MENU-BLACK-001` | `HORN_TRUE_3D=false`; remove boot Mixamo preload; menu try/catch; combat baked PNG only until menu OK — **HOLD for Roy 肉眼** — not §9 lock |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

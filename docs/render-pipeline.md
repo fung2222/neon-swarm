@@ -99,9 +99,8 @@ Horn select (live 3D) and in-game (rebaked 8-dir sheets) share `buildPlayerMech`
 
 Roy chose rebuild-3D-from-approved (not T2I menu PNGs). Source of truth remains `buildPlayerMech` → select live 3D + `tools/bake-mech-sprites.mjs` 8-dir sheets. Target PNG: `sword-mech-sideview-approved.jpg`. Screenshots: `tests/screenshots/horn-match-approved/`. **Interim — HOLD for Roy 肉眼; not §9 / device-final.**
 
-### Mixamo true-3D combat (v0.9.198 HORN-MIXAMO-TRUE3D-001 + v0.9.199 MENU-MECH-PHONE-FIX-001)
-- In-game **horn** prefers Mixamo-skinned `assets/mechs/horn/q-hero-mixamo-walk.play.glb` (`js/q-hero-3d.js`, `HORN_TRUE_3D`).
-- Walk AnimationMixer when moving; idle = freeze clip frame 0. Baked PNG billboards remain fallback if load fails **or** build throws.
-- Select `setMenuMech` **always** `buildPlayerMech` (Mixamo never on home turntable — phone black-void fix).
-- Height-fit uses `MIXAMO_FIT_H` + footprint; zero-mesh load marks `mixamoReady` false.
+### Mixamo true-3D combat (v0.9.198–200)
+- **v0.9.200:** `HORN_TRUE_3D=false`; no boot `preloadMixamoHero`; combat = baked PNG only until menu verified on phone.
+- Select `setMenuMech` always `buildPlayerMech` (try/catch → bare pedestal+mech). Mixamo never on turntable / never on boot path.
+- Prior path (paused): Mixamo GLB + AnimationMixer + height-fit; re-enable after menu OK.
 - **Interim — HOLD for Roy 肉眼; not §9 lock.**

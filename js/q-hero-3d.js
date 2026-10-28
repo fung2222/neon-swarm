@@ -8,10 +8,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
-/** Feature flag — horn combat uses Mixamo 3D when load succeeds. */
-export const HORN_TRUE_3D = true;
+/**
+ * Feature flag — horn combat uses Mixamo 3D when load succeeds.
+ * PHONE-MENU-BLACK (v0.9.200): forced false so menu/boot never touch meshopt+webp GLB
+ * (poisons WebGL on some phones even when menu never attaches Mixamo). Combat true-3D
+ * paused until menu verified on Roy phone — re-enable after menu OK.
+ */
+export const HORN_TRUE_3D = false;
 
-export const MIXAMO_GLB_URL = './assets/mechs/horn/q-hero-mixamo-walk.play.glb?v=0.9.199';
+export const MIXAMO_GLB_URL = './assets/mechs/horn/q-hero-mixamo-walk.play.glb?v=0.9.200';
 
 /** Target height ≈ prior baked sprite worldH (2.12 * ~0.83 visual). */
 export const MIXAMO_FIT_H = 1.76;

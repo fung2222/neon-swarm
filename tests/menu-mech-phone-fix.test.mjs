@@ -1,7 +1,6 @@
 /**
- * MENU-MECH-PHONE-FIX-001 (v0.9.199)
- * Menu showcase must always use buildPlayerMech (never Mixamo on turntable).
- * Combat keeps Mixamo with try/catch → baked fallback.
+ * PHONE-MENU-BLACK-001 (v0.9.200) / MENU-MECH-PHONE-FIX-001 (v0.9.199)
+ * Menu showcase = buildPlayerMech; Mixamo off boot path (HORN_TRUE_3D=false).
  */
 import assert from 'assert';
 import { readFileSync, existsSync } from 'fs';
@@ -15,31 +14,38 @@ const agent = readFileSync(join(root, 'docs/AGENT_TASK.md'), 'utf8');
 const q3d = readFileSync(join(root, 'js/q-hero-3d.js'), 'utf8');
 const sprites = readFileSync(join(root, 'js/sprites.js'), 'utf8');
 const view = readFileSync(join(root, 'js/view.js'), 'utf8');
+const main = readFileSync(join(root, 'js/main.js'), 'utf8');
 
 assert.ok((() => {
   const m = html.match(/\?v=0\.9\.(\d+)/);
-  return m && Number(m[1]) >= 199;
-})(), 'soft-pin ≥0.9.199');
+  return m && Number(m[1]) >= 200;
+})(), 'soft-pin ≥0.9.200');
+
+// Flag off for this tip
+assert.ok(/export const HORN_TRUE_3D\s*=\s*false/.test(q3d), 'HORN_TRUE_3D=false');
+assert.ok(q3d.includes('PHONE-MENU-BLACK'), 'PHONE-MENU-BLACK comment');
+
+// Boot must NOT call preloadMixamoHero
+assert.ok(!/await\s+Promise\.race\(\s*\[\s*preloadMixamoHero/.test(main), 'boot does not await preloadMixamoHero');
+assert.ok(!/^import\s+\{\s*preloadMixamoHero\s*\}/m.test(main), 'main does not import preloadMixamoHero');
+assert.ok(main.includes('PHONE-MENU-BLACK'), 'main documents pause');
 
 // Menu: setMenuMech must call buildPlayerMech and must NOT call buildMixamoPlayer
-const setMenu = view.slice(view.indexOf('setMenuMech('), view.indexOf('updateMenuLayout('));
+const setStart = view.indexOf('setMenuMech(id)');
+const setEnd = view.indexOf('\n  updateMenuLayout(viewportWidth', setStart);
+const setMenu = view.slice(setStart, setEnd);
 assert.ok(setMenu.includes('buildPlayerMech'), 'menu uses buildPlayerMech');
 assert.ok(!setMenu.includes('buildMixamoPlayer'), 'menu does not use Mixamo');
 assert.ok(!setMenu.includes('mixamoReady'), 'menu does not gate on mixamoReady');
+assert.ok(setMenu.includes('try') && setMenu.includes('catch'), 'setMenuMech try/catch');
+assert.ok(setMenu.includes('console.warn'), 'setMenuMech warns on fail');
 
-// Combat path still has Mixamo with try/catch
+// Combat Mixamo path still present (paused by flag) with try/catch fallback
 assert.ok(sprites.includes('buildMixamoPlayer') && sprites.includes('try {'), 'sprites Mixamo try');
 assert.ok(sprites.includes('baked fallback') || sprites.includes('Mixamo player build failed'), 'sprites catch fallback');
 
-// Hardening in q-hero-3d
-assert.ok(q3d.includes('MIXAMO_FIT_H'), 'FIT_H defined');
-assert.ok(q3d.includes('setFromObject') || q3d.includes('Box3'), 'height fit Box3');
-assert.ok(q3d.includes('zero meshes') || q3d.includes('zero mesh'), 'zero-mesh validate');
-assert.ok(q3d.includes('buildMixamoPlayer failed') || q3d.includes('catch (err)'), 'build try/catch');
-assert.ok(q3d.includes('m.map && m.map.isTexture') || q3d.includes('m.map) m.map.colorSpace'), 'map guard');
-
 assert.ok(existsSync(join(root, 'assets/mechs/horn/q-hero-mixamo-walk.play.glb')), 'play.glb kept');
-assert.ok(agent.includes('MENU-MECH-PHONE-FIX') || agent.includes('0.9.199'), 'agent tip');
+assert.ok(agent.includes('PHONE-MENU-BLACK') || agent.includes('0.9.200'), 'agent tip');
 assert.ok(agent.includes('HOLD') || agent.includes('肉眼'), 'HOLD');
 assert.ok(agent.includes('Phase 4') && agent.includes('HARD BAN'), 'bans');
 

@@ -1,5 +1,7 @@
 {
-  "ver": "0.9.199",
+  "ver": "0.9.200",
+  "mixamoDisabled": true,
+  "note": "HORN_TRUE_3D=false; no boot preloadMixamoHero; menu=buildPlayerMech; combat baked PNG only",
   "info": {
     "hasView": true,
     "hasMenu": true,
@@ -7,7 +9,9 @@
     "isMixamo": false,
     "isPlayerMech": true,
     "mechId": "horn",
-    "childCount": 4
+    "childCount": 4,
+    "meshCount": 129,
+    "hornTrue3d": false
   },
-  "shot": "/workspace/neon-swarm/tests/screenshots/menu-mech-phone-fix/menu-phone-390x844-v0.9.199.png"
+  "shot": "/workspace/neon-swarm/tests/screenshots/menu-mech-phone-fix/menu-phone-390x844-v0.9.200.png"
 }

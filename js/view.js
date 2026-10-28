@@ -2642,62 +2642,92 @@ export class View {
 
   /**
    * Home-screen showcase: LIVE 3D from buildPlayerMech only (never Mixamo on turntable).
-   * In-game (combat) may use Mixamo when ready; menu must stay procedural so phone never blacks out.
+   * v0.9.200: Mixamo boot/combat paused (HORN_TRUE_3D=false); defensive try/catch keeps pedestal+mech.
    */
   setMenuMech(id) {
     this.hideMenuMech();
     const cfg = MECH_CACHE[id] || MECH_CACHE.horn;
-    const wrap = new THREE.Group();
-    wrap.name = 'menuMechWrap';
+    try {
+      const wrap = new THREE.Group();
+      wrap.name = 'menuMechWrap';
 
-    // Pedestal + contact shadow (dark stage, restrained glow)
-    const pedestal = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.95, 1.05, 0.12, 48),
-      new THREE.MeshStandardMaterial({
-        color: 0x0a0e18, emissive: 0x101828, emissiveIntensity: 0.35,
-        roughness: 0.55, metalness: 0.45,
-      })
-    );
-    pedestal.position.y = 0.06;
-    const pedRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.98, 1.12, 48),
-      new THREE.MeshBasicMaterial({ color: cfg.trim, transparent: true, opacity: 0.42, side: THREE.DoubleSide })
-    );
-    pedRing.rotation.x = -Math.PI / 2;
-    pedRing.position.y = 0.125;
-    const shadow = new THREE.Mesh(
-      new THREE.CircleGeometry(0.7, 32),
-      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false })
-    );
-    shadow.rotation.x = -Math.PI / 2;
-    shadow.position.y = 0.128;
+      // Pedestal + contact shadow (dark stage, restrained glow)
+      const pedestal = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.95, 1.05, 0.12, 48),
+        new THREE.MeshStandardMaterial({
+          color: 0x0a0e18, emissive: 0x101828, emissiveIntensity: 0.35,
+          roughness: 0.55, metalness: 0.45,
+        })
+      );
+      pedestal.position.y = 0.06;
+      const pedRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.98, 1.12, 48),
+        new THREE.MeshBasicMaterial({ color: cfg.trim, transparent: true, opacity: 0.42, side: THREE.DoubleSide })
+      );
+      pedRing.rotation.x = -Math.PI / 2;
+      pedRing.position.y = 0.125;
+      const shadow = new THREE.Mesh(
+        new THREE.CircleGeometry(0.7, 32),
+        new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false })
+      );
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = 0.128;
 
-    // Menu showcase: ALWAYS procedural buildPlayerMech (never Mixamo on home turntable).
-    // Mixamo stays combat-only — phone WebGL + meshopt/webp can black-out the whole menu frame.
-    const mid = cfg.model || cfg.id;
-    const mech = buildPlayerMech(cfg);
-    mech.position.set(0, 0.12, 0);
-    mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
-    if (mech.userData.halo) mech.userData.halo.visible = false;
+      // Menu showcase: ALWAYS procedural buildPlayerMech (never Mixamo on home turntable).
+      const mid = cfg.model || cfg.id;
+      const mech = buildPlayerMech(cfg);
+      mech.position.set(0, 0.12, 0);
+      mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
+      if (mech.userData.halo) mech.userData.halo.visible = false;
 
-    wrap.add(pedestal, pedRing, shadow, mech);
+      wrap.add(pedestal, pedRing, shadow, mech);
 
-    this.menuMechRing = pedRing;
-    this.menuMech = wrap;
-    this.menuMechModel = mech;
-    this._menuYaw = this._menuYaw != null ? this._menuYaw : 0.35;
-    this._menuAutoSpin = this._menuAutoSpin !== false;
-    this._menuDragUntil = this._menuDragUntil || 0;
-    wrap.rotation.y = this._menuYaw;
-    this._ensureMenuLights(cfg);
-    this._setMenuPlayfieldHidden(true);
-    this.group.add(wrap);
-    this.group.visible = true;
-    // Responsive framing: desktop right-column vs mobile centered safe band.
-    const vw = (typeof window !== 'undefined' && window.innerWidth) || (this.stage && this.stage.width) || 1280;
-    const vh = (typeof window !== 'undefined' && window.innerHeight) || (this.stage && this.stage.height) || 800;
-    this.updateMenuLayout(vw, vh);
-    return wrap;
+      this.menuMechRing = pedRing;
+      this.menuMech = wrap;
+      this.menuMechModel = mech;
+      this._menuYaw = this._menuYaw != null ? this._menuYaw : 0.35;
+      this._menuAutoSpin = this._menuAutoSpin !== false;
+      this._menuDragUntil = this._menuDragUntil || 0;
+      wrap.rotation.y = this._menuYaw;
+      this._ensureMenuLights(cfg);
+      this._setMenuPlayfieldHidden(true);
+      this.group.add(wrap);
+      this.group.visible = true;
+      const vw = (typeof window !== 'undefined' && window.innerWidth) || (this.stage && this.stage.width) || 1280;
+      const vh = (typeof window !== 'undefined' && window.innerHeight) || (this.stage && this.stage.height) || 800;
+      this.updateMenuLayout(vw, vh);
+      return wrap;
+    } catch (err) {
+      console.warn('[view] setMenuMech failed — bare buildPlayerMech + pedestal', err);
+      try {
+        const wrap = new THREE.Group();
+        wrap.name = 'menuMechWrap';
+        const pedestal = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.95, 1.05, 0.12, 48),
+          new THREE.MeshStandardMaterial({ color: 0x0a0e18, roughness: 0.6, metalness: 0.3 })
+        );
+        pedestal.position.y = 0.06;
+        const mech = buildPlayerMech(cfg);
+        mech.position.set(0, 0.12, 0);
+        if (mech.userData.halo) mech.userData.halo.visible = false;
+        wrap.add(pedestal, mech);
+        this.menuMech = wrap;
+        this.menuMechModel = mech;
+        this.menuMechRing = null;
+        this._menuYaw = this._menuYaw != null ? this._menuYaw : 0.35;
+        wrap.rotation.y = this._menuYaw;
+        this._setMenuPlayfieldHidden(true);
+        this.group.add(wrap);
+        this.group.visible = true;
+        const vw = (typeof window !== 'undefined' && window.innerWidth) || (this.stage && this.stage.width) || 1280;
+        const vh = (typeof window !== 'undefined' && window.innerHeight) || (this.stage && this.stage.height) || 800;
+        this.updateMenuLayout(vw, vh);
+        return wrap;
+      } catch (err2) {
+        console.warn('[view] setMenuMech bare fallback also failed', err2);
+        return null;
+      }
+    }
   }
 
   /**
