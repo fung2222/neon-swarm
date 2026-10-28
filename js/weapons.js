@@ -1,6 +1,7 @@
 /**
- * WEAPONS-REDESIGN-001 (v0.9.53) + BRANCH-PICK (v0.9.54) + BRANCH-KITS (v0.9.55).
- * Spec: docs/WEAPONS.md. Deep A/B/C fire deltas; ult still light amp.
+ * WEAPONS-REDESIGN-001 (v0.9.53) + BRANCH-PICK (v0.9.54) + BRANCH-KITS (v0.9.55)
+ * + ULT-KITS (v0.9.123) + BALANCE-PASS-001 (v0.9.124).
+ * Spec: docs/WEAPONS.md. Fair first named balance vs enemy HP after ult kits.
  */
 
 export const LOADOUT_CAPS = Object.freeze({
@@ -32,7 +33,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'mg', exemplar: true,
     feel: 'laser_bolts', // discrete laser-feel bullets flying out (not hitscan beam)
     counters: ['soldier', 'staffer', 'guard'], weak: ['shield', 'bomber'],
-    base: { hit: 1.0, cd: 0.10, pierce: 0, speed: 28 },
+    base: { hit: 0.95, cd: 0.105, pierce: 0, speed: 28 },
     branchNames: ['過熱連射', '穿甲芯', '散射網'],
     branchNamesEn: ['OVERHEAT BURST', 'AP CORE', 'SCATTER NET'],
   },
@@ -42,7 +43,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'ion_charge', exemplar: true,
     feel: 'charge_fire_charge', // charge → fire → charge; very high damage per shot
     counters: ['drone', 'flanker', 'sniper'], weak: ['shield', 'walker'],
-    base: { hit: 3.6, charge: 0.55, cd: 0.12, pierce: 3 },
+    base: { hit: 3.3, charge: 0.55, cd: 0.12, pierce: 3 },
     branchNames: ['長焦聚焦', '連鎖跳電', '裂縫切割'],
     branchNamesEn: ['LONG FOCUS', 'CHAIN ARC', 'SLIT CUT'],
   },
@@ -52,7 +53,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'track_stick', exemplar: true,
     feel: 'track_stick_explode', // track nearest → stick → quick auto explode, small AoE
     counters: ['artillery', 'medic', 'commander'], weak: ['flanker', 'jammer'],
-    base: { hit: 2.4, cd: 1.5, pierce: 0, aoe: 1.6, stick: 0.35, homing: 14 },
+    base: { hit: 2.55, cd: 1.45, pierce: 0, aoe: 1.6, stick: 0.35, homing: 14 },
     branchNames: ['三重彈頭', '黏著地雷', '自殺無人機'],
     branchNamesEn: ['TRIPLE WARHEAD', 'STICKY MINE', 'KAMIKAZE DRONE'],
   },
@@ -62,7 +63,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'vulcan', exemplar: true,
     feel: 'minigun', // vulcan/minigun style continuous spray
     counters: ['soldier', 'bomber'], weak: ['sniper', 'shield'],
-    base: { hit: 0.55, cd: 0.045, pierce: 0, range: 10, spinUp: 0.4 },
+    base: { hit: 0.48, cd: 0.048, pierce: 0, range: 10, spinUp: 0.4 },
     branchNames: ['彈幕風暴', '燒夷彈', '機槍堡壘'],
     branchNamesEn: ['BARRAGE STORM', 'INCENDIARY', 'GUN FORTRESS'],
   },
@@ -72,7 +73,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'zero_bolts', exemplar: true,
     feel: 'discrete_laser_bolts', // discrete laser bolts one-by-one
     counters: ['mech', 'hunter'], weak: ['jammer', 'drone'],
-    base: { hit: 1.5, cd: 0.28, pierce: 1, chill: 0.7, speed: 32 },
+    base: { hit: 1.35, cd: 0.28, pierce: 1, chill: 0.7, speed: 32 },
     branchNames: ['絕對零度', '霜爆裂縫', '寒晶護盾'],
     branchNamesEn: ['ABSOLUTE ZERO', 'FROST BURST', 'CRYSTAL SHIELD'],
   },
@@ -84,7 +85,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'acid_stream', exemplar: true, resource: 'ammo',
     feel: 'ten_shot_dissolve', // 10 continuous dissolving shots
     counters: ['shield', 'walker', 'mech'], weak: ['flanker', 'drone'],
-    base: { hit: 0.85, cd: 0.12, pool: 10, reload: 2.2, dissolve: 1.4 },
+    base: { hit: 0.90, cd: 0.12, pool: 10, reload: 2.2, dissolve: 1.4 },
     branchNames: ['溶甲霧', '酸池陷阱'],
     branchNamesEn: ['DISSOLVE MIST', 'ACID POOL'],
   },
@@ -94,7 +95,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'shotgun', exemplar: true, resource: 'ammo',
     feel: 'heavy_pellet_spray', // heavy pellet spray, close range
     counters: ['soldier', 'bomber'], weak: ['sniper', 'artillery'],
-    base: { hit: 0.7, pellets: 10, cd: 0.70, pool: 8, reload: 1.4, range: 7 },
+    base: { hit: 0.72, pellets: 10, cd: 0.70, pool: 8, reload: 1.4, range: 7 },
     branchNames: ['寬扇', '獨頭彈'],
     branchNamesEn: ['WIDE FAN', 'SLUG'],
   },
@@ -124,7 +125,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'blackhole_pull', exemplar: true, resource: 'charges',
     feel: 'aoe_pull_crush', // AoE pull enemies to center like black hole
     counters: ['drone', 'soldier'], weak: ['sniper'],
-    base: { hit: 2.2, cd: 2.6, pool: 2, reload: 10, aoe: 3.4, pull: 9, duration: 1.2 },
+    base: { hit: 2.0, cd: 2.6, pool: 2, reload: 10, aoe: 3.4, pull: 9, duration: 1.2 },
     branchNames: ['引力井', '奇點爆破'],
     branchNamesEn: ['GRAVITY WELL', 'SINGULARITY'],
   },
@@ -136,7 +137,7 @@ export const WEAPON_CATALOG = Object.freeze({
     behavior: 'grenade', exemplar: true,
     feel: 'frag_blast', // lobbed delayed blast + shrapnel
     counters: ['soldier', 'medic'], weak: ['sniper'],
-    base: { hit: 3.2, fuse: 0.55, cd: 1.7, aoe: 2.4, shards: 6 },
+    base: { hit: 3.0, fuse: 0.55, cd: 1.7, aoe: 2.4, shards: 6 },
     branchNames: ['高爆', '破片雨'],
     branchNamesEn: ['HE BLAST', 'SHRAPNEL RAIN'],
   },
@@ -591,8 +592,8 @@ export function ultOptions(weaponId, branch) {
 }
 
 /**
- * Deep branch kits (v0.9.55) + unique ult kits (v0.9.123 WEAPONS-ULT-KITS-001).
- * Distinct fire/behavior deltas per letter; ult stacks unique kit (not bare light amp).
+ * Deep branch kits (v0.9.55) + unique ult kits (v0.9.123) + BALANCE-PASS-001 (v0.9.124).
+ * Distinct fire/behavior deltas per letter; stacked dmgMul retuned fair vs enemy HP.
  */
 export function branchStatMods(weaponId, branch, ult) {
   const d = weaponDef(weaponId);
@@ -614,15 +615,15 @@ export function branchStatMods(weaponId, branch, ult) {
   // —— Primary deep kits (named branches in docs/WEAPONS.md) ——
   if (id === 'gatling') {
     if (letter === 'A') { // 過熱連射 — higher RoF + heat cadence
-      mods.cdMul = 0.70; mods.dmgMul = 0.98; mods.overheat = true;
+      mods.cdMul = 0.70; mods.dmgMul = 0.95; mods.overheat = true;
     } else if (letter === 'B') { // 穿甲芯
-      mods.dmgMul = 1.14; mods.pierceAdd = 2; mods.cdMul = 1.05;
+      mods.dmgMul = 1.08; mods.pierceAdd = 2; mods.cdMul = 1.05;
     } else if (letter === 'C') { // 散射網 — multi-bolt cone
       mods.boltCount = 3; mods.spreadRad = 0.28; mods.dmgMul = 0.72; mods.cdMul = 0.95;
     }
   } else if (id === 'ion_beam') {
     if (letter === 'A') { // 長焦聚焦
-      mods.chargeMul = 1.40; mods.dmgMul = 1.38; mods.pierceAdd = 2; mods.cdMul = 1.05;
+      mods.chargeMul = 1.40; mods.dmgMul = 1.26; mods.pierceAdd = 2; mods.cdMul = 1.05;
     } else if (letter === 'B') { // 連鎖跳電
       mods.chainJumps = 2; mods.chainRange = 3.6; mods.dmgMul = 0.92; mods.cdMul = 0.95;
     } else if (letter === 'C') { // 裂縫切割 — short charge, narrow high pierce
@@ -638,16 +639,16 @@ export function branchStatMods(weaponId, branch, ult) {
     }
   } else if (id === 'vulcan') {
     if (letter === 'A') { // 彈幕風暴
-      mods.cdMul = 0.72; mods.dmgMul = 0.88; mods.sprayMul = 1.35; mods.boltCount = 2; mods.spreadRad = 0.18;
+      mods.cdMul = 0.72; mods.dmgMul = 0.84; mods.sprayMul = 1.35; mods.boltCount = 2; mods.spreadRad = 0.18;
     } else if (letter === 'B') { // 燒夷彈
       mods.burn = 1.1; mods.burnDur = 1.6; mods.dmgMul = 0.95; mods.cdMul = 1.02;
     } else if (letter === 'C') { // 機槍堡壘
       mods.fortressMoveMul = 0.42; mods.fortressPierce = 1; mods.pierceAdd = 1;
-      mods.dmgMul = 1.22; mods.cdMul = 1.08; mods.spreadRad = -0.08;
+      mods.dmgMul = 1.14; mods.cdMul = 1.08; mods.spreadRad = -0.08;
     }
   } else if (id === 'zero_laser') {
     if (letter === 'A') { // 絕對零度
-      mods.chillMul = 1.85; mods.dmgMul = 1.08; mods.cdMul = 1.02;
+      mods.chillMul = 1.85; mods.dmgMul = 1.04; mods.cdMul = 1.02;
     } else if (letter === 'B') { // 霜爆裂縫
       mods.frostBurstR = 2.2; mods.frostBurstDmg = 1.4; mods.dmgMul = 0.95; mods.chillMul = 1.15;
     } else if (letter === 'C') { // 寒晶護盾 — tiny self-shield on fire cadence
@@ -676,7 +677,7 @@ export function branchStatMods(weaponId, branch, ult) {
     }
   } else if (d.category === 'throw') {
     if (id === 'frag') {
-      if (letter === 'A') { mods.dmgMul = 1.28; mods.aoeMul = 1.12; }
+      if (letter === 'A') { mods.dmgMul = 1.18; mods.aoeMul = 1.12; }
       else if (letter === 'B') { mods.shardsAdd = 4; mods.aoeMul = 1.20; mods.dmgMul = 0.92; }
     } else if (id === 'chill') {
       if (letter === 'A') { mods.aoeMul = 1.30; mods.slowMul = 1.25; }
@@ -701,7 +702,7 @@ export function branchStatMods(weaponId, branch, ult) {
   return mods;
 }
 
-/** Apply unique primary ult kit deltas (behavior-first; Grok fair first-pass). */
+/** Apply unique primary ult kit deltas (behavior-first; BALANCE-PASS-001 retune). */
 export function applyUltKitMods(mods, weaponId, letter, ult) {
   const L = String(letter || '').toUpperCase();
   const U = String(ult || '').toUpperCase();
@@ -713,10 +714,10 @@ export function applyUltKitMods(mods, weaponId, letter, ult) {
 
   if (weaponId === 'gatling') {
     if (L === 'A') {
-      if (U === 'U1') { setMax('boltCount', 2); mul('dmgMul', 1.12); mods.heatGainMul = 1.45; }
+      if (U === 'U1') { setMax('boltCount', 2); mul('dmgMul', 1.06); mods.heatGainMul = 1.45; }
       else { mods.heatGainMul = 0.55; mul('cdMul', 0.82); }
     } else if (L === 'B') {
-      if (U === 'U1') { add('pierceAdd', 2); mul('dmgMul', 1.15); }
+      if (U === 'U1') { add('pierceAdd', 2); mul('dmgMul', 1.08); }
       else { add('pierceAdd', 1); mul('cdMul', 0.80); }
     } else if (L === 'C') {
       if (U === 'U1') { mods.boltCount = 5; mods.spreadRad = 0.38; mul('dmgMul', 0.82); }
@@ -724,7 +725,7 @@ export function applyUltKitMods(mods, weaponId, letter, ult) {
     }
   } else if (weaponId === 'ion_beam') {
     if (L === 'A') {
-      if (U === 'U1') { mul('chargeMul', 1.18); mul('dmgMul', 1.22); add('pierceAdd', 1); }
+      if (U === 'U1') { mul('chargeMul', 1.18); mul('dmgMul', 1.10); add('pierceAdd', 1); }
       else { mul('chargeMul', 0.72); mul('cdMul', 0.80); }
     } else if (L === 'B') {
       if (U === 'U1') { add('chainJumps', 2); mods.chainRange = (mods.chainRange || 0) + 1.4; }
@@ -735,7 +736,7 @@ export function applyUltKitMods(mods, weaponId, letter, ult) {
     }
   } else if (weaponId === 'tracking_bomb') {
     if (L === 'A') {
-      if (U === 'U1') { mods.warheads = 5; mul('dmgMul', 0.78); mul('aoeMul', 0.9); }
+      if (U === 'U1') { mods.warheads = 5; mul('dmgMul', 0.72); mul('aoeMul', 0.9); }
       else { mul('cdMul', 0.78); mul('aoeMul', 1.08); }
     } else if (L === 'B') {
       if (U === 'U1') { mods.warheads = 2; mul('stickMul', 1.35); mul('aoeMul', 1.25); }
@@ -754,12 +755,12 @@ export function applyUltKitMods(mods, weaponId, letter, ult) {
     } else if (L === 'C') {
       if (U === 'U1') {
         mods.fortressMoveMul = (mods.fortressMoveMul || 1) * 0.7;
-        add('pierceAdd', 1); add('fortressPierce', 1); mul('dmgMul', 1.15);
+        add('pierceAdd', 1); add('fortressPierce', 1); mul('dmgMul', 1.08);
       } else { mul('cdMul', 0.82); }
     }
   } else if (weaponId === 'zero_laser') {
     if (L === 'A') {
-      if (U === 'U1') { mul('chillMul', 1.35); mul('dmgMul', 1.10); }
+      if (U === 'U1') { mul('chillMul', 1.35); mul('dmgMul', 1.04); }
       else { mul('cdMul', 0.80); }
     } else if (L === 'B') {
       if (U === 'U1') { mul('frostBurstR', 1.35); mul('frostBurstDmg', 1.35); }

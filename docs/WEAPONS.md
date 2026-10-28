@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.123 WEAPONS-ULT-KITS-001 · unique U1/U2 kits **live** for all 5 primaries
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.124 BALANCE-PASS-001 · fair Lv1 + stacked branch/ult DPS retune (post ult-kits)
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -214,19 +214,19 @@ Secondary/throw A/B: deepened mods (pellets/aoe/slow/pull/etc.) where fire path 
 
 ---
 
-## Balance tables (Grok-owned · v0.9.55 baseline; Lv1 tables same as v0.9.53; branch kits deepen feel)
+## Balance tables (Grok-owned · **v0.9.124 BALANCE-PASS-001** retune; prior baseline v0.9.55 / ult kits v0.9.123)
 
-Numbers are **fair first pass** vs current enemy HP (~soldier 3–5 · walker/mech higher · elites/boss separate). Tune only in a named balance ship.
+Numbers are a **named fair first pass** vs current enemy HP (~soldier 5 · walker 12 · mech 40 · elites ~90–100 · boss 200) after unique ult kits. Stacked branch+U1 dmgMul pulled where late melted.
 
 ### Primary base (Lv1)
 
 | ID | dps≈ | hit | cadence | pierce | notes |
 |----|------|-----|---------|--------|-------|
-| gatling | 8–10 | 1.0 | cd 0.10 | 0 | laser-feel flying bolts; starter |
-| ion_beam | 9–12 | **3.6** | charge 0.55 + cd 0.12 | 3 | charge→fire→charge; high per-shot |
-| tracking_bomb | 7–9 | 2.4 AoE1.6 | cd 1.5 · stick 0.35 | 0 | track nearest → stick → auto explode |
-| vulcan | 11–14 | 0.55 | cd 0.045 · spinUp 0.4 | 0 | minigun spray; short range |
-| zero_laser | 8–10 | 1.5 + chill | cd 0.28 | 1 | discrete bolts one-by-one |
+| gatling | 8–10 | **0.95** | cd **0.105** | 0 | laser-feel flying bolts; starter (slight RoF trim) |
+| ion_beam | 8–11 | **3.3** | charge 0.55 + cd 0.12 | 3 | charge→fire→charge; stacked A+U1 capped |
+| tracking_bomb | 8–10 | **2.55** AoE1.6 | cd **1.45** · stick 0.35 | 0 | track → stick → pop; slow cadence punch-up |
+| vulcan | 9–12 | **0.48** | cd **0.048** · spinUp 0.4 | 0 | minigun spray; Lv1 melt trimmed |
+| zero_laser | 8–10 | **1.35** + chill | cd 0.28 | 1 | discrete bolts; chill still the identity |
 
 LvN ≈ Lv1 × `(1 + 0.18*(N-1))` damage; CD × `(1 - 0.06*(N-1))` floor 55% of Lv1.
 
@@ -234,11 +234,11 @@ LvN ≈ Lv1 × `(1 + 0.18*(N-1))` damage; CD × `(1 - 0.06*(N-1))` floor 55% of 
 
 | ID | hit | cadence | pool | regen / reload | notes |
 |----|-----|---------|------|----------------|-------|
-| acid_gun | 0.85 + dissolve | cd 0.12 | **ammo 10** | +1 / 2.2s | 10 continuous dissolving shots |
-| shotgun | 0.7×10 pellets | cd 0.70 | shells 8 | +1 / 1.4s | heavy close spray |
+| acid_gun | **0.90** + dissolve | cd 0.12 | **ammo 10** | +1 / 2.2s | 10 continuous dissolving shots |
+| shotgun | **0.72**×10 pellets | cd 0.70 | shells 8 | +1 / 1.4s | heavy close spray |
 | slow_gun | 0.6 + slow 1.6s | cd 1.1 | energy 28 | 5/s out | rush close → AoE stop/slow |
 | attack_drone | 0.7 / tick | deploy 5.5s | charges 2 | +1 / 8s | deploy **2** drones |
-| blackhole | 2.2 pull | cd 2.6 · dur 1.2 | charges 2 | +1 / 10s | AoE pull to center |
+| blackhole | **2.0** pull | cd 2.6 · dur 1.2 | charges 2 | +1 / 10s | AoE pull to center |
 
 Empty pool → `activeMode` returns to **primary** (product rule).
 
@@ -246,7 +246,7 @@ Empty pool → `activeMode` returns to **primary** (product rule).
 
 | ID | dmg | fuse/s | cd/s | radius | notes |
 |----|-----|--------|------|--------|-------|
-| frag | 3.2 | 0.55 | 1.7 | 2.4 | frag blast + shrapnel |
+| frag | **3.0** | 0.55 | 1.7 | 2.4 | frag blast + shrapnel |
 | chill | 1.0 + slow 1.8s | 0.35 | 2.0 | 2.8 · dur 2.2 | cool field |
 | flash | 0.25 + stun 0.9 | 0.12 | 1.4 | 3.2 | flash interrupt / aim break |
 | gravity | 2.8 | 0.45 | 2.8 | 3.2 · pull 0.9s | gravity pull → crush |
@@ -364,7 +364,7 @@ In-run portrait rhythm (tokens in `css/game.css`):
 | Triple-tap (playfield) | Fire owned **throw** off CD (one shot) |
 | Debounce | ~300–400ms (`TAP_WINDOW_MS = 360`); stick drag ≠ tap |
 | `secondaryBurstMax` | **3** — after 3 `_consumeSecondary` returns → `fireMode = primary` |
-| Balance | **First-pass only** — no big retune this beat; optional next = named `BALANCE-PASS` after Roy try |
+| Balance | **v0.9.124 BALANCE-PASS-001 shipped** — Lv1 + stacked branch/ult dmgMul fair retune; further only after Roy try |
 
 ---
 
@@ -441,7 +441,7 @@ Do **not** re-add player cards under legacy ids.
 | Ult pick UI (Lv5 primary) | **live** unique kits (v0.9.123) |
 | Branch deep kits A/B/C | **live** (v0.9.55) distinct fire/behavior |
 | Real art icons | **placeholder** — Roy art pipeline above |
-| Full balance pass vs all elites | **first-pass only** — optional named `BALANCE-PASS` after Roy try (do not invent huge retune) |
+| Full balance pass vs all elites | **v0.9.124 BALANCE-PASS-001 done** — further retune only after Roy try |
 
 ---
 

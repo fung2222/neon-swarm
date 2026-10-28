@@ -2,7 +2,9 @@
 
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD** — WEAPONS-ULT-KITS-001 beat **done** (spec+labels+kits all 5 primaries). Tip `v0.9.123` `WEAPONS-ULT-KITS-001`.
+## 狀態：**Active** — Balance → UI → Phone GPU beat (Roy 2026-10-28「新機體唔做住 gpu可以做」). Tip shipping `v0.9.124` `BALANCE-PASS-001`.
+
+**Author:** Grok bot · **Next:** UI polish → Phone GPU deepen → HOLD
 
 **Author:** Grok bot · **Waiting:** Roy try on live `?v=0.9.123`
 
@@ -15,7 +17,7 @@
 hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 · clamp · fill-edge · rail-tap · branch-path · prior tap/sync/a11y ships · rail group a11y · hub/pause/over a11y · branch deep kits · unique ult kits.
 
 ### Out of scope / HARD BANS（下輪仍禁）
-Phase 4 · horn lock · soft-juice invent · BALANCE-PASS · deep GPU · Roy PNG.
-（full ult invent ban returns after this HOLD unless Roy re-opens.)
+Phase 4 · horn lock · soft-juice invent · Roy PNG · claiming horn final art lock · inventing more ults · **new mech frames** (heavy/prototype unlock / Morph).
+BALANCE-PASS + phone GPU deepen **lifted this beat** (Roy 2026-10-28).
 
 Live: https://fung2222.github.io/neon-swarm/?v=0.9.123

@@ -1,0 +1,34 @@
+{
+  "ver": "0.9.124",
+  "probe": {
+    "cats": {
+      "gatling": {
+        "hit": 0.95,
+        "cd": 0.105
+      },
+      "ion_beam": {
+        "hit": 3.3,
+        "cd": 0.12
+      },
+      "tracking_bomb": {
+        "hit": 2.55,
+        "cd": 1.45
+      },
+      "vulcan": {
+        "hit": 0.48,
+        "cd": 0.048
+      },
+      "zero_laser": {
+        "hit": 1.35,
+        "cd": 0.28
+      }
+    },
+    "stacked": {
+      "ionAU1": 1.3860000000000001,
+      "gatBU1": 1.1664,
+      "vulCU1": 1.2312
+    },
+    "ship": "BALANCE-PASS-001"
+  },
+  "fail": []
+}
