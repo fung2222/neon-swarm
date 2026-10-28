@@ -2087,3 +2087,18 @@ html[data-lang="en"] #over-title {
   letter-spacing: 0.08em;
   font-size: clamp(18px, 5.2vw, 32px);
 }
+
+
+/* ===== OVER-SUBTITLE-CHROME-001 v0.9.128 — over EN subtitle chrome (mirror pause; kit letter-spacing 14px too wide) ===== */
+#screen-over .title-en {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9ecfff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+  margin: 2px 0 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}

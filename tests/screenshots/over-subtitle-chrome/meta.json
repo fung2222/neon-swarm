@@ -1,0 +1,11 @@
+{
+  "ver": "0.9.128",
+  "probe": {
+    "text": "SYSTEM RECAPTURED",
+    "fs": "11px",
+    "ls": "2.42px",
+    "ws": "nowrap",
+    "color": "rgb(158, 207, 255)"
+  },
+  "fail": []
+}

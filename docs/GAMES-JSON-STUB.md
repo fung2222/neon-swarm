@@ -1,6 +1,6 @@
 # games.json stub — neon-swarm
 
-<!-- v0.9.127 OVER-TITLE-ONELINE / stub tip bump -->
+<!-- 0.9.128 OVER-TITLE-ONELINE / stub tip bump -->
 
 Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier.
 
@@ -22,8 +22,8 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 v0.9.127 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · over title one-line + polish · 未包裝 Android",
-    "en": "web v0.9.127 · 2+2+2 loadout / branch+ult / hide-stick / color rail · over title one-line · not packaged for Android"
+    "zh": "網頁版 0.9.128 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · over title one-line + polish · 未包裝 Android",
+    "en": "web 0.9.128 · 2+2+2 loadout / branch+ult / hide-stick / color rail · over title one-line · not packaged for Android"
   },
   "kit": "v0.3.16",
   "play": "not-submitted",
