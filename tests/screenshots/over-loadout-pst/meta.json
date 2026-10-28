@@ -1,0 +1,10 @@
+{
+  "ver": "0.9.84",
+  "probe": {
+    "line": "主:機關雷射炮 Lv1、離子光束 Lv2 · 副:散彈槍 Lv1 · 投:破片榴彈 Lv1",
+    "hasP": true,
+    "hasS": true,
+    "hasT": true
+  },
+  "fail": []
+}

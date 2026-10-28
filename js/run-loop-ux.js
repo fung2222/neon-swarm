@@ -92,13 +92,47 @@ export function slotStackLevel(id, g) {
   return Math.max(1, Number(tk) || 1);
 }
 
+/** Over-screen loadout grouped P/S/T (v0.9.84 OVER-LOADOUT-PST-001). Prefer g.loadout; flat slots fall back via loadoutFromFlat. */
 export function formatLoadoutFromGame(g, cardsById = {}, isZh = true) {
-  const slots = (g && g.weaponSlots) ? g.weaponSlots.filter(Boolean) : ['gatling'];
-  return slots.map((id) => {
-    const lv = slotStackLevel(id, g);
-    const name = displayWeaponName(id, cardsById, isZh);
-    return `${name} Lv${lv}`;
-  }).join(' · ');
+  const CAT = [
+    { key: 'primary', zh: '主', en: 'P' },
+    { key: 'secondary', zh: '副', en: 'S' },
+    { key: 'throw', zh: '投', en: 'T' },
+  ];
+  let loadout = g && g.loadout && typeof g.loadout === 'object' ? g.loadout : null;
+  if (!loadout) {
+    const flat = (g && g.weaponSlots) ? g.weaponSlots : ['gatling'];
+    // Infer groups by known catalog category when possible (no import cycle)
+    const buckets = { primary: [], secondary: [], throw: [] };
+    const PRIMARY = new Set(['gatling', 'mg', 'ion_beam', 'laser', 'tracking_bomb', 'rocket', 'vulcan', 'zero_laser']);
+    const SECONDARY = new Set(['acid_gun', 'plasma', 'shotgun', 'slow_gun', 'attack_drone', 'blackhole']);
+    const THROW = new Set(['frag', 'grenade', 'chill', 'flash', 'gravity']);
+    for (const id of flat) {
+      if (!id) continue;
+      if (PRIMARY.has(id)) buckets.primary.push(id);
+      else if (SECONDARY.has(id)) buckets.secondary.push(id);
+      else if (THROW.has(id)) buckets.throw.push(id);
+      else buckets.primary.push(id);
+    }
+    loadout = buckets;
+  }
+  const parts = [];
+  for (const c of CAT) {
+    const ids = (loadout[c.key] || []).filter(Boolean);
+    if (!ids.length) continue;
+    const label = isZh ? c.zh : c.en;
+    const body = ids.map((id) => {
+      const lv = slotStackLevel(id, g);
+      const name = displayWeaponName(id, cardsById, isZh);
+      return `${name} Lv${lv}`;
+    }).join(isZh ? '、' : ', ');
+    parts.push(`${label}:${body}`);
+  }
+  if (!parts.length) {
+    const name = displayWeaponName('gatling', cardsById, isZh);
+    return `${isZh ? '主' : 'P'}:${name} Lv1`;
+  }
+  return parts.join(' · ');
 }
 
 /** Zone accent colors matching edge-trim identity (not danger telegraph reds). */
