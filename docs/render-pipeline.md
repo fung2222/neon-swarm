@@ -98,3 +98,9 @@ Horn select (live 3D) and in-game (rebaked 8-dir sheets) share `buildPlayerMech`
 ## 8. Horn match approved (v0.9.193–197)
 
 Roy chose rebuild-3D-from-approved (not T2I menu PNGs). Source of truth remains `buildPlayerMech` → select live 3D + `tools/bake-mech-sprites.mjs` 8-dir sheets. Target PNG: `sword-mech-sideview-approved.jpg`. Screenshots: `tests/screenshots/horn-match-approved/`. **Interim — HOLD for Roy 肉眼; not §9 / device-final.**
+
+### Mixamo true-3D combat (v0.9.198 HORN-MIXAMO-TRUE3D-001)
+- In-game **horn** prefers Mixamo-skinned `assets/mechs/horn/q-hero-mixamo-walk.play.glb` (`js/q-hero-3d.js`, `HORN_TRUE_3D`).
+- Walk AnimationMixer when moving; idle = freeze clip frame 0. Baked PNG billboards remain fallback if load fails.
+- Select `setMenuMech` uses same Mixamo mesh when ready; else `buildPlayerMech`.
+- **Interim — HOLD for Roy 肉眼; not §9 lock.**

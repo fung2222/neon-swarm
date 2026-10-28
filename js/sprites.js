@@ -4,6 +4,7 @@
  * NPC: scientist doctor (map prop until a shop hook exists).
  */
 import * as THREE from 'three';
+import { HORN_TRUE_3D, mixamoReady, buildMixamoPlayer, preloadMixamoHero } from './q-hero-3d.js';
 import { yawToCardinal as yawToCardinalShared, yawToOctant, muzzleWorld, HORN_MUZZLE_BY_DIR, muzzleUvAnchors, DIRS8 } from './muzzle.js';
 export { yawToCardinalShared as yawToCardinal, yawToOctant, muzzleWorld, HORN_MUZZLE_BY_DIR, DIRS8 };
 
@@ -175,6 +176,13 @@ export function makeBillboard(key, w, h, opts = {}) {
 }
 
 export function buildPlayerSprite(cfg) {
+  // True-3D Mixamo horn when asset ready; else baked sheets / legacy PNG.
+  const id = (cfg && (cfg.model || cfg.id)) || 'horn';
+  if (HORN_TRUE_3D && id === 'horn' && mixamoReady()) {
+    const m3 = buildMixamoPlayer(cfg);
+    if (m3) return m3;
+  }
+
   // Prefer baked buildPlayerMech sheets when available for this mech id.
   const baked = buildBakedPlayerSprite(cfg);
   if (baked) return baked;
@@ -211,8 +219,7 @@ export function buildPlayerSprite(cfg) {
   root.userData.walkFrames = [move1, move2];
   root.userData.playerState = 'idle';
   root.userData.walkFrame = 0;
-  root.userData.mechId = cfg && cfg.id;
-  const id = cfg && cfg.id;
+  root.userData.mechId = id;
   root.scale.setScalar(id === 'heavy' ? 1.12 : id === 'prototype' ? 0.96 : 1);
   return root;
 }
@@ -667,3 +674,5 @@ export function bakedMuzzleWorld(root, px, pz, aimX, aimZ) {
   const m = muzzleWorld(px, pz, aimX, aimZ, { byDir });
   return { x: m.x, y: m.y, z: m.z };
 }
+
+export { preloadMixamoHero, HORN_TRUE_3D } from './q-hero-3d.js';

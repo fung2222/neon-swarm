@@ -1,0 +1,15 @@
+{
+  "ver": "0.9.198",
+  "mixamo": {
+    "isMixamo3d": true,
+    "isSprite": false,
+    "hasMixer": true,
+    "hasWalk": true,
+    "mechId": "horn"
+  },
+  "shots": [
+    "in-game-walk-desktop.png",
+    "in-game-idle-desktop.png",
+    "in-game-walk-phone.png"
+  ]
+}

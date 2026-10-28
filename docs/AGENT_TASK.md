@@ -1,22 +1,21 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.197 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.198 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD — tip `v0.9.197` (`GAMES-JSON-STAGE-010`). Horn match shipped; wait Roy 肉眼 before lock / next invent.**
+## 狀態：**HOLD — tip `v0.9.198` (`HORN-MIXAMO-TRUE3D-001`). Mixamo true-3D horn in combat; wait Roy 肉眼 before lock / next invent.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.197
+https://fung2222.github.io/neon-swarm/?v=0.9.198
 
-### Roy decision (2026-10-28 ~17:57 HKT)
-Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
-= Rebuild `buildPlayerMech` horn from approved charcoal+cyan slender swordsman PNG (`sword-mech-sideview-approved.jpg` / `roy-approved-ref.jpg`), then rebake sheets. Do **not** drop menu T2I PNGs. Prior Active open was「機體／角／Roy PNG」(17:41).
+### Roy decision (2026-10-28)
+Widget「夠似，改遊戲播真 3D」→ ship Mixamo-rigged Q hero as **true 3D** in combat (not only 2D PNG billboards). Authorized [pt282u] 好.
 
 ### Lifted for THIS Active only
-- Horn further polish / silhouette rebuild to approved ref
-- (heavy / prototype unique silhouettes already shipped — leave as stubs unless tiny shared material cleanup)
-- Roy PNG pipeline (weapons path already live)
+- Horn combat path: Mixamo-skinned mesh + AnimationMixer (walk when moving; idle = freeze frame 0)
+- Select/home can show same Mixamo mesh when loaded
+- Keep baked PNG billboard fallback if GLB load fails
 
 ### Still HARD BAN
 - Phase 4 **abilities** / Precision gameplay invent
@@ -24,20 +23,17 @@ Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
 - more ult invent
 - BALANCE re-pass
 - Claiming **final art lock / HANDOFF §9 locked / device-final** without Roy 肉眼 OK
-- Do NOT invent menu PNGs from text-to-image (art-bible: select = live 3D `buildPlayerMech`)
+- Do NOT invent menu PNGs from text-to-image (art-bible: select = live 3D)
 - Do NOT bring back pause `#btn-glow`
 
 ### Why HOLD / Roy decision needed
-Horn rebuilt + rebaked toward approved charcoal+cyan PNG. **Interim — not §9 / device-final lock.**
+Mixamo true-3D path shipped for horn. **Interim — not §9 / device-final lock.** Please try tip on phone and answer:
 
-Please try tip and answer:
-
-1. **Looks like your approved PNG?** (`sword-mech-sideview-approved` / charcoal+cyan slender swept-crest) — select 3D + in-game bake
-2. **Lock horn** as §9 / device-final? Or **more polish** (crest / limbs / plates)?
+1. **In-combat 3D reads OK?** (scale / facing / walk) vs old billboard
+2. **Lock** as next art step, or more polish (decimate / idle clip / muzzle)?
 3. Heavy / Prototype stubs — leave for later?
-4. Weapons PNG — drop when ready (path live)
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.197
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.198
 
 Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
@@ -58,6 +54,7 @@ Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANC
 | v0.9.195 | `HORN-REBAKE-MATCH-001` | Rebake horn 8-dir sheets from new buildPlayerMech; sync muzzle/atlas/anchors; cool bake fill (no purple kick) |
 | v0.9.196 | `HORN-INGAME-MATCH-001` | Confirm in-game uses new sheets; screenshots select + bake + in-game vs approved under tests/screenshots/horn-match-approved/ |
 | v0.9.197 | `GAMES-JSON-STAGE-010` | art-bible/render-pipeline honesty (target=approved PNG); games.json stage → tip; HOLD for Roy 肉眼 — not §9 lock |
+| v0.9.198 | `HORN-MIXAMO-TRUE3D-001` | Mixamo-skinned Q hero true 3D in combat (horn); AnimationMixer walk/idle; meshopt+webp play.glb; baked-sprite fallback; select preview same mesh; **HOLD for Roy 肉眼** — not §9 lock |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

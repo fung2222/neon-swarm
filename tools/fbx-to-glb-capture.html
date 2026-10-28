@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>fbx→glb</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../vendor/cyber-kit/three/three.module.min.js",
+    "three/addons/": "../vendor/cyber-kit/three/addons/"
+  }
+}
+</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+window.__fbxResult = null;
+window.__fbxError = null;
+window.__fbxMeta = null;
+
+const params = new URLSearchParams(location.search);
+const fbxUrl = params.get('fbx') || '../assets/q-hero-tripo-mixamo-walking.fbx';
+const fitH = Number(params.get('fitH') || '1.76');
+const resourcePath = params.get('resourcePath') || '../assets/q-hero-tripo-mixamo-walking.fbm/';
+
+const TEX = {
+  base: resourcePath + 'tripo_node_dca653f3-3002-4842-afb3-95e17540c956_BaseColor.png',
+  normal: resourcePath + 'tripo_node_dca653f3-3002-4842-afb3-95e17540c956_Normal_Bake.png',
+  metal: resourcePath + 'futuristic_robot_figure_3d_model_metallic.PNG',
+  rough: resourcePath + 'futuristic_robot_figure_3d_model_roughness.PNG',
+};
+
+function loadTex(url, srgb) {
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(url, (t) => {
+      t.flipY = false; // glTF convention for exported maps
+      t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      // ensure image fully decoded
+      const img = t.image;
+      const done = () => resolve(t);
+      if (img && typeof img.decode === 'function') img.decode().then(done).catch(done);
+      else done();
+    }, undefined, reject);
+  });
+}
+
+async function run() {
+  try {
+    const manager = new THREE.LoadingManager();
+    manager.setURLModifier((url) => {
+      const base = (url.split('?')[0].split('/').pop() || '');
+      const known = Object.values(TEX).map((u) => u.split('/').pop());
+      const hit = known.find((n) => n.toLowerCase() === base.toLowerCase());
+      if (hit) return resourcePath + hit;
+      return url;
+    });
+
+    console.log('loading', fbxUrl);
+    const loader = new FBXLoader(manager);
+    loader.setResourcePath(resourcePath);
+    const obj = await loader.loadAsync(fbxUrl);
+    console.log('fbx loaded');
+
+    // Force-assign known PBR maps (Mixamo/FBX specular maps often invalid for exporter)
+    const [baseMap, normalMap, metalMap, roughMap] = await Promise.all([
+      loadTex(TEX.base, true),
+      loadTex(TEX.normal, false),
+      loadTex(TEX.metal, false),
+      loadTex(TEX.rough, false),
+    ]);
+    console.log('textures ready');
+
+    obj.traverse((c) => {
+      if (!c.isMesh) return;
+      c.castShadow = false;
+      c.receiveShadow = false;
+      const std = new THREE.MeshStandardMaterial({
+        map: baseMap,
+        normalMap,
+        metalnessMap: metalMap,
+        roughnessMap: roughMap,
+        metalness: 1.0,
+        roughness: 1.0,
+        color: 0xffffff,
+        side: THREE.FrontSide,
+      });
+      // Dispose old mats lightly
+      const old = c.material;
+      c.material = std;
+      if (old) {
+        const arr = Array.isArray(old) ? old : [old];
+        for (const m of arr) {
+          if (m && m.dispose) m.dispose();
+        }
+      }
+    });
+
+    let tris = 0, verts = 0, bones = 0, meshCount = 0, skinned = 0;
+    obj.traverse((c) => {
+      if (c.isMesh && c.geometry) {
+        meshCount++;
+        if (c.isSkinnedMesh) skinned++;
+        const g = c.geometry;
+        const idx = g.index ? g.index.count : (g.attributes.position ? g.attributes.position.count : 0);
+        tris += Math.floor(idx / 3);
+        verts += g.attributes.position ? g.attributes.position.count : 0;
+      }
+      if (c.isBone) bones++;
+    });
+    const animNames = (obj.animations || []).map(a => a.name);
+    const animDur = (obj.animations || []).map(a => a.duration);
+    console.log('anims', animNames, animDur, 'tris', tris);
+
+    obj.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const scale = size.y > 1e-6 ? (fitH / size.y) : 1;
+    obj.scale.setScalar(scale);
+    obj.updateMatrixWorld(true);
+    const box2 = new THREE.Box3().setFromObject(obj);
+    obj.position.y -= box2.min.y;
+    obj.position.x -= (box2.min.x + box2.max.x) * 0.5;
+    obj.position.z -= (box2.min.z + box2.max.z) * 0.5;
+    obj.updateMatrixWorld(true);
+
+    // For skinned meshes, exporter needs animations from the root that owns them
+    const wrap = new THREE.Group();
+    wrap.name = 'qHeroMixamo';
+    wrap.add(obj);
+    wrap.animations = (obj.animations || []).slice();
+
+    // Ensure texture.image has drawable data for exporter (needs canvas/Image)
+    // flipY true for Canvas draw in exporter when from TextureLoader PNG — GLTFExporter reads image
+    baseMap.flipY = true;
+    normalMap.flipY = true;
+    metalMap.flipY = true;
+    roughMap.flipY = true;
+
+    const exporter = new GLTFExporter();
+    const glb = await new Promise((resolve, reject) => {
+      exporter.parse(
+        wrap,
+        (result) => resolve(result),
+        (err) => reject(err),
+        { binary: true, animations: wrap.animations, onlyVisible: false, embedImages: true }
+      );
+    });
+
+    const bytes = glb instanceof ArrayBuffer ? glb : glb.buffer;
+    const u8 = new Uint8Array(bytes);
+    let bin = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < u8.length; i += chunk) {
+      bin += String.fromCharCode.apply(null, u8.subarray(i, i + chunk));
+    }
+
+    const box3 = new THREE.Box3().setFromObject(wrap);
+    const sz = new THREE.Vector3(); box3.getSize(sz);
+    window.__fbxMeta = {
+      tris, verts, bones, meshCount, skinned,
+      animNames, animDur, fitH, scale,
+      size: [sz.x, sz.y, sz.z], glbBytes: u8.length,
+    };
+    window.__fbxResult = btoa(bin);
+    document.title = 'ok:' + u8.length;
+    console.log('export done', u8.length);
+  } catch (e) {
+    window.__fbxError = String(e && e.stack || e);
+    document.title = 'err';
+    console.error(e);
+  }
+}
+run();
+</script>
+</body></html>

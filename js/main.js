@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.197
+// RAMPAGE MECH 暴走機甲 — tip v0.9.198
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -8,6 +8,7 @@ import {
 import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot, CARDS_BY_ID, weaponDef, normalizeWeaponId, WEAPON_ICON, starterLoadout, flattenLoadout, weaponLevel } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
+import { preloadMixamoHero } from './q-hero-3d.js';
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
@@ -2321,6 +2322,7 @@ else if (ev.type === 'xp') {
 
 async function boot() {
   if (document.fonts) await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]);
+  try { await Promise.race([preloadMixamoHero(), new Promise((r) => setTimeout(r, 8000))]); } catch (_) {}
   if (flags.mute) {
     // Session override (?mute=1) — do not rewrite saved preference
     applyMutePreference(audio, muteButtons(), true, { persist: false, isZh: i18n.isZh() });

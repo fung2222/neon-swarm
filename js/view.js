@@ -13,6 +13,7 @@ import {
   applySpriteMotion,
   syncBakedPlayerSprite,
 } from './sprites.js';
+import { syncMixamoPlayer, buildMixamoPlayer, mixamoReady, HORN_TRUE_3D } from './q-hero-3d.js';
 
 // ---------------------------------------------------------------------------
 // Shared materials. Everything is a lit standard material plus an emissive edge so
@@ -2572,14 +2573,18 @@ export class View {
   setMech(cfg) {
     const id = typeof cfg === 'string' ? cfg : cfg.id;
     const mech = typeof cfg === 'string' ? (MECH_CACHE[cfg] || MECH_CACHE.horn) : cfg;
-    if (this.playerMechId === id && this.player) return;
+    // Allow swap when Mixamo finishes loading after a baked fallback was attached.
+    const wantMixamo = HORN_TRUE_3D && id === 'horn' && mixamoReady();
+    const haveMixamo = !!(this.player && this.player.userData && this.player.userData.isMixamo3d);
+    if (this.playerMechId === id && this.player && !(wantMixamo && !haveMixamo)) return;
     if (this.player) { this.group.remove(this.player); disposeTree(this.player); this.player = null; }
     this.player = buildPlayerSprite(mech);
     this.player.visible = this._playerVisible !== false;
     this.playerMechId = id;
     this.playerBody = { material: this.player.userData.hullMats[0] };
     this.playerCore = { material: this.player.userData.coreMats[0] };
-    this._facing = Math.PI;
+    // Mixamo faces +Z (yaw 0); procedural/sprite mechs historically used +PI (-Z).
+    this._facing = (this.player.userData && this.player.userData.isMixamo3d) ? 0 : Math.PI;
     this.group.add(this.player);
   }
 
@@ -2667,11 +2672,19 @@ export class View {
     shadow.rotation.x = -Math.PI / 2;
     shadow.position.y = 0.128;
 
-    const mech = buildPlayerMech(cfg);
-    mech.position.set(0, 0.12, 0);
-    mech.scale.setScalar((cfg.model || cfg.id) === 'heavy' ? 1.05 : 1.0);
-    // Drop the built-in halo — pedestal ring replaces it for select
-    if (mech.userData.halo) mech.userData.halo.visible = false;
+    let mech;
+    const mid = cfg.model || cfg.id;
+    if (HORN_TRUE_3D && mid === 'horn' && mixamoReady()) {
+      mech = buildMixamoPlayer(cfg);
+      if (mech && mech.userData.halo) mech.userData.halo.visible = false;
+      if (mech) mech.position.set(0, 0.12, 0);
+    }
+    if (!mech) {
+      mech = buildPlayerMech(cfg);
+      mech.position.set(0, 0.12, 0);
+      mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
+      if (mech.userData.halo) mech.userData.halo.visible = false;
+    }
 
     wrap.add(pedestal, pedRing, shadow, mech);
 
@@ -2875,28 +2888,62 @@ export class View {
     this.setMech(game.mech || 'horn');
     this.player.position.set(game.px, 0, game.pz);
 
-    let tx = game.vx, tz = game.vz;
-    if (Math.hypot(tx, tz) < 0.08 && game.enemies.length) {
-      const e = game.enemies.reduce((best, cur) => {
-        const d = Math.hypot(cur.x - game.px, cur.z - game.pz);
-        return !best || d < best.d ? { d, e: cur } : best;
-      }, null);
-      if (e) { tx = e.e.x - game.px; tz = e.e.z - game.pz; }
-    }
-    if (Math.hypot(tx, tz) > 0.08) {
-      const want = Math.atan2(tx, tz) + Math.PI;
-      let d = want - this._facing;
-      while (d > Math.PI) d -= Math.PI * 2;
-      while (d < -Math.PI) d += Math.PI * 2;
-      this._facing += d * 0.22;
-    }
     const move = Math.hypot(game.vx, game.vz);
     const blink = game.invuln > 0 && (game.invuln * 20) % 2 < 1;
     const hit = game.hitFlash > 0;
     const fireKick = Math.max(0, game.muzzle || 0);
     const ud = this.player.userData;
 
-    if (ud.isSprite) {
+    // Procedural / sprite legacy facing (+PI for -Z models). Mixamo uses +Z — handled below.
+    if (!ud.isMixamo3d) {
+      let tx = game.vx, tz = game.vz;
+      if (Math.hypot(tx, tz) < 0.08 && game.enemies.length) {
+        const e = game.enemies.reduce((best, cur) => {
+          const d = Math.hypot(cur.x - game.px, cur.z - game.pz);
+          return !best || d < best.d ? { d, e: cur } : best;
+        }, null);
+        if (e) { tx = e.e.x - game.px; tz = e.e.z - game.pz; }
+      }
+      if (Math.hypot(tx, tz) > 0.08) {
+        const want = Math.atan2(tx, tz) + Math.PI;
+        let d = want - this._facing;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        this._facing += d * 0.22;
+      }
+    }
+
+    if (ud.isMixamo3d) {
+      const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
+      const vax = game.visualAimX != null ? game.visualAimX : game.aimX;
+      const vaz = game.visualAimZ != null ? game.visualAimZ : game.aimZ;
+      if (aiming && (Math.abs(vax || 0) + Math.abs(vaz || 0)) > 0.05) {
+        const want = Math.atan2(vax, vaz); // Mixamo +Z facing
+        let dd = want - this._facing;
+        while (dd > Math.PI) dd -= Math.PI * 2;
+        while (dd < -Math.PI) dd += Math.PI * 2;
+        this._facing += dd * 0.32;
+      } else if (move > 0.12) {
+        const want = Math.atan2(game.vx, game.vz);
+        let dd = want - this._facing;
+        while (dd > Math.PI) dd -= Math.PI * 2;
+        while (dd < -Math.PI) dd += Math.PI * 2;
+        this._facing += dd * 0.22;
+      }
+      syncMixamoPlayer(this.player, {
+        moveX: game.vx,
+        moveZ: game.vz,
+        moving: move > 0.08,
+        aimX: vax,
+        aimZ: vaz,
+        aiming,
+        hit,
+        blink,
+        alive: !!game.alive,
+        dt,
+        facingYaw: this._facing,
+      });
+    } else if (ud.isSprite) {
       this.player.rotation.set(0, 0, 0);
       const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
       const locomotion = move > 0.12 ? 'move' : 'idle';
