@@ -1,0 +1,7 @@
+{
+  "ver": "0.9.105",
+  "probe": {
+    "role": "status",
+    "live": "polite"
+  }
+}
