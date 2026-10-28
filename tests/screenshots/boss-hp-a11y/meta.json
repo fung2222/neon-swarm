@@ -1,0 +1,8 @@
+{
+  "ver": "0.9.95",
+  "probe": {
+    "role": "region",
+    "aria": "首領血量 BOSS HP",
+    "hidden": true
+  }
+}
