@@ -3,7 +3,7 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.189 · **狀態 Status:** v0.9.189 MECH-HEAVY-SILHOUETTE
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.190 · **狀態 Status:** v0.9.190 MECH-PROTOTYPE-SILHOUETTE
 
 > **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Art Active tip:** v0.9.186 — MECH-HORN-ROY-PNG；HARD BAN Phase4 abilities / soft-juice / more ult / BALANCE re-pass / §9 lock claim without Roy 肉眼。
 
