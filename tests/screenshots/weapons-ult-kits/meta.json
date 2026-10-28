@@ -1,0 +1,277 @@
+{
+  "ver": "0.9.123",
+  "probe": {
+    "sigs": {
+      "gatling": {
+        "A": {
+          "u1": {
+            "boltCount": 2,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.574,
+          "titles": [
+            "OVERCLOCK BURST",
+            "COOLANT JET"
+          ]
+        },
+        "B": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 4
+          },
+          "u2cd": 0.8400000000000001,
+          "titles": [
+            "PIERCE BEAM",
+            "AP CADENCE"
+          ]
+        },
+        "C": {
+          "u1": {
+            "boltCount": 5,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.7789999999999999,
+          "titles": [
+            "CONE NOVA",
+            "DENSE NET"
+          ]
+        }
+      },
+      "ion_beam": {
+        "A": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 3
+          },
+          "u2cd": 0.8400000000000001,
+          "titles": [
+            "SOLAR LANCE",
+            "SNAP FOCUS"
+          ]
+        },
+        "B": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 4,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.76,
+          "titles": [
+            "CHAIN STORM",
+            "ARC CADENCE"
+          ]
+        },
+        "C": {
+          "u1": {
+            "boltCount": 2,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 2
+          },
+          "u2cd": 0.7020000000000001,
+          "titles": [
+            "DUAL SLIT",
+            "RAPID SLIT"
+          ]
+        }
+      },
+      "tracking_bomb": {
+        "A": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 5,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.8190000000000001,
+          "titles": [
+            "PENTA WARHEAD",
+            "CLUSTER BEAT"
+          ]
+        },
+        "B": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 2,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.81,
+          "titles": [
+            "STICKY CLUSTER",
+            "MINE BEAT"
+          ]
+        },
+        "C": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 2,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.78,
+          "titles": [
+            "SWARM DIVE",
+            "SEEK BEAT"
+          ]
+        }
+      },
+      "vulcan": {
+        "A": {
+          "u1": {
+            "boltCount": 3,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.5616,
+          "titles": [
+            "BARRAGE OVERLOAD",
+            "STORM BEAT"
+          ]
+        },
+        "B": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 1.595,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.8160000000000001,
+          "titles": [
+            "BURN STORM",
+            "INCENDIARY BEAT"
+          ]
+        },
+        "C": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 2
+          },
+          "u2cd": 0.8856,
+          "titles": [
+            "FORTRESS ULT",
+            "FORTRESS CADENCE"
+          ]
+        }
+      },
+      "zero_laser": {
+        "A": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 2.4975000000000005,
+            "frostBurstR": 0,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.8160000000000001,
+          "titles": [
+            "ABSOLUTE FREEZE",
+            "ZERO BEAT"
+          ]
+        },
+        "B": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1.15,
+            "frostBurstR": 2.9700000000000006,
+            "selfShield": 0,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.8,
+          "titles": [
+            "FROST NOVA",
+            "FROST BEAT"
+          ]
+        },
+        "C": {
+          "u1": {
+            "boltCount": 1,
+            "warheads": 1,
+            "chainJumps": 0,
+            "burn": 0,
+            "chillMul": 1,
+            "frostBurstR": 0,
+            "selfShield": 1.8125,
+            "pierceAdd": 0
+          },
+          "u2cd": 0.861,
+          "titles": [
+            "CRYSTAL BASTION",
+            "SHIELD BEAT"
+          ]
+        }
+      }
+    },
+    "cardEn": [
+      "INCENDIARY · BURN STORM",
+      "INCENDIARY · INCENDIARY BEAT"
+    ]
+  },
+  "fail": []
+}

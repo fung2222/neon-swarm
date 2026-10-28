@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.122 WEAPONS-ULT-LABELS-001 · unique U1/U2 card copy · kits code next
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.123 WEAPONS-ULT-KITS-001 · unique U1/U2 kits **live** for all 5 primaries
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -89,7 +89,7 @@ IDs are stable English snake keys used in code / saves. zh-HK names are product 
 | `flash` | flash interrupt | Short fuse; breaks aim / telegraph |
 | `gravity` | gravity pull → crush | Pull then damage |
 
-Branch/ult UI playable as of v0.9.54; **deep branch kits as of v0.9.55** (A/B/C distinct fire deltas). Ult kits **specified** v0.9.121 (light amp fallback until kit code). Feel + kits in `WEAPON_CATALOG` / `branchStatMods` + Game ticks.
+Branch/ult UI playable as of v0.9.54; **deep branch kits as of v0.9.55** (A/B/C distinct fire deltas). Ult kits **live** v0.9.123 (spec 0.9.121 · labels 0.9.122). Feel + kits in `WEAPON_CATALOG` / `branchStatMods` / `applyUltKitMods` + Game ticks.
 
 **v0.9.56 ship (`WEAPONS-FEEL-FX-001`):** per-weapon muzzle/trail/burst FX recipes in `js/weapons-feel-fx.js` — gatling bolts, ion charge→punch, tracking stick→pop, vulcan spin sparks, zero chill+frost, acid mist, shotgun flash, slow rush ring, drone deploy puff, blackhole swirl, distinct throw bursts. MOBILE_GFX / webgl-guard respectful (shed rings; reuse pools). Screenshots `tests/screenshots/weapons-feel-fx/`.
 
@@ -409,7 +409,8 @@ Do **not** re-add player cards under legacy ids.
 | Branch kit hints match branchNames | **live** (v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001) |
 | Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | fallback stubs kept (v0.9.82); cards use unique titles |
 | Unique ult card labels (30 forms) | **live** (v0.9.122 WEAPONS-ULT-LABELS-001) |
-| Unique ult kits (30 forms primary×branch×U) | **spec** (v0.9.121 WEAPONS-ULT-SPEC-001); code pending |
+| Ult pick UI (Lv5 primary) unique kits | **live** (v0.9.123) — stacks on branch letter |
+| Unique ult kits (30 forms primary×branch×U) | **live** (v0.9.123 WEAPONS-ULT-KITS-001; spec v0.9.121; labels v0.9.122) |
 | Ult light-amp multipliers documented (×1.2 / ×0.85) | **live** (v0.9.88 WEAPONS-ULT-LIGHT-AMP-DOCS-001) |
 | HUD hub region a11y | **live** (v0.9.91 HUD-HUB-A11Y-001) |
 | Pause/over dialog a11y | **live** (v0.9.92–0.9.93) |
@@ -437,7 +438,7 @@ Do **not** re-add player cards under legacy ids.
 | Throw tap (frag) | **live** |
 | Other catalog fire | **live** (v0.9.75) all 14 exemplar + feel behaviors |
 | Branch pick UI (Lv3) | **live** level-cards + apply |
-| Ult pick UI (Lv5 primary) | **live** — unique kits specced v0.9.121; light amp until kit code |
+| Ult pick UI (Lv5 primary) | **live** unique kits (v0.9.123) |
 | Branch deep kits A/B/C | **live** (v0.9.55) distinct fire/behavior |
 | Real art icons | **placeholder** — Roy art pipeline above |
 | Full balance pass vs all elites | **first-pass only** — optional named `BALANCE-PASS` after Roy try (do not invent huge retune) |
@@ -449,7 +450,8 @@ Do **not** re-add player cards under legacy ids.
 - `tests/weapons-loadout.test.mjs` — capacity, normalize, mode switch, empty→primary  
 - `tests/weapons-catalog.test.mjs` — full roster presence  
 - `tests/weapons-branch-pick.test.mjs` — unlock gates, offers, Game apply branch/ult  
-- `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)  
+- `tests/weapons-branch-kits.test.mjs` — A≠B≠C combat deltas (gatling + ion/vulcan/zero/tracking)
+- `tests/weapons-ult-labels.test.mjs` + `tests/weapons-ult-kits.test.mjs` — 30 unique ult labels + behavior kits  
 - `tests/weapons-branch-shots.mjs` → `tests/screenshots/weapons-branch/`  
 - `tests/weapons-branch-kits-shots.mjs` → `tests/screenshots/weapons-branch-kits/`  
 - Screenshots: … + hud-overlap-fix (v0.9.60) + **hud-merge (v0.9.61)**

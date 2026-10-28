@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const SHOT_DIR = join(__dirname, 'screenshots', 'weapons-ult-labels');
 const CHROME = process.env.CHROME_PATH || '/usr/bin/google-chrome';
-const VER = '0.9.122';
+const VER = '0.9.123';
 const WAIT = { timeout: 60000 };
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.md': 'text/markdown' };
 
