@@ -2,9 +2,9 @@
 
 > Live: https://fung2222.github.io/neon-swarm/ · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**Active** — shipping safe batch v0.9.91–0.9.100. Tip `v0.9.99` `SLOT-RAIL-ARIA-SYNC-001`.
+## 狀態：**HOLD** — safe pipeline「十個十個」v0.9.91–0.9.100 **done**. Tip `v0.9.100` `GAMES-JSON-STAGE-002`.
 
-**Author:** Grok bot · **Waiting:** finish 10 then HOLD
+**Author:** Grok bot · **Waiting:** Roy try on live `?v=0.9.100`
 
 ### Shipped this beat (10)
 1. v0.9.91 `HUD-HUB-A11Y-001`
@@ -16,6 +16,7 @@
 7. v0.9.97 `LEVEL-CARD-FOCUS-001`
 8. v0.9.98 `WEAPONS-MD-TIP-SYNC-001`
 9. v0.9.99 `SLOT-RAIL-ARIA-SYNC-001`
+10. v0.9.100 `GAMES-JSON-STAGE-002`
 
 ### Preserve
 hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 · clamp · fill-edge · rail-tap · branch-path · prior tap/sync/a11y ships · ult light-amp labels · rail group a11y.
@@ -23,4 +24,4 @@ hide-until-touch · hub · color rail · dbl/tpl · burst≤3 · floor · 2+2+2 
 ### Out of scope / HARD BANS（下輪仍禁）
 Phase 4 · horn lock · soft-juice invent · full ult invent · BALANCE-PASS · deep GPU · Roy PNG.
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.99
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.100
