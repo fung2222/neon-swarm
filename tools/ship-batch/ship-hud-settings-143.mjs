@@ -275,32 +275,8 @@ async function main() {
   // ===== 0.9.143 already shipped @ 6150ef3 — seed table =====
   row('0.9.143', 'HUD-HUB-FLUSH-TOP-001', 'hub --hud-hub-top → var(--sa-top); no 6–8px gap; safe-area kept');
 
-  // ===== 0.9.144 HUD-MUTE-TO-GEAR-001 =====
-  {
-    const ver = '0.9.144', id = 'HUD-MUTE-TO-GEAR-001', slug = 'hud-mute-to-gear';
-    const blurb = 'in-run mute → gear; opens same settings; settingsTip aria';
-    bumpCache(ver);
-    writeUnit(slug, ver, id, `
-assert.ok(html.includes('btn-settings-run'), 'gear btn');
-assert.ok(!html.includes('id="btn-mute"'), 'no mute btn');
-assert.ok(html.includes('HUD-MUTE-TO-GEAR-001'), 'marker');
-assert.ok(strings.includes('settingsTip'), 'settingsTip');
-assert.ok(main.includes('openInRunSettings'), 'open settings');
-assert.ok(main.includes('btn-settings-run'), 'listener');
-assert.ok(main.includes('toggleMutePersist'), 'mute still persist via settings');
-`);
-    const probe = await shotHud(slug, ver);
-    assert.ok(probe.gear, 'gear present');
-    assert.ok(!probe.mute, 'mute gone');
-    assert.ok(probe.gear.w >= 44 && probe.gear.h >= 44, 'gear ≥44');
-    row(ver, id, blurb);
-    updateDocs(ver, id, blurb, { hold: false, tableRows: TABLE });
-    sh(`node tests/${slug}.test.mjs`);
-    // soft-pin
-    sh('node tests/ui-layout-home-hud.test.mjs');
-    sh('node tests/mute-persist.test.mjs');
-    commitPush(ver, id, `v${ver} ${id}: mute chrome → gear settings`);
-  }
+  // ===== 0.9.144 already shipped @ be4114c — seed =====
+  row('0.9.144', 'HUD-MUTE-TO-GEAR-001', 'in-run mute → gear; opens same settings; settingsTip aria');
 
   // ===== 0.9.145 HUD-GEAR-PAUSE-CORNERS-001 =====
   {
