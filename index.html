@@ -10,7 +10,7 @@
 <title data-i18n="doc.title">暴走機甲 RAMPAGE MECH</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2305010f%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%223%22 fill=%22%23ff2bd6%22/%3E%3Ccircle cx=%228%22 cy=%2210%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2224%22 cy=%2212%22 r=%222%22 fill=%22%2300e5ff%22/%3E%3Ccircle cx=%2210%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%221.5%22 fill=%22%23ffe600%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./vendor/cyber-kit/ui/hud.css?v=0.3.16">
-<link rel="stylesheet" href="./css/game.css?v=0.9.101">
+<link rel="stylesheet" href="./css/game.css?v=0.9.102">
 <script type="importmap">
 {
   "imports": {
@@ -70,7 +70,7 @@
       </div>
     </div>
     <div class="hub-xp-row">
-      <div class="xp-bar"><i id="xp-fill"></i></div>
+      <!-- v0.9.102 XP-BAR-A11Y-001 --><div class="xp-bar" role="progressbar" aria-label="經驗 XP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xp-fill"></i></div>
       <span class="hub-xp-pct" id="xp-pct">0%</span>
     </div>
     <div class="hub-meta-row">
@@ -227,6 +227,6 @@
   } catch (e) { /* private mode */ }
 })();
 </script>
-<script type="module" src="./js/main.js?v=0.9.101"></script>
+<script type="module" src="./js/main.js?v=0.9.102"></script>
 </body>
 </html>

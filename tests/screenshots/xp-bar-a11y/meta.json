@@ -1,0 +1,9 @@
+{
+  "ver": "0.9.102",
+  "probe": {
+    "role": "progressbar",
+    "aria": "經驗 XP",
+    "min": "0",
+    "max": "100"
+  }
+}

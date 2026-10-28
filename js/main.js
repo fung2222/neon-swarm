@@ -513,6 +513,9 @@ function updateHUD(force = false) {
   if (xpFill) xpFill.style.width = (xpPct * 100) + '%';
   const xpPctEl = $('xp-pct');
   if (xpPctEl) xpPctEl.textContent = Math.round(xpPct * 100) + '%';
+  // v0.9.102 XP-BAR-A11Y-001
+  const xpBar = document.querySelector('.xp-bar');
+  if (xpBar) xpBar.setAttribute('aria-valuenow', String(Math.round(xpPct * 100)));
   const armEl = $('hud-armor');
   const armBlock = $('hub-armor-block');
   if (armEl && armBlock) {

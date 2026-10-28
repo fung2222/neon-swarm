@@ -4,7 +4,7 @@
 >
 > **溝通：** 對 Roy 用繁體中文（廣東話可以）；code、路徑、指令、commit message 用英文。UI copy 一律 **zh-HK 先行**，英文細字／small caps 放下行。
 >
-> **文件日期：** 2026-10-28（Asia/Hong_Kong；**Active** safe pipeline v0.9.101–0.9.101（tip level-dialog-a11y）；prior games-json-stage-002 v0.9.100）
+> **文件日期：** 2026-10-28（Asia/Hong_Kong；**Active** safe pipeline v0.9.101–0.9.102（tip xp-bar-a11y）；prior games-json-stage-002 v0.9.100）
 > **建議承接基準：** v0.9.61 HUD merge (hub+water rail) + v0.9.60 overlap + v0.9.59 HUD/controls/floor + v0.9.58 legacy purge + v0.9.57 neon icon placeholders + v0.9.56 feel FX（prior: v0.9.55 deep branch kits；branch/ult UI = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；elite lane = v0.9.50；slot pulse = v0.9.49；zone chip = v0.9.48；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；soft-juice queue **done**；bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area = v0.9.36；mute persist = v0.9.35；damage numbers = v0.9.34；run-loop UX = v0.9.33；banner timing = v0.9.32；level-up UX = v0.9.31；drop readability = v0.9.30；pickup polish = v0.9.29；4 slots = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；PHONE-STABLE = v0.9.20；AIM-HIT = v0.9.19；endless = v0.9.18；rooftop = v0.9.17 五區齊；blockade = v0.9.16；reactor = v0.9.15；assembly = v0.9.14；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`）
 > **Repo：** https://github.com/fung2222/neon-swarm  
 > **Live：** https://fung2222.github.io/neon-swarm/  
@@ -32,8 +32,9 @@
 
 ### 已核對（相對舊建議基準 `6ddc483` / v0.9.3）
 
-- 目前 `main`／live cache-bust：**`?v=0.9.101`**（rail-group-a11y；games-json-stage；ult-light-amp-docs；pause-hint-sync；branch-hint-sync；primary-en-docs；over-loadout-pst；howto-rules-sync；ult-en-labels；pause-cta-tap；branch-en-labels；gfx-reload-tap `99cefd1`；coach-controls-sync `498b36a`；home-cta-tap `0a7b8dc`；over-cta-tap `ac6a921`）（HUD overlap fix = v0.9.60；HUD/controls/floor = v0.9.59；legacy purge = v0.9.58；icon placeholders = v0.9.57；feel FX = v0.9.56；deep branch kits = v0.9.55；branch/ult pick = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；suicide bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
+- 目前 `main`／live cache-bust：**`?v=0.9.102`**（rail-group-a11y；games-json-stage；ult-light-amp-docs；pause-hint-sync；branch-hint-sync；primary-en-docs；over-loadout-pst；howto-rules-sync；ult-en-labels；pause-cta-tap；branch-en-labels；gfx-reload-tap `99cefd1`；coach-controls-sync `498b36a`；home-cta-tap `0a7b8dc`；over-cta-tap `ac6a921`）（HUD overlap fix = v0.9.60；HUD/controls/floor = v0.9.59；legacy purge = v0.9.58；icon placeholders = v0.9.57；feel FX = v0.9.56；deep branch kits = v0.9.55；branch/ult pick = v0.9.54；weapons redesign = v0.9.53；UI layout = v0.9.52；phone WebGL guard = v0.9.51；jammer = v0.9.47；medic = v0.9.46；flanker = v0.9.45；score positioning = v0.9.44；trade-off cards = v0.9.43；zone pressure = v0.9.42；danger pulse = v0.9.41；suicide bomber = v0.9.40；result-share = v0.9.39；kill-streak = v0.9.38；early feedback = v0.9.37；safe-area＋mute persist = v0.9.35＋damage numbers lite = v0.9.34＋run-loop UX = v0.9.33＋banner timing = v0.9.32＋level-up card UX = v0.9.31＋drop readability = v0.9.30＋pickup polish = v0.9.29；multi-slot inventory = v0.9.28；8-dir gun = v0.9.27；commander = v0.9.26；artillery = v0.9.25；shield = v0.9.24；sniper = v0.9.23；Phase 2 readability = v0.9.22；horn silhouette interim OK-to-continue；phone stable = v0.9.20；AIM-HIT-FAST-002 = v0.9.19；endless elites @+90s／boss @+300s after 360；rooftop @510；blockade @420；reactor @285；assembly bay @195）；elite#2 = v0.9.13；aim/hit = v0.9.12；pickup = v0.9.11；boss = v0.9.10；lab slice = v0.9.9；Phase 2 floor = v0.9.8 / `f6b5f63`；Phase 0 baseline SHA `ec12087`（v0.9.6）。
 - **Done since `6ddc483`：**
+  - v0.9.102 — XP-BAR-A11Y-001：xp-bar role=progressbar aria 經驗/XP + valuemin/max; hub preserved.
   - v0.9.101 — LEVEL-DIALOG-A11Y-001：level screen role=dialog aria-modal + labelledby; cards tap preserved.
   - v0.9.100 — GAMES-JSON-STAGE-002：games.json stub stage → v0.9.100; end of 10-slice batch; HOLD.
   - v0.9.99 — SLOT-RAIL-ARIA-SYNC-001：weapon-slots/rail static aria zh-first sync; color-only rail preserved.
@@ -522,11 +523,11 @@ Rollback baseline:
 
 **誠實標籤：** `implemented`、`tested`、`visually reviewed`、`device verified`、`user reported`、`not verified` 是不同狀態，不可混用。
 
-**Active = shipping** — tip `v0.9.101` `LEVEL-DIALOG-A11Y-001`（batch v0.9.101–0.9.120）。Do **not** invent soft-juice／full ult／BALANCE／Phase 4／horn／deep GPU。
+**Active = shipping** — tip `v0.9.102` `XP-BAR-A11Y-001`（batch v0.9.101–0.9.120）。Do **not** invent soft-juice／full ult／BALANCE／Phase 4／horn／deep GPU。
 
 ## 11. 下一位 agent 的第一個建議動作
 
-Continue safe batch toward v0.9.120 then HOLD. Tip `v0.9.101` `LEVEL-DIALOG-A11Y-001`.
+Continue safe batch toward v0.9.120 then HOLD. Tip `v0.9.102` `XP-BAR-A11Y-001`.
 
 HARD BANS: Phase 4 · horn art lock · soft-juice invent · full ult invent · BALANCE-PASS · deep phone GPU.
 
@@ -534,6 +535,7 @@ HARD BANS: Phase 4 · horn art lock · soft-juice invent · full ult invent · B
 
 ## 版本歷史（增量）
 
+- **v0.9.102** (`XP-BAR-A11Y-001`) — xp-bar role=progressbar aria 經驗/XP + valuemin/max; hub preserved.
 - **v0.9.101** (`LEVEL-DIALOG-A11Y-001`) — level screen role=dialog aria-modal + labelledby; cards tap preserved.
 - **v0.9.100** (`GAMES-JSON-STAGE-002`) — games.json stub stage → v0.9.100; end of 10-slice batch; HOLD.
 - **v0.9.99** (`SLOT-RAIL-ARIA-SYNC-001`) — weapon-slots/rail static aria zh-first sync; color-only rail preserved.
