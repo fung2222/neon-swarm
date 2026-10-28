@@ -93,3 +93,8 @@ Until the checklist is green, README and this doc must say: **select = live 3D; 
 ## 7. Honesty note (v0.9.188 HORN-BAKE-INGAME-ALIGN)
 
 Horn select (live 3D) and in-game (rebaked 8-dir sheets) share `buildPlayerMech` source. heavy/prototype: select live 3D unique meshes; bake stubs optional; not claimed in-game-aligned until sheets wired. **Interim for Roy 肉眼 — not §9 lock.**
+
+
+## 8. Horn match approved (v0.9.193–197)
+
+Roy chose rebuild-3D-from-approved (not T2I menu PNGs). Source of truth remains `buildPlayerMech` → select live 3D + `tools/bake-mech-sprites.mjs` 8-dir sheets. Target PNG: `sword-mech-sideview-approved.jpg`. Screenshots: `tests/screenshots/horn-match-approved/`. **Interim — HOLD for Roy 肉眼; not §9 / device-final.**

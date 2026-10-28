@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.196 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.197 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****Active** — tip `v0.9.196` `HORN-INGAME-MATCH-001`. In-game + shots vs approved.**
+## 狀態：**HOLD — tip `v0.9.197` (`GAMES-JSON-STAGE-010`). Horn match shipped; wait Roy 肉眼 before lock / next invent.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.196
+https://fung2222.github.io/neon-swarm/?v=0.9.197
 
 ### Roy decision (2026-10-28 ~17:57 HKT)
 Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
@@ -27,8 +27,19 @@ Widget「主角外觀點樣對齊你張圖？」→ **跟圖重做 3D 再 bake**
 - Do NOT invent menu PNGs from text-to-image (art-bible: select = live 3D `buildPlayerMech`)
 - Do NOT bring back pause `#btn-glow`
 
-### Active queue
-Docs honesty + GAMES-JSON stage → HOLD for Roy 肉眼.
+### Why HOLD / Roy decision needed
+Horn rebuilt + rebaked toward approved charcoal+cyan PNG. **Interim — not §9 / device-final lock.**
+
+Please try tip and answer:
+
+1. **Looks like your approved PNG?** (`sword-mech-sideview-approved` / charcoal+cyan slender swept-crest) — select 3D + in-game bake
+2. **Lock horn** as §9 / device-final? Or **more polish** (crest / limbs / plates)?
+3. Heavy / Prototype stubs — leave for later?
+4. Weapons PNG — drop when ready (path live)
+
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.197
+
+Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
 
 ### Shipped this beat (slice table)
@@ -46,6 +57,7 @@ Docs honesty + GAMES-JSON stage → HOLD for Roy 肉眼.
 | v0.9.194 | `HORN-MESH-MATCH-001` | Rebuild buildHorn mesh/materials — charcoal matte plates, cyan neon edge trim, slender limbs, swept-back crest, cyan visor slit, circular hinges; drop purple block read |
 | v0.9.195 | `HORN-REBAKE-MATCH-001` | Rebake horn 8-dir sheets from new buildPlayerMech; sync muzzle/atlas/anchors; cool bake fill (no purple kick) |
 | v0.9.196 | `HORN-INGAME-MATCH-001` | Confirm in-game uses new sheets; screenshots select + bake + in-game vs approved under tests/screenshots/horn-match-approved/ |
+| v0.9.197 | `GAMES-JSON-STAGE-010` | art-bible/render-pipeline honesty (target=approved PNG); games.json stage → tip; HOLD for Roy 肉眼 — not §9 lock |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above
