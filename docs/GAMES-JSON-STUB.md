@@ -1,6 +1,6 @@
 # games.json stub — neon-swarm
 
-<!-- 0.9.185 GAMES-JSON-STAGE-008 / stub tip bump -->
+<!-- 0.9.192 GAMES-JSON-STAGE-009 / art Active tip bump -->
 
 Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier.
 
@@ -22,8 +22,8 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 0.9.185 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · 未包裝 Android
-    "en": "web 0.9.185 · 2+2+2 loadout / branch+ult / hide-stick / color rail · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · 未包裝 Android
+    "zh": "網頁版 0.9.192 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · 未包裝 Android
+    "en": "web 0.9.192 · 2+2+2 loadout / branch+ult / hide-stick / color rail · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · 未包裝 Android
   },
   "kit": "v0.3.16",
   "play": "not-submitted",

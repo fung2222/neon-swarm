@@ -1,13 +1,13 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.191 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.192 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：****Active** — tip `v0.9.191` `WEAPONS-PNG-PATH`. PNG path ready; stage close → HOLD for Roy 肉眼.**
+## 狀態：****HOLD** — tip `v0.9.192` (`GAMES-JSON-STAGE-009`). Art beat shipped; wait Roy 肉眼 before lock / next invent.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.191
+https://fung2222.github.io/neon-swarm/?v=0.9.192
 
 ### Roy decision (2026-10-28 ~17:41 HKT)
 Widget「v0.9.185 之後下一條？」→ **機體／角／Roy PNG**
@@ -27,8 +27,18 @@ Widget「v0.9.185 之後下一條？」→ **機體／角／Roy PNG**
 - Do NOT invent menu PNGs from text-to-image (art-bible: select = live 3D `buildPlayerMech`)
 - Do NOT bring back pause `#btn-glow`
 
-### Active queue
-Continue art track until coherent phone beat (horn deepen+rebake live) then HOLD for Roy visual.
+### Why HOLD / Roy decision needed
+Art beat shipped for phone 肉眼. **Interim — not §9 / device-final lock.**
+
+Please try tip and answer:
+
+1. **Horn** `?v=0.9.192` select 3D + in-game bake — OK to continue polish? **Lock horn** as §9 / device-final?
+2. **Heavy / Prototype** unique select silhouettes — OK direction? Continue polish?
+3. **Weapons PNG** — drop your `assets/weapons/{id}.png` files when ready? (path is live; neon SVG until then)
+
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.192
+
+Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
 
 ### Shipped this beat (slice table)
@@ -41,6 +51,7 @@ Continue art track until coherent phone beat (horn deepen+rebake live) then HOLD
 | v0.9.189 | `MECH-HEAVY-SILHOUETTE` | Unique Precision (heavy) mesh — compact wide stance, twin shoulder pods, sensor crown; white-pink; bake 4-dir stub; NOT recolor horn |
 | v0.9.190 | `MECH-PROTOTYPE-SILHOUETTE` | Unique Morph (prototype) mesh — morph seams, dual fins+monocle, fold-panel pack; citrus; bake 4-dir stub; NOT recolor horn |
 | v0.9.191 | `WEAPONS-PNG-PATH` | Wire WEAPON_ICON_SRC preferSrc→assets/weapons/{id}.png + SVG fallback; README drop path; no Roy PNGs yet — HOLD note |
+| v0.9.192 | `GAMES-JSON-STAGE-009` | games.json stub stage → tip; art beat HOLD for Roy 肉眼 on horn (+ optional heavy/proto); weapons PNG drop ask |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above
