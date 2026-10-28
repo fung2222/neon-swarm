@@ -15,7 +15,7 @@
 |---|---|
 | Model | Procedural Three.js **`buildPlayerMech(cfg)`** in `js/view.js` |
 | Select | `View.setMenuMech(id)` builds that mesh, pedestal + shadow, yaw drag |
-| In-game | Still `buildPlayerSprite` + `assets/sprites/mech_*.png` (**interim placeholders**) |
+| In-game (horn) | `buildBakedPlayerSprite` ← `assets/mechs/horn/sheets/` from same `buildPlayerMech`; legacy `assets/sprites/mech_*.png` fallback |
 
 Future: drop a GLB at `assets/mechs/{id}/source.glb` and load it inside the same `setMenuMech` / bake path **without changing the select API** (`setMenuMech(id)`, card → `store.mech`).
 
@@ -88,3 +88,8 @@ Phase 1 ships the **CLI contract + dry-run stub**. Full headless WebGL bake can 
 - [ ] No T2I-only frames in either path
 
 Until the checklist is green, README and this doc must say: **select = live 3D; in-game sprites = interim**.
+
+
+## 7. Honesty note (v0.9.188 HORN-BAKE-INGAME-ALIGN)
+
+Horn select (live 3D) and in-game (rebaked 8-dir sheets) share `buildPlayerMech` source. heavy/prototype: select live 3D unique meshes; bake stubs optional; not claimed in-game-aligned until sheets wired. **Interim for Roy 肉眼 — not §9 lock.**

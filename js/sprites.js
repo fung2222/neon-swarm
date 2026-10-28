@@ -402,6 +402,7 @@ export function applySpriteMotion(root, {
 
 // ---------------------------------------------------------------------------
 // Baked player sheets (from buildPlayerMech via tools/bake-mech-sprites.mjs).
+// HORN-BAKE-INGAME-ALIGN (v0.9.188): horn in-game uses these sheets — same 3D source as select.
 // Old whole-body PNG remains fallback until atlas loads / verifies.
 // ---------------------------------------------------------------------------
 
