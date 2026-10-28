@@ -11,7 +11,7 @@ const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.60'), 'cache-bust 0.9.60');
+assert.ok(/\?v=0\.9\.(6\d|[7-9]\d)/.test(html), 'cache-bust ≥0.9.60');
 assert.ok(css.includes('WEAPONS-HUD-OVERLAP-FIX-001'), 'ship id in CSS');
 assert.ok(css.includes('--hud-row1-top'), 'row1 token');
 assert.ok(css.includes('--hud-xp-top'), 'xp token');

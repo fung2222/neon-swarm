@@ -1785,3 +1785,37 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 
 
 /* ===== STICK-TOUCH-SHOW-001 v0.9.65 — idle stick invisible; show at finger while pressed ===== */
+
+/* ===== HOME-SETTINGS-TAP-001 v0.9.70 — phone gear/settings ≥44px (override kit 40px shrink) ===== */
+/* cyber-kit hud.css @media max-760 shrinks .menu-icon-btn to 40×40; restore HIG ≥44. */
+@media (max-width: 760px) {
+  .menu-icon-btn,
+  body > .menu-icon-btn,
+  body > #btn-settings-home,
+  #btn-settings-home,
+  #btn-howto,
+  .menu-howto.menu-icon-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 9px;
+    box-sizing: border-box;
+  }
+}
+.ck-set-row {
+  min-height: 44px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+.ck-toggle,
+.ck-seg button {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+.ck-slider {
+  min-height: 44px; /* taller hit area; visual track stays thin via accent */
+  padding: 20px 0;
+  box-sizing: border-box;
+}

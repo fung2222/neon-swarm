@@ -85,7 +85,7 @@ assert.equal(canNativeShare({}, { forceTouch: true }), false);
   assert.ok(!/facebook\.com|twitter\.com|gtag\(|googletagmanager/i.test(mod));
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(html.includes('id="btn-share"'));
-  assert.ok(html.includes('?v=0.9.39'));
+  assert.ok(/\?v=0\.9\.(3[9]|[4-9]\d)/.test(html), 'cache-bust ≥0.9.39');
   assert.ok(html.includes('複製戰績'));
   const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
   assert.ok(css.includes('over-share'));

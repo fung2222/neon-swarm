@@ -1,0 +1,85 @@
+{
+  "ver": "0.9.70",
+  "homeProbe": {
+    "gear": {
+      "w": 44,
+      "h": 44,
+      "minW": "44px",
+      "minH": "44px",
+      "id": "btn-settings-home",
+      "cls": "menu-icon-btn menu-settings"
+    },
+    "howto": {
+      "w": 44,
+      "h": 44,
+      "minW": "44px",
+      "minH": "44px",
+      "id": "btn-howto",
+      "cls": "menu-icon-btn"
+    }
+  },
+  "setProbe": {
+    "rows": [
+      {
+        "w": 278.4,
+        "h": 64.6,
+        "tag": "DIV",
+        "cls": "ck-set-row"
+      },
+      {
+        "w": 278.4,
+        "h": 64.6,
+        "tag": "DIV",
+        "cls": "ck-set-row"
+      },
+      {
+        "w": 278.4,
+        "h": 68.6,
+        "tag": "DIV",
+        "cls": "ck-set-row"
+      },
+      {
+        "w": 278.4,
+        "h": 64.6,
+        "tag": "DIV",
+        "cls": "ck-set-row"
+      }
+    ],
+    "toggles": [
+      {
+        "w": 71.6,
+        "h": 43.8,
+        "tag": "BUTTON",
+        "cls": "ck-toggle"
+      }
+    ],
+    "segs": [
+      {
+        "w": 43.8,
+        "h": 43.8,
+        "tag": "BUTTON",
+        "cls": "on"
+      },
+      {
+        "w": 43.8,
+        "h": 43.8,
+        "tag": "BUTTON",
+        "cls": ""
+      },
+      {
+        "w": 43.8,
+        "h": 43.8,
+        "tag": "BUTTON",
+        "cls": "on"
+      },
+      {
+        "w": 43.8,
+        "h": 43.8,
+        "tag": "BUTTON",
+        "cls": ""
+      }
+    ],
+    "visible": true
+  },
+  "fail": []
+}
