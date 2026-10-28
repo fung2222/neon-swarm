@@ -21,8 +21,8 @@ export const WEAPON_ID_ALIASES = Object.freeze({
 });
 
 /**
- * Full catalog. behavior: which legacy fire path (or stub) to drive.
- * Exemplars live: gatling, ion_beam, shotgun, acid_gun, frag.
+ * Full catalog. behavior: feel-matched fire path (all 14 live as of WEAPONS-CATALOG-FIRE-LIVE-001 / v0.9.75).
+ * Every entry has exemplar:true — no shared-placeholder stub remaining for catalog fire.
  */
 export const WEAPON_CATALOG = Object.freeze({
   // —— Primary (5) ——

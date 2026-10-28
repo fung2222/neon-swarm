@@ -57,5 +57,11 @@ assert.ok(exemplars.includes('ion_beam'));
 assert.ok(exemplars.includes('shotgun'));
 assert.ok(exemplars.includes('acid_gun'));
 assert.ok(exemplars.includes('frag'));
+// v0.9.75 WEAPONS-CATALOG-FIRE-LIVE-001 — all 14 exemplar (no stub leftover)
+assert.equal(exemplars.length, ALL_WEAPON_IDS.length, 'all catalog weapons exemplar:true');
+for (const id of ALL_WEAPON_IDS) {
+  assert.ok(WEAPON_CATALOG[id].behavior, id + ' has behavior');
+  assert.equal(WEAPON_CATALOG[id].exemplar, true, id + ' exemplar');
+}
 
-console.log('weapons-catalog OK', { ids: ALL_WEAPON_IDS.length, exemplars });
+console.log('weapons-catalog OK', { ids: ALL_WEAPON_IDS.length, exemplars: exemplars.length });

@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.74 howto-controls-sync · rail-path-badge v0.9.73 · mech-card-tap v0.9.72 · mute-pause-tap v0.9.71 · home-settings-tap v0.9.70  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.75 catalog-fire-live · howto-controls-sync v0.9.74 · rail-path-badge v0.9.73 · mech-card-tap v0.9.72 · mute-pause-tap v0.9.71  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -114,6 +114,7 @@ Weapon
 | Resource | none (auto) | `ammo` or `energy` | charge / CD |
 
 **v0.9.53 ship:** full catalog IDs/names/feel/counters; branch/ult **data stubs**. All 14 wired with feel-matched behaviors.
+**v0.9.75:** catalog fire status **live** (docs stub cleared); full unique ult kits still stub.
 
 **v0.9.54 ship (`WEAPONS-BRANCH-PICK-001`):** branch pick at Lv≥3 + primary ult pick at Lv≥5 via level-cards; `weaponBranches`/`weaponUlts`; light `branchStatMods`.
 
@@ -352,7 +353,7 @@ Do **not** re-add player cards under legacy ids.
 | Primary auto-fire (gatling, ion_beam) | **live** (exemplars) |
 | Secondary ammo/energy → auto primary | **live** (shotgun, acid_gun) |
 | Throw tap (frag) | **live** |
-| Other catalog fire | **stub** shared placeholder / remapped legacy |
+| Other catalog fire | **live** (v0.9.75) all 14 exemplar + feel behaviors |
 | Branch pick UI (Lv3) | **live** level-cards + apply |
 | Ult pick UI (Lv5 primary) | **live** light amp — full unique ult kits still stub |
 | Branch deep kits A/B/C | **live** (v0.9.55) distinct fire/behavior |

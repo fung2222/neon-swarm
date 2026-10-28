@@ -1,0 +1,40 @@
+{
+  "ver": "0.9.75",
+  "probe": {
+    "tiles": [
+      {
+        "i": "0",
+        "empty": false,
+        "title": "火神 Lv1"
+      },
+      {
+        "i": "1",
+        "empty": false,
+        "title": "零度激光 Lv1"
+      },
+      {
+        "i": "2",
+        "empty": false,
+        "title": "緩速槍 Lv1"
+      },
+      {
+        "i": "3",
+        "empty": false,
+        "title": "黑洞炮 Lv1"
+      },
+      {
+        "i": "4",
+        "empty": false,
+        "title": "閃光彈 Lv1"
+      },
+      {
+        "i": "5",
+        "empty": false,
+        "title": "重力彈 Lv1"
+      }
+    ],
+    "n": 6,
+    "state": "play"
+  },
+  "fail": []
+}
