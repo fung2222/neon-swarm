@@ -2337,3 +2337,14 @@ html[data-lang="en"] #over-title {
   text-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
   opacity: 1;
 }
+
+
+/* ===== OVER-POS-READ-001 v0.9.180 — over-pos score-position phone contrast leftover ===== */
+#screen-over .over-pos {
+  color: #b8ffe8;
+  text-shadow: 0 0 10px rgba(0, 229, 180, 0.4);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  opacity: 1;
+}
