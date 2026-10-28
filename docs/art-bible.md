@@ -85,7 +85,7 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 
 - **Wanted:** Japanese refined mecha + cyberpunk mil-tech (this bible’s style line) — humanoid-mecha proportions, longer limbs vs torso, sharper angular plates.
 - **Rejected:** blocky／塊狀／cube-stack body as the shared style for later mechs. Do **not** lock the old toy-block read.
-- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Roy 2026-10-26:** interim silhouette accepted for pipeline continue（「繼續出去啦」）；**still not** device-final-art-locked／HANDOFF §9 locked. **Do not** further polish horn until later Roy art lock.
+- **Status:** interim mecha pass shipped in `buildPlayerMech` (horn only) + rebaked sheets **v0.9.21**. Screenshots under `tests/screenshots/horn-silhouette-mecha/`. **Roy 2026-10-26:** interim silhouette accepted for pipeline continue（「繼續出去啦」）；**still not** device-final-art-locked／HANDOFF §9 locked. **Lifted 2026-10-28** for Active `MECH-HORN-ROY-PNG` (Roy widget「機體／角／Roy PNG」): further horn polish + unique heavy/prototype silhouettes + Roy PNG path allowed. Still **not** §9 / device-final without Roy 肉眼 OK.
 
 ## 5. Dim-arena rule
 
@@ -93,15 +93,15 @@ At play scale, frames and enemies must stay distinguishable by **silhouette + co
 - Prefer lowering floor albedo / ambient over raising bloom.
 - Bloom is a **restrained rim**, never a wash that flattens cyan MG tracers into white.
 
-## 6. Select vs in-game honesty (Phase 1)
+## 6. Select vs in-game honesty (Phase 1 → bake align)
 
 | Surface | Source |
 |---|---|
 | **Select / home** | Live procedural Three.js `buildPlayerMech(cfg)` — rotatable 3D |
-| **In-game** | Interim billboard PNGs under `assets/sprites/mech_*.png` |
+| **In-game (horn)** | Baked multi-dir sheets from **same** `buildPlayerMech` under `assets/mechs/horn/sheets/` (via `buildBakedPlayerSprite`) |
+| **In-game fallback** | Legacy `assets/sprites/mech_*.png` only when bake atlas missing for that mech id |
 
-Phase 1 does **not** claim select and in-game already share baked multi-dir sprites.  
-Phase 3 bakes 4/8-dir sheets **from the same 3D source** used on select. Until then, sprites are placeholders of the same lore ID, not a second art pipeline.
+**HORN-BAKE-INGAME-ALIGN (v0.9.188):** horn in-game billboards use rebaked sheets — not a second art pipeline. heavy / prototype still select-3D only until their bake stubs land; do **not** claim all three frames are in-game-aligned. Until Roy 肉眼 lock, sheets are **interim**.
 
 ## 7. Out of scope here
 
