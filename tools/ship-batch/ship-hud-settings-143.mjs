@@ -178,6 +178,7 @@ ${tip}
   agent += `
 ### Preserve / HARD BANS
 stick hide · hub content · rail · tap≥44 · dbl/tpl · burst≤3 · floor · 2+2+2 · branch+ult · balance/UI/GPU · over title oneline+size.
+Soft-pin kept: HOME-SETTINGS-TAP-001 · HUD-MUTE-PAUSE-TAP-001 · SHARE-FALLBACK-SYNC-001 · UI-LAYOUT-HOME-HUD-001.
 Phase 4 · new mech · soft-juice invent · more ult invent · horn lock · Roy PNG · BALANCE re-pass.
 
 ### Backlog
@@ -271,29 +272,8 @@ const TABLE = [];
 function row(ver, id, notes) { TABLE.push({ ver, id, notes }); }
 
 async function main() {
-  // Ensure Active first
-  updateDocs('0.9.143', 'HUD-HUB-FLUSH-TOP-001', 'hub flush top — shipping', { hold: false, tableRows: [] });
-
-  // ===== 0.9.143 HUD-HUB-FLUSH-TOP-001 =====
-  {
-    const ver = '0.9.143', id = 'HUD-HUB-FLUSH-TOP-001', slug = 'hud-hub-flush-top';
-    const blurb = 'hub --hud-hub-top → var(--sa-top); no 6–8px gap; safe-area kept';
-    bumpCache(ver);
-    writeUnit(slug, ver, id, `
-assert.ok(css.includes('HUD-HUB-FLUSH-TOP-001'), 'ship id');
-assert.match(css, /--hud-hub-top:\\s*var\\(--sa-top\\)/, 'flush sa-top');
-assert.ok(!/--hud-hub-top:\\s*calc\\([68]px \\+ var\\(--sa-top\\)\\)/.test(css), 'no 6/8px gap');
-assert.ok(css.includes('--hud-hub-max-w'), 'hub width kept');
-`);
-    const probe = await shotHud(slug, ver);
-    assert.ok(probe.hub, 'hub visible');
-    // hub top should be near 0 (sa-top often 0 in desktop chrome)
-    assert.ok(probe.hub.top <= 4, 'hub flush top ≤4px, got ' + probe.hub.top);
-    row(ver, id, blurb);
-    updateDocs(ver, id, blurb, { hold: false, tableRows: TABLE });
-    sh(`node tests/${slug}.test.mjs`);
-    commitPush(ver, id, `v${ver} ${id}: hub flush top to sa-top`);
-  }
+  // ===== 0.9.143 already shipped @ 6150ef3 — seed table =====
+  row('0.9.143', 'HUD-HUB-FLUSH-TOP-001', 'hub --hud-hub-top → var(--sa-top); no 6–8px gap; safe-area kept');
 
   // ===== 0.9.144 HUD-MUTE-TO-GEAR-001 =====
   {

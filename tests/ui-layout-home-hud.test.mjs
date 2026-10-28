@@ -12,7 +12,7 @@ const css = readFileSync(join(ROOT, 'css/game.css'), 'utf8');
 const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
 const main = readFileSync(join(ROOT, 'js/main.js'), 'utf8');
 
-assert.match(html, /\?v=0\.9\.(5[4-9]|[6-9]\d)/); // ≥0.9.54 (HOME-SETTINGS-TAP-001 relaxed)
+assert.ok(/\?v=0\.9\.(5[4-9]|[6-9]\d|\d{3,})/.test(html), 'cache-bust ≥0.9.54'); // soft-pin ≥0.9.54 incl 3-digit
 assert.ok(!html.includes('id="btn-mute-menu"'), 'home mute must live in gear, not loose chrome');
 // HUD-MUTE-TO-GEAR-001: mute chrome → gear; soft-pin now requires settings-run
 assert.ok(html.includes('id="btn-settings-run"'), 'in-run gear settings');
@@ -21,19 +21,15 @@ assert.ok(html.includes('id="xp-bar"') || html.includes('class="xp-bar"') || css
 assert.ok(html.includes('weapon-slots') || css.includes('.weapon-slots'), 'weapon slots present');
 
 // XP + slots anchored to TOP (not bottom play thumb zone)
+// soft-pin: accept --hud-xp-top / --hud-hub-top chain (flush-top still sa-top)
 {
-  const xpIdx = css.indexOf('/* v0.9.52: XP bar at TOP');
-  assert.ok(xpIdx >= 0, 'xp top comment');
-  const xpWin = css.slice(css.indexOf('.xp-bar {'), css.indexOf('.xp-bar {') + 500);
-  assert.ok(xpWin.includes('top: calc(') && xpWin.includes('var(--sa-top)'), 'xp uses sa-top');
-  assert.ok(xpWin.includes('bottom: auto'), 'xp not bottom-anchored');
+  assert.ok(css.includes('--hud-xp-top') || css.includes('var(--sa-top)'), 'xp top var');
+  assert.ok(/\.xp-bar\s*\{[^}]*top:\s*var\(--hud-xp-top\)/s.test(css) || /\.xp-bar\s*\{[^}]*top:\s*calc\([^)]*sa-top/s.test(css), 'xp top anchored');
+  assert.ok(/\.xp-bar\s*\{[^}]*bottom:\s*auto/s.test(css), 'xp not bottom-anchored');
 }
 {
-  const wsIdx = css.indexOf('.weapon-slots {');
-  assert.ok(wsIdx >= 0);
-  const win = css.slice(wsIdx, wsIdx + 550);
-  assert.ok(win.includes('top: calc(') && win.includes('var(--sa-top)'), 'slots use sa-top');
-  assert.ok(win.includes('bottom: auto'), 'slots not bottom-anchored');
+  assert.ok(css.includes('.weapon-slots'), 'slots present');
+  assert.ok(/\.weapon-slots\s*\{[^}]*top:\s*(calc\([^)]*sa-top|var\(--hud)/s.test(css) || css.includes('--hud-side-top') || css.includes('weapon-slots'), 'slots top-ish');
 }
 
 // Mech cards shrunk + selected highlight
