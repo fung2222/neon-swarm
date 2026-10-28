@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.154
+// RAMPAGE MECH 暴走機甲 — tip v0.9.155
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1845,6 +1845,7 @@ function openInRunSettings() {
 }
 
 // v0.9.52 + SETTINGS-*: settings sheet owns mute/volume/lang/sfx/bgm/quality/share/howto
+// SETTINGS-QUALITY-AFFIRM-001: 畫質 = kit glow low/high via stage.setGlow({persist}); no second quality system
 ui.mountSettings(settingsOpts());
 
 i18n.onChange(() => refreshMenu());
