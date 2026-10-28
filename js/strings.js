@@ -17,6 +17,8 @@ i18n.add({
   'hud.time': ['時間', 'TIME'],
   'hud.lv': ['等級', 'LV'],
   'hud.hp': ['護盾', 'HP'],
+  // v0.9.96 HUB-ARMOR-I18N-001
+  'hud.arm': ['裝甲', 'ARM'],
   levelUp: ['升級！揀一張', 'LEVEL UP — PICK ONE'],
   'pickup.title': ['武器箱 · 揀一項', 'WEAPON CRATE — CHOOSE'],
   'pickup.titleEn': ['WEAPON CRATE', 'WEAPON CRATE'],
