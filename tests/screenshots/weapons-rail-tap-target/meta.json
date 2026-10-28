@@ -1,0 +1,59 @@
+{
+  "ver": "0.9.68",
+  "phone": {
+    "tiles": [
+      {
+        "i": "0",
+        "w": 47.1,
+        "h": 47.1,
+        "minW": "44px",
+        "minH": "44px",
+        "hasName": false
+      },
+      {
+        "i": "1",
+        "w": 44,
+        "h": 44,
+        "minW": "44px",
+        "minH": "44px",
+        "hasName": false
+      },
+      {
+        "i": "2",
+        "w": 44,
+        "h": 44,
+        "minW": "44px",
+        "minH": "44px",
+        "hasName": false
+      },
+      {
+        "i": "3",
+        "w": 44,
+        "h": 44,
+        "minW": "44px",
+        "minH": "44px",
+        "hasName": false
+      },
+      {
+        "i": "4",
+        "w": 44,
+        "h": 44,
+        "minW": "44px",
+        "minH": "44px",
+        "hasName": false
+      },
+      {
+        "i": "5",
+        "w": 44,
+        "h": 44,
+        "minW": "44px",
+        "minH": "44px",
+        "hasName": false
+      }
+    ],
+    "railH": 46,
+    "railBottom": 6
+  },
+  "tapOk": true,
+  "fail": []
+}

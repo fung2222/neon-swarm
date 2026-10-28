@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.67 rail-fill-edge · stick-rail-clamp v0.9.66 · stick-touch v0.9.65 · branch-card v0.9.64 · color-tokens v0.9.63 · rail-clear v0.9.62 · HUD-merge v0.9.61  
+> **Live:** https://fung2222.github.io/neon-swarm/ · **Ship:** v0.9.68 rail-tap-target · fill-edge v0.9.67 · stick-rail-clamp v0.9.66 · stick-touch v0.9.65 · branch-card v0.9.64  
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
@@ -337,6 +337,7 @@ Do **not** re-add player cards under legacy ids.
 | Stick hide-until-touch | **live** (v0.9.65) |
 | Stick clamp above rail | **live** (v0.9.66) |
 | Water-fill edge states (drained/on-cd/burst) | **live** (v0.9.67) |
+| Rail phone tap target ≥44px | **live** (v0.9.68) |
 | HUD no-overlap vertical rhythm | **live** (v0.9.60; superseded layout) |
 | Bottom color-only rail (no names) | **live** (v0.9.61) |
 | Bottom rail + unified status HUD | **live** (v0.9.59; status hidden in 0.9.61) |

@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.67 WEAPONS-RAIL-FILL-EDGE-001; stick-rail-clamp v0.9.66; stick-touch v0.9.65; branch-card v0.9.64
+// RAMPAGE MECH 暴走機甲 — v0.9.68 WEAPONS-RAIL-TAP-TARGET-001; fill-edge v0.9.67; stick-rail-clamp v0.9.66; stick-touch v0.9.65
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,

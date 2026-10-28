@@ -31,7 +31,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   --hud-wstat-top: var(--hud-hub-top);
   --hud-wstat-h: 0px;
   --hud-side-top: calc(var(--hud-hub-top) + 78px);
-  --hud-rail-h: 50px;
+  --hud-rail-h: 54px; /* WEAPONS-RAIL-TAP-TARGET-001 v0.9.68 — fit ≥44px tiles */
   --hud-stick-clear: calc(var(--hud-rail-h) + 36px + var(--sa-bottom));
   /* weapon family color tokens (shared rail + cards) */
   --weapon-primary: #00e5ff;
@@ -1409,7 +1409,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 /* Bottom centered evenly-spaced color-only rail
-   STICK-RAIL-CLAMP-001: z-index 9 > stick(8) so tiles stay readable near finger */
+   STICK-RAIL-CLAMP-001: z-index 9 > stick(8) so tiles stay readable near finger
+   WEAPONS-RAIL-TAP-TARGET-001 v0.9.68: tiles ≥44px phone tap targets */
 .weapon-rail {
   position: absolute;
   left: calc(10px + var(--sa-left));
@@ -1449,10 +1450,12 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   display: none !important;
 }
 .wrail-tile {
+  /* WEAPONS-RAIL-TAP-TARGET-001 v0.9.68 — ≥44×44 tap target (phone HIG) */
   position: relative;
-  width: 46px;
-  height: 46px;
-  min-height: 46px;
+  width: 48px;
+  height: 48px;
+  min-width: 44px;
+  min-height: 44px;
   border: 2px solid rgba(0, 229, 255, 0.45);
   border-radius: var(--hud-chip-radius);
   background: rgba(5, 1, 15, 0.82);
@@ -1564,13 +1567,13 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 }
 
 @media (max-width: 420px) {
-  .wrail-tile { width: 42px; height: 42px; min-height: 42px; }
-  .weapon-rail { gap: 0; justify-content: space-evenly; }
-  .weapon-rail .wrail-group { gap: 4px; }
+  .wrail-tile { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  .weapon-rail { gap: 0; justify-content: space-evenly; padding-bottom: 2px; }
+  .weapon-rail .wrail-group { gap: 6px; }
 }
 @media (min-width: 900px) {
   .weapon-rail { justify-content: space-evenly; max-width: 520px; left: 50%; right: auto; transform: translateX(-50%); width: min(520px, calc(100vw - 40px)); }
-  .wrail-tile { width: 50px; height: 50px; min-height: 50px; }
+  .wrail-tile { width: 52px; height: 52px; min-width: 48px; min-height: 48px; }
 }
 
 
