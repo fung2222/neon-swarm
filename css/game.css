@@ -2253,3 +2253,16 @@ html[data-lang="en"] #over-title {
   color: #e8f7ff;
   text-shadow: 0 0 14px rgba(0, 229, 255, 0.4);
 }
+
+/* ===== LEVEL-PANEL-READ-001 v0.9.141 — level panel/title phone readability ===== */
+#screen-level .level-panel {
+  border-color: rgba(0, 229, 255, 0.42);
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.18), inset 0 0 18px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, rgba(12, 6, 32, 0.94), rgba(5, 1, 15, 0.92));
+}
+#screen-level #level-title,
+.level-panel #level-title {
+  color: #e8f7ff;
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.45), 0 0 22px rgba(124, 255, 58, 0.2);
+  letter-spacing: 0.06em;
+}
