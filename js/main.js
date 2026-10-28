@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.57 WEAPONS-ICON-PLACEHOLDERS-001; feel FX v0.9.56; kits v0.9.55; redesign v0.9.54; UI v0.9.52; phone guard v0.9.51
+// RAMPAGE MECH 暴走機甲 — v0.9.61 WEAPONS-HUD-MERGE-001; overlap v0.9.60; floor v0.9.59; icons v0.9.57; feel FX v0.9.56
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -490,19 +490,35 @@ function updateHUD(force = false) {
   const timeStr = fmtTime(g.t);
   const lv = g.level;
   const hp = Math.max(0, g.hp);
-  const xpPct = Math.min(1, g.xp / g.xpNeed);
+  const maxHp = Math.max(1, g.maxHp || hp || 1);
+  const xpPct = Math.min(1, g.xp / Math.max(1e-6, g.xpNeed));
   const goalLeft = Math.max(0, (g.goalKills || 0) - g.kills);
+  const armor = Math.max(0, Math.floor(g.armor || 0));
   const slotsKey = (g.weaponSlots || []).map((id) => id || '-').join(',')
     + ':' + (g.weaponSlots || []).map((id) => id ? ((g.taken && g.taken[id]) || (id === 'mg' ? 1 : 0)) : 0).join(',');
   const zoneKey = g.mapZone || 'lab';
-  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '|' + xpPct.toFixed(2) + '|' + goalLeft + '|' + slotsKey + '|' + zoneKey;
+  const fillKey = _railFillSnap(g);
+  const snap = score + '|' + timeStr + '|' + lv + '|' + hp + '/' + maxHp + '|' + armor
+    + '|' + xpPct.toFixed(2) + '|' + goalLeft + '|' + slotsKey + '|' + zoneKey + '|' + fillKey
+    + '|' + (g.fireMode || 'primary');
   if (!force && snap === _hudSnap) return;
   _hudSnap = snap;
   $('hud-score').textContent = String(score);
   $('hud-time').textContent = timeStr;
   $('hud-lv').textContent = String(lv);
   $('hud-hp').textContent = String(hp);
-  $('xp-fill').style.width = (xpPct * 100) + '%';
+  const hpFill = $('hub-hp-fill');
+  if (hpFill) hpFill.style.width = (Math.min(1, hp / maxHp) * 100) + '%';
+  const xpFill = $('xp-fill');
+  if (xpFill) xpFill.style.width = (xpPct * 100) + '%';
+  const xpPctEl = $('xp-pct');
+  if (xpPctEl) xpPctEl.textContent = Math.round(xpPct * 100) + '%';
+  const armEl = $('hud-armor');
+  const armBlock = $('hub-armor-block');
+  if (armEl && armBlock) {
+    armEl.textContent = String(armor);
+    armBlock.hidden = armor <= 0;
+  }
   const goalEl = $('hud-goal');
   if (goalEl) {
     $('goal-left').textContent = String(goalLeft);
@@ -512,6 +528,46 @@ function updateHUD(force = false) {
   }
   updateZoneHudChip(g);
   updateWeaponSlotsHUD(g);
+}
+
+/** Compact resource/cd key so water-fill rail refreshes without inventing new systems. */
+function _railFillSnap(g) {
+  if (!g) return '';
+  const slots = g.weaponSlots || [];
+  const parts = [];
+  for (let i = 0; i < slots.length; i++) {
+    const id = slots[i];
+    if (!id) { parts.push('-'); continue; }
+    const def = weaponDef(id);
+    if (!def) { parts.push(id); continue; }
+    if (def.category === 'secondary') {
+      const res = g.weaponResources && g.weaponResources[id];
+      parts.push(res ? (res.current.toFixed(1) + '/' + res.max) : '0');
+    } else if (def.category === 'throw') {
+      const cd = (g.throwCdT && g.throwCdT[id]) || 0;
+      parts.push(cd.toFixed(2));
+    } else {
+      parts.push('1');
+    }
+  }
+  return parts.join(',');
+}
+
+function _tileFillRatio(g, id, def) {
+  if (!id || !def) return 0;
+  if (def.category === 'primary') return 1;
+  if (def.category === 'secondary') {
+    const res = g.weaponResources && g.weaponResources[id];
+    if (!res || !res.max) return 0;
+    return Math.max(0, Math.min(1, res.current / res.max));
+  }
+  if (def.category === 'throw') {
+    const cdMax = (def.base && def.base.cd) || 1.7;
+    const cd = (g.throwCdT && g.throwCdT[id]) || 0;
+    if (cdMax <= 0) return 1;
+    return Math.max(0, Math.min(1, 1 - (cd / cdMax)));
+  }
+  return 1;
 }
 
 const SLOT_LABEL = {
@@ -618,10 +674,11 @@ function updateWeaponRailHUD(g) {
   if (g.loadout) g.weaponSlots = flattenLoadout(g.loadout);
   const slots = g.weaponSlots || flattenLoadout(starterLoadout());
   const zh = i18n.isZh();
+  // Color-only groups — no text labels on rail (v0.9.61)
   const groups = [
-    { key: 'primary', label: zh ? '主' : 'PRI', start: 0, n: 2 },
-    { key: 'secondary', label: zh ? '副' : 'SEC', start: 2, n: 2 },
-    { key: 'throw', label: zh ? '投' : 'THR', start: 4, n: 2 },
+    { key: 'primary', start: 0, n: 2 },
+    { key: 'secondary', start: 2, n: 2 },
+    { key: 'throw', start: 4, n: 2 },
   ];
   const activePri = typeof g.activePrimaryId === 'function' ? g.activePrimaryId() : slots[0];
   const activeSec = g.fireMode === 'secondary' && typeof g.activeSecondaryId === 'function'
@@ -633,15 +690,12 @@ function updateWeaponRailHUD(g) {
       const wrap = document.createElement('div');
       wrap.className = 'wrail-group';
       wrap.dataset.cat = gr.key;
-      const lab = document.createElement('div');
-      lab.className = 'wrail-label';
-      lab.textContent = gr.label;
-      wrap.appendChild(lab);
       for (let k = 0; k < gr.n; k++) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'wrail-tile empty';
         btn.dataset.i = String(gr.start + k);
+        btn.dataset.cat = gr.key;
         btn.addEventListener('pointerup', (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
@@ -658,12 +712,6 @@ function updateWeaponRailHUD(g) {
     rail.dataset.built = '1';
   }
 
-  // refresh labels (lang may change)
-  rail.querySelectorAll('.wrail-group').forEach((wrap, gi) => {
-    const lab = wrap.querySelector('.wrail-label');
-    if (lab) lab.textContent = groups[gi].label;
-  });
-
   const tiles = rail.querySelectorAll('.wrail-tile');
   tiles.forEach((btn) => {
     const i = Number(btn.dataset.i);
@@ -678,10 +726,12 @@ function updateWeaponRailHUD(g) {
       || (def && def.category === 'secondary' && id === activeSec)
     );
     btn.classList.toggle('active', isActive);
+    const fill = _tileFillRatio(g, id, def);
     if (!id) {
-      btn.innerHTML = '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 26 }) + '</span>' +
-        '<span class="wslot-name">' + (zh ? '空' : '—') + '</span>';
+      btn.innerHTML = '<span class="wrail-fill" style="--fill:0" aria-hidden="true"></span>' +
+        '<span class="wslot-ico" aria-hidden="true">' + weaponIconHtml(null, { empty: true, size: 26 }) + '</span>';
       btn.title = zh ? '空' : 'Empty';
+      btn.setAttribute('aria-label', btn.title);
       btn.disabled = true;
       return;
     }
@@ -693,11 +743,12 @@ function updateWeaponRailHUD(g) {
     if (br) lvTxt += `·${br}`;
     if (ult) lvTxt += ult.replace('U', '');
     const fullName = zh ? def.zh : def.en;
+    // Icon + water fill only — no on-rail name/lv text (title/aria keep full name for a11y)
     btn.innerHTML =
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 26 })}</span>` +
-      `<span class="wslot-name">${fullName}</span>` +
-      `<span class="wslot-lv">${lvTxt}</span>`;
+      `<span class="wrail-fill" style="--fill:${fill.toFixed(3)}" aria-hidden="true"></span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 26 })}</span>`;
     btn.title = `${fullName} ${lvTxt}`;
+    btn.setAttribute('aria-label', btn.title);
   });
 }
 

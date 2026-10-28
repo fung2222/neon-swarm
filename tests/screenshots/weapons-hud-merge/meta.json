@@ -1,0 +1,100 @@
+{
+  "ver": "0.9.61",
+  "task": "WEAPONS-HUD-MERGE-001",
+  "layout": {
+    "hub": {
+      "top": 6,
+      "bottom": 92,
+      "left": 46,
+      "right": 344,
+      "width": 298,
+      "height": 86,
+      "cx": 195
+    },
+    "xp": {
+      "top": 49,
+      "bottom": 55,
+      "left": 57,
+      "right": 299,
+      "width": 242,
+      "height": 6,
+      "cx": 178
+    },
+    "rail": {
+      "top": 796,
+      "bottom": 838,
+      "left": 10,
+      "right": 380,
+      "width": 370,
+      "height": 42,
+      "cx": 195
+    },
+    "stick": {
+      "top": 654,
+      "bottom": 774,
+      "left": 16,
+      "right": 136,
+      "width": 120,
+      "height": 120,
+      "cx": 76
+    },
+    "btns": {
+      "top": 6,
+      "bottom": 46,
+      "left": 304,
+      "right": 382,
+      "width": 78,
+      "height": 40,
+      "cx": 343
+    },
+    "hubCentered": true,
+    "wstatVisible": false,
+    "visibleRailLabels": [],
+    "fills": [
+      {
+        "cat": "wrail-tile primary active",
+        "fill": "1.000"
+      },
+      {
+        "cat": "wrail-tile primary",
+        "fill": "1.000"
+      },
+      {
+        "cat": "wrail-tile secondary",
+        "fill": "0.375"
+      },
+      {
+        "cat": "wrail-tile secondary",
+        "fill": "0.700"
+      },
+      {
+        "cat": "wrail-tile throw",
+        "fill": "0.500"
+      },
+      {
+        "cat": "wrail-tile empty",
+        "fill": "0"
+      }
+    ],
+    "overlaps": {
+      "hubVsRail": false,
+      "hubVsStick": false,
+      "railVsStick": false,
+      "hubVsBtns": true
+    },
+    "xpPctText": "0%",
+    "hpFillW": "100%",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    }
+  },
+  "failures": [],
+  "pageErrors": [],
+  "shots": [
+    "01-hub-top.png",
+    "02-full-phone-hud.png",
+    "03-bottom-rail-water.png",
+    "04-secondary-water-drain.png"
+  ]
+}
