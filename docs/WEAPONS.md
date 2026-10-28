@@ -1,7 +1,7 @@
 # WEAPONS — 暴走機甲 / neon-swarm
 
 > **Owner:** Grok bot (attack/power tables + counter roles) · **Product:** Roy Chan  
-> **Live:** https://fung2222.github.io/neon-swarm/?v=0.9.158 · **Ship:** v0.9.158 WEAPONS-MD-TIP-SYNC-002 · UI a11y/docs sync (weapons unchanged)
+> **Live:** https://fung2222.github.io/neon-swarm/?v=0.9.165 · **Ship:** v0.9.165 WEAPONS-MD-TIP-SYNC-003 · UI a11y/docs sync (weapons unchanged)
 > Keep this file synced every weapons ship. UI layout HOLD (v0.9.52) stays; this beat migrates loadout/HUD/fire rules.
 
 ## Product rules (locked)
