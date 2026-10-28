@@ -2,11 +2,11 @@
 
 ## 狀態：**Active** — v0.9.81–0.9.90.
 
-**Shipping:** v0.9.88 `WEAPONS-ULT-LIGHT-AMP-DOCS-001`
+**Shipping:** v0.9.89 `GAMES-JSON-STAGE-001`
 
 ### Queue
-1–7 shipped · **8. v0.9.88 ULT-LIGHT-AMP-DOCS** · 9 GAMES-JSON · 10 RAIL-GROUP-A11Y
+1–8 shipped · **9. v0.9.89 GAMES-JSON-STAGE** · 10 RAIL-GROUP-A11Y → HOLD
 
 HARD BANS: Phase 4 · horn · soft-juice invent · full ult invent · BALANCE-PASS · deep GPU.
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.88
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.89

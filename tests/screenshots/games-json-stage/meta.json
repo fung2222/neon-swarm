@@ -1,0 +1,9 @@
+{
+  "ver": "0.9.89",
+  "probe": {
+    "hasShip": true,
+    "hasTip": true,
+    "noOld": true
+  },
+  "fail": []
+}
