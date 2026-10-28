@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.68 WEAPONS-RAIL-TAP-TARGET-001; fill-edge v0.9.67; stick-rail-clamp v0.9.66; stick-touch v0.9.65
+// RAMPAGE MECH 暴走機甲 — v0.9.69 WEAPONS-BRANCH-CARD-PATH-001; tap-target v0.9.68; fill-edge v0.9.67; clamp v0.9.66
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1024,14 +1024,20 @@ function showLevelCards(cards, opts = {}) {
   const isBranch = from === 'branch';
   const isUlt = from === 'ult';
   if (title) {
+    // WEAPONS-BRANCH-CARD-PATH-001: subtitle weapon name on branch/ult pick (UI only)
+    let pathWeaponName = '';
+    if ((isBranch || isUlt) && cards[0] && cards[0].weaponId) {
+      const wd = weaponDef(cards[0].weaponId);
+      if (wd) pathWeaponName = i18n.isZh() ? wd.zh : wd.en;
+    }
     title.textContent = isSwap
       ? t('pickup.swap')
       : isPickup
         ? t('pickup.title')
         : isBranch
-          ? (i18n.isZh() ? '選擇分支' : 'CHOOSE BRANCH')
+          ? ((i18n.isZh() ? '選擇分支' : 'CHOOSE BRANCH') + (pathWeaponName ? ' · ' + pathWeaponName : ''))
           : isUlt
-            ? (i18n.isZh() ? '選擇大招' : 'CHOOSE ULTIMATE')
+            ? ((i18n.isZh() ? '選擇大招' : 'CHOOSE ULTIMATE') + (pathWeaponName ? ' · ' + pathWeaponName : ''))
             : t('levelUp');
   }
   const box = $('level-cards');
@@ -1077,6 +1083,15 @@ function showLevelCards(cards, opts = {}) {
           : action === 'keep'
             ? (i18n.isZh() ? '略過' : 'SKIP')
             : (i18n.isZh() ? '輔助' : 'UTIL'));
+    // WEAPONS-BRANCH-CARD-PATH-001: visible path chip A/B/C or U1/U2 (no ult invent)
+    const pathKey = action === 'ult'
+      ? String(c.ult || c.ultId || c.branch || '').toUpperCase()
+      : action === 'branch'
+        ? String(c.branch || '').toUpperCase()
+        : '';
+    const pathChip = pathKey
+      ? `<em class="card-path" data-path="${pathKey}">${pathKey}</em>`
+      : '';
     const showCount = c.max != null && !String(c.id || '').startsWith('_pickup_') && action !== 'swap';
     const stackNow = prevTaken[c.id] || 0;
     let times = '';
@@ -1108,11 +1123,15 @@ function showLevelCards(cards, opts = {}) {
         + (titleEn ? `<em class="card-title-en">${titleEn}</em>` : '')
       : `<strong class="card-title">${titleEn || titleZh}</strong>`;
     const desc = i18n.isZh() ? (c.descZh || c.descEn || '') : (c.descEn || c.descZh || '');
+    if (pathKey) b.dataset.path = pathKey;
     b.innerHTML =
       `<span class="card-icon" aria-hidden="true">${cardEmblem(c)}</span>` +
       `<span class="card-body">${titleHtml}` +
-      `<span class="card-meta"><em class="card-kind">${kind}</em>${times}${healBadge}${slotHint}</span>` +
+      `<span class="card-meta"><em class="card-kind">${kind}</em>${pathChip}${times}${healBadge}${slotHint}</span>` +
       `<small class="card-desc">${desc}</small></span>`;
+    if (pathKey) {
+      b.setAttribute('aria-label', `${kind} ${pathKey} ${titleZh || titleEn}`);
+    }
     if (action === 'swap') {
       const idx = c.swapIndex;
       b.addEventListener('pointerenter', () => highlightSwapSlot(idx));

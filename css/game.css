@@ -1708,6 +1708,42 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .level-cards.branch-offer .level-card.action-ult .card-kind {
   color: #ff2bd6;
 }
+
+/* ===== WEAPONS-BRANCH-CARD-PATH-001 v0.9.69 — path chip + phone tap (UI only; no ult invent) ===== */
+.level-card .card-path {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 8px;
+  margin-left: 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-style: normal;
+  color: #05010f;
+  background: #ffe600;
+  border: 1px solid rgba(255, 230, 0, 0.9);
+  box-shadow: 0 0 10px rgba(255, 230, 0, 0.35);
+}
+.level-card.action-ult .card-path {
+  color: #fff;
+  background: #ff2bd6;
+  border-color: rgba(255, 43, 214, 0.9);
+  box-shadow: 0 0 10px rgba(255, 43, 214, 0.4);
+}
+.level-cards.branch-offer .level-card {
+  min-height: 88px; /* easier phone tap than v0.9.64 78/72 */
+}
+@media (max-width: 420px) {
+  .level-cards.branch-offer .level-card {
+    min-height: 84px;
+    padding: 12px 12px;
+  }
+  .level-card .card-path { min-width: 30px; height: 24px; font-size: 12px; }
+}
 .wstat-lv {
   font-variant-numeric: tabular-nums;
 }

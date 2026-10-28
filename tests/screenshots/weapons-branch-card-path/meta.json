@@ -1,0 +1,33 @@
+{
+  "ver": "0.9.69",
+  "probe": {
+    "title": "選擇分支 · 機關雷射炮",
+    "paths": [
+      {
+        "text": "A",
+        "path": "A",
+        "cardH": 107.38656616210938
+      },
+      {
+        "text": "B",
+        "path": "B",
+        "cardH": 107.3865966796875
+      },
+      {
+        "text": "C",
+        "path": "C",
+        "cardH": 107.38653564453125
+      }
+    ],
+    "branchOffer": true,
+    "count": 3
+  },
+  "ultProbe": {
+    "title": "選擇大招 · 機關雷射炮",
+    "paths": [
+      "U1",
+      "U2"
+    ]
+  },
+  "fail": []
+}
