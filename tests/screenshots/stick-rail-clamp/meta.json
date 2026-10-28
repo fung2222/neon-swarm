@@ -1,0 +1,97 @@
+{
+  "ver": "0.9.66",
+  "ship": "STICK-RAIL-CLAMP-001",
+  "idle": {
+    "hidden": true,
+    "active": false,
+    "following": false,
+    "opacity": "0",
+    "stick": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "cx": 0,
+      "cy": 0,
+      "z": "8"
+    },
+    "rail": {
+      "top": 796,
+      "bottom": 838,
+      "z": "9"
+    },
+    "gap": 796
+  },
+  "clamped": {
+    "hidden": false,
+    "active": true,
+    "following": true,
+    "opacity": "1",
+    "stick": {
+      "top": 654,
+      "bottom": 774,
+      "left": 54,
+      "right": 174,
+      "cx": 114,
+      "cy": 714,
+      "z": "8"
+    },
+    "rail": {
+      "top": 796,
+      "bottom": 838,
+      "z": "9"
+    },
+    "gap": 22
+  },
+  "midProbe": {
+    "hidden": false,
+    "active": true,
+    "following": true,
+    "opacity": "1",
+    "stick": {
+      "top": 354,
+      "bottom": 474,
+      "left": 129,
+      "right": 249,
+      "cx": 189,
+      "cy": 414,
+      "z": "8"
+    },
+    "rail": {
+      "top": 796,
+      "bottom": 838,
+      "z": "9"
+    },
+    "gap": 322
+  },
+  "released": {
+    "hidden": true,
+    "active": false,
+    "following": false,
+    "opacity": "0",
+    "stick": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "cx": 0,
+      "cy": 0,
+      "z": "8"
+    },
+    "rail": {
+      "top": 796,
+      "bottom": 838,
+      "z": "9"
+    },
+    "gap": 796
+  },
+  "finger": {
+    "x": 120,
+    "y": 780
+  },
+  "mid": {
+    "x": 195,
+    "y": 420
+  },
+  "fail": []
+}

@@ -11,10 +11,10 @@ const css = readFileSync(new URL('../css/game.css', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const agent = readFileSync(new URL('../docs/AGENT_TASK.md', import.meta.url), 'utf8');
 
-assert.ok(html.includes('?v=0.9.65'), 'cache-bust 0.9.65');
+assert.ok(/\?v=0\.9\.(6[5-9]|[7-9]\d)/.test(html), 'cache-bust ≥0.9.65');
 assert.ok(css.includes('STICK-TOUCH-SHOW-001'), 'ship id in CSS');
 assert.ok(main.includes('STICK-TOUCH-SHOW-001'), 'ship id in main');
-assert.ok(agent.includes('STICK-TOUCH-SHOW-001') || agent.includes('0.9.65'), 'AGENT_TASK mentions ship');
+assert.ok(agent.includes('STICK-TOUCH-SHOW-001') || /0\.9\.6[5-9]/.test(agent), 'AGENT_TASK mentions ship');
 
 // Idle stick must not be a visible corner ghost
 assert.match(css, /\.stick\s*\{[^}]*opacity:\s*0/s, 'default stick opacity 0');

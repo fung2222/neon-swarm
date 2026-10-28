@@ -323,7 +323,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
 .record { color: #ffe600; text-shadow: 0 0 10px #ffe60088; margin: 8px 0; letter-spacing: 2px; }
 
 /* STICK-TOUCH-SHOW-001 v0.9.65 — idle fully invisible; show only under finger while pressed.
-   Drag-anywhere relocates the stick; no corner hint / ready pulse ghost. */
+   STICK-RAIL-CLAMP-001 v0.9.66 — placeAt clamps above #weapon-rail; rail z above stick. */
 .stick {
   position: fixed; left: calc(16px + var(--sa-left)); bottom: var(--hud-stick-clear);
   width: 120px; height: 120px; z-index: 8; touch-action: none;
@@ -1408,7 +1408,8 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   display: none !important;
 }
 
-/* Bottom centered evenly-spaced color-only rail */
+/* Bottom centered evenly-spaced color-only rail
+   STICK-RAIL-CLAMP-001: z-index 9 > stick(8) so tiles stay readable near finger */
 .weapon-rail {
   position: absolute;
   left: calc(10px + var(--sa-left));
@@ -1416,7 +1417,7 @@ html, body { margin: 0; height: 100%; background: #05010f; overflow: hidden; tou
   bottom: calc(6px + var(--sa-bottom));
   top: auto;
   transform: none;
-  z-index: 8;
+  z-index: 9;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;

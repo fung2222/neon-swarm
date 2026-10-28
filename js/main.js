@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — v0.9.65 STICK-TOUCH-SHOW-001; branch-card v0.9.64; color-tokens v0.9.63; rail-clear v0.9.62; floor v0.9.59
+// RAMPAGE MECH 暴走機甲 — v0.9.66 STICK-RAIL-CLAMP-001; stick-touch v0.9.65; branch-card v0.9.64; color-tokens v0.9.63; rail-clear v0.9.62
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -1428,9 +1428,27 @@ function applyMoveFromInput() {
   const HALF = 66; // stick widget half-size (css 132px)
   const setKnob = (x, y) => { knob.style.transform = `translate(${x}px,${y}px)`; };
   const placeAt = (x, y) => {
-    // Center the translucent stick on the press point so glow follows the finger.
-    root.style.left = Math.round(x - HALF) + 'px';
-    root.style.top = Math.round(y - HALF) + 'px';
+    // STICK-RAIL-CLAMP-001: center under finger but keep widget clear of bottom weapon rail.
+    // Rail stays tappable (stick is pointer-events:none); clamp avoids covering color tiles.
+    const size = HALF * 2;
+    const rail = $('weapon-rail');
+    let maxBottom = window.innerHeight - 8;
+    if (rail) {
+      const rr = rail.getBoundingClientRect();
+      if (rr && rr.top > 0) maxBottom = rr.top - 10; // 10px air gap above rail
+    } else {
+      // fallback ≈ --hud-stick-clear band
+      maxBottom = window.innerHeight - 96;
+    }
+    const minTop = 8;
+    let top = y - HALF;
+    let left = x - HALF;
+    if (top + size > maxBottom) top = maxBottom - size;
+    if (top < minTop) top = minTop;
+    if (left < 4) left = 4;
+    if (left + size > window.innerWidth - 4) left = window.innerWidth - 4 - size;
+    root.style.left = Math.round(left) + 'px';
+    root.style.top = Math.round(top) + 'px';
     root.style.right = 'auto';
     root.style.bottom = 'auto';
   };
