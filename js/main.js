@@ -8,7 +8,7 @@ import {
 import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechCombat, isMechPlayable, isSlotWeapon, hasEmptyWeaponSlot, CARDS_BY_ID, weaponDef, normalizeWeaponId, WEAPON_ICON, starterLoadout, flattenLoadout, weaponLevel } from './config.js';
 import './strings.js';
 import { Game } from './logic.js';
-// PHONE-MENU-BLACK: re-enable after menu OK — was: import { preloadMixamoHero } from './q-hero-3d.js';
+// PHONE-MENU-BLACK / MENU-NO-MESHOPT-BOOT: do not import q-hero-3d (meshopt) until menu OK.
 import { View } from './view.js';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';

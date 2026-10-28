@@ -13,7 +13,7 @@ const SHOT_DIR = join(ROOT, 'tests', 'screenshots', 'menu-mech-phone-fix');
 mkdirSync(SHOT_DIR, { recursive: true });
 const CHROME = process.env.CHROME_PATH
   || (existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' : '/usr/bin/google-chrome');
-const VER = '0.9.200';
+const VER = '0.9.201';
 const WAIT = { timeout: 90000, polling: 250 };
 
 const MIME = {
@@ -120,7 +120,7 @@ async function main() {
     // Probe flag if module exposed
     try {
       info.hornTrue3d = await page.evaluate(async () => {
-        const mod = await import('./js/q-hero-3d.js');
+        const mod = await import('./js/q-hero-3d-flag.js');
         return mod.HORN_TRUE_3D;
       });
     } catch (_) {
@@ -136,7 +136,7 @@ async function main() {
   const meta = {
     ver: VER,
     mixamoDisabled: true,
-    note: 'HORN_TRUE_3D=false; no boot preloadMixamoHero; menu=buildPlayerMech; combat baked PNG only',
+    note: 'HORN_TRUE_3D=false; boot graph cuts q-hero-3d/meshopt; menu=buildPlayerMech+stage; combat baked PNG only',
     info,
     shot: shotPath,
   };
@@ -144,7 +144,7 @@ async function main() {
   writeFileSync(join(SHOT_DIR, 'NOTE.md'), [
     '# menu-mech-phone-fix',
     '',
-    '**Tip:** v0.9.200 PHONE-MENU-BLACK-001',
+    '**Tip:** v0.9.201 MENU-NO-MESHOPT-BOOT-001',
     '',
     'Phone-viewport home menu (390×844). Mixamo **disabled** (`HORN_TRUE_3D=false`; no boot preload).',
     'Menu model = procedural `buildPlayerMech` + pedestal. Combat = baked PNG only until menu OK.',

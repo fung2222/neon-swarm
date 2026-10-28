@@ -13,7 +13,10 @@ import {
   applySpriteMotion,
   syncBakedPlayerSprite,
 } from './sprites.js';
-import { syncMixamoPlayer, mixamoReady, HORN_TRUE_3D } from './q-hero-3d.js';
+import { HORN_TRUE_3D } from './q-hero-3d-flag.js';
+// MENU-NO-MESHOPT-BOOT: no static q-hero-3d.js (meshopt) while flag false.
+const mixamoReady = () => false;
+const syncMixamoPlayer = () => {};
 
 // ---------------------------------------------------------------------------
 // Shared materials. Everything is a lit standard material plus an emissive edge so
@@ -2615,16 +2618,17 @@ export class View {
   _ensureMenuLights(cfg) {
     if (this._menuLights) return;
     const accent = (cfg && cfg.trim) || 0x00e5ff;
-    const key = new THREE.DirectionalLight(0xffffff, 1.15);
+    // MENU-NO-MESHOPT-BOOT: brighter menu key/fill so charcoal mech reads on phone.
+    const key = new THREE.DirectionalLight(0xffffff, 1.85);
     key.position.set(2.4, 4.2, 3.2);
     key.name = 'menuKey';
-    const fill = new THREE.DirectionalLight(0x7ec8ff, 0.45);
+    const fill = new THREE.DirectionalLight(0xa8dcff, 0.85);
     fill.position.set(-2.8, 2.2, -1.4);
     fill.name = 'menuFill';
-    const rim = new THREE.DirectionalLight(accent, 0.55);
+    const rim = new THREE.DirectionalLight(accent, 0.95);
     rim.position.set(-1.2, 2.8, -3.4);
     rim.name = 'menuRim';
-    const amb = new THREE.AmbientLight(0x1a2238, 0.35);
+    const amb = new THREE.AmbientLight(0x2a3558, 0.75);
     amb.name = 'menuAmb';
     // Attach to scene group (not spinning wrap) so key/fill/rim stay world-stable.
     this.group.add(key, fill, rim, amb);
@@ -2642,7 +2646,7 @@ export class View {
 
   /**
    * Home-screen showcase: LIVE 3D from buildPlayerMech only (never Mixamo on turntable).
-   * v0.9.200: Mixamo boot/combat paused (HORN_TRUE_3D=false); defensive try/catch keeps pedestal+mech.
+   * v0.9.201: no q-hero-3d/meshopt on boot; brighter menu + stage plate; try/catch keeps pedestal+mech.
    */
   setMenuMech(id) {
     this.hideMenuMech();
@@ -2680,7 +2684,16 @@ export class View {
       mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
       if (mech.userData.halo) mech.userData.halo.visible = false;
 
-      wrap.add(pedestal, pedRing, shadow, mech);
+      // Visible stage plate so phone mid-band is not pure black void if mech dims.
+      const stagePlate = new THREE.Mesh(
+        new THREE.CircleGeometry(3.2, 48),
+        new THREE.MeshBasicMaterial({ color: 0x0a1228, transparent: true, opacity: 0.92, depthWrite: false })
+      );
+      stagePlate.rotation.x = -Math.PI / 2;
+      stagePlate.position.y = 0.01;
+      stagePlate.name = 'menuStagePlate';
+
+      wrap.add(stagePlate, pedestal, pedRing, shadow, mech);
 
       this.menuMechRing = pedRing;
       this.menuMech = wrap;
@@ -2773,20 +2786,20 @@ export class View {
       camPos = [0.0, 2.7, 4.6];
       camLook = [0.0, 0.8, 0.0];
     } else if (h >= 780) {
-      // Tall phone portrait (e.g. 390×844): sit in the void between title/tagline and cards.
-      // Raise + slight shrink so torso/legs clear the card stack.
-      scale = 0.52;
-      y = 1.7;
-      z = 0.3;
-      camPos = [0.0, 4.2, 5.9];
-      camLook = [0.0, 1.95, 0.0];
+      // Tall phone portrait (e.g. 390×844): mid band between title and cards.
+      // MENU-NO-MESHOPT-BOOT: larger + closer so charcoal mech reads on real phones.
+      scale = 0.62;
+      y = 1.55;
+      z = 0.35;
+      camPos = [0.0, 3.85, 5.2];
+      camLook = [0.0, 1.85, 0.0];
     } else {
       // Shorter portrait
-      scale = 0.48;
-      y = 1.4;
-      z = 0.25;
-      camPos = [0.0, 3.9, 5.6];
-      camLook = [0.0, 1.7, 0.0];
+      scale = 0.56;
+      y = 1.25;
+      z = 0.3;
+      camPos = [0.0, 3.55, 4.9];
+      camLook = [0.0, 1.6, 0.0];
     }
 
     wrap.position.set(x, y, z);
