@@ -1,0 +1,8 @@
+{
+  "ver": "0.9.93",
+  "probe": {
+    "role": "dialog",
+    "modal": "true",
+    "labelledby": "over-title"
+  }
+}
