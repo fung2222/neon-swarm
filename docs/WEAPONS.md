@@ -370,6 +370,7 @@ Do **not** re-add player cards under legacy ids.
 | Branch/ult path chip (A/B/C·U) | **live** (v0.9.69) |
 | Branch EN path titles (`branchNamesEn`) | **live** (v0.9.80) |
 | Primary branch naming table EN columns | **live** (v0.9.85 WEAPONS-BRANCH-PRIMARY-EN-DOCS-001) |
+| Branch kit hints match branchNames | **live** (v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001) |
 | Ult light-amp labels (U1 POWER AMP / U2 CADENCE AMP) | **live** (v0.9.82 WEAPONS-ULT-EN-LABELS-001); full unique ult kits still **stub** |
 | Rail path corner badge (A/B/C·U) | **live** (v0.9.73) |
 | Home/settings tap ≥44px | **live** (v0.9.70) |

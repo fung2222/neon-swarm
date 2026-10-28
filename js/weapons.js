@@ -390,6 +390,7 @@ export function branchIndex(letter) {
 }
 
 /** List branch options for a catalog weapon. */
+/** v0.9.86 WEAPONS-BRANCH-HINT-SYNC-001 — hints match branchNames (no kit invent). */
 const BRANCH_KIT_HINTS = Object.freeze({
   gatling: {
     A: { zh: '射速↑·過熱節奏', en: 'RoF↑ · heat cadence' },
@@ -426,15 +427,15 @@ const BRANCH_KIT_HINTS = Object.freeze({
   },
   slow_gun: {
     A: { zh: '緩速更久', en: 'Longer slow' },
-    B: { zh: '更大緩速圈', en: 'Wider slow field' },
+    B: { zh: '黏網纏住', en: 'Sticky web snare' },
   },
   attack_drone: {
     A: { zh: '多一機護衛', en: '+1 escort drone' },
-    B: { zh: '單機高傷', en: 'Harder drones' },
+    B: { zh: '自爆衝鋒', en: 'Suicide charge burst' },
   },
   blackhole: {
     A: { zh: '拉力↑', en: 'Stronger pull' },
-    B: { zh: '爆破傷害↑', en: 'Crush dmg↑' },
+    B: { zh: '奇點爆破', en: 'Singularity blast' },
   },
   frag: {
     A: { zh: '高爆傷害', en: 'HE blast' },
@@ -446,11 +447,11 @@ const BRANCH_KIT_HINTS = Object.freeze({
   },
   flash: {
     A: { zh: '致盲更久', en: 'Longer stun' },
-    B: { zh: '更快冷卻', en: 'Shorter CD' },
+    B: { zh: '電磁脈衝', en: 'EMP pulse' },
   },
   gravity: {
     A: { zh: '更強引力', en: 'Stronger pull' },
-    B: { zh: '更快坍縮', en: 'Faster crush' },
+    B: { zh: '引力錘砸', en: 'Gravity hammer smash' },
   },
 });
 
