@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.203
+// RAMPAGE MECH 暴走機甲 — tip v0.9.204 MOBILE-WEBGL-DIAG-001
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -18,6 +18,11 @@ import {
   buildInterruptSnapshot, writeInterruptSnapshot, readInterruptSnapshot,
   clearInterruptSnapshot, formatInterruptNote, SHED,
 } from './webgl-guard.js';
+import {
+  createGfxDiag, classifyFault, summarizeError,
+  shouldAutoReloadOnRestore, bumpAutoReloadCount, clearAutoReloadCount,
+  shedReasonText,
+} from './gfx-diag.js';
 import { createBannerController, BANNER_MS } from './banner-queue.js';
 import {
   shouldShowCoach, markCoachSeen, zoneShortLabel, formatLoadoutFromGame,
@@ -104,33 +109,100 @@ function applyFeelBursts(pos, steps, { waves: wavesApi = waves } = {}) {
 
 const ui = new CyberUI({ screens: ['start', 'pause', 'over', 'level', 'gfx'] });
 
-/** Show recoverable graphics overlay (context loss or boot WebGL fail). Prefer reload over soft restore. */
-function showGfxRecover(kind = 'lost') {
+// v0.9.204 MOBILE-WEBGL-DIAG-001: capped ring buffer (always on; cheap)
+const gfxDiag = createGfxDiag();
+const _ss = () => (typeof sessionStorage !== 'undefined' ? sessionStorage : null);
+function exposeGfxDiagApi(extra = {}) {
+  try {
+    const prev = (typeof window !== 'undefined' && window.__NS_GFX_DIAG) || {};
+    // Preserve simulateLost/Restore etc. across showGfxRecover re-expose
+    window.__NS_GFX_DIAG = {
+      dump: () => gfxDiag.dump(),
+      summary: () => gfxDiag.summaryLine(),
+      showFault: (kind, err) => showGfxRecover(kind, err),
+      simulateLost: prev.simulateLost,
+      simulateRestore: prev.simulateRestore,
+      ...extra,
+    };
+  } catch (_) {}
+}
+
+/**
+ * Show recoverable fault overlay. kind is classified so plain JS ≠ GPU.
+ * @param {string} kind raw kind: lost | boot-webgl | boot-js | boot | loop-js | loop-gl | reload-cap
+ * @param {Error|string|null} [err]
+ * @param {object} [extra]
+ */
+function showGfxRecover(kind = 'lost', err = null, extra = null) {
+  const classified = (kind === 'reload-cap')
+    ? 'reload-cap'
+    : classifyFault(kind === 'boot' ? 'boot-js' : kind, err);
+  try { gfxDiag.noteFault(classified, err, extra || {}); } catch (_) {}
+
+  const title = $('gfx-title');
+  const titleEn = document.querySelector('#screen-gfx .title-en');
   const body = $('gfx-body');
   const bodyEn = $('gfx-body-en');
-  let zh = kind === 'boot' ? t('gfx.boot') : t('gfx.lost');
-  let en = kind === 'boot' ? t('gfx.bootEn') : t('gfx.lostEn');
+
+  let titleZh = t('gfx.title');
+  let titleEnText = t('gfx.titleEn');
+  let zh = t('gfx.lost');
+  let en = t('gfx.lostEn');
+
+  if (classified === 'boot-webgl') {
+    zh = t('gfx.boot'); en = t('gfx.bootEn');
+  } else if (classified === 'boot-js') {
+    titleZh = t('gfx.titleJs'); titleEnText = t('gfx.titleJsEn');
+    zh = t('gfx.bootJs'); en = t('gfx.bootJsEn');
+  } else if (classified === 'loop-js') {
+    titleZh = t('gfx.titleJs'); titleEnText = t('gfx.titleJsEn');
+    zh = t('gfx.loopJs'); en = t('gfx.loopJsEn');
+  } else if (classified === 'loop-gl') {
+    zh = t('gfx.loopGl'); en = t('gfx.loopGlEn');
+  } else if (classified === 'reload-cap' || kind === 'reload-cap') {
+    zh = t('gfx.reloadCap'); en = t('gfx.reloadCapEn');
+  }
+
+  // Append compact error + diag summary (no PII / no full query)
+  try {
+    const sum = summarizeError(err);
+    if (sum.message && (classified === 'boot-js' || classified === 'loop-js' || classified === 'loop-gl')) {
+      const line = `[${sum.name}] ${sum.message}`.slice(0, 220);
+      zh = zh + '\n\n' + line;
+      en = en + '\n\n' + line;
+    }
+    const diagLine = gfxDiag.summaryLine();
+    if (diagLine) {
+      zh = zh + '\n\n診斷: ' + diagLine;
+      en = en + '\n\nDiag: ' + diagLine;
+    }
+  } catch (_) {}
+
   // v0.9.51: append last-run interrupt note when snapshot survives reload
-  if (kind === 'lost') {
+  if (classified === 'lost' || kind === 'lost') {
     try {
-      const snap = readInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null);
+      const snap = readInterruptSnapshot(_ss());
       const noteZh = formatInterruptNote(snap, true);
       const noteEn = formatInterruptNote(snap, false);
       if (noteZh) zh = zh + '\n\n' + noteZh;
       if (noteEn) en = en + '\n\n' + noteEn;
     } catch (_) {}
   }
+
+  if (title) title.textContent = titleZh;
+  if (titleEn) titleEn.textContent = titleEnText;
   if (body) body.textContent = zh;
   if (bodyEn) bodyEn.textContent = en;
   // Hide kit permanent-fatal strip if present
-  const err = document.getElementById('err');
-  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  const errEl = document.getElementById('err');
+  if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
   try { ui.hud(false); } catch (_) {}
   try { ui.show('gfx'); } catch (_) {
     const el = $('screen-gfx');
     if (el) { el.classList.remove('hidden'); el.style.removeProperty('display'); }
   }
   ui.loaded?.(0);
+  exposeGfxDiagApi();
 }
 
 const stage = createStage({
@@ -142,7 +214,7 @@ const stage = createStage({
   glowLevels: { low: { strength: MOBILE_GFX ? 0.15 : 0.22, radius: 0.35, threshold: 0.25 } },
   maxPixelRatio: MAX_PR,
   // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
-  onFatal: () => showGfxRecover('boot'),
+  onFatal: (msg) => showGfxRecover('boot-webgl', msg || 'WebGL unavailable'),
 });
 // PAUSE-GLOW-TO-SETTINGS-001: no pause #btn-glow — quality/畫質 lives in settings only (mountSettings)
 stage.setGlow('low'); // v0.8.5: force low glow (ignore shared high from other games)
@@ -276,18 +348,29 @@ S.mech = MECH_BY_ID[S.mechId];
     if (S.gfxLost) return;
     S.gfxLost = true;
     console.warn('[neon-swarm] WebGL context lost');
+    try { gfxDiag.noteContextLost({ shed: S._shedLevel | 0, runT: (S.game && S.game.t) || 0 }); } catch (_) {}
     // v0.9.51: persist tiny interrupt snapshot for post-reload note (not seamless resume)
     try {
-      const snap = buildInterruptSnapshot(S.game);
-      writeInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null, snap);
+      const snap = buildInterruptSnapshot(S.game, Date.now(), 'webgl');
+      writeInterruptSnapshot(_ss(), snap);
     } catch (_) {}
     try { if (S.state === 'play' || S.state === 'level') S.state = 'pause'; } catch (_) {}
     try { audio.duckAll?.(true); } catch (_) {}
     showGfxRecover('lost');
   }, false);
   canvas.addEventListener('webglcontextrestored', () => {
-    console.warn('[neon-swarm] WebGL context restored — reloading for clean Three.js recovery');
-    location.reload();
+    console.warn('[neon-swarm] WebGL context restored');
+    try { gfxDiag.noteContextRestored({ shed: S._shedLevel | 0 }); } catch (_) {}
+    // v0.9.204: cap auto-reload to prevent infinite restore loops on unstable GPUs
+    const ss = _ss();
+    if (shouldAutoReloadOnRestore(ss)) {
+      const n = bumpAutoReloadCount(ss);
+      console.warn('[neon-swarm] context restored — reload for clean Three.js recovery', n);
+      location.reload();
+    } else {
+      console.warn('[neon-swarm] context restored — auto-reload capped; stay on overlay');
+      showGfxRecover('reload-cap');
+    }
   }, false);
 }
 
@@ -1388,7 +1471,7 @@ function startRun() {
   S.demoT = 0;
   S.newRecord = false;
   // v0.9.51: fresh run — clear interrupt note + reset mid-run GPU shed
-  try { clearInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null); } catch (_) {}
+  try { clearInterruptSnapshot(_ss()); } catch (_) {}
   S._shedLevel = 0;
   S._shedHot = 0;
   S._shedFrame = 0;
@@ -2361,8 +2444,37 @@ async function boot() {
   }
   showMenu();
   ui.loaded();
+  try {
+    gfxDiag.markBootOk();
+    clearAutoReloadCount(_ss());
+  } catch (_) {}
+  // Always expose diag dump for phone triage (?diag=1 also logs once)
+  try {
+    exposeGfxDiagApi({
+      simulateLost: () => {
+        const c = $('scene');
+        const gl = stage.renderer && stage.renderer.getContext && stage.renderer.getContext();
+        const ext = gl && gl.getExtension && gl.getExtension('WEBGL_lose_context');
+        if (ext) ext.loseContext();
+        else c.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+      },
+      simulateRestore: () => {
+        const c = $('scene');
+        const gl = stage.renderer && stage.renderer.getContext && stage.renderer.getContext();
+        const ext = gl && gl.getExtension && gl.getExtension('WEBGL_lose_context');
+        // Prefer extension when available; always also dispatch so diag/tests stay deterministic
+        // if the driver restores silently or never fires the DOM event.
+        try { if (ext) ext.restoreContext(); } catch (_) {}
+        try { c.dispatchEvent(new Event('webglcontextrestored')); } catch (_) {}
+      },
+    });
+    if (flags.debug || flags.get('diag') === '1') {
+      window.__NS = { get game() { return S.game; }, get S() { return S; }, view, stage, audio, gfxDiag };
+      console.info('[neon-swarm] gfx-diag ready', gfxDiag.summaryLine());
+    }
+  } catch (_) {}
   if (S.demo || flags.autostart) startRun();
-  if (flags.debug) {
+  if (flags.debug && !window.__NS) {
     window.__NS = { get game() { return S.game; }, get S() { return S; }, view, stage, audio };
   }
   const PERF = flags.get('perf') === '1';
@@ -2382,7 +2494,8 @@ async function boot() {
   }
 
   stage.loop((dt, time, rawDt) => {
-    if (S.gfxLost) return; // freeze game + render after context loss (overlay owns the screen)
+    if (S.gfxLost) return; // freeze game + render after context loss / classified fault (overlay owns the screen)
+    try {
     const capped = Math.min(0.05, dt);
 
     // v0.9.51 mid-run GPU shed sample (~every frame accumulate; evaluate ~0.5s)
@@ -2402,9 +2515,17 @@ async function boot() {
           prevLevel: S._shedLevel | 0,
         });
         if (next !== (S._shedLevel | 0)) {
+          const reason = shedReasonText({
+            mobile: true, runT: S.game.t || 0, avgFrameMs: avg,
+          }, SHED);
           S._shedLevel = next;
           applyShedToStage(next);
-          console.info('[neon-swarm] GPU shed level', next, 'avgFrameMs', avg.toFixed(1));
+          console.info('[neon-swarm] GPU shed level', next, 'avgFrameMs', avg.toFixed(1), reason);
+          try {
+            gfxDiag.noteShed(next, reason, { avgMs: Math.round(avg), runT: Math.floor(S.game.t || 0) });
+            gfxDiag.sampleRenderer(stage.renderer, { shed: next });
+            gfxDiag.sampleGame(S.game, { particles: PARTICLE_POOL });
+          } catch (_) {}
         }
         if (avg >= SHED.frameMsHot) S._shedHot = (S._shedHot | 0) + 1;
         else S._shedHot = 0;
@@ -2412,7 +2533,14 @@ async function boot() {
           S._shedHot = 0;
           try {
             const snap = buildInterruptSnapshot(S.game, Date.now(), 'cool-pause');
-            writeInterruptSnapshot(typeof sessionStorage !== 'undefined' ? sessionStorage : null, snap);
+            writeInterruptSnapshot(_ss(), snap);
+          } catch (_) {}
+          try {
+            gfxDiag.noteCoolPause({
+              shed: S._shedLevel | 0,
+              avgMs: Math.round(avg),
+              runT: Math.floor((S.game && S.game.t) || 0),
+            });
           } catch (_) {}
           pauseRun();
           console.warn('[neon-swarm] cool-pause after sustained hot frames (GPU pressure) shed', S._shedLevel);
@@ -2435,8 +2563,15 @@ async function boot() {
     }
     city.update(time, capped, stage.camera);
     stage.render(rawDt);
+    } catch (loopErr) {
+      // v0.9.204: do not silently black-screen; classify JS vs GL and show correct overlay
+      console.error('[neon-swarm] frame loop error', loopErr);
+      S.gfxLost = true;
+      try { if (S.state === 'play' || S.state === 'level') S.state = 'pause'; } catch (_) {}
+      showGfxRecover('loop-js', loopErr, { shed: S._shedLevel | 0 });
+    }
   }, { isActive: () => true, fpsEl: $('fps') });
   if (flags.fps) $('fps').classList.remove('hidden');
   ads.init().catch(() => {});
 }
-boot().catch((e) => { console.error(e); showGfxRecover('boot'); });
+boot().catch((e) => { console.error('[neon-swarm] boot failed', e); showGfxRecover('boot-js', e); });

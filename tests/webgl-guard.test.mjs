@@ -110,6 +110,9 @@ import {
   assert.ok(en.includes('1:05'));
   assert.ok(en.includes('graphics interrupt'));
   assert.equal(formatInterruptNote(null), '');
+  const cool = { t: 65, score: 900, kills: 12, zone: 'lab', reason: 'cool-pause' };
+  assert.ok(formatInterruptNote(cool, true).includes('冷卻暫停') || formatInterruptNote(cool, true).includes('幀時間'));
+  assert.ok(formatInterruptNote(cool, false).includes('cool-pause'));
 }
 
 console.log('webgl-guard.test.mjs: PASS');

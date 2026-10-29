@@ -1,5 +1,6 @@
 /**
  * Q hero 2D skeletal / puppet demo (v0.9.203 Q-2D-SKELETON-DEMO).
+ * v0.9.204: share part CanvasTextures across rebuilds (restart leak cut).
  *
  * Free Spine-like path: lightweight bone hierarchy in Three.js + canvas-drawn
  * charcoal+cyan part planes (no Spine Editor, no Mixamo, no meshopt).
@@ -219,7 +220,18 @@ function buildPartLibrary() {
     ctx.stroke();
   }, 96);
 
-  return { head, torso, upper, forearm, thigh, shin, foot, weapon, pad };
+  const lib = { head, torso, upper, forearm, thigh, shin, foot, weapon, pad };
+  for (const tex of Object.values(lib)) {
+    if (tex && tex.userData) tex.userData.shared = true;
+  }
+  return lib;
+}
+
+/** Shared across setMech rebuilds — disposeTree must not free these maps. */
+let _sharedPartLib = null;
+function getPartLibrary() {
+  if (!_sharedPartLib) _sharedPartLib = buildPartLibrary();
+  return _sharedPartLib;
 }
 
 function groundRing(color, radius, opacity = 0.4) {
@@ -240,7 +252,7 @@ function groundRing(color, radius, opacity = 0.4) {
  */
 export function buildHorn2dPuppet(cfg) {
   const trim = (cfg && cfg.trim) || 0x00e5ff;
-  const lib = buildPartLibrary();
+  const lib = getPartLibrary();
 
   const root = new THREE.Group();
   root.name = 'horn2dPuppet';

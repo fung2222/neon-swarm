@@ -3818,7 +3818,16 @@ function disposeTree(obj) {
     if (ch.geometry) ch.geometry.dispose();
     if (ch.material) {
       for (const m of Array.isArray(ch.material) ? ch.material : [ch.material]) {
-        if (m && m.dispose) m.dispose();
+        if (!m) continue;
+        // v0.9.204: free owned maps; never dispose shared atlas / part-lib textures
+        for (const key of ['map', 'emissiveMap', 'alphaMap', 'normalMap']) {
+          const tex = m[key];
+          if (tex && tex.dispose && !(tex.userData && tex.userData.shared)) {
+            try { tex.dispose(); } catch (_) {}
+            m[key] = null;
+          }
+        }
+        if (m.dispose) m.dispose();
       }
     }
   });

@@ -111,6 +111,40 @@ i18n.add({
     'Temporary graphics failure — reload, or fully close the browser.',
     'Temporary graphics failure — reload, or fully close the browser.'
   ],
+  'gfx.titleJs': ['程式錯誤（非繪圖卡）', 'SCRIPT ERROR (NOT GPU)'],
+  'gfx.titleJsEn': ['SCRIPT ERROR (NOT GPU)', 'SCRIPT ERROR (NOT GPU)'],
+  'gfx.bootJs': [
+    '遊戲啟動時發生 JavaScript 錯誤，唔係顯示卡故障。請撳重新載入；若重複出現，請把錯誤碼截圖回報。',
+    'A JavaScript error stopped startup — this is not a GPU fault. Tap reload; if it repeats, screenshot the error code.'
+  ],
+  'gfx.bootJsEn': [
+    'JavaScript startup error — not a GPU fault. Reload, or screenshot the code.',
+    'JavaScript startup error — not a GPU fault. Reload, or screenshot the code.'
+  ],
+  'gfx.loopJs': [
+    '運行中發生程式錯誤，畫面已凍結。請重新載入。呢個唔一定係 GPU context loss。',
+    'A script error froze the run. Reload. This is not necessarily a GPU context loss.'
+  ],
+  'gfx.loopJsEn': [
+    'Script error froze the run — reload. Not necessarily GPU loss.',
+    'Script error froze the run — reload. Not necessarily GPU loss.'
+  ],
+  'gfx.loopGl': [
+    '繪圖循環偵測到 WebGL／GPU 相關錯誤。請重新載入；若仍然唔得，請完全關閉瀏覽器再開。',
+    'The render loop hit a WebGL/GPU-related error. Reload; if it persists, fully close the browser.'
+  ],
+  'gfx.loopGlEn': [
+    'Render-loop WebGL/GPU error — reload or fully close the browser.',
+    'Render-loop WebGL/GPU error — reload or fully close the browser.'
+  ],
+  'gfx.reloadCap': [
+    '已自動重新載入多次仍未穩定，已停止自動重載以免無限循環。請完全關閉瀏覽器後再開，或返回街機盒子。',
+    'Auto-reload hit its cap to avoid an infinite loop. Fully close the browser, or return to the arcade hub.'
+  ],
+  'gfx.reloadCapEn': [
+    'Auto-reload capped — close the browser fully or return to the hub.',
+    'Auto-reload capped — close the browser fully or return to the hub.'
+  ],
   'gfx.reload': ['重新載入', 'RELOAD'],
   'gfx.reloadEn': ['RELOAD', 'RELOAD'],
   // Phase 3 elite / boss beat banners (zh-HK first)

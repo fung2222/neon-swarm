@@ -12,7 +12,7 @@ import {
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const guard = readFileSync(new URL('../js/webgl-guard.js', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
-assert.ok(/\?v=0\.9\.(12[6-9]|1[3-9]\d)/.test(html), 'cache-bust ≥0.9.126');
+assert.ok(/\?v=0\.9\.(12[6-9]|1[3-9]\d|[2-9]\d{2})/.test(html), 'cache-bust ≥0.9.126');
 assert.ok(guard.includes('PHONE-GPU-DEEPEN-001'), 'ship id guard');
 assert.ok(main.includes('PHONE-GPU-DEEPEN-001'), 'ship id main');
 assert.ok(main.includes('shouldSkipPostFx'), 'main wires post skip');

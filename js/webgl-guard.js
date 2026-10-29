@@ -195,8 +195,15 @@ export function formatInterruptNote(snap, isZh = true) {
   const ss = String((snap.t || 0) % 60).padStart(2, '0');
   const score = snap.score | 0;
   const kills = snap.kills | 0;
+  const cool = snap.reason === 'cool-pause';
   if (isZh) {
+    if (cool) {
+      return `上次因幀時間過長而冷卻暫停 · ${mm}:${ss} · ${score} 分 · ${kills} 擊殺 — 唔係自動續關；可撳繼續或重開。`;
+    }
     return `上次繪圖中斷 · ${mm}:${ss} · ${score} 分 · ${kills} 擊殺 — 重新載入後可再開一局（唔會自動續關）。`;
+  }
+  if (cool) {
+    return `Last cool-pause (sustained hot frames) · ${mm}:${ss} · ${score} pts · ${kills} kills — not auto-resume; continue or restart.`;
   }
   return `Last graphics interrupt · ${mm}:${ss} · ${score} pts · ${kills} kills — reload then start a new run (no auto-resume).`;
 }
