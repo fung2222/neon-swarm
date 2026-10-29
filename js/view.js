@@ -15,6 +15,10 @@ import {
   syncHorn2dPuppet,
 } from './sprites.js';
 import { HORN_TRUE_3D } from './q-hero-3d-flag.js';
+import {
+  isFeelProtoEnabled, COMBAT_FEEL_V1, isFeelProtoGrunt, protoHurtLean, protoRecoilMul,
+} from './combat-feel-proto.js';
+const FEEL_PROTO_VIEW = isFeelProtoEnabled(typeof location !== 'undefined' ? location.search : '');
 // MENU-NO-MESHOPT-BOOT: no static q-hero-3d.js (meshopt) while flag false.
 const mixamoReady = () => false;
 const syncMixamoPlayer = () => {};
@@ -2895,8 +2899,10 @@ export class View {
     }
   }
 
-  burstGore(x, z, colorHex = 0x8a93a8) {
-    spawnFragments(this.fragG, x, z, colorHex, 10);
+  burstGore(x, z, colorHex = 0x8a93a8, n = 10) {
+    // Cap scraps — proto passes deathScrapCount (≤4); punch path keeps 10
+    const count = Math.max(0, Math.min(12, n | 0));
+    if (count > 0) spawnFragments(this.fragG, x, z, colorHex, count);
   }
 
   pulseNova(r) {
@@ -3029,6 +3035,8 @@ export class View {
           dt,
           camera: this.stage.camera,
           t: game.t || 0,
+          // COMBAT-FEEL proto: scale attackKick when ?feelProto=1 (presentation only)
+          recoilMul: FEEL_PROTO_VIEW ? protoRecoilMul(COMBAT_FEEL_V1) : 1,
         });
       } else if (ud.baked) {
         // Layered bake from buildPlayerMech: legs=move, gun=visualAim, hurt=tint only, no bob.
@@ -3181,11 +3189,22 @@ export class View {
           style: isFlyer ? 'fly' : (moving ? 'ground' : 'idle'),
         });
         applySpriteFlash(m, { hit: e.hit > 0, blink: false, move: spd });
+        // COMBAT-FEEL proto: funny short lean/wobble — visual only (no e.x/e.z push)
+        if (FEEL_PROTO_VIEW && e.hit > 0 && isFeelProtoGrunt(e)) {
+          const lean = protoHurtLean(e.hit, game.t || 0, COMBAT_FEEL_V1);
+          m.rotation.z += lean;
+        }
         if (e.slow > 0 && m.userData.spriteMat) m.userData.spriteMat.color.setRGB(0.65, 0.85, 1.2);
         // Foot-plant dust (ground) / jet exhaust (flyers)
         if (moving) this._enemyMotionFx(e, m, isFlyer, game);
       } else {
         m.rotation.y = faceYaw;
+        if (FEEL_PROTO_VIEW && e.hit > 0 && isFeelProtoGrunt(e)) {
+          const lean = protoHurtLean(e.hit, game.t || 0, COMBAT_FEEL_V1);
+          m.rotation.z = lean; // short funny lean; reset next frame when hit expires
+        } else {
+          m.rotation.z = 0;
+        }
         const glow = e.hit > 0 ? 1.5 : (e.slow > 0 ? 0.45 : 0.7);
         const legSwing = Math.sin((e.animPhase || game.t) * 2.4 + e.wob) * 0.5;
         const legs = m.userData.legs || [];

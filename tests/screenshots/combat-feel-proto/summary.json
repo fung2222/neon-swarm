@@ -1,0 +1,33 @@
+{
+  "note": "Box SwiftShader renders — NOT Android verification",
+  "before": {
+    "label": "before",
+    "meta": {
+      "enemies": 6,
+      "feel": "?v=0.9.204&lang=zh&ads=0"
+    },
+    "feelOn": false,
+    "errs": [],
+    "consoleHits": []
+  },
+  "proto": {
+    "label": "proto",
+    "meta": {
+      "enemies": 6,
+      "feel": "?v=0.9.204&lang=zh&ads=0&feelProto=1"
+    },
+    "feelOn": true,
+    "errs": [],
+    "consoleHits": [
+      "[neon-swarm] COMBAT-FEEL proto ON (?feelProto=1) — preview only"
+    ]
+  },
+  "shots": [
+    "before-01-fire-muzzle.png",
+    "before-02-hit-lean.png",
+    "before-03-after-kill.png",
+    "proto-01-fire-muzzle.png",
+    "proto-02-hit-lean.png",
+    "proto-03-after-kill.png"
+  ]
+}

@@ -450,6 +450,7 @@ export function syncHorn2dPuppet(root, {
   dt = 0.016,
   camera = null,
   t = 0,
+  recoilMul = 1,
 } = {}) {
   const ud = root && root.userData;
   if (!ud || !ud.isPuppet2d) return;
@@ -511,10 +512,10 @@ export function syncHorn2dPuppet(root, {
       ud.puppetDoll.position.y = 0.02 + Math.sin(ud.idlePhase * 0.5) * 0.012;
     }
 
-    // Attack kick — weapon arm snap on fire
+    // Attack kick — weapon arm snap on fire (recoilMul scales for COMBAT-FEEL proto)
     if (firing) ud.attackKick = 1;
     else ud.attackKick = (ud.attackKick || 0) * Math.pow(0.001, dtp); // fast decay
-    const kick = ud.attackKick || 0;
+    const kick = (ud.attackKick || 0) * Math.max(0.5, Math.min(2.2, recoilMul || 1));
     if (kick > 0.02 || aiming) {
       B.upperR.rotation.z = (moving ? B.upperR.rotation.z : R.upperR) - 0.35 * kick - (aiming ? 0.12 : 0);
       B.foreR.rotation.z = R.foreR - 0.55 * kick;

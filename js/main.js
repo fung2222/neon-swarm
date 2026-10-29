@@ -55,6 +55,11 @@ import {
   muzzleFeelFx, explodeFeelFx, chargeFeelFx, stickFeelFx, frostHitFeelFx,
   slowFieldFeelFx, deployDronesFeelFx, blackholeFeelFx, flashFeelFx, puddleFeelFx,
 } from './weapons-feel-fx.js';
+import {
+  isFeelProtoEnabled, COMBAT_FEEL_V1,
+  isFeelProtoWeapon, isFeelProtoGrunt,
+  protoGatlingMuzzleSteps, protoHitSparkSteps, protoGruntKillSteps,
+} from './combat-feel-proto.js';
 import { weaponIconHtml, WEAPON_ICON_SRC } from './weapons-icons.js';
 // WEAPONS-PNG-PATH (v0.9.191): preferSrc tries assets/weapons/{id}.png then SVG fallback
 
@@ -78,6 +83,11 @@ const MOBILE_GFX = (() => {
 })();
 // v0.9.20: pool 1200→800 on mobile (further mid-run GPU pressure cut; desktop unchanged)
 const PARTICLE_POOL = MOBILE_GFX ? 1600 : 5200; // v0.9.54: raise mobile baseline (was 800)
+/** COMBAT-FEEL V1 preview — OFF unless ?feelProto=1 (does not change live tip). */
+const FEEL_PROTO = isFeelProtoEnabled(location.search);
+if (FEEL_PROTO) {
+  try { console.info('[neon-swarm] COMBAT-FEEL proto ON (?feelProto=1) — preview only'); } catch (_) {}
+}
 const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
 const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.54 prettier baseline
@@ -2007,7 +2017,13 @@ function tick(dt) {
       const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
       const muzzle = new THREE.Vector3(mx, my, mz);
       // v0.9.56 WEAPONS-FEEL-FX-001 — per-weapon muzzle / trail spark (pool-respecting)
-      applyFeelBursts(muzzle, muzzleFeelFx(ev.weapon, { mobile: !!MOBILE_GFX }));
+      // COMBAT-FEEL proto: gatling short varied muzzle only when ?feelProto=1
+      if (FEEL_PROTO && isFeelProtoWeapon(ev.weapon)) {
+        const variety = (S._feelMuzzleVar = ((S._feelMuzzleVar || 0) + 1) % (COMBAT_FEEL_V1.muzzleVariety || 3));
+        applyFeelBursts(muzzle, protoGatlingMuzzleSteps(COMBAT_FEEL_V1, { mobile: !!MOBILE_GFX, variety }));
+      } else {
+        applyFeelBursts(muzzle, muzzleFeelFx(ev.weapon, { mobile: !!MOBILE_GFX }));
+      }
     }
     else if (ev.type === 'weaponCharge') {
       const mx = ev.muzzleX != null ? ev.muzzleX : S.game.px;
@@ -2055,12 +2071,20 @@ function tick(dt) {
       );
       try { audio.nova(); } catch (_) {}
     }
-        else if (ev.type === 'hit') {
+    else if (ev.type === 'hit') {
       audio.hit();
       if (ev.x != null) {
         const c = new THREE.Color(ev.color || 0x00e5ff);
         const n = ev.heavy ? 22 : 12;
-        particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, burstN(Math.min(n, 8)), { speed: ev.heavy ? 4 : 3, up: 1.2, life: 0.55, bright: 1.0 });
+        if (FEEL_PROTO && !ev.heavy) {
+          // Presentation only — real hit event already emitted by logic; capped sparks
+          applyFeelBursts(
+            new THREE.Vector3(ev.x, 0.55, ev.z),
+            protoHitSparkSteps(COMBAT_FEEL_V1, { mobile: !!MOBILE_GFX, color: ev.color || 0x00e5ff }),
+          );
+        } else {
+          particles.burst(new THREE.Vector3(ev.x, 0.5, ev.z), c, burstN(Math.min(n, 8)), { speed: ev.heavy ? 4 : 3, up: 1.2, life: 0.55, bright: 1.0 });
+        }
         // v0.8.5: no white hit particles
         if (ev.heavy) kickFx({ trauma: 0.08, slowmo: 0.04, bloomDamp: 0.35 });
         // v0.9.34 floating dmg (throttled per enemy)
@@ -2083,7 +2107,13 @@ function tick(dt) {
       const punch = !!(ev.gore || ev.elite);
       // Ordinary kills: local particles/ring only — no chain slowmo at high kill rate.
       // Elite / gore / heavy: keep noticeable trauma + hit-stop.
-      particles.burst(pos, c, burstN(punch ? (human ? 6 : 10) : (human ? 4 : 6)), { speed: punch ? 4 : 2.6, up: punch ? 1.8 : 1.1, life: punch ? 0.45 : 0.28, bright: 1.0 });
+      // COMBAT-FEEL proto: short grunt pop + capped scraps (no every-kill shake/flash).
+      if (FEEL_PROTO && !punch && isFeelProtoGrunt(ev.enemy)) {
+        applyFeelBursts(pos, protoGruntKillSteps(COMBAT_FEEL_V1, { mobile: !!MOBILE_GFX, color: ev.enemy.color || 0x8a93a8 }));
+        if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8, COMBAT_FEEL_V1.deathScrapCount || 4);
+      } else {
+        particles.burst(pos, c, burstN(punch ? (human ? 6 : 10) : (human ? 4 : 6)), { speed: punch ? 4 : 2.6, up: punch ? 1.8 : 1.1, life: punch ? 0.45 : 0.28, bright: 1.0 });
+      }
       if (punch) {
         particles.burst(pos, new THREE.Color(0x00e5ff), burstN(4), { speed: 2.2, up: 2.5, life: 0.35, size: 0.45, bright: 0.95 });
         particles.ring(pos, c, 10, 6, 0.3);
