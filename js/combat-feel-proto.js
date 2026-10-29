@@ -1,7 +1,6 @@
 /**
- * COMBAT-FEEL V1 prototype (preview only).
- * Enabled ONLY when URL has ?feelProto=1 (or ?feel=1).
- * Default OFF — live tip feel unchanged. Soft-juice invent ban still applies for formal ship.
+ * COMBAT-FEEL V1 — formal tip presentation (gatling + ordinary grunt).
+ * Default ON on live tip. Force OFF with ?feelProto=0 (or ?feel=0 / off / false) for A/B debug.
  *
  * Scope: gatling fire + ordinary grunt (soldier/staffer/security/human) presentation.
  * Does NOT change damage, fire rate, HP, hit detection, or drops.
@@ -10,9 +9,14 @@ export function isFeelProtoEnabled(search = typeof location !== 'undefined' ? lo
   try {
     const q = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
     const v = q.get('feelProto') || q.get('feel');
-    return v === '1' || v === 'true' || v === 'on';
+    // Explicit force-off for debug A/B
+    if (v === '0' || v === 'false' || v === 'off') return false;
+    // Explicit force-on (legacy preview URLs still work)
+    if (v === '1' || v === 'true' || v === 'on') return true;
+    // Default ON when flag absent
+    return true;
   } catch (_) {
-    return false;
+    return true;
   }
 }
 

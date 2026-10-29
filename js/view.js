@@ -3035,7 +3035,7 @@ export class View {
           dt,
           camera: this.stage.camera,
           t: game.t || 0,
-          // COMBAT-FEEL proto: scale attackKick when ?feelProto=1 (presentation only)
+          // COMBAT-FEEL V1: scale attackKick (presentation only; default ON)
           recoilMul: FEEL_PROTO_VIEW ? protoRecoilMul(COMBAT_FEEL_V1) : 1,
         });
       } else if (ud.baked) {

@@ -2,8 +2,8 @@
 
 > **Task merge:** t308 art brief · t309 COMBAT-FEEL-PROTOTYPE-001 · t310 COMBAT-FEEL V1  
 > **Base tip:** v0.9.204 `131fc2d` MOBILE-WEBGL-DIAG — **do not undo** WebGL diag.  
-> **Status:** Review + **preview prototype only**. **NOT** merged to live tip. Soft-juice invent ban still applies for formal ship.  
-> **Wait Roy confirm** before any main tip bump for feel.
+> **Status:** **SHIPPED** tip **v0.9.205** `COMBAT-FEEL-V1` (default ON). Soft-juice invent ban still applies for *new* juice beyond this V1 set.  
+> Base diag tip v0.9.204 kept. Roy confirmed「合併爽感」2026-10-30.
 
 ---
 
@@ -15,11 +15,11 @@
 | Proto knobs + helpers | `js/combat-feel-proto.js` |
 | How to open | `prototypes/combat-feel/README.md` |
 | Branch | `proto/combat-feel-v1` |
-| Gate | `?feelProto=1` (**OFF by default** — live tip feel unchanged) |
+| Gate | **ON by default**; `?feelProto=0` force-off debug |
 | Tests | `tests/combat-feel-proto.test.mjs` |
 | Screenshots | `tests/screenshots/combat-feel-proto/` |
 
-**NOT shipped to live tip:** no version bump past v0.9.204, no Pages default tip change, no damage/RoF/HP/hit-test/drop edits.
+**Shipped tip v0.9.205:** feel default ON. No damage/RoF/HP/hit-test/drop/Phase4/ult/BALANCE/§9 edits.
 
 ---
 
@@ -193,7 +193,7 @@ Forbidden:
 | D Kill | Short pop + ≤4 scraps; no elite boom | `deathParticleCount`, `deathScrapCount` |
 | E Combo | Existing streak toast; kick only ≥10 | `streakKickMul` (1.0) |
 
-Gate: `?feelProto=1`. Default off → **identical** to v0.9.204 feel.
+Gate: default ON (v0.9.205). `?feelProto=0` → pre-V1 feel (v0.9.204 presentation).
 
 ---
 
@@ -228,4 +228,4 @@ If any main commit ever lands with flag off, revert that commit; tip feel stays 
 
 ## 10. Next
 
-**Wait Roy confirm** (肉眼 on preview) before formal integrate tip / version bump for feel.
+**Shipped** after Roy「合併爽感」. Phone 肉眼 still pending — box smoke only.

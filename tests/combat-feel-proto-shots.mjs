@@ -1,5 +1,5 @@
 /**
- * COMBAT-FEEL V1 proto screenshots — before (flag OFF) vs after (?feelProto=1).
+ * COMBAT-FEEL V1 screenshots — before (?feelProto=0) vs default ON (absent / feelProto=1).
  * Box SwiftShader only — NOT Android phone proof.
  * Run: node tests/combat-feel-proto-shots.mjs
  */
@@ -131,8 +131,10 @@ async function runVariant(browser, base, qs, label) {
   const feelOn = await page.evaluate(() => {
     try {
       const q = new URLSearchParams(location.search);
-      return q.get('feelProto') === '1' || q.get('feel') === '1';
-    } catch (_) { return false; }
+      const v = q.get('feelProto') || q.get('feel');
+      if (v === '0' || v === 'false' || v === 'off') return false;
+      return true; // default ON
+    } catch (_) { return true; }
   });
   await page.close();
   return { label, meta, feelOn, errs: errs.slice(0, 8), consoleHits: consoleHits.slice(0, 8) };
@@ -155,8 +157,8 @@ async function main() {
     ],
   });
   try {
-    const off = await runVariant(browser, base, 'v=0.9.204&lang=zh&ads=0', 'before');
-    const on = await runVariant(browser, base, 'v=0.9.204&lang=zh&ads=0&feelProto=1', 'proto');
+    const off = await runVariant(browser, base, 'v=0.9.205&lang=zh&ads=0&feelProto=0', 'before');
+    const on = await runVariant(browser, base, 'v=0.9.205&lang=zh&ads=0', 'proto');
     const summary = {
       note: 'Box SwiftShader renders — NOT Android verification',
       before: off,

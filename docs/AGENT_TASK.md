@@ -1,26 +1,26 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.203 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.205 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD — tip `v0.9.203` (`Q-2D-SKELETON-DEMO`). Combat horn = free 2D bone puppet (idle/walk/attack). Mixamo still off. Menu/Start path from 0.9.200–202 kept. Wait Roy phone 肉眼.**
+## 狀態：**SHIPPED — tip `v0.9.205` (`COMBAT-FEEL-V1`). Feel default ON. WebGL diag (0.9.204) + 2D puppet (0.9.203) kept. Box smoke only — phone not verified.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.203
+https://fung2222.github.io/neon-swarm/?v=0.9.205
 
-### Roy go-ahead (2026-10-29)
-Phone confirmed v0.9.202 menu+Start OK；Roy「開始試驗」→ ship Q 2D+skeleton minimal combat demo (蔚藍星球:國王很忙 inspired；inside 暴走機甲；NOT new tower-defense).
+### Roy go-ahead (2026-10-30)
+Confirmed「合併爽感」→ integrate COMBAT-FEEL V1 into formal tip, default ON (widget t314).
 
-### This tip (v0.9.203)
-1. **Combat horn:** lightweight Three.js bone hierarchy + canvas charcoal+cyan part planes (`js/q-hero-2d-puppet.js`). Motions: idle breathe, walk cycle, attack kick on fire.
-2. **Free path:** no Spine Editor files, no Mixamo FBX/GLB boot, no meshopt. `HORN_TRUE_3D=false` stays.
-3. **Menu:** still `buildPlayerMech` only (0.9.200–202 overlay/CTA fixes untouched).
-4. **Cache-bust:** `?v=0.9.203`. Other mechs keep baked/legacy sprites.
+### This tip (v0.9.205)
+1. **Feel ON by default:** gatling varied muzzle + recoilMul; ordinary-grunt hit sparks + lean/wobble; kill pop + ≤4 scraps; combo streak reuse.
+2. **Debug force-off:** `?feelProto=0` (or `feel=0` / `off` / `false`).
+3. **Preserved:** v0.9.204 WebGL diag; FX caps/pools; hub URL params; touch; pause; no damage/RoF/HP/hit-test/drops/Phase4/ult/BALANCE/§9 edits.
+4. **Cache-bust:** `?v=0.9.205`. Review: `docs/COMBAT-FEEL-REVIEW.md`.
 
 ### Still HARD BAN
 - Phase 4 **abilities** / Precision gameplay invent
-- soft-juice invent
+- soft-juice invent **beyond** this V1 set
 - more ult invent
 - BALANCE re-pass
 - Claiming **final art lock / HANDOFF §9 locked / device-final** without Roy 肉眼 OK
@@ -28,15 +28,14 @@ Phone confirmed v0.9.202 menu+Start OK；Roy「開始試驗」→ ship Q 2D+skel
 - Do NOT bring back pause `#btn-glow`
 - Do NOT re-enable Mixamo boot/preload that blacked phone menus
 
-### Why HOLD / Roy decision needed
-Please hard-refresh phone tip and check:
-1. **Menu + Start still OK?** (0.9.202 path)
-2. **In-run Q horn shows articulated 2D puppet** (not static baked billboard)?
-3. **Visible idle / move / attack** motion?
+### Phone check (not yet verified)
+Hard-refresh: https://fung2222.github.io/neon-swarm/?v=0.9.205
+1. Gatling muzzle variety + puppet recoil feel richer?
+2. Grunt hit lean/sparks + kill scraps ≤4?
+3. Mid-run no「繪圖暫時中斷」for 2–5 min?
+4. Optional A/B: same build with `?feelProto=0`
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.203
-
-Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
+Still HARD BAN: Phase 4 abilities / soft-juice invent beyond V1 / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
 
 ### Shipped this beat (slice table)
@@ -61,6 +60,8 @@ Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANC
 | v0.9.201 | `MENU-NO-MESHOPT-BOOT-001` | Cut `q-hero-3d.js`/meshopt from boot graph (flag-only module); brighter menu + stage plate; Mixamo still paused — **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.202 | `PHONE-MENU-CTA-VISIBLE-001` | Punch phone menu CSS mid-band; `#mech-stage` off Start CTA; brighter plate/bg; startRun try/catch + pointerup — **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.203 | `Q-2D-SKELETON-DEMO` | Combat horn free 2D bone puppet (canvas parts + bone hierarchy; idle/walk/attack); no Spine Editor; Mixamo still off; menu path preserved — **HOLD for Roy 肉眼** — not §9 lock |
+| v0.9.204 | `MOBILE-WEBGL-DIAG-001` | JS vs WebGL classify, diag ring, reload cap; shared puppet textures — box only; phone not claimed |
+| v0.9.205 | `COMBAT-FEEL-V1` | Gatling+grunt feel default ON; `?feelProto=0` force-off; no balance/hit-test edits; WebGL diag kept — box smoke; phone not verified |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

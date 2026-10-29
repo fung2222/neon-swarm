@@ -4,22 +4,24 @@
     "label": "before",
     "meta": {
       "enemies": 6,
-      "feel": "?v=0.9.204&lang=zh&ads=0"
+      "feel": "?v=0.9.205&lang=zh&ads=0&feelProto=0"
     },
     "feelOn": false,
     "errs": [],
-    "consoleHits": []
+    "consoleHits": [
+      "[neon-swarm] COMBAT-FEEL V1 OFF (?feelProto=0)"
+    ]
   },
   "proto": {
     "label": "proto",
     "meta": {
       "enemies": 6,
-      "feel": "?v=0.9.204&lang=zh&ads=0&feelProto=1"
+      "feel": "?v=0.9.205&lang=zh&ads=0"
     },
     "feelOn": true,
     "errs": [],
     "consoleHits": [
-      "[neon-swarm] COMBAT-FEEL proto ON (?feelProto=1) — preview only"
+      "[neon-swarm] COMBAT-FEEL V1 ON (default; ?feelProto=0 to disable)"
     ]
   },
   "shots": [

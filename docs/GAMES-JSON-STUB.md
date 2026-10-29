@@ -1,6 +1,6 @@
 # games.json stub — neon-swarm
 
-<!-- 0.9.203 Q-2D-SKELETON-DEMO / HORN_TRUE_3D=false; combat 2D puppet; menu buildPlayerMech; HOLD tip bump -->
+<!-- 0.9.205 COMBAT-FEEL-V1 / feel default ON; HORN_TRUE_3D=false; combat 2D puppet; WebGL diag kept -->
 
 Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier.
 
@@ -22,8 +22,8 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 0.9.203 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · Q 2D skeleton demo · menu phone Mixamo pause · 未包裝 Android",
-    "en": "web 0.9.203 · 2+2+2 loadout / branch+ult / hide-stick / color rail · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · Q 2D skeleton demo · menu phone Mixamo pause · 未包裝 Android"
+    "zh": "網頁版 0.9.205 · COMBAT-FEEL V1（加特林＋雜兵爽感預設開）· 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · Q 2D skeleton · WebGL diag · 未包裝 Android",
+    "en": "web 0.9.205 · COMBAT-FEEL V1 (gatling+grunt feel default ON) · 2+2+2 loadout / branch+ult / hide-stick / color rail · Q 2D skeleton · WebGL diag · 未包裝 Android"
   },
   "kit": "v0.3.16",
   "play": "not-submitted",

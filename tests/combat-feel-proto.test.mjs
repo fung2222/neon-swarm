@@ -1,5 +1,5 @@
 /**
- * COMBAT-FEEL V1 proto unit tests — presentation knobs + gate only.
+ * COMBAT-FEEL V1 unit tests — presentation knobs + gate (default ON) only.
  * No damage / RoF / HP / hit-test assertions (those must stay unchanged).
  */
 import { describe, it } from 'node:test';
@@ -17,12 +17,18 @@ import {
 } from '../js/combat-feel-proto.js';
 
 describe('feelProto gate', () => {
-  it('OFF by default / empty / feelProto=0', () => {
-    assert.equal(isFeelProtoEnabled(''), false);
-    assert.equal(isFeelProtoEnabled('?ads=0'), false);
-    assert.equal(isFeelProtoEnabled('?feelProto=0'), false);
+  it('ON by default / empty / hub params (formal tip)', () => {
+    assert.equal(isFeelProtoEnabled(''), true);
+    assert.equal(isFeelProtoEnabled('?ads=0'), true);
+    assert.equal(isFeelProtoEnabled('?hub=1&tier=gold'), true);
   });
-  it('ON for feelProto=1 / feel=1 / true / on', () => {
+  it('force OFF with feelProto=0 / feel=0 / false / off', () => {
+    assert.equal(isFeelProtoEnabled('?feelProto=0'), false);
+    assert.equal(isFeelProtoEnabled('?feel=0'), false);
+    assert.equal(isFeelProtoEnabled('?feelProto=false'), false);
+    assert.equal(isFeelProtoEnabled('?feel=off&ads=0'), false);
+  });
+  it('explicit ON still works (legacy preview URLs)', () => {
     assert.equal(isFeelProtoEnabled('?feelProto=1'), true);
     assert.equal(isFeelProtoEnabled('?feel=1'), true);
     assert.equal(isFeelProtoEnabled('?feelProto=true'), true);

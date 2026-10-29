@@ -1,4 +1,4 @@
-// RAMPAGE MECH 暴走機甲 — tip v0.9.204 MOBILE-WEBGL-DIAG-001
+// RAMPAGE MECH 暴走機甲 — tip v0.9.205 COMBAT-FEEL-V1
 import * as THREE from 'three';
 import {
   i18n, t, flags, createStore, createStage, ThemeController, NeonCity, CyberUI, Platform,
@@ -83,10 +83,12 @@ const MOBILE_GFX = (() => {
 })();
 // v0.9.20: pool 1200→800 on mobile (further mid-run GPU pressure cut; desktop unchanged)
 const PARTICLE_POOL = MOBILE_GFX ? 1600 : 5200; // v0.9.54: raise mobile baseline (was 800)
-/** COMBAT-FEEL V1 preview — OFF unless ?feelProto=1 (does not change live tip). */
+/** COMBAT-FEEL V1 — ON by default; ?feelProto=0 force-off for A/B debug. */
 const FEEL_PROTO = isFeelProtoEnabled(location.search);
 if (FEEL_PROTO) {
-  try { console.info('[neon-swarm] COMBAT-FEEL proto ON (?feelProto=1) — preview only'); } catch (_) {}
+  try { console.info('[neon-swarm] COMBAT-FEEL V1 ON (default; ?feelProto=0 to disable)'); } catch (_) {}
+} else {
+  try { console.info('[neon-swarm] COMBAT-FEEL V1 OFF (?feelProto=0)'); } catch (_) {}
 }
 const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
@@ -2017,7 +2019,7 @@ function tick(dt) {
       const mz = ev.muzzleZ != null ? ev.muzzleZ : g.pz;
       const muzzle = new THREE.Vector3(mx, my, mz);
       // v0.9.56 WEAPONS-FEEL-FX-001 — per-weapon muzzle / trail spark (pool-respecting)
-      // COMBAT-FEEL proto: gatling short varied muzzle only when ?feelProto=1
+      // COMBAT-FEEL V1: gatling short varied muzzle (default ON)
       if (FEEL_PROTO && isFeelProtoWeapon(ev.weapon)) {
         const variety = (S._feelMuzzleVar = ((S._feelMuzzleVar || 0) + 1) % (COMBAT_FEEL_V1.muzzleVariety || 3));
         applyFeelBursts(muzzle, protoGatlingMuzzleSteps(COMBAT_FEEL_V1, { mobile: !!MOBILE_GFX, variety }));
@@ -2107,7 +2109,7 @@ function tick(dt) {
       const punch = !!(ev.gore || ev.elite);
       // Ordinary kills: local particles/ring only — no chain slowmo at high kill rate.
       // Elite / gore / heavy: keep noticeable trauma + hit-stop.
-      // COMBAT-FEEL proto: short grunt pop + capped scraps (no every-kill shake/flash).
+      // COMBAT-FEEL V1: short grunt pop + capped scraps (no every-kill shake/flash).
       if (FEEL_PROTO && !punch && isFeelProtoGrunt(ev.enemy)) {
         applyFeelBursts(pos, protoGruntKillSteps(COMBAT_FEEL_V1, { mobile: !!MOBILE_GFX, color: ev.enemy.color || 0x8a93a8 }));
         if (view.burstGore) view.burstGore(ev.enemy.x, ev.enemy.z, ev.enemy.color || 0x8a93a8, COMBAT_FEEL_V1.deathScrapCount || 4);

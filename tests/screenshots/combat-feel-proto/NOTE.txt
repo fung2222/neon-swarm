@@ -1,8 +1,8 @@
-COMBAT-FEEL V1 preview shots — box Chrome + SwiftShader WebGL.
+COMBAT-FEEL V1 tip shots — box Chrome + SwiftShader WebGL.
 NOT Android phone verification. Roy must verify on device (§8 of docs/COMBAT-FEEL-REVIEW.md).
 
-before-* = ?feelProto absent (tip feel)
-proto-*  = ?feelProto=1
+before-* = ?feelProto=0 (force-off / pre-V1 feel)
+proto-*  = flag absent (formal tip default ON)
 
 Early-run coach overlay may still be visible in 0:01 shots; FX are short-lived.
-See summary.json for pageerror / console evidence (proto ON log confirmed).
+See summary.json for pageerror / console evidence.
