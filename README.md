@@ -3,9 +3,9 @@
 > 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
 > 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.202 · **狀態 Status:** v0.9.202 PHONE-MENU-CTA-VISIBLE-001 HOLD for Roy 肉眼 (Mixamo boot/combat paused; menu = buildPlayerMech only)
+**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.203 · **狀態 Status:** v0.9.203 Q-2D-SKELETON-DEMO HOLD for Roy 肉眼 (combat horn = 2D bone puppet; Mixamo still off; menu = buildPlayerMech)
 
-> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Art Active tip:** v0.9.202 — PHONE-MENU-CTA-VISIBLE-001 (`HORN_TRUE_3D=false`; no boot Mixamo preload; menu = buildPlayerMech; combat back to baked PNG until menu OK); HARD BAN Phase4 abilities / soft-juice / more ult / BALANCE re-pass / §9 lock claim without Roy 肉眼。
+> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Art Active tip:** v0.9.203 — Q-2D-SKELETON-DEMO (`HORN_TRUE_3D=false`; combat horn = free 2D bone puppet idle/walk/attack; menu = buildPlayerMech; no Spine Editor required); HARD BAN Phase4 abilities / soft-juice / more ult / BALANCE re-pass / §9 lock claim without Roy 肉眼。
 
 ## 一句 pitch
 實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  
@@ -24,7 +24,7 @@ You are the mech the lab built — and it is not going back in the cage. Scienti
 | 畫面 | 來源 |
 |---|---|
 | **選機 Select** | Live Three.js `buildPlayerMech`（可拖曳旋轉） |
-| **遊戲內 In-game** | horn：baked sheets（`HORN_TRUE_3D` 暫 false — Mixamo combat paused until menu verified）；缺 atlas 先 fallback `assets/sprites/mech_*.png` |
+| **遊戲內 In-game** | horn：`HORN_2D_SKELETON` 2D bone puppet（v0.9.203；`HORN_TRUE_3D` 仍 false）；其他機 baked／legacy PNG |
 
 同一 3D 來源烘焙多方向 sprite 係 Phase 3。而家**唔好**宣稱選機同遊戲內已共用烘焙圖。規格見 `docs/art-bible.md` · `docs/render-pipeline.md`。
 

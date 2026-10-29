@@ -12,6 +12,7 @@ import {
   applySpriteFlash,
   applySpriteMotion,
   syncBakedPlayerSprite,
+  syncHorn2dPuppet,
 } from './sprites.js';
 import { HORN_TRUE_3D } from './q-hero-3d-flag.js';
 // MENU-NO-MESHOPT-BOOT: no static q-hero-3d.js (meshopt) while flag false.
@@ -3012,7 +3013,24 @@ export class View {
       ud.locomotion = locomotion;
       ud.weaponState = weapon;
 
-      if (ud.baked) {
+      if (ud.isPuppet2d) {
+        // v0.9.203 Q-2D-SKELETON-DEMO: bone puppet idle/walk/attack (no Mixamo/Spine).
+        syncHorn2dPuppet(this.player, {
+          moveX: game.vx,
+          moveZ: game.vz,
+          moving: move > 0.08,
+          aimX: vax,
+          aimZ: vaz,
+          aiming,
+          firing: fireKick > 0.02,
+          hit,
+          blink,
+          alive: !!game.alive,
+          dt,
+          camera: this.stage.camera,
+          t: game.t || 0,
+        });
+      } else if (ud.baked) {
         // Layered bake from buildPlayerMech: legs=move, gun=visualAim, hurt=tint only, no bob.
         syncBakedPlayerSprite(this.player, {
           moveX: game.vx,

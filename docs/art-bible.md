@@ -126,6 +126,7 @@ Full three-mech anim packs, white-pink unique mesh, morph states, map districts,
 Order: protagonist proves fun → precision proves reusable → morph proves extensible → then mass enemies / maps / weapons.
 
 ### Mixamo true-3D combat (v0.9.198–200)
+- **v0.9.203 Q-2D-SKELETON-DEMO:** combat horn uses free 2D bone puppet (canvas parts + hierarchy; Spine-like motion demo without Spine Editor). Mixamo remains off. Menu = buildPlayerMech. Interim — not §9 lock.
 - **v0.9.200 PHONE-MENU-BLACK-001:** `HORN_TRUE_3D = false`; boot does **not** `preloadMixamoHero()` — menu never touches meshopt+webp GLB. Combat true-3D **paused** (baked PNG only) until Roy confirms menu visible on phone. Re-enable after menu OK.
 - **Select/home:** `setMenuMech` **always** `buildPlayerMech` (+ defensive try/catch → bare mech+pedestal); never Mixamo on turntable.
 - **Prior (v0.9.198–199):** Mixamo-skinned GLB combat with walk/idle + baked fallback; menu always procedural.

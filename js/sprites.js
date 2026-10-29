@@ -5,7 +5,9 @@
  */
 import * as THREE from 'three';
 import { HORN_TRUE_3D } from './q-hero-3d-flag.js';
+import { HORN_2D_SKELETON, buildHorn2dPuppet, syncHorn2dPuppet, puppetMuzzleWorld } from './q-hero-2d-puppet.js';
 // MENU-NO-MESHOPT-BOOT: do not import q-hero-3d.js while HORN_TRUE_3D=false (meshopt WASM poisons phone WebGL).
+// Q-2D-SKELETON-DEMO: free canvas bone puppet (no Spine Editor / no Mixamo).
 import { yawToCardinal as yawToCardinalShared, yawToOctant, muzzleWorld, HORN_MUZZLE_BY_DIR, muzzleUvAnchors, DIRS8 } from './muzzle.js';
 export { yawToCardinalShared as yawToCardinal, yawToOctant, muzzleWorld, HORN_MUZZLE_BY_DIR, DIRS8 };
 
@@ -177,13 +179,22 @@ export function makeBillboard(key, w, h, opts = {}) {
 }
 
 export function buildPlayerSprite(cfg) {
-  // True-3D Mixamo horn when asset ready; else baked sheets / legacy PNG.
+  // True-3D Mixamo horn when asset ready; else 2D puppet / baked sheets / legacy PNG.
   // Never leave player null: any Mixamo throw falls through to baked PNG path.
   const id = (cfg && (cfg.model || cfg.id)) || 'horn';
   // Mixamo path paused (HORN_TRUE_3D=false) — no q-hero-3d import on boot.
   // Re-enable: import buildMixamoPlayer/mixamoReady from q-hero-3d.js when flag true.
   if (false && HORN_TRUE_3D && id === 'horn') {
     /* reserved for Mixamo after menu OK */
+  }
+
+  // v0.9.203 Q-2D-SKELETON-DEMO: combat horn uses lightweight 2D bone puppet (no Spine/Mixamo).
+  if (HORN_2D_SKELETON && id === 'horn') {
+    try {
+      return buildHorn2dPuppet(cfg);
+    } catch (err) {
+      console.warn('[horn-2d-puppet] build failed, falling back to baked sheets', err);
+    }
   }
 
   // Prefer baked buildPlayerMech sheets when available for this mech id.
@@ -679,3 +690,4 @@ export function bakedMuzzleWorld(root, px, pz, aimX, aimZ) {
 }
 
 export { HORN_TRUE_3D } from './q-hero-3d-flag.js';
+export { HORN_2D_SKELETON, syncHorn2dPuppet, puppetMuzzleWorld } from './q-hero-2d-puppet.js';

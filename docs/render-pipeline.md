@@ -104,3 +104,10 @@ Roy chose rebuild-3D-from-approved (not T2I menu PNGs). Source of truth remains 
 - Select `setMenuMech` always `buildPlayerMech` (try/catch → bare pedestal+mech). Mixamo never on turntable / never on boot path.
 - Prior path (paused): Mixamo GLB + AnimationMixer + height-fit; re-enable after menu OK.
 - **Interim — HOLD for Roy 肉眼; not §9 lock.**
+
+### Q 2D skeleton demo (v0.9.203)
+- Combat horn: `HORN_2D_SKELETON` → `js/q-hero-2d-puppet.js` (bone Groups + canvas charcoal+cyan parts; idle/walk/attack).
+- No Spine Editor runtime files; no Mixamo/`meshopt` on boot. `HORN_TRUE_3D=false`.
+- Select menu still `buildPlayerMech`. Other mechs keep baked/legacy sprites.
+- **Interim — HOLD for Roy 肉眼; not §9 lock.**
+

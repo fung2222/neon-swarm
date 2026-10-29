@@ -1,26 +1,22 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.202 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.203 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD — tip `v0.9.202` (`PHONE-MENU-CTA-VISIBLE-001`). Punch phone menu CSS mid-band + keep `#mech-stage` off Start CTA; brighter plate/bg; startRun try/catch + pointerup. Mixamo still paused. Wait Roy phone 肉眼.**
+## 狀態：**HOLD — tip `v0.9.203` (`Q-2D-SKELETON-DEMO`). Combat horn = free 2D bone puppet (idle/walk/attack). Mixamo still off. Menu/Start path from 0.9.200–202 kept. Wait Roy phone 肉眼.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.202
+https://fung2222.github.io/neon-swarm/?v=0.9.203
 
-### Roy report (2026-10-29)
-Phone tip v0.9.201: **選單仲係黑** + **啟動暴走 does NOTHING** (no reaction). HTML chrome OK. Not only WebGL black — menu CTA / input path may be broken too (or WebGL fail freezes interaction).
+### Roy go-ahead (2026-10-29)
+Phone confirmed v0.9.202 menu+Start OK；Roy「開始試驗」→ ship Q 2D+skeleton minimal combat demo (蔚藍星球:國王很忙 inspired；inside 暴走機甲；NOT new tower-defense).
 
-### Root causes (this tip)
-1. **Black canvas:** cyber-kit `#screen-start` @max-760 radial `rgba(5,1,15,.45→.85)` composites over charcoal WebGL (box mid avg ~15) → OLED pitch black. Meshopt already cut in 0.9.201 — overlay was the remaining crush.
-2. **Dead Start:** `#mech-stage` `inset:0` + `touch-action:none` + `preventDefault` can steal/swallow taps meant for `#btn-play` on some Android WebViews (Honor). Puppeteer click worked; phone touch path did not.
-
-### This tip (v0.9.202)
-1. **CSS:** punch clear mid-band window on `#screen-start.menu-home`; clip `#mech-stage` to mid-band (top 16% / bottom 28%); raise CTA z-index.
-2. **JS:** brighter menu plate + non-black `scene.background` while menu; `startRun` try/catch + toast; `#btn-play`/`#btn-endless` pointerup+click debounce.
-3. **Misc:** `sprites.js` `depth:false` → `depthWrite:false` (Three warn).
-4. **Cache-bust:** `?v=0.9.202`. Mixamo / `HORN_TRUE_3D=false` still paused.
+### This tip (v0.9.203)
+1. **Combat horn:** lightweight Three.js bone hierarchy + canvas charcoal+cyan part planes (`js/q-hero-2d-puppet.js`). Motions: idle breathe, walk cycle, attack kick on fire.
+2. **Free path:** no Spine Editor files, no Mixamo FBX/GLB boot, no meshopt. `HORN_TRUE_3D=false` stays.
+3. **Menu:** still `buildPlayerMech` only (0.9.200–202 overlay/CTA fixes untouched).
+4. **Cache-bust:** `?v=0.9.203`. Other mechs keep baked/legacy sprites.
 
 ### Still HARD BAN
 - Phase 4 **abilities** / Precision gameplay invent
@@ -30,14 +26,15 @@ Phone tip v0.9.201: **選單仲係黑** + **啟動暴走 does NOTHING** (no reac
 - Claiming **final art lock / HANDOFF §9 locked / device-final** without Roy 肉眼 OK
 - Do NOT invent menu PNGs from text-to-image (art-bible: select = live 3D)
 - Do NOT bring back pause `#btn-glow`
+- Do NOT re-enable Mixamo boot/preload that blacked phone menus
 
 ### Why HOLD / Roy decision needed
 Please hard-refresh phone tip and check:
-1. **Menu mech visible?** (cyan plate + charcoal horn, not black void)
-2. **Start (啟動暴走) starts a run?**
-3. After both OK → re-enable Mixamo combat lazily.
+1. **Menu + Start still OK?** (0.9.202 path)
+2. **In-run Q horn shows articulated 2D puppet** (not static baked billboard)?
+3. **Visible idle / move / attack** motion?
 
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.202
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.203
 
 Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
@@ -63,6 +60,7 @@ Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANC
 | v0.9.200 | `PHONE-MENU-BLACK-001` | `HORN_TRUE_3D=false`; remove boot Mixamo preload; menu try/catch; combat baked PNG only until menu OK — **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.201 | `MENU-NO-MESHOPT-BOOT-001` | Cut `q-hero-3d.js`/meshopt from boot graph (flag-only module); brighter menu + stage plate; Mixamo still paused — **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.202 | `PHONE-MENU-CTA-VISIBLE-001` | Punch phone menu CSS mid-band; `#mech-stage` off Start CTA; brighter plate/bg; startRun try/catch + pointerup — **HOLD for Roy 肉眼** — not §9 lock |
+| v0.9.203 | `Q-2D-SKELETON-DEMO` | Combat horn free 2D bone puppet (canvas parts + bone hierarchy; idle/walk/attack); no Spine Editor; Mixamo still off; menu path preserved — **HOLD for Roy 肉眼** — not §9 lock |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above
