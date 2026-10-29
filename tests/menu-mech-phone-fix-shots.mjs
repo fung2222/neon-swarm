@@ -13,7 +13,7 @@ const SHOT_DIR = join(ROOT, 'tests', 'screenshots', 'menu-mech-phone-fix');
 mkdirSync(SHOT_DIR, { recursive: true });
 const CHROME = process.env.CHROME_PATH
   || (existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' : '/usr/bin/google-chrome');
-const VER = '0.9.201';
+const VER = '0.9.202';
 const WAIT = { timeout: 90000, polling: 250 };
 
 const MIME = {
@@ -144,7 +144,7 @@ async function main() {
   writeFileSync(join(SHOT_DIR, 'NOTE.md'), [
     '# menu-mech-phone-fix',
     '',
-    '**Tip:** v0.9.201 MENU-NO-MESHOPT-BOOT-001',
+    '**Tip:** v0.9.202 PHONE-MENU-CTA-VISIBLE-001',
     '',
     'Phone-viewport home menu (390×844). Mixamo **disabled** (`HORN_TRUE_3D=false`; no boot preload).',
     'Menu model = procedural `buildPlayerMech` + pedestal. Combat = baked PNG only until menu OK.',

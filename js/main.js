@@ -424,7 +424,8 @@ S._streak = createStreakState();
 S._stickHintTimer = 0;
 
 
-/** Select-stage drag: horizontal yaw on #mech-stage (mouse + one finger). */
+/** Select-stage drag: horizontal yaw on #mech-stage (mouse + one finger).
+ *  v0.9.202: CSS keeps #mech-stage mid-band only on phone so Start CTA is never covered. */
 (function wireMenuMechDrag() {
   const el = $('mech-stage') || $('scene');
   if (!el) return;
@@ -1341,6 +1342,8 @@ function flashHurtVignette() {
 }
 
 function startRun() {
+  // PHONE-MENU-CTA-VISIBLE-001: never fail silently on phone (dead Start report).
+  try {
   if (!isMechPlayable(S.mechId)) {
     refreshStartLock();
     try { audio.click(); } catch (_) {}
@@ -1412,6 +1415,14 @@ function startRun() {
   // First-run coach tip text OK (pointer-events none); do NOT pulse a visible idle stick.
   const showedCoach = maybeShowRunCoach(touch);
   if (!showedCoach) hideRunCoach();
+  } catch (err) {
+    console.error('[neon-swarm] startRun failed', err);
+    try {
+      const zh = (typeof i18n !== 'undefined' && i18n.isZh && i18n.isZh());
+      ui.toast?.(zh ? '啟動失敗 — 請重試／重整' : 'Start failed — retry / reload', 2800);
+    } catch (_) {}
+    try { showMenu(); } catch (_) {}
+  }
 }
 
 function endRun(trial = false) {
@@ -1657,8 +1668,24 @@ window.addEventListener('keydown', (e) => {
 });
 window.addEventListener('keyup', (e) => { S.keys[e.code] = false; });
 
-$('btn-play')?.addEventListener('click', () => startRun());
-$('btn-endless')?.addEventListener('click', () => startRun());
+// v0.9.202: click + pointerup (some Android WebViews drop click after touch steal)
+let _playTapAt = 0;
+function onHomePlayTap() {
+  const now = performance.now();
+  if (now - _playTapAt < 450) return;
+  _playTapAt = now;
+  startRun();
+}
+$('btn-play')?.addEventListener('click', onHomePlayTap);
+$('btn-play')?.addEventListener('pointerup', (ev) => {
+  if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+  onHomePlayTap();
+});
+$('btn-endless')?.addEventListener('click', onHomePlayTap);
+$('btn-endless')?.addEventListener('pointerup', (ev) => {
+  if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+  onHomePlayTap();
+});
 $('btn-pause')?.addEventListener('click', () => { pauseRun(); });
 $('btn-resume')?.addEventListener('click', () => { S.state = 'play'; ui.show(null); });
 $('btn-restart')?.addEventListener('click', () => startRun());

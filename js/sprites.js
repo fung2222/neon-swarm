@@ -147,7 +147,7 @@ export function makeBillboard(key, w, h, opts = {}) {
 
   const stub = new THREE.MeshStandardMaterial({
     color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.85,
-    transparent: true, opacity: 0, depth: false,
+    transparent: true, opacity: 0, depthWrite: false,
   });
 
   root.userData.isSprite = true;

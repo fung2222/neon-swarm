@@ -1,21 +1,26 @@
 # AGENT_TASK — 暴走機甲 / neon-swarm
 
-> Live: https://fung2222.github.io/neon-swarm/?v=0.9.201 · Repo: https://github.com/fung2222/neon-swarm
+> Live: https://fung2222.github.io/neon-swarm/?v=0.9.202 · Repo: https://github.com/fung2222/neon-swarm
 
-## 狀態：**HOLD — tip `v0.9.201` (`MENU-NO-MESHOPT-BOOT-001`). Boot graph cuts `q-hero-3d.js`/meshopt; menu = buildPlayerMech + stage plate; Mixamo still paused. Wait Roy phone 肉眼.**
+## 狀態：**HOLD — tip `v0.9.202` (`PHONE-MENU-CTA-VISIBLE-001`). Punch phone menu CSS mid-band + keep `#mech-stage` off Start CTA; brighter plate/bg; startRun try/catch + pointerup. Mixamo still paused. Wait Roy phone 肉眼.**
 
 **Author:** Grok bot
 
 ### Tip
-https://fung2222.github.io/neon-swarm/?v=0.9.201
+https://fung2222.github.io/neon-swarm/?v=0.9.202
 
 ### Roy report (2026-10-29)
-Phone tip v0.9.199 **選單仲係黑** (widget). Live already always `buildPlayerMech` on menu — so either cached 0.9.198 modules and/or boot `preloadMixamoHero()` meshopt+webp still poisons WebGL. Authorized [t283u][t284] + widget.
+Phone tip v0.9.201: **選單仲係黑** + **啟動暴走 does NOTHING** (no reaction). HTML chrome OK. Not only WebGL black — menu CTA / input path may be broken too (or WebGL fail freezes interaction).
 
-### This tip (v0.9.200)
-1. **`HORN_TRUE_3D = false`** + remove boot `preloadMixamoHero()` — menu never touches GLB/meshopt/wasm. Combat true-3D **paused** (baked PNG only) until menu verified. Comment: `PHONE-MENU-BLACK: re-enable after menu OK`.
-2. **Cache-bust:** `?v=0.9.201` on index css + main module (hard-refresh if phone still stale).
-3. **Defensive menu:** `setMenuMech` try/catch → bare `buildPlayerMech` + pedestal; `console.warn` on failure.
+### Root causes (this tip)
+1. **Black canvas:** cyber-kit `#screen-start` @max-760 radial `rgba(5,1,15,.45→.85)` composites over charcoal WebGL (box mid avg ~15) → OLED pitch black. Meshopt already cut in 0.9.201 — overlay was the remaining crush.
+2. **Dead Start:** `#mech-stage` `inset:0` + `touch-action:none` + `preventDefault` can steal/swallow taps meant for `#btn-play` on some Android WebViews (Honor). Puppeteer click worked; phone touch path did not.
+
+### This tip (v0.9.202)
+1. **CSS:** punch clear mid-band window on `#screen-start.menu-home`; clip `#mech-stage` to mid-band (top 16% / bottom 28%); raise CTA z-index.
+2. **JS:** brighter menu plate + non-black `scene.background` while menu; `startRun` try/catch + toast; `#btn-play`/`#btn-endless` pointerup+click debounce.
+3. **Misc:** `sprites.js` `depth:false` → `depthWrite:false` (Three warn).
+4. **Cache-bust:** `?v=0.9.202`. Mixamo / `HORN_TRUE_3D=false` still paused.
 
 ### Still HARD BAN
 - Phase 4 **abilities** / Precision gameplay invent
@@ -27,13 +32,12 @@ Phone tip v0.9.199 **選單仲係黑** (widget). Live already always `buildPlaye
 - Do NOT bring back pause `#btn-glow`
 
 ### Why HOLD / Roy decision needed
-Menu-first tip: Mixamo fully off boot path. Please try on phone (**hard-refresh** / clear cache if needed):
+Please hard-refresh phone tip and check:
+1. **Menu mech visible?** (cyan plate + charcoal horn, not black void)
+2. **Start (啟動暴走) starts a run?**
+3. After both OK → re-enable Mixamo combat lazily.
 
-1. **Menu mech visible?** (pedestal + procedural horn, not black)
-2. After menu OK → we can re-enable Mixamo combat lazily.
-3. Lock / more polish later?
-
-Live: https://fung2222.github.io/neon-swarm/?v=0.9.201
+Live: https://fung2222.github.io/neon-swarm/?v=0.9.202
 
 Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANCE re-pass / pause `#btn-glow` / invent menu PNGs from T2I.
 
@@ -58,6 +62,7 @@ Still HARD BAN: Phase 4 abilities / soft-juice invent / more ult invent / BALANC
 | v0.9.199 | `MENU-MECH-PHONE-FIX-001` | Menu showcase always `buildPlayerMech` (no Mixamo on turntable); combat Mixamo try/catch + height-fit + zero-mesh fail; phone black-void fix — **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.200 | `PHONE-MENU-BLACK-001` | `HORN_TRUE_3D=false`; remove boot Mixamo preload; menu try/catch; combat baked PNG only until menu OK — **HOLD for Roy 肉眼** — not §9 lock |
 | v0.9.201 | `MENU-NO-MESHOPT-BOOT-001` | Cut `q-hero-3d.js`/meshopt from boot graph (flag-only module); brighter menu + stage plate; Mixamo still paused — **HOLD for Roy 肉眼** — not §9 lock |
+| v0.9.202 | `PHONE-MENU-CTA-VISIBLE-001` | Punch phone menu CSS mid-band; `#mech-stage` off Start CTA; brighter plate/bg; startRun try/catch + pointerup — **HOLD for Roy 肉眼** — not §9 lock |
 
 ### Preserve
 stick hide · hub flush · gear L + pause R · settings 畫質 · rail · water CD · dbl/tpl · tap≥44 · over title · soft-pins · balance/GPU shipped · unique ult kits · bans above

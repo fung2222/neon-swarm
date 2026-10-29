@@ -1,7 +1,7 @@
 {
-  "ver": "0.9.201",
+  "ver": "0.9.202",
   "mixamoDisabled": true,
-  "note": "HORN_TRUE_3D=false; boot graph cuts q-hero-3d/meshopt; menu=buildPlayerMech+stage; combat baked PNG only",
+  "note": "PHONE-MENU-CTA-VISIBLE-001: CSS mid-band punch + mech-stage off Start; brighter plate/bg; HORN_TRUE_3D=false; Mixamo paused",
   "info": {
     "hasView": true,
     "hasMenu": true,
@@ -13,5 +13,5 @@
     "meshCount": 129,
     "hornTrue3d": false
   },
-  "shot": "/workspace/neon-swarm/tests/screenshots/menu-mech-phone-fix/menu-phone-390x844-v0.9.201.png"
+  "shot": "/workspace/neon-swarm/tests/screenshots/menu-mech-phone-fix/menu-phone-390x844-v0.9.202.png"
 }

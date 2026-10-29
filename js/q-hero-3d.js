@@ -10,7 +10,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
 /**
  * Feature flag — horn combat uses Mixamo 3D when load succeeds.
- * PHONE-MENU-BLACK / MENU-NO-MESHOPT-BOOT (v0.9.201): forced false; boot uses q-hero-3d-flag.js
+ * PHONE-MENU-BLACK / MENU-NO-MESHOPT-BOOT (v0.9.202): forced false; boot uses q-hero-3d-flag.js
  * so meshopt is NOT on the module graph. This file must stay unimported until menu OK.
  * was: forced false so menu/boot never touch meshopt+webp GLB
  * (poisons WebGL on some phones even when menu never attaches Mixamo). Combat true-3D

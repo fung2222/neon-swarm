@@ -1,6 +1,6 @@
 # games.json stub — neon-swarm
 
-<!-- 0.9.201 MENU-NO-MESHOPT-BOOT-001 / HORN_TRUE_3D=false; no boot Mixamo preload; menu buildPlayerMech; HOLD tip bump -->
+<!-- 0.9.202 PHONE-MENU-CTA-VISIBLE-001 / HORN_TRUE_3D=false; no boot Mixamo preload; menu buildPlayerMech; HOLD tip bump -->
 
 Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier.
 
@@ -22,8 +22,8 @@ Paste into `fung2222/cyber-arcade/games.json` **after Roy confirms** slug + tier
   },
   "status": "wip",
   "stage": {
-    "zh": "網頁版 0.9.201 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · menu phone Mixamo pause · 未包裝 Android",
-    "en": "web 0.9.201 · 2+2+2 loadout / branch+ult / hide-stick / color rail · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · menu phone Mixamo pause · 未包裝 Android"
+    "zh": "網頁版 0.9.202 · 2+2+2 武器欄／分支大招加成／隱藏搖桿／色格底欄 · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · menu phone Mixamo pause · 未包裝 Android",
+    "en": "web 0.9.202 · 2+2+2 loadout / branch+ult / hide-stick / color rail · safe polish · tip sync · soft-pins · share aria · contrast · privacy·meta · pause glow→settings · HUD gear/settings · horn deepen+bake align · unique heavy/proto select · weapons PNG path · menu phone Mixamo pause · 未包裝 Android"
   },
   "kit": "v0.3.16",
   "play": "not-submitted",

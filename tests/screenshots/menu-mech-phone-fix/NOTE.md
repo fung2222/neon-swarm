@@ -1,8 +1,15 @@
 # menu-mech-phone-fix
 
-**Tip:** v0.9.201 MENU-NO-MESHOPT-BOOT-001
+**Tip:** v0.9.202 PHONE-MENU-CTA-VISIBLE-001
 
-Phone-viewport home menu (390×844). Mixamo **disabled** (`HORN_TRUE_3D=false`; no boot preload).
-Menu model = procedural `buildPlayerMech` + pedestal. Combat = baked PNG only until menu OK.
+## Causes
+- **Black canvas:** cyber-kit `#screen-start` phone radial (45%→85% near-black) crushed charcoal WebGL (mid avg ~15) on OLED.
+- **Dead Start:** `#mech-stage` full-screen `inset:0` + `touch-action:none` + preventDefault could steal taps from `#btn-play` on some Android WebViews.
 
-SwiftShader box shot — not device-final. Hard-refresh phone if still seeing black.
+## Fix
+- Punch transparent mid-band on `#screen-start.menu-home` @max-760.
+- Clip `#mech-stage` to mid-band (top 16% / bottom 28%).
+- Brighter plate + menu `scene.background`; startRun try/catch; Start pointerup+click.
+
+## Shot
+`menu-phone-390x844-v0.9.202.png` — box Puppeteer 390×844; **not** Roy real-phone verify.

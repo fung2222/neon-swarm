@@ -2619,16 +2619,16 @@ export class View {
     if (this._menuLights) return;
     const accent = (cfg && cfg.trim) || 0x00e5ff;
     // MENU-NO-MESHOPT-BOOT: brighter menu key/fill so charcoal mech reads on phone.
-    const key = new THREE.DirectionalLight(0xffffff, 1.85);
+    const key = new THREE.DirectionalLight(0xffffff, 2.15);
     key.position.set(2.4, 4.2, 3.2);
     key.name = 'menuKey';
-    const fill = new THREE.DirectionalLight(0xa8dcff, 0.85);
+    const fill = new THREE.DirectionalLight(0xa8dcff, 1.05);
     fill.position.set(-2.8, 2.2, -1.4);
     fill.name = 'menuFill';
     const rim = new THREE.DirectionalLight(accent, 0.95);
     rim.position.set(-1.2, 2.8, -3.4);
     rim.name = 'menuRim';
-    const amb = new THREE.AmbientLight(0x2a3558, 0.75);
+    const amb = new THREE.AmbientLight(0x2a3558, 0.95);
     amb.name = 'menuAmb';
     // Attach to scene group (not spinning wrap) so key/fill/rim stay world-stable.
     this.group.add(key, fill, rim, amb);
@@ -2646,7 +2646,7 @@ export class View {
 
   /**
    * Home-screen showcase: LIVE 3D from buildPlayerMech only (never Mixamo on turntable).
-   * v0.9.201: no q-hero-3d/meshopt on boot; brighter menu + stage plate; try/catch keeps pedestal+mech.
+   * v0.9.202: phone CSS punch-through + mid-band stage; brighter plate/bg; try/catch keeps pedestal+mech.
    */
   setMenuMech(id) {
     this.hideMenuMech();
@@ -2685,9 +2685,10 @@ export class View {
       if (mech.userData.halo) mech.userData.halo.visible = false;
 
       // Visible stage plate so phone mid-band is not pure black void if mech dims.
+      // Visible cyan-tinted plate — phone OLED must not read as pure void under CSS vignette.
       const stagePlate = new THREE.Mesh(
         new THREE.CircleGeometry(3.2, 48),
-        new THREE.MeshBasicMaterial({ color: 0x0a1228, transparent: true, opacity: 0.92, depthWrite: false })
+        new THREE.MeshBasicMaterial({ color: 0x143058, transparent: true, opacity: 0.95, depthWrite: false })
       );
       stagePlate.rotation.x = -Math.PI / 2;
       stagePlate.position.y = 0.01;
@@ -2704,6 +2705,13 @@ export class View {
       wrap.rotation.y = this._menuYaw;
       this._ensureMenuLights(cfg);
       this._setMenuPlayfieldHidden(true);
+      // Non-black scene clear so composer never paints pure void behind charcoal mech.
+      try {
+        if (this.stage && this.stage.scene) {
+          if (this._menuPrevBg === undefined) this._menuPrevBg = this.stage.scene.background;
+          this.stage.scene.background = new THREE.Color(0x080e1c);
+        }
+      } catch (_) {}
       this.group.add(wrap);
       this.group.visible = true;
       const vw = (typeof window !== 'undefined' && window.innerWidth) || (this.stage && this.stage.width) || 1280;
@@ -2861,6 +2869,12 @@ export class View {
     this.menuMechModel = null;
     this.menuMechRing = null;
     this._clearMenuLights();
+    try {
+      if (this.stage && this.stage.scene && this._menuPrevBg !== undefined) {
+        this.stage.scene.background = this._menuPrevBg;
+        this._menuPrevBg = undefined;
+      }
+    } catch (_) {}
     this._setMenuPlayfieldHidden(false);
   }
 
