@@ -20,7 +20,7 @@ const USE_FBX = params.get('fbx') === '1' || params.get('src') === 'fbx';
 const USE_STATIC = params.get('static') === '1' || params.get('src') === 'static';
 const USE_MESHOPT = params.get('meshopt') === '1' || params.get('src') === 'meshopt';
 const FIT_H = Number(params.get('fitH') || '1.76') || 1.76;
-const MOVE_SPEED = Number(params.get('speed') || '4.2') || 4.2;
+const MOVE_SPEED = Number(params.get('speed') || '3.4') || 3.4;
 const CAM_DIST = Number(params.get('camDist') || '6.5') || 6.5;
 const CAM_HEIGHT = Number(params.get('camH') || '3.2') || 3.2;
 const CAM_LOOK_Y = Number(params.get('camLookY') || '1.1') || 1.1;
@@ -195,13 +195,21 @@ function fitToGround(root, targetH) {
 
 /** Mixamo walk clips translate mixamorigHips in XZ. Combined with manual
  *  heroRoot translation that fights / snaps on loop → phone flicker/stutter.
- *  Lock hips XZ to the first keyframe; keep Y for vertical bob. */
+ *  Lock hips/pelvis/root XZ to the first keyframe; keep Y for vertical bob. */
 function stripHorizontalRootMotion(clip) {
   if (!clip || !clip.tracks) return clip;
+  if (!stripHorizontalRootMotion._logged) {
+    stripHorizontalRootMotion._logged = true;
+    try {
+      console.log('[walk3] clip tracks', clip.tracks.map((t) => t.name));
+    } catch (_) {}
+  }
+  // Mixamo naming variants: mixamorigHips, mixamorig:Hips, Hips, Armature|Hips, pelvis, Root
   for (const track of clip.tracks) {
     const n = track.name || '';
     if (!/\.position$/i.test(n)) continue;
-    if (!/hips/i.test(n)) continue;
+    const bone = n.replace(/\.position$/i, '');
+    if (!/hips|pelvis/i.test(bone) && !/(^|\||\/)root$/i.test(bone)) continue;
     const v = track.values;
     if (!v || v.length < 3) continue;
     const x0 = v[0];
@@ -212,6 +220,14 @@ function stripHorizontalRootMotion(clip) {
     }
   }
   return clip;
+}
+
+/** Shortest-path lerp for yaw angles (avoids atan2 snap flicker on noisy stick). */
+function lerpAngle(a, b, t) {
+  let d = (b - a) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return a + d * t;
 }
 
 async function loadHero() {
@@ -317,7 +333,8 @@ try {
     walkAction.setLoop(THREE.LoopRepeat, Infinity);
     walkAction.clampWhenFinished = false;
     walkAction.play();
-    walkAction.paused = true;
+    // Keep playing at weight 0 — pause/unpause thrash reads as 閃 on phone.
+    walkAction.paused = false;
     setStatus(`${modelLabel} · clip "${walkClip.name || 'walk'}" · stick/WASD to run`);
   } else {
     setStatus(`${modelLabel} · no clips — still movable via stick/WASD`);
@@ -350,31 +367,26 @@ function frame() {
   if (moving) {
     heroRoot.position.x += dx * MOVE_SPEED * mag * dt;
     heroRoot.position.z += dz * MOVE_SPEED * mag * dt;
-    facingYaw = Math.atan2(dx, dz);
+    const targetYaw = Math.atan2(dx, dz);
+    // Instant atan2 on noisy stick looks like 閃/褪 — slerp-ish angle lerp.
+    facingYaw = lerpAngle(facingYaw, targetYaw, Math.min(1, dt * 14));
     heroRoot.rotation.y = facingYaw;
   }
 
   if (walkAction) {
-    // Hysteresis avoids pause/resume flicker when stick mag hovers near deadzone.
+    // Weight fade only. Never pause/unpause or reset time=0 (pose snap = flicker).
     const wantWalk = moving && mag > 0.12;
     const stopWalk = !moving || mag < 0.05;
+    if (walkAction.paused) walkAction.paused = false;
     if (wantWalk) {
-      if (walkAction.paused) {
-        walkAction.paused = false;
-        // Resume mid-cycle; do not restart every stick tick.
-      }
       walkAction.setEffectiveTimeScale(THREE.MathUtils.clamp(0.85 + mag * 0.55, 0.8, 1.7));
       const w = walkAction.getEffectiveWeight();
       walkAction.setEffectiveWeight(Math.min(1, w + dt * 8));
     } else if (stopWalk) {
       const w = walkAction.getEffectiveWeight();
       const next = Math.max(0, w - dt * 6);
-      walkAction.setEffectiveWeight(next);
-      if (next <= 0.01) {
-        walkAction.setEffectiveWeight(0);
-        walkAction.paused = true;
-        walkAction.time = 0;
-      }
+      walkAction.setEffectiveWeight(next <= 0.01 ? 0 : next);
+      // Leave clip time/pose alone when idle.
     }
   }
   if (mixer) mixer.update(dt);
