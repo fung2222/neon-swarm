@@ -74,6 +74,26 @@
     <div class="stick-base"><div id="stick-knob"></div></div>
   </div>
   <div id="err"></div>
+  <script>
+    // Surface module-graph failures (e.g. 404 import) — otherwise HUD stays on "loading…" forever.
+    (function () {
+      var errEl = document.getElementById('err');
+      var statusEl = document.getElementById('status');
+      function boom(msg) {
+        console.error(msg);
+        if (statusEl) statusEl.textContent = 'load failed — see error panel';
+        if (!errEl) return;
+        errEl.style.display = 'block';
+        errEl.textContent = String(msg && msg.stack ? msg.stack : msg);
+      }
+      window.addEventListener('error', function (e) {
+        boom(e && (e.error || e.message) || 'script error');
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        boom(e && e.reason ? e.reason : 'unhandledrejection');
+      });
+    })();
+  </script>
   <script type="module" src="./main.js"></script>
 </body>
 </html>

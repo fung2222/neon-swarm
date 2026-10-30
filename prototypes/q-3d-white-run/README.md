@@ -1,3 +1,33 @@
+# q-3d-white-run (prototype only)
+
+White empty stage + Mixamo-walk Q hero + virtual stick / WASD.
+**Tip stays v0.9.205** — this folder is not wired into combat.
+
+## Phone fix (2026-10-31)
+
+Root cause of forever `loading…` on Pages: `main.js` static-imported
+`three/addons/loaders/FBXLoader.js`, but that file (and `fflate` / NURBSCurve)
+was **never committed**, so GitHub Pages returned **404** and the ES module
+graph never started — HUD status never updated and `#err` never ran.
+
+Fix:
+- Default model is now **`q-hero-mixamo-walk.raw.glb`** (meshopt decompressed; no WASM).
+- FBXLoader / MeshoptDecoder are **dynamic-import** only (`?fbx=1` / `?meshopt=1`).
+- Inline `error` / `unhandledrejection` handlers surface module failures in `#err`.
+
+## URLs
+
+- Default (phone): `…/prototypes/q-3d-white-run/`
+- Meshopt opt-in: `?meshopt=1` (same play.glb tip uses when flag on)
+- Local-only: `?fbx=1`, `?static=1` (assets not on Pages)
+
+## Hard-refresh on phone Chrome
+
+Open the URL → ⋮ → **Delete browsing data** for the site, or long-press reload → **Empty cache and hard reload** if desktop; on Android Chrome: site settings → Clear & reset, then reopen. Or append `?v=raw1` once.
+
+
+---
+
 # Q 3D white-run prototype (path 2)
 
 **Separate from tip.** Tip stays **v0.9.205**. Do **not** merge to formal tip / GitHub Pages without Roy confirmation. `HORN_TRUE_3D` on tip stays `false`. Not 2D A10 puppet work.

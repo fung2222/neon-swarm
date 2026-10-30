@@ -3,25 +3,29 @@
  * White empty stage + Mixamo walk clip + virtual stick / WASD.
  * Tip stays v0.9.205; HORN_TRUE_3D remains false on tip. No tip bump.
  *
- * Model default: assets/mechs/horn/q-hero-mixamo-walk.play.glb
- *   (meshopt+webp Mixamo walking — same clip tip q-hero-3d.js uses when flag on)
- * Fallback: ?fbx=1 → assets/q-hero-tripo-mixamo-walking.fbx (+ .fbm textures)
- * Static:   ?static=1 → assets/q-hero-tripo.glb (no clips; still movable)
+ * Model default: assets/mechs/horn/q-hero-mixamo-walk.raw.glb
+ *   (NO meshopt — phone-safe; Mixamo walk clip; webp textures)
+ * Opt-in:  ?meshopt=1 → q-hero-mixamo-walk.play.glb (needs MeshoptDecoder WASM)
+ * Fallback: ?fbx=1 → assets/q-hero-tripo-mixamo-walking.fbx (NOT on Pages; local only)
+ * Static:   ?static=1 → assets/q-hero-tripo.glb (NOT on Pages; local only)
+ *
+ * IMPORTANT: do NOT static-import FBXLoader — that file is not shipped to Pages
+ * and a failed module graph leaves HUD stuck on "loading…" with no error UI.
  */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 const params = new URLSearchParams(location.search);
 const USE_FBX = params.get('fbx') === '1' || params.get('src') === 'fbx';
 const USE_STATIC = params.get('static') === '1' || params.get('src') === 'static';
+const USE_MESHOPT = params.get('meshopt') === '1' || params.get('src') === 'meshopt';
 const FIT_H = Number(params.get('fitH') || '1.76') || 1.76;
 const MOVE_SPEED = Number(params.get('speed') || '4.2') || 4.2;
 const CAM_DIST = Number(params.get('camDist') || '6.5') || 6.5;
 const CAM_HEIGHT = Number(params.get('camH') || '3.2') || 3.2;
 const CAM_LOOK_Y = Number(params.get('camLookY') || '1.1') || 1.1;
 
+const RAW_GLB = '../../assets/mechs/horn/q-hero-mixamo-walk.raw.glb';
 const PLAY_GLB = '../../assets/mechs/horn/q-hero-mixamo-walk.play.glb';
 const STATIC_GLB = '../../assets/q-hero-tripo.glb';
 const FBX_URL = '../../assets/q-hero-tripo-mixamo-walking.fbx';
@@ -197,7 +201,17 @@ async function loadHero() {
     return { scene: gltf.scene, animations: gltf.animations || [], label: 'q-hero-tripo.glb (static)' };
   }
   if (USE_FBX) {
-    setStatus('loading Mixamo FBX (~24MB)…');
+    setStatus('loading Mixamo FBX (dynamic import)…');
+    // Dynamic import only — FBXLoader.js / fflate / NURBSCurve are not on Pages.
+    let FBXLoader;
+    try {
+      ({ FBXLoader } = await import('three/addons/loaders/FBXLoader.js'));
+    } catch (impErr) {
+      throw new Error(
+        'FBXLoader not available on this host (404). Use default raw GLB, or serve locally with vendor FBXLoader. ' +
+        String(impErr && impErr.message ? impErr.message : impErr),
+      );
+    }
     const manager = new THREE.LoadingManager();
     manager.setURLModifier((url) => {
       const base = (url.split('?')[0].split('/').pop() || '');
@@ -217,19 +231,35 @@ async function loadHero() {
     const anims = obj.animations || [];
     return { scene: obj, animations: anims, label: 'q-hero-tripo-mixamo-walking.fbx' };
   }
-  setStatus('loading Mixamo play GLB (meshopt)…');
-  const loader = new GLTFLoader();
-  if (MeshoptDecoder) {
-    try { loader.setMeshoptDecoder(MeshoptDecoder); } catch (_) {}
-    if (MeshoptDecoder.ready) {
-      try { await MeshoptDecoder.ready; } catch (_) {}
+  if (USE_MESHOPT) {
+    setStatus('loading Mixamo play GLB (meshopt)…');
+    let MeshoptDecoder;
+    try {
+      ({ MeshoptDecoder } = await import('three/addons/libs/meshopt_decoder.module.js'));
+    } catch (impErr) {
+      throw new Error('MeshoptDecoder import failed: ' + String(impErr && impErr.message ? impErr.message : impErr));
     }
+    const loader = new GLTFLoader();
+    if (MeshoptDecoder) {
+      try { loader.setMeshoptDecoder(MeshoptDecoder); } catch (_) {}
+      if (MeshoptDecoder.ready) {
+        try { await MeshoptDecoder.ready; } catch (_) {}
+      }
+    }
+    const gltf = await loader.loadAsync(PLAY_GLB);
+    return {
+      scene: gltf.scene,
+      animations: gltf.animations || [],
+      label: 'q-hero-mixamo-walk.play.glb (meshopt)',
+    };
   }
-  const gltf = await loader.loadAsync(PLAY_GLB);
+  setStatus('loading Mixamo raw GLB (no meshopt)…');
+  const loader = new GLTFLoader();
+  const gltf = await loader.loadAsync(RAW_GLB);
   return {
     scene: gltf.scene,
     animations: gltf.animations || [],
-    label: 'q-hero-mixamo-walk.play.glb (Mixamo walk)',
+    label: 'q-hero-mixamo-walk.raw.glb (Mixamo walk)',
   };
 }
 
