@@ -193,6 +193,27 @@ function fitToGround(root, targetH) {
   if (Number.isFinite(box2.min.y)) root.position.y -= box2.min.y;
 }
 
+/** Mixamo walk clips translate mixamorigHips in XZ. Combined with manual
+ *  heroRoot translation that fights / snaps on loop → phone flicker/stutter.
+ *  Lock hips XZ to the first keyframe; keep Y for vertical bob. */
+function stripHorizontalRootMotion(clip) {
+  if (!clip || !clip.tracks) return clip;
+  for (const track of clip.tracks) {
+    const n = track.name || '';
+    if (!/\.position$/i.test(n)) continue;
+    if (!/hips/i.test(n)) continue;
+    const v = track.values;
+    if (!v || v.length < 3) continue;
+    const x0 = v[0];
+    const z0 = v[2];
+    for (let i = 0; i < v.length; i += 3) {
+      v[i] = x0;
+      v[i + 2] = z0;
+    }
+  }
+  return clip;
+}
+
 async function loadHero() {
   if (USE_STATIC) {
     setStatus('loading static GLB (no clips)…');
@@ -289,9 +310,10 @@ try {
   const clips = packed.animations || [];
   const walkClip = clips[0] || null;
   if (walkClip) {
+    stripHorizontalRootMotion(walkClip);
     walkAction = mixer.clipAction(walkClip);
     walkAction.enabled = true;
-    walkAction.setEffectiveWeight(1);
+    walkAction.setEffectiveWeight(0);
     walkAction.setLoop(THREE.LoopRepeat, Infinity);
     walkAction.clampWhenFinished = false;
     walkAction.play();
@@ -333,12 +355,26 @@ function frame() {
   }
 
   if (walkAction) {
-    if (moving && mag > 0.08) {
-      walkAction.paused = false;
+    // Hysteresis avoids pause/resume flicker when stick mag hovers near deadzone.
+    const wantWalk = moving && mag > 0.12;
+    const stopWalk = !moving || mag < 0.05;
+    if (wantWalk) {
+      if (walkAction.paused) {
+        walkAction.paused = false;
+        // Resume mid-cycle; do not restart every stick tick.
+      }
       walkAction.setEffectiveTimeScale(THREE.MathUtils.clamp(0.85 + mag * 0.55, 0.8, 1.7));
-    } else {
-      walkAction.paused = true;
-      walkAction.time = 0;
+      const w = walkAction.getEffectiveWeight();
+      walkAction.setEffectiveWeight(Math.min(1, w + dt * 8));
+    } else if (stopWalk) {
+      const w = walkAction.getEffectiveWeight();
+      const next = Math.max(0, w - dt * 6);
+      walkAction.setEffectiveWeight(next);
+      if (next <= 0.01) {
+        walkAction.setEffectiveWeight(0);
+        walkAction.paused = true;
+        walkAction.time = 0;
+      }
     }
   }
   if (mixer) mixer.update(dt);
