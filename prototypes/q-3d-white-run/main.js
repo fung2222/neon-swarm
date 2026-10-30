@@ -2,6 +2,7 @@
  * prototypes/q-3d-white-run — SEPARATE from tip.
  * White empty stage + Mixamo walk clip + virtual stick / WASD.
  * Tip stays v0.9.205; HORN_TRUE_3D remains false on tip. No tip bump.
+* walk5: world-fixed chase cam + cyberpunk neon trim glow (proto only).
  *
  * Model default: assets/mechs/horn/q-hero-mixamo-walk.raw.glb
  *   (NO meshopt — phone-safe; Mixamo walk clip; webp textures)
@@ -24,6 +25,12 @@ const MOVE_SPEED = Number(params.get('speed') || '3.4') || 3.4;
 const CAM_DIST = Number(params.get('camDist') || '6.5') || 6.5;
 const CAM_HEIGHT = Number(params.get('camH') || '3.2') || 3.2;
 const CAM_LOOK_Y = Number(params.get('camLookY') || '1.1') || 1.1;
+// Default: fixed world chase offset (can show front when walking toward cam).
+// ?camFollow=face restores old orbit-behind-facingYaw camera.
+const CAM_FOLLOW_FACE = (params.get('camFollow') || '').toLowerCase() === 'face';
+const CYBER_GLOW = params.get('glow') !== '0';
+const CYBER_GLOW_I = Number(params.get('glow') || '2.4');
+const CYBER_GLOW_INTENSITY = Number.isFinite(CYBER_GLOW_I) && CYBER_GLOW_I > 0 ? CYBER_GLOW_I : 2.4;
 
 const RAW_GLB = '../../assets/mechs/horn/q-hero-mixamo-walk.raw.glb';
 const PLAY_GLB = '../../assets/mechs/horn/q-hero-mixamo-walk.play.glb';
@@ -201,7 +208,7 @@ function stripHorizontalRootMotion(clip) {
   if (!stripHorizontalRootMotion._logged) {
     stripHorizontalRootMotion._logged = true;
     try {
-      console.log('[walk3] clip tracks', clip.tracks.map((t) => t.name));
+      console.log('[walk5] clip tracks', clip.tracks.map((t) => t.name));
     } catch (_) {}
   }
   // Mixamo naming variants: mixamorigHips, mixamorig:Hips, Hips, Armature|Hips, pelvis, Root
@@ -228,6 +235,167 @@ function lerpAngle(a, b, t) {
   if (d > Math.PI) d -= Math.PI * 2;
   if (d < -Math.PI) d += Math.PI * 2;
   return a + d * t;
+}
+
+
+/** Derive cyberpunk neon trim emissive + dark gunmetal albedo from cyan Tripo base map.
+ *  Single material / no emissiveMap in raw.glb — edge-detect cyan islands → magenta/cyan trim.
+ *  Mobile-friendly: one CPU pass at load, no bloom/post. ?glow=0 disables; ?glow=2.4 intensity.
+ */
+function buildCyberMapsFromAlbedo(img) {
+  const w = img.width || img.videoWidth || 1024;
+  const h = img.height || img.videoHeight || 1024;
+  const src = document.createElement('canvas');
+  src.width = w;
+  src.height = h;
+  const sctx = src.getContext('2d', { willReadFrequently: true });
+  sctx.drawImage(img, 0, 0, w, h);
+  const srcData = sctx.getImageData(0, 0, w, h);
+  const px = srcData.data;
+
+  const gray = new Float32Array(w * h);
+  const alive = new Uint8Array(w * h);
+  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+    const r = px[i], g = px[i + 1], b = px[i + 2];
+    const sum = r + g + b;
+    alive[p] = sum > 30 ? 1 : 0;
+    gray[p] = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  // Sobel magnitude for trim lines (visor/joints/plate seams)
+  const edge = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      if (!alive[i]) continue;
+      const gx =
+        -gray[i - w - 1] + gray[i - w + 1] +
+        -2 * gray[i - 1] + 2 * gray[i + 1] +
+        -gray[i + w - 1] + gray[i + w + 1];
+      const gy =
+        -gray[i - w - 1] - 2 * gray[i - w] - gray[i - w + 1] +
+        gray[i + w - 1] + 2 * gray[i + w] + gray[i + w + 1];
+      edge[i] = Math.min(255, Math.hypot(gx, gy));
+    }
+  }
+  // Dilate 1px so trim reads on phone
+  const trim = new Uint8Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      if (!alive[i]) continue;
+      let m = edge[i];
+      if (edge[i - 1] > m) m = edge[i - 1];
+      if (edge[i + 1] > m) m = edge[i + 1];
+      if (edge[i - w] > m) m = edge[i - w];
+      if (edge[i + w] > m) m = edge[i + w];
+      if (m > 14) trim[i] = 1;
+    }
+  }
+
+  const albCanvas = document.createElement('canvas');
+  albCanvas.width = w;
+  albCanvas.height = h;
+  const actx = albCanvas.getContext('2d');
+  const alb = actx.createImageData(w, h);
+
+  const emCanvas = document.createElement('canvas');
+  emCanvas.width = w;
+  emCanvas.height = h;
+  const ectx = emCanvas.getContext('2d');
+  const em = ectx.createImageData(w, h);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const p = y * w + x;
+      const o = p * 4;
+      if (!alive[p]) {
+        alb.data[o] = alb.data[o + 1] = alb.data[o + 2] = 0;
+        alb.data[o + 3] = 255;
+        em.data[o] = em.data[o + 1] = em.data[o + 2] = 0;
+        em.data[o + 3] = 255;
+        continue;
+      }
+      const lum = gray[p] / 255;
+      // Dark gunmetal body — cyber chassis under neon trim
+      alb.data[o] = Math.min(255, 14 + lum * 42);
+      alb.data[o + 1] = Math.min(255, 16 + lum * 52);
+      alb.data[o + 2] = Math.min(255, 24 + lum * 72);
+      alb.data[o + 3] = 255;
+
+      // Soft electric underglow on panels
+      em.data[o] = 6;
+      em.data[o + 1] = 18;
+      em.data[o + 2] = 36;
+      em.data[o + 3] = 255;
+
+      if (trim[p]) {
+        // Magenta on tiled bands + mid "chest/core" UV band; cyan elsewhere
+        const tile = ((y / 64 | 0) + (x / 80 | 0)) % 3;
+        const core = y > h * 0.37 && y < h * 0.55 && x > w * 0.29 && x < w * 0.70;
+        const magenta = tile === 0 || core;
+        const hot = edge[p] > 70;
+        if (magenta) {
+          em.data[o] = hot ? 255 : 255;
+          em.data[o + 1] = hot ? 110 : 28;
+          em.data[o + 2] = hot ? 255 : 210;
+        } else {
+          em.data[o] = hot ? 100 : 0;
+          em.data[o + 1] = 255;
+          em.data[o + 2] = 255;
+        }
+      }
+    }
+  }
+  actx.putImageData(alb, 0, 0);
+  ectx.putImageData(em, 0, 0);
+  return { albedoCanvas: albCanvas, emissiveCanvas: emCanvas };
+}
+
+function applyCyberpunkGlow(root) {
+  if (!CYBER_GLOW) return;
+  const seen = new Set();
+  root.traverse((obj) => {
+    if (!obj.isMesh || !obj.material) return;
+    const list = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const mat of list) {
+      if (!mat || seen.has(mat.uuid)) continue;
+      seen.add(mat.uuid);
+      try {
+        const img = mat.map && mat.map.image;
+        if (img && (img.width || img.videoWidth)) {
+          const { albedoCanvas, emissiveCanvas } = buildCyberMapsFromAlbedo(img);
+          const albTex = new THREE.CanvasTexture(albedoCanvas);
+          albTex.flipY = false;
+          albTex.colorSpace = THREE.SRGBColorSpace;
+          albTex.needsUpdate = true;
+          const emTex = new THREE.CanvasTexture(emissiveCanvas);
+          emTex.flipY = false;
+          emTex.colorSpace = THREE.SRGBColorSpace;
+          emTex.needsUpdate = true;
+          // Match original UV transform if any
+          if (mat.map) {
+            albTex.wrapS = emTex.wrapS = mat.map.wrapS;
+            albTex.wrapT = emTex.wrapT = mat.map.wrapT;
+            albTex.offset.copy(mat.map.offset);
+            albTex.repeat.copy(mat.map.repeat);
+            emTex.offset.copy(mat.map.offset);
+            emTex.repeat.copy(mat.map.repeat);
+          }
+          mat.map = albTex;
+          mat.emissiveMap = emTex;
+        }
+        mat.emissive = new THREE.Color(0xffffff);
+        mat.emissiveIntensity = CYBER_GLOW_INTENSITY;
+        if (mat.color) mat.color.set(0xffffff);
+        if ('metalness' in mat) mat.metalness = Math.max(0.55, mat.metalness || 0);
+        if ('roughness' in mat) mat.roughness = Math.min(0.42, mat.roughness == null ? 0.42 : mat.roughness);
+        mat.needsUpdate = true;
+      } catch (err) {
+        console.warn('[cyber-glow] skip material', mat && mat.name, err);
+      }
+    }
+  });
 }
 
 async function loadHero() {
@@ -319,6 +487,7 @@ try {
       c.frustumCulled = true;
     }
   });
+  applyCyberpunkGlow(model);
   heroRoot.add(model);
   fitToGround(heroRoot, FIT_H);
 
@@ -391,12 +560,21 @@ function frame() {
   }
   if (mixer) mixer.update(dt);
 
-  // Camera follow behind facing (slight lag)
-  camDesired.set(
-    heroRoot.position.x - Math.sin(facingYaw) * CAM_DIST,
-    heroRoot.position.y + CAM_HEIGHT,
-    heroRoot.position.z - Math.cos(facingYaw) * CAM_DIST,
-  );
+  // Camera: world-fixed chase by default (walk toward cam → front face).
+  // ?camFollow=face → old behind-facingYaw orbit.
+  if (CAM_FOLLOW_FACE) {
+    camDesired.set(
+      heroRoot.position.x - Math.sin(facingYaw) * CAM_DIST,
+      heroRoot.position.y + CAM_HEIGHT,
+      heroRoot.position.z - Math.cos(facingYaw) * CAM_DIST,
+    );
+  } else {
+    camDesired.set(
+      heroRoot.position.x,
+      heroRoot.position.y + CAM_HEIGHT,
+      heroRoot.position.z + CAM_DIST,
+    );
+  }
   camera.position.lerp(camDesired, 1 - Math.pow(0.001, dt));
   camTarget.set(heroRoot.position.x, heroRoot.position.y + CAM_LOOK_Y, heroRoot.position.z);
   camera.lookAt(camTarget);
