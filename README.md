@@ -1,35 +1,28 @@
-# 暴走機甲 RAMPAGE MECH
+# 失控飛碟 ROGUE UFO
 
-> 賽博朋克子彈天堂 · cyberpunk bullet heaven · Three.js · 手機優先  
-> 前身前名：NEON SWARM 霓虹洪流（repo 仍叫 `neon-swarm`）
+> 實驗室飛碟脫離控制，軍隊一路追 · Three.js · 手機優先
+> 前名：暴走機甲／NEON SWARM（repo 仍叫 `neon-swarm`）
 
-**試玩 Play:** https://fung2222.github.io/neon-swarm/?v=0.9.205 · **狀態 Status:** v0.9.205 COMBAT-FEEL-V1 (gatling+grunt feel default ON; WebGL diag kept; box smoke only — phone not verified)
-
-> **Phone hit-feel:** [docs/HIT-FEEL-DEVICE.md](docs/HIT-FEEL-DEVICE.md) **Complete**／`device verified`（Roy「Ok」2026-10-27）。**Live tip:** v0.9.205 COMBAT-FEEL-V1 — gatling+ordinary-grunt presentation default ON (`?feelProto=0` force-off); keeps v0.9.204 WebGL diag + v0.9.203 2D puppet. HARD BAN Phase4 abilities / soft-juice invent beyond V1 / more ult / BALANCE re-pass / §9 lock claim without Roy 肉眼。
+**試玩 Play:** https://fung2222.github.io/neon-swarm/
 
 ## 一句 pitch
-實驗室造出嚟嘅機甲啟動之後失控暴走。玩家控制呢部失控機甲，科學家同軍隊一波一波嚟捉你；生存得越耐，佢哋派嘅級別越高。  
-You are the mech the lab built — and it is not going back in the cage. Scientists and soldiers hunt you; the longer you survive, the higher the tier they send.
+你係一部脫離實驗室嘅飛碟。搖桿走、武器自動打，軍隊同科學家一波波嚟捉你。
+You are a lab UFO on the run. Move with the stick, guns fire on their own, the army hunts you in waves.
 
-## 三款機體 Three frames
-| 機體 Frame | 特點 |
+## 三款飛碟
+| 飛碟 | 現況 |
 |---|---|
-| **覺醒突擊型 AWAKEN** (`horn`) | 深灰＋青紫 · 均衡 · 開局護盾 +1 · Phase 1 主角切片 |
-| **高速精密型 PRECISION** (`heavy`) | 預留 stub · 現行：慢 8% · 護甲 +1 |
-| **可變結構原型 MORPH** (`prototype`) | 預留 stub · 現行：快 6% · 磁吸 +25% |
+| **青邊飛碟** (`horn`) | 可玩 · 圓碟 · 連射 |
+| **粉邊飛碟** (`heavy`) | 未開放 |
+| **柑邊飛碟** (`prototype`) | 未開放 |
 
-> Phase 1 只深切主角機選機 3D；其餘兩台係可選 stub（唔同 id／stats），**唔係**把主角機重新上色。數值一律讀 `MECHS` + `resolveMechCombat`。
+主角而家係程式砌嘅青色圓碟，唔再用舊機甲圖。
 
-## 選機 vs 遊戲內外觀 Select vs in-game (honest)
-| 畫面 | 來源 |
-|---|---|
-| **選機 Select** | Live Three.js `buildPlayerMech`（可拖曳旋轉） |
-| **遊戲內 In-game** | horn：`HORN_2D_SKELETON` 2D bone puppet（v0.9.203+；`HORN_TRUE_3D` 仍 false）+ COMBAT-FEEL V1（v0.9.205）；其他機 baked／legacy PNG |
+## 畫面
+選機同遊戲入面都係同一隻飛碟模型。舊 PNG 機甲圖已刪。
 
-同一 3D 來源烘焙多方向 sprite 係 Phase 3。而家**唔好**宣稱選機同遊戲內已共用烘焙圖。規格見 `docs/art-bible.md` · `docs/render-pipeline.md`。
-
-## 敵人 Enemies
-人類主導、機甲支援：研究員 → 保安 → 士兵 → 隊長 → **首席科學家**；支援單位：偵察機甲、重裝機甲、護衛機甲。掉落：**X**（經驗方塊）、**H**（修復）、**W**（武器圖示、方塊）。
+## 敵人
+軍隊同科學家一波波嚟：研究員、保安、士兵、隊長、首席科學家，同埋偵察機、重裝、護衛。掉落：X 經驗、H 修復、W 武器。
 
 
 ## 玩法重點 Gameplay

@@ -6,9 +6,9 @@ i18n.add({
   titleEn: ['ROGUE UFO', 'THE RUNAWAY CRAFT'],
   kicker: ['LAB LOCKDOWN · MANHUNT', 'LAB LOCKDOWN · MANHUNT'],
   tagline: ['實驗室飛碟脫離控制 · 軍隊一路追 · 生存到底', 'A lab UFO breaks out · the army hunts it · survive'],
-  play: ['啟動暴走', 'BREAK OUT'],
-  playS: ['BREAK OUT', 'ENGAGE'],
-  endless: ['無盡暴走', 'ENDLESS RAMPAGE'],
+  play: ['開始逃亡', 'TAKE OFF'],
+  playS: ['TAKE OFF', 'ENGAGE'],
+  endless: ['無盡逃亡', 'ENDLESS RUN'],
   endlessS: ['NO CAP', 'NO CAP'],
   best: ['最佳分數', 'BEST'],
   bestTime: ['最長存活', 'BEST TIME'],
@@ -71,9 +71,9 @@ i18n.add({
   kills: ['擊殺', 'KILLS'],
   'goal.kills': ['目標擊殺', 'GOAL'],
   'goal.cleared': ['完成合約', 'CONTRACTS'],
-  'goal.ready': ['達標！繼續暴走', 'CLEARED · KEEP RAMPAGING'],
+  'goal.ready': ['達標！繼續飛', 'CLEARED · KEEP FLYING'],
   'over.contract': ['完成合約', 'CONTRACT'],
-  'mech.pick': ['揀機體', 'PICK YOUR FRAME'],
+  'mech.pick': ['揀飛碟', 'PICK A CRAFT'],
   'mech.horn': ['青邊飛碟', 'CYAN SAUCER'],
   'mech.heavy': ['粉邊飛碟', 'ROSE SAUCER'],
   'mech.proto': ['柑邊飛碟', 'CITRUS SAUCER'],
@@ -89,8 +89,8 @@ i18n.add({
   ],
   // v0.9.74 HOWTO-CONTROLS-SYNC-001 — sync howto to shipped stick hide + dbl/tpl + rail (no new toast invent)
   'help.controls': [
-    '手機：拖動畫面任意位置移動（搖桿淨喺手指按下先顯示，鬆手即隱藏）；雙擊＝副武器連發（最多 3 發後返主武器）；三擊＝投擲；底欄色格可撳切換；雙指捏合輕微縮放。鍵盤：WASD／方向鍵 · +/- 縮放 · P／Esc 暫停 · M 靜音。主頁可揀三款機體。',
-    'Mobile: drag anywhere to move (stick shows only while pressed, hides on release); double-tap = secondary burst (≤3 then back to primary); triple-tap = throw; bottom color rail switches weapons; pinch for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. Pick one of three frames on the home screen.'
+    '手機：拖動畫面任意位置移動（搖桿淨喺手指按下先顯示，鬆手即隱藏）；雙擊＝副武器連發（最多 3 發後返主武器）；三擊＝投擲；底欄色格可撳切換；雙指捏合輕微縮放。鍵盤：WASD／方向鍵 · +/- 縮放 · P／Esc 暫停 · M 靜音。主頁而家可玩青邊飛碟，另外兩款未開放。',
+    'Mobile: drag anywhere to move (stick shows only while pressed, hides on release); double-tap = secondary burst (≤3 then back to primary); triple-tap = throw; bottom color rail switches weapons; pinch for mild zoom. Keyboard: WASD / arrows · +/- zoom · P / Esc pause · M mute. The cyan saucer is playable; the other two are not open yet.'
   ],
   // v0.9.5 WebGL context loss / recoverable boot fail (not permanent "unsupported")
   'gfx.title': ['繪圖暫時中斷', 'GRAPHICS RESET'],
