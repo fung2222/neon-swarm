@@ -3,7 +3,7 @@
 export const KIT_VERSION = '0.3.18';
 export { parseFlags, flags } from './core/flags.js';
 export { createStore } from './core/storage.js';
-export { createStage, GLOW_LEVELS, getGlowPref, setGlowPref } from './core/renderer.js';
+export { createStage, GLOW_LEVELS, getGlowPref, setGlowPref } from './core/renderer.js?v=ns2';
 export { CyberShader } from './core/post.js';
 export { U, THEMES, themeFor, ThemeController, themeLabel } from './core/theme.js';
 export { Particles, Shockwaves, FxState } from './core/fx.js';

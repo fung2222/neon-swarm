@@ -67,7 +67,7 @@ export function createStage(o = {}) {
   const camera = new THREE.PerspectiveCamera(o.fov ?? 50, window.innerWidth / window.innerHeight, o.near ?? 0.1, o.far ?? 900);
 
   // v0.8.5: UnsignedByteType — HalfFloat + additive particles/bloom can Inf and lock viewport permanently white
-  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: 4 });
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: 2 });
   const composer = new EffectComposer(renderer, rt);
   composer.setPixelRatio(pixelRatio);
   composer.setSize(window.innerWidth, window.innerHeight);
