@@ -1,11 +1,11 @@
 import { i18n } from 'cyber-kit';
 
 i18n.add({
-  'doc.title': ['暴走機甲', 'RAMPAGE MECH'],
-  title: ['暴走機甲', 'RAMPAGE MECH'],
-  titleEn: ['RAMPAGE MECH', 'THE RUNAWAY UNIT'],
+  'doc.title': ['失控飛碟', 'ROGUE UFO'],
+  title: ['失控飛碟', 'ROGUE UFO'],
+  titleEn: ['ROGUE UFO', 'THE RUNAWAY CRAFT'],
   kicker: ['LAB LOCKDOWN · MANHUNT', 'LAB LOCKDOWN · MANHUNT'],
-  tagline: ['人格同步實驗失控 · 覺醒機甲逃離收容 · 生存到底', 'Personality-sync gone wrong · awaken and break out · survive the hunt'],
+  tagline: ['實驗室飛碟脫離控制 · 軍隊一路追 · 生存到底', 'A lab UFO breaks out · the army hunts it · survive'],
   play: ['啟動暴走', 'BREAK OUT'],
   playS: ['BREAK OUT', 'ENGAGE'],
   endless: ['無盡暴走', 'ENDLESS RAMPAGE'],
@@ -74,18 +74,18 @@ i18n.add({
   'goal.ready': ['達標！繼續暴走', 'CLEARED · KEEP RAMPAGING'],
   'over.contract': ['完成合約', 'CONTRACT'],
   'mech.pick': ['揀機體', 'PICK YOUR FRAME'],
-  'mech.horn': ['覺醒突擊型', 'AWAKEN ASSAULT'],
-  'mech.heavy': ['高速精密型', 'PRECISION FRAME'],
-  'mech.proto': ['可變結構原型', 'MORPH PROTOTYPE'],
-  'mech.desc.horn': ['炭灰＋青霓虹 · 均衡突擊 · 開局護盾 +1', 'Charcoal + cyan neon · balanced · +1 shield'],
-  'mech.desc.heavy': ['製作中 · 白粉精密機體（數值暫定）', 'Coming soon · white-pink precision (stub stats)'],
-  'mech.desc.proto': ['製作中 · 可變結構原型（數值暫定）', 'Coming soon · morph prototype (stub stats)'],
+  'mech.horn': ['青邊飛碟', 'CYAN SAUCER'],
+  'mech.heavy': ['粉邊飛碟', 'ROSE SAUCER'],
+  'mech.proto': ['柑邊飛碟', 'CITRUS SAUCER'],
+  'mech.desc.horn': ['扁碟 · 青色霓虹邊 · 底光 · 開局護盾 +1', 'Flat disc · cyan rim · underside beam · +1 shield'],
+  'mech.desc.heavy': ['製作中 · 粉邊飛碟（數值暫定）', 'Coming soon · rose saucer (stub stats)'],
+  'mech.desc.proto': ['製作中 · 柑邊飛碟（數值暫定）', 'Coming soon · citrus saucer (stub stats)'],
   'mech.coming': ['製作中', 'Coming soon'],
-  'mech.locked': ['呢部機體仲製作中，請揀覺醒突擊型開始。', 'This frame is still in production — start with Awaken Assault.'],
+  'mech.locked': ['呢隻飛碟仲製作中，請揀青邊飛碟開始。', 'This saucer is still in production — start with the cyan one.'],
   // v0.9.83 HOWTO-RULES-SYNC-001 + v0.9.129 HOWTO-ULT-KITS-SYNC-001 — unique ult kits (not light-amp stub language)
   'help.rules': [
-    '你係實驗室造出嚟嘅機甲，啟動之後失控暴走。科學家同軍隊會一波一波嚟捉你。殺敵跌 X（經驗）、H（修復）、S（護盾）、W（武器圖示）同磁鐵（吸附近掉落）。武器欄 2 主＋2 副＋2 投；升級揀大型徽記卡／分支／獨特大招。搖桿淨喺手指按下先顯示。三款機體：角盔均衡、重裝耐打但慢、原創機動但脆。',
-    'You are the lab mech gone rogue. Waves of scientists and soldiers hunt you. Kills drop X (XP), H (repair), S (shield), W (weapon icon) and magnet (pull nearby drops). Loadout is 2 primary + 2 secondary + 2 throw; level-ups pick emblem cards / branch / unique ult kits. Stick shows only while pressed. Three frames: balanced horn, tough-but-slow heavy, fast-but-fragile proto.'
+    '你係一部脫離實驗室嘅飛碟。軍隊同科學家會一波一波嚟捉你，你要不停走、自動打。殺敵跌 X（經驗）、H（修復）、S（護盾）、W（武器）同磁鐵。武器欄 2 主＋2 副＋2 投。搖桿淨喺手指按下先顯示。',
+    'You are a lab UFO on the run. Soldiers and scientists hunt you in waves — keep moving, guns fire on their own. Kills drop X (XP), H (repair), S (shield), W (weapon) and a magnet. Loadout is 2 primary + 2 secondary + 2 throw. The stick shows only while pressed.',
   ],
   // v0.9.74 HOWTO-CONTROLS-SYNC-001 — sync howto to shipped stick hide + dbl/tpl + rail (no new toast invent)
   'help.controls': [

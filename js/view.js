@@ -1,18 +1,14 @@
 import * as THREE from 'three';
-import { buildPlayerMech } from './mech-builder.js';
+import { buildUfo } from './ufo.js';
 import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
 import { ELITE_LANE, eliteLaneOpacity, eliteLaneWidth } from './elite-lane-read.js';
 import {
   preloadAllSprites,
   buildPlayerSprite,
   buildEnemySprite,
-  retargetEnemySprite,
   buildDoctorNpc,
-  billboardToCamera,
   applySpriteFlash,
   applySpriteMotion,
-  syncBakedPlayerSprite,
-  syncHorn2dPuppet,
 } from './sprites.js';
 import { HORN_TRUE_3D } from './q-hero-3d-flag.js';
 import {
@@ -1458,30 +1454,21 @@ function enemyMeshFor(type) {
   if (type === 'hunter') return hunterMesh();
   if (type === 'commander') return commanderMesh();
   if (type === 'swarm_core') return bossMesh();
-  // Remaining types keep approved colour-coded PNG billboards.
-  return buildEnemySprite(type);
+  if (type === 'soldier' || type === 'officer' || type === 'chief') {
+    const def = ENEMIES[type] || {};
+    return humanMesh(type, def.color || 0x35d6ff, def.coat);
+  }
+  if (type === 'walker' || type === 'mech') {
+    const def = ENEMIES[type] || {};
+    return supportMesh('walker', def.color || 0xc9a227);
+  }
+  const def = ENEMIES[type] || {};
+  return humanMesh('soldier', def.color || 0x35d6ff, def.coat);
 }
 // ---------------------------------------------------------------------------
 // Projectiles: MG = cyan line/dot; specials = small ammo PNGs (deep-gray + cyan).
 // ---------------------------------------------------------------------------
 const SHOT_CACHE = Object.create(null);
-const AMMO_TEX = Object.create(null);
-const ammoLoader = new THREE.TextureLoader();
-
-function loadAmmoTex(key) {
-  if (!key) return null;
-  if (AMMO_TEX[key]) return AMMO_TEX[key];
-  const path = AMMO_PATHS[key];
-  if (!path) return null;
-  const tex = ammoLoader.load(path);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.generateMipmaps = false;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.premultiplyAlpha = false;
-  AMMO_TEX[key] = tex;
-  return tex;
-}
 
 function shotGeo(shot) {
   if (SHOT_CACHE[shot]) return SHOT_CACHE[shot];
@@ -1564,32 +1551,19 @@ function bulletMesh(weapon, tier) {
   if (m) { m.visible = true; return m; }
   const color = new THREE.Color(spec.tiers[tier] || spec.tiers[0]);
   const shot = spec.shot;
-  const spriteKey = spec.sprite;
-  let mesh;
-  if (spriteKey) {
-    const tex = loadAmmoTex(spriteKey);
-    mesh = new THREE.Mesh(
-      shotGeo(shot),
-      new THREE.MeshBasicMaterial({
-        map: tex, color: 0xffffff, transparent: true, alphaTest: 0.45,
-        depthWrite: true, fog: false, side: THREE.DoubleSide,
-      })
-    );
-  } else if (shot === 'line') {
-    // Short cyan streak — no detailed sprite
-    mesh = new THREE.Mesh(shotGeo('line'), new THREE.MeshBasicMaterial({ color, fog: false }));
+  const geoKey = (shot === 'splash' || shot === 'rocket' || shot === 'grenade' || shot === 'plasma') ? 'star' : shot;
+  const mesh = new THREE.Mesh(shotGeo(geoKey), new THREE.MeshBasicMaterial({ color, fog: false }));
+  if (shot === 'line') {
     const tip = new THREE.Mesh(
       new THREE.SphereGeometry(0.045, 6, 6),
       new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false })
     );
     tip.position.y = 0.18;
     mesh.add(tip);
-  } else {
-    mesh = new THREE.Mesh(shotGeo(shot), new THREE.MeshBasicMaterial({ color, fog: false }));
   }
   if (shot === 'blade' || shot === 'wave') mesh.rotation.z = Math.PI / 2;
   mesh.userData.shot = shot;
-  mesh.userData.spriteKey = spriteKey || null;
+  mesh.userData.spriteKey = null;
   return mesh;
 }
 
@@ -1607,15 +1581,13 @@ function recycleBullets(parent) {
 /** Flying mech fragments for 粉身碎骨 kills. */
 const FRAG_POOL = [];
 function spawnFragments(parent, x, z, colorHex, n = 8) {
-  const tex = loadAmmoTex('fragment');
+  const col = new THREE.Color(colorHex || 0x8a93a8);
   for (let i = 0; i < n; i++) {
     let m = FRAG_POOL.pop();
     if (!m) {
       m = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.28, 0.28),
-        new THREE.MeshBasicMaterial({
-          map: tex, transparent: true, alphaTest: 0.45, depthWrite: true, fog: false, side: THREE.DoubleSide,
-        })
+        new THREE.BoxGeometry(0.12, 0.08, 0.1),
+        new THREE.MeshBasicMaterial({ color: col, fog: false })
       );
     }
     m.visible = true;
@@ -2447,7 +2419,6 @@ export class View {
     this.player = null;
     this.playerMechId = null;
     preloadAllSprites();
-    for (const k of Object.keys(AMMO_PATHS)) loadAmmoTex(k);
     this.setMech('horn');
 
     // Scientist doctor — visible map prop near start (shop/NPC hook later).
@@ -2684,7 +2655,7 @@ export class View {
 
       // Menu showcase: ALWAYS procedural buildPlayerMech (never Mixamo on home turntable).
       const mid = cfg.model || cfg.id;
-      const mech = buildPlayerMech(cfg);
+      const mech = buildUfo(cfg);
       mech.position.set(0, 0.12, 0);
       mech.scale.setScalar(mid === 'heavy' ? 1.05 : 1.0);
       if (mech.userData.halo) mech.userData.halo.visible = false;
@@ -2733,7 +2704,7 @@ export class View {
           new THREE.MeshStandardMaterial({ color: 0x0a0e18, roughness: 0.6, metalness: 0.3 })
         );
         pedestal.position.y = 0.06;
-        const mech = buildPlayerMech(cfg);
+        const mech = buildUfo(cfg);
         mech.position.set(0, 0.12, 0);
         if (mech.userData.halo) mech.userData.halo.visible = false;
         wrap.add(pedestal, mech);
@@ -2971,128 +2942,13 @@ export class View {
       }
     }
 
-    if (ud.isMixamo3d) {
-      const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
-      const vax = game.visualAimX != null ? game.visualAimX : game.aimX;
-      const vaz = game.visualAimZ != null ? game.visualAimZ : game.aimZ;
-      if (aiming && (Math.abs(vax || 0) + Math.abs(vaz || 0)) > 0.05) {
-        const want = Math.atan2(vax, vaz); // Mixamo +Z facing
-        let dd = want - this._facing;
-        while (dd > Math.PI) dd -= Math.PI * 2;
-        while (dd < -Math.PI) dd += Math.PI * 2;
-        this._facing += dd * 0.32;
-      } else if (move > 0.12) {
-        const want = Math.atan2(game.vx, game.vz);
-        let dd = want - this._facing;
-        while (dd > Math.PI) dd -= Math.PI * 2;
-        while (dd < -Math.PI) dd += Math.PI * 2;
-        this._facing += dd * 0.22;
-      }
-      syncMixamoPlayer(this.player, {
-        moveX: game.vx,
-        moveZ: game.vz,
-        moving: move > 0.08,
-        aimX: vax,
-        aimZ: vaz,
-        aiming,
-        hit,
-        blink,
-        alive: !!game.alive,
-        dt,
-        facingYaw: this._facing,
-      });
-    } else if (ud.isSprite) {
-      this.player.rotation.set(0, 0, 0);
-      const aiming = (game.aimHold || 0) > 0 || fireKick > 0.02;
-      const locomotion = move > 0.12 ? 'move' : 'idle';
-      const weapon = aiming ? (fireKick > 0.02 ? 'fire' : 'aim') : 'idle';
-      // Primary visual aim only (mg/laser) — secondaries must not flip body.
-      const vax = game.visualAimX != null ? game.visualAimX : game.aimX;
-      const vaz = game.visualAimZ != null ? game.visualAimZ : game.aimZ;
-      if (aiming && (Math.abs(vax || 0) + Math.abs(vaz || 0)) > 0.05) {
-        const want = Math.atan2(vax, vaz) + Math.PI;
-        let dd = want - this._facing;
-        while (dd > Math.PI) dd -= Math.PI * 2;
-        while (dd < -Math.PI) dd += Math.PI * 2;
-        this._facing += dd * 0.32;
-      }
-      ud.locomotion = locomotion;
-      ud.weaponState = weapon;
-
-      if (ud.isPuppet2d) {
-        // v0.9.203 Q-2D-SKELETON-DEMO: bone puppet idle/walk/attack (no Mixamo/Spine).
-        syncHorn2dPuppet(this.player, {
-          moveX: game.vx,
-          moveZ: game.vz,
-          moving: move > 0.08,
-          aimX: vax,
-          aimZ: vaz,
-          aiming,
-          firing: fireKick > 0.02,
-          hit,
-          blink,
-          alive: !!game.alive,
-          dt,
-          camera: this.stage.camera,
-          t: game.t || 0,
-          // COMBAT-FEEL V1: scale attackKick (presentation only; default ON)
-          recoilMul: FEEL_PROTO_VIEW ? protoRecoilMul(COMBAT_FEEL_V1) : 1,
-        });
-      } else if (ud.baked) {
-        // Layered bake from buildPlayerMech: legs=move, gun=visualAim, hurt=tint only, no bob.
-        syncBakedPlayerSprite(this.player, {
-          moveX: game.vx,
-          moveZ: game.vz,
-          moving: move > 0.08,
-          aimX: vax,
-          aimZ: vaz,
-          aiming,
-          hit,
-          blink,
-          alive: !!game.alive,
-          dt,
-          camera: this.stage.camera,
-        });
-      } else {
-        // Legacy whole-body PNG fallback
-        let pose = 'idle';
-        if (!game.alive) pose = 'hit';
-        else if (locomotion === 'move') pose = 'move';
-        else if (weapon === 'aim' || weapon === 'fire') pose = 'attack';
-        if (ud.playerMaps) {
-          let map = ud.playerMaps[pose] || ud.playerMaps.idle;
-          if (pose === 'move' && ud.walkFrames && ud.walkFrames.length >= 2) {
-            const fi = (Math.floor((ud.animPhase || 0) / Math.PI) & 1);
-            map = ud.walkFrames[fi];
-            ud.walkFrame = fi;
-          }
-          if (map && (ud.playerState !== pose || ud.walkFrame !== (ud._lastWalkFrame) || ud.spriteMat.map !== map)) {
-            ud.spriteMat.map = map;
-            ud.spriteMat.needsUpdate = true;
-            ud.playerState = pose;
-            ud._lastWalkFrame = ud.walkFrame;
-          }
-        }
-        const dtp = Math.max(0.001, Math.min(0.05, dt));
-        if (move > 0.08) ud.animPhase = (ud.animPhase || 0) + Math.max(0.35, move) * 8.2 * dtp;
-        else if (aiming) ud.animPhase = (ud.animPhase || 0) + 0.55 * dtp;
-        else ud.animPhase = (ud.animPhase || 0) * 0.9 + (game.t || 0) * 0.02;
-        applySpriteMotion(this.player, {
-          moving: move > 0.08,
-          velX: game.vx,
-          aimX: vax,
-          flipFromAim: aiming,
-          phase: ud.animPhase || 0,
-          phaseOffset: 0,
-          strength: (aiming && move <= 0.08) ? 0.35 : 0.5,
-          camera: this.stage.camera,
-          facingYaw: this._facing,
-          style: move > 0.08 ? 'ground' : 'idle',
-        });
-        applySpriteFlash(this.player, { blink, hit, move });
-      }
-    } else {
       this.player.rotation.y = this._facing;
+      if (ud.isUfo) {
+        const bob = Math.sin((game.t || 0) * 2.4) * 0.05;
+        this.player.position.y = 0.08 + bob + Math.min(0.12, move * 0.04);
+        if (ud.spinRing) ud.spinRing.rotation.z += dt * (0.8 + move * 0.6);
+        if (ud.beam && ud.beam.material) ud.beam.material.opacity = 0.18 + Math.min(0.35, move * 0.2);
+      }
       const bank = THREE.MathUtils.clamp(-game.vx * 0.25, -0.2, 0.2);
       this.player.rotation.z += (bank - this.player.rotation.z) * 0.15;
       this.player.rotation.x = move > 0.1 ? -0.05 : 0;
@@ -3135,7 +2991,6 @@ export class View {
         ud.glowL.scale.setScalar(pulse);
         ud.glowR.scale.setScalar(pulse);
       }
-    }
 
     if (this.novaAge >= 0) {
       this.novaAge += 0.05;
@@ -3888,7 +3743,7 @@ function makeFloorTexture() {
 if (typeof window !== 'undefined') {
   window.__MECHS = MECH_BY_ID ? Object.values(MECH_BY_ID) : [];
   window.__rampageArt = {
-    buildPlayerMech,
+    buildUfo,
     buildPlayerSprite,
     buildEnemySprite,
     buildDoctorNpc,

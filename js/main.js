@@ -747,7 +747,7 @@ function updateWeaponSlotsHUD(g) {
     const lv = _slotLv(g, id);
     const lab = def ? (i18n.isZh() ? def.zh : def.en) : (SLOT_LABEL[id] || id.toUpperCase());
     el.innerHTML =
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 22, preferSrc: true })}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { size: 22, preferSrc: false })}</span>` +
       `<span class="wslot-name">${lab}</span>` +
       `<span class="wslot-lv">Lv${lv}</span>`;
     el.title = `${lab} Lv${lv}`;
@@ -771,7 +771,7 @@ function updateWeaponStatusHUD(g) {
   const def = weaponDef(id);
   const icoEl = $('wstat-ico');
   if (icoEl) {
-    icoEl.innerHTML = id ? weaponIconHtml(id, { size: 22, preferSrc: true }) : weaponIconHtml(null, { empty: true, size: 22 });
+    icoEl.innerHTML = id ? weaponIconHtml(id, { size: 22, preferSrc: false }) : weaponIconHtml(null, { empty: true, size: 22 });
   }
   modeEl.textContent = secondary ? (zh ? '副' : 'SEC') : (zh ? '主' : 'PRI');
   // v0.9.59: full catalog zh/en titles (機關雷射炮 etc.), not truncated short labels
@@ -895,7 +895,7 @@ function updateWeaponRailHUD(g) {
     }
     btn.innerHTML =
       `<span class="wrail-fill" style="--fill:${fill.toFixed(3)}" aria-hidden="true"></span>` +
-      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { ...mutedOpt, preferSrc: true })}</span>` +
+      `<span class="wslot-ico" aria-hidden="true">${weaponIconHtml(id, { ...mutedOpt, preferSrc: false })}</span>` +
       pathBadge;
     let title = `${fullName} ${lvTxt}`;
     if (edge.drained) title += zh ? ' · 用盡' : ' · empty';
