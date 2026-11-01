@@ -7,7 +7,7 @@ export { createStage, GLOW_LEVELS, getGlowPref, setGlowPref } from './core/rende
 export { CyberShader } from './core/post.js';
 export { U, THEMES, themeFor, ThemeController, themeLabel } from './core/theme.js';
 export { Particles, Shockwaves, FxState } from './core/fx.js';
-export { NeonCity, NOISE_GLSL, FOG_GLSL } from './core/backdrop.js';
+export { NeonCity, NOISE_GLSL, FOG_GLSL } from './core/backdrop.js?v=ns2';
 export { SynthAudio, MUSIC, mtof, dbToGain, volumeToGain, loadVolumes, LOUDNESS, KIT_SFX_GAIN_DB } from './audio/synth.js';
 export { createInput, DEFAULT_KEYS, DEFAULT_ACTIONS } from './input/input.js';
 export { ViewInput, VIEW_LIMITS, GESTURE, TAP, defaultView, clampView, dampView, isDefaultView } from './input/view.js';

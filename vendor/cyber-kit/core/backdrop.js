@@ -115,7 +115,7 @@ export class NeonCity {
         #include <logdepthbuf_pars_fragment>
         ${NOISE_GLSL}
         ${FOG_GLSL}
-        float gridLine(vec2 p, float w){ vec2 fw = fwidth(p); vec2 g = abs(fract(p - 0.5) - 0.5) / (fw * w); return 1.0 - min(min(g.x, g.y), 1.0); }
+        float gridLine(vec2 p, float w){ vec2 fw = fwidth(p); vec2 g = abs(fract(p - 0.5) - 0.5) / max(fw * w, 0.02); return 1.0 - min(min(g.x, g.y), 1.0); }
         float pulse(vec4 P, vec2 p){
           float age = uTime - P.z; if (age < 0.0 || age > 2.5) return 0.0;
           float r = age * 16.0; float d = length(p - P.xy);
@@ -143,16 +143,16 @@ export class NeonCity {
             refl += textureProj(tDiffuse, uvr + vec4(0.0,  3.6 * b, 0.0, 0.0)).rgb * 0.1;
             refl += textureProj(tDiffuse, uvr + vec4(0.0, -3.6 * b, 0.0, 0.0)).rgb * 0.1;
           }
-          vec3 base = vec3(0.006, 0.006, 0.013) * (0.7 + vnoise(p * 2.0) * 0.6);
+          vec3 base = vec3(0.02, 0.02, 0.045) * (0.7 + vnoise(p * 2.0) * 0.6);
           vec2 cell = floor(p);
           base += inside * vec3(0.006, 0.007, 0.016) * (0.6 + mod(cell.x + cell.y, 2.0) * 0.6);
           float reflK = mix(0.18 + 0.6 * puddle, 0.36, inside);
           vec3 col = base + refl * reflK;
           float gl = gridLine(p, 1.2);
           float gl5 = gridLine(p / 5.0, 1.0);
-          col += uGrid * (gl * 0.11 + gl5 * 0.12) * inside;
+          col += uGrid * (gl * 0.5 + gl5 * 0.4) * inside;
           vec2 cf = abs(fract(p) - 0.5);
-          col += uGrid * smoothstep(0.05, 0.0, length(cf)) * 0.1 * inside;
+          col += uGrid * smoothstep(0.05, 0.0, length(cf)) * 0.3 * inside;
           float og = gridLine(p / 4.0, 1.0) * (1.0 - inside) * exp(-max(m - H, 0.0) * 0.05);
           col += uGrid * og * 0.05;
           if (H > 0.0) {

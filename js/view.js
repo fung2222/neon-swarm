@@ -2377,9 +2377,9 @@ export class View {
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(floorSize, floorSize),
       new THREE.MeshStandardMaterial({
-        // WEAPONS-HUD-CONTROLS-FLOOR-001: solid near-black arena so silhouettes /
-        // bullets / pickups / danger telegraphs stay readable (no cyan grid plate).
-        map: floorTex, color: 0x060608, emissive: 0x000000, emissiveIntensity: 0.0,
+        // 發光網格地面：emissiveMap 令紋理自發光，唔受燈光影響，網格線睇得清
+        map: floorTex, color: 0xffffff,
+        emissive: 0xffffff, emissiveIntensity: 0.45, emissiveMap: floorTex,
         roughness: 0.98, metalness: 0.02,
       })
     );
@@ -3724,16 +3724,23 @@ function makeFloorTexture() {
   const c = document.createElement('canvas');
   c.width = s; c.height = s;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#050506';
+  ctx.fillStyle = '#0a1420';
   ctx.fillRect(0, 0, s, s);
-  // Ultra-subtle checker so the plate is not a flat void — still near-black.
+  // 暗 checker 底（加亮咗，唔再全黑）
   const tile = 64;
   for (let y = 0; y < s; y += tile) {
     for (let x = 0; x < s; x += tile) {
-      const shade = 5 + ((x / tile + y / tile) % 2) * 2;
-      ctx.fillStyle = `rgb(${shade},${shade},${shade + 1})`;
+      const shade = 16 + ((x / tile + y / tile) % 2) * 5;
+      ctx.fillStyle = `rgb(${shade},${shade + 6},${shade + 16})`;
       ctx.fillRect(x, y, tile, tile);
     }
+  }
+  // 青霓虹網格線
+  ctx.strokeStyle = 'rgba(0,190,255,0.9)';
+  ctx.lineWidth = 4;
+  for (let i = 0; i <= s; i += tile) {
+    ctx.beginPath(); ctx.moveTo(i + 0.5, 0); ctx.lineTo(i + 0.5, s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i + 0.5); ctx.lineTo(s, i + 0.5); ctx.stroke();
   }
   return apply(new THREE.CanvasTexture(c));
 }

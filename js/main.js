@@ -9,7 +9,7 @@ import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechComba
 import './strings.js';
 import { Game } from './logic.js';
 // PHONE-MENU-BLACK / MENU-NO-MESHOPT-BOOT: do not import q-hero-3d (meshopt) until menu OK.
-import { View } from './view.js';
+import { View } from './view.js?v=floor1';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
 import {
@@ -244,13 +244,24 @@ const theme = new ThemeController(); theme.set(1, true);
 // Wilderness-style open map: NO tall buildings in play space
 const city = new NeonCity(stage, {
   floor: 'plain', floorY: -0.9, innerRadius: 90, buildings: 0,
+  floorHalf: 90,  // 發光網格遊戲區，令地面有網格（唔再全黑）
   billboard: null, signs: false, rain: false, traffic: false,
   // Phase 2: no additive dust motes competing with pickups / MG tracers.
   dust: false,
 });
-// Phase 2 ambient: keep floor darker than enemies / bullets / pickups / telegraphs.
-if (city.hemi) city.hemi.intensity = Math.min(city.hemi.intensity, 0.28);
-if (city.dirLight) city.dirLight.intensity = Math.min(city.dirLight.intensity, 0.40);
+// 地面發光網格 + 分區變色（跟時間轉區）
+const ZONE_FLOOR = { lab: 0x2ad4c8, assembly: 0xe8a040, reactor: 0xb44dff, blockade: 0x9aaa6e, rooftop: 0x6aa8ff };
+function applyZoneFloor(zone) {
+  const c = new THREE.Color(ZONE_FLOOR[zone] || ZONE_FLOOR.lab);
+  if (city.floorUniforms) {
+    city.floorUniforms.uGrid.value.copy(c);
+    city.floorUniforms.uC1.value.copy(c);
+  }
+}
+applyZoneFloor('lab');
+// 加亮環境光，令地面同敵人睇得清（之前壓太暗）
+if (city.hemi) city.hemi.intensity = 0.5;
+if (city.dirLight) city.dirLight.intensity = 0.65;
 
 const view = new View(stage);
 view.setVisible(false);
@@ -2267,6 +2278,7 @@ else if (ev.type === 'xp') {
       try { audio.wave(); } catch (_) {}
       // v0.9.48: chip stays after banner fades
       updateZoneHudChip(S.game);
+      applyZoneFloor(ev.zone);
     }
     else if (ev.type === 'eliteIn' || (ev.type === 'beat' && ev.kind === 'elite')) {
       const zh = ev.nameZh
