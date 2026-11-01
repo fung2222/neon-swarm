@@ -6,7 +6,7 @@ export { createStore } from './core/storage.js';
 export { createStage, GLOW_LEVELS, getGlowPref, setGlowPref } from './core/renderer.js?v=ns3';
 export { CyberShader } from './core/post.js';
 export { U, THEMES, themeFor, ThemeController, themeLabel } from './core/theme.js';
-export { Particles, Shockwaves, FxState } from './core/fx.js';
+export { Particles, Shockwaves, FxState } from './core/fx.js?v=ns3';
 export { NeonCity, NOISE_GLSL, FOG_GLSL } from './core/backdrop.js?v=ns2';
 export { SynthAudio, MUSIC, mtof, dbToGain, volumeToGain, loadVolumes, LOUDNESS, KIT_SFX_GAIN_DB } from './audio/synth.js';
 export { createInput, DEFAULT_KEYS, DEFAULT_ACTIONS } from './input/input.js';

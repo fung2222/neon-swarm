@@ -179,7 +179,7 @@ export class FxState {
     const damp = Math.min(1, this.bloomDamp);
     let str = (stage.bloomBase || 0) * (1 - damp * 0.92) + this.aberr * 0.02;
     if (!Number.isFinite(str) || str < 0) str = 0;
-    stage.bloomPass.strength = Math.min(0.55, str);
+    if (stage.bloomPass) stage.bloomPass.strength = Math.min(0.55, str);
     if (stage.renderer && Number.isFinite(stage.renderer.toneMappingExposure)) {
       stage.renderer.toneMappingExposure = Math.min(1.05, Math.max(0.7, stage._exposureBase ?? stage.renderer.toneMappingExposure));
     }
