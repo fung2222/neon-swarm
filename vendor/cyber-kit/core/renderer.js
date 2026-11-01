@@ -50,7 +50,7 @@ export function createStage(o = {}) {
   const canvas = o.canvas || document.querySelector('canvas');
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', alpha: false });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: o.antialias !== false, powerPreference: o.powerPreference || 'default', alpha: false });
   } catch (err) {
     (o.onFatal || defaultFatal)(t('kit.webgl'));
     throw err;

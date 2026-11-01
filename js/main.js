@@ -228,6 +228,8 @@ const stage = createStage({
   // 手機簡化渲染：關光暈 + 關抗鋸齒多重採樣，大幅減 GPU 負載，避免繪圖中斷
   samples: MOBILE_GFX ? 0 : 2,
   noBloom: MOBILE_GFX,
+  antialias: !MOBILE_GFX,
+  powerPreference: 'default',
   // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
   onFatal: (msg) => showGfxRecover('boot-webgl', msg || 'WebGL unavailable'),
 });
