@@ -50,7 +50,7 @@ export function createStage(o = {}) {
   const canvas = o.canvas || document.querySelector('canvas');
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', alpha: false });
   } catch (err) {
     (o.onFatal || defaultFatal)(t('kit.webgl'));
     throw err;
@@ -67,7 +67,7 @@ export function createStage(o = {}) {
   const camera = new THREE.PerspectiveCamera(o.fov ?? 50, window.innerWidth / window.innerHeight, o.near ?? 0.1, o.far ?? 900);
 
   // v0.8.5: UnsignedByteType — HalfFloat + additive particles/bloom can Inf and lock viewport permanently white
-  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: 0 });
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: 4 });
   const composer = new EffectComposer(renderer, rt);
   composer.setPixelRatio(pixelRatio);
   composer.setSize(window.innerWidth, window.innerHeight);

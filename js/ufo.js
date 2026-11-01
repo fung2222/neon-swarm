@@ -41,13 +41,13 @@ export function buildUfo(cfg) {
     side: THREE.DoubleSide,
   });
 
-  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.15, 0.14, 40), hull);
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.15, 0.14, 64), hull);
   disc.position.y = 0.72;
   const belly = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.55, 0.08, 28), std(0x0c1018, trim, 0.35, 0.4));
   belly.position.y = 0.62;
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
   dome.position.y = 0.78;
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.055, 10, 48), rimMat);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.055, 16, 80), rimMat);
   rim.rotation.x = Math.PI / 2;
   rim.position.y = 0.72;
 

@@ -77,9 +77,9 @@ export function computeShedLevel(o) {
 export function pixelRatioForShed(level, baseMax = 1) {
   // v0.9.126: deepen at shed 3; keep shed 1 readable
   const base = Math.max(0.70, Math.min(baseMax || 1, 2));
-  if (level >= 3) return Math.min(base, 0.72);
-  if (level >= 2) return Math.min(base, 0.80);
-  if (level >= 1) return Math.min(base, 0.90);
+  if (level >= 3) return Math.min(base, 1);
+  if (level >= 2) return Math.min(base, 1.25);
+  if (level >= 1) return Math.min(base, 1.5);
   return base;
 }
 

@@ -90,7 +90,7 @@ if (FEEL_PROTO) {
 } else {
   try { console.info('[neon-swarm] COMBAT-FEEL V1 OFF (?feelProto=0)'); } catch (_) {}
 }
-const MAX_PR = MOBILE_GFX ? 1 : 2;
+const MAX_PR = 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
 const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.54 prettier baseline
 /** Apply feel-FX recipe steps through existing Particles / Shockwaves pools. */
