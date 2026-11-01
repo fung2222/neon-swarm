@@ -9,7 +9,7 @@ import { GAME_ID, ADS, TRIAL, ARENA, MECHS, MECH_BY_ID, PLAYER, resolveMechComba
 import './strings.js';
 import { Game } from './logic.js';
 // PHONE-MENU-BLACK / MENU-NO-MESHOPT-BOOT: do not import q-hero-3d (meshopt) until menu OK.
-import { View } from './view.js?v=floor1';
+import { View } from './view.js?v=floor2';
 import { SwarmAudio } from './audio.js';
 import { shouldAutoPauseOnHidden } from './bg-pause.js';
 import {
@@ -90,7 +90,7 @@ if (FEEL_PROTO) {
 } else {
   try { console.info('[neon-swarm] COMBAT-FEEL V1 OFF (?feelProto=0)'); } catch (_) {}
 }
-const MAX_PR = MOBILE_GFX ? 1.5 : 2;
+const MAX_PR = MOBILE_GFX ? 1 : 2;
 /** Scale burst counts on mobile (further cut vs v0.9.5 for GPU stability). */
 const burstN = (n) => MOBILE_GFX ? Math.max(1, Math.round(n * 0.55)) : n; // v0.9.54 prettier baseline
 /** Apply feel-FX recipe steps through existing Particles / Shockwaves pools. */
@@ -225,6 +225,9 @@ const stage = createStage({
   glow: 'low',
   glowLevels: { low: { strength: MOBILE_GFX ? 0.15 : 0.22, radius: 0.35, threshold: 0.25 } },
   maxPixelRatio: MAX_PR,
+  // 手機簡化渲染：關光暈 + 關抗鋸齒多重採樣，大幅減 GPU 負載，避免繪圖中斷
+  samples: MOBILE_GFX ? 0 : 2,
+  noBloom: MOBILE_GFX,
   // Recoverable copy — GPU process death is not "browser lacks WebGL forever"
   onFatal: (msg) => showGfxRecover('boot-webgl', msg || 'WebGL unavailable'),
 });

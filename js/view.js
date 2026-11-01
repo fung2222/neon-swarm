@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { buildUfo } from './ufo.js';
+import { buildUfo } from './ufo.js?v=1';
 import { ARENA, ENEMIES, DROP, MECH_BY_ID, WEAPON_SHOT, AMMO_PATHS, WEAPON_DROP_LABEL, ARTILLERY, BOMBER, FLANKER, MEDIC, JAMMER, DANGER_PULSE, ZONE_PRESSURE } from './config.js';
 import { ELITE_LANE, eliteLaneOpacity, eliteLaneWidth } from './elite-lane-read.js';
 import {
@@ -3676,11 +3676,11 @@ export class View {
     if (!Number.isFinite(px) || !Number.isFinite(pz)) { px = 0; pz = 0; }
     let cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
     if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(cz)) {
-      cx = px; cy = 14 * z; cz = pz + 12 * z;
+      cx = px; cy = 18 * z; cz = pz + 16 * z;
     }
     cam.position.x = cx + (px - cx) * k;
-    cam.position.y = cy + (14 * z - cy) * k;
-    cam.position.z = cz + (pz + 12 * z - cz) * k;
+    cam.position.y = cy + (18 * z - cy) * k;
+    cam.position.z = cz + (pz + 16 * z - cz) * k;
     cam.rotation.z = 0; // clear residual trauma roll from fx.shake
     cam.lookAt(px, 0.85, pz);
   }
@@ -3736,8 +3736,8 @@ function makeFloorTexture() {
     }
   }
   // 青霓虹網格線
-  ctx.strokeStyle = 'rgba(0,190,255,0.9)';
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = 'rgba(0,190,255,0.8)';
+  ctx.lineWidth = 2;
   for (let i = 0; i <= s; i += tile) {
     ctx.beginPath(); ctx.moveTo(i + 0.5, 0); ctx.lineTo(i + 0.5, s); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, i + 0.5); ctx.lineTo(s, i + 0.5); ctx.stroke();

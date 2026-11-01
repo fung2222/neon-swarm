@@ -2,7 +2,7 @@
  * Player visual = procedural UFO (js/ufo.js). No PNG sheets.
  */
 import * as THREE from 'three';
-import { buildUfo } from './ufo.js';
+import { buildUfo } from './ufo.js?v=1';
 
 export function preloadAllSprites() {}
 

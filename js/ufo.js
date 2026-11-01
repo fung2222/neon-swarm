@@ -82,7 +82,7 @@ export function buildUfo(cfg) {
   } else {
     root.userData.spinRing = rim;
   }
-  root.scale.setScalar(id === 'heavy' ? 1.14 : id === 'prototype' ? 0.94 : 1);
+  root.scale.setScalar((id === 'heavy' ? 1.14 : id === 'prototype' ? 0.94 : 1) * 0.7);
 
   const stub = hull;
   root.userData.isSprite = false;

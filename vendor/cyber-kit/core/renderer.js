@@ -67,15 +67,18 @@ export function createStage(o = {}) {
   const camera = new THREE.PerspectiveCamera(o.fov ?? 50, window.innerWidth / window.innerHeight, o.near ?? 0.1, o.far ?? 900);
 
   // v0.8.5: UnsignedByteType — HalfFloat + additive particles/bloom can Inf and lock viewport permanently white
-  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: 2 });
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, samples: (o.samples ?? 2) });
   const composer = new EffectComposer(renderer, rt);
   composer.setPixelRatio(pixelRatio);
   composer.setSize(window.innerWidth, window.innerHeight);
   composer.addPass(new RenderPass(scene, camera));
   const look = { strength: o.bloom ?? 0.85, radius: o.bloomRadius ?? 0.45, threshold: o.bloomThreshold ?? 0.82 };
   const levels = { low: { ...GLOW_LEVELS.low, ...(o.glowLevels && o.glowLevels.low) }, high: { ...GLOW_LEVELS.high, ...(o.glowLevels && o.glowLevels.high) } };
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), look.strength, look.radius, look.threshold);
-  composer.addPass(bloomPass);
+  let bloomPass = null;
+  if (!o.noBloom) {
+    bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), look.strength, look.radius, look.threshold);
+    composer.addPass(bloomPass);
+  }
   const cyberPass = new ShaderPass(CyberShader);
   composer.addPass(cyberPass);
   const glowCbs = [];
@@ -93,9 +96,11 @@ export function createStage(o = {}) {
       const L = levels[level];
       stage.glow = level;
       stage.bloomBase = flags.bloom ?? look.strength * L.strength;
-      bloomPass.strength = stage.bloomBase;
-      bloomPass.radius = look.radius * L.radius;
-      bloomPass.threshold = Math.min(L.thresholdMax, look.threshold + L.threshold);
+      if (bloomPass) {
+        bloomPass.strength = stage.bloomBase;
+        bloomPass.radius = look.radius * L.radius;
+        bloomPass.threshold = Math.min(L.thresholdMax, look.threshold + L.threshold);
+      }
       stage.aberrBase = L.aberration;
       cyberPass.uniforms.uAberration.value = L.aberration; cyberPass.uniforms.uGrain.value = L.grain;
       if (persist) setGlowPref(level);
